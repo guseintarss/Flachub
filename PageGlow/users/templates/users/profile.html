@@ -86,7 +86,9 @@ document.body.addEventListener('htmx:configRequest', function (event) {
               </svg></a></p>
               </article>
           {% empty %}
-              <p>Нет опубликованных постов.</p>
+            <div class="alert alert-info" role="alert">
+                <p>Нет опубликованных постов.</p>
+            </div>
           {% endfor %}
       </div>
 
@@ -108,7 +110,9 @@ document.body.addEventListener('htmx:configRequest', function (event) {
               </svg></a></p>
               </article>
           {% empty %}
-              <p>Нет черновиков.</p>
+            <div class="alert alert-info" role="alert">
+                <p>Нет черновиков.</p>
+            </div>
           {% endfor %}
       </div>
 
@@ -131,7 +135,9 @@ document.body.addEventListener('htmx:configRequest', function (event) {
                   <p><a class="read-more" href="{{ post.get_absolute_url }}">Читать далее→</a></p>
               </article>
           {% empty %}
-              <p>Нет избранных постов.</p>
+            <div class="alert alert-info" role="alert">
+                <p>Нет избранных постов.</p>
+            </div>
           {% endfor %}
       </div>
 

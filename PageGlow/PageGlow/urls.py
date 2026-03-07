@@ -21,6 +21,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include("main.urls")),
     path('users/',include("users.urls", namespace='users')),
+    path('marketplace/', include("marketplace.urls", namespace='marketplace')),
     path("__debug__/", include("debug_toolbar.urls")),
     path("ckeditor5/", include('django_ckeditor_5.urls')),
     path('api-auth/', include('rest_framework.urls')),

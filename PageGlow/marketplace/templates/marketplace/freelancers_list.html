@@ -1,0 +1,156 @@
+{% extends "base_market.html" %}
+{% load static %}
+
+{% block title %}Фрилансеры - PageGlow Marketplace{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="marketplace-hero">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4 text-white">
+                    Найдите лучших фрилансеров
+                </h1>
+                <p class="lead mb-4 text-white-50">
+                    Просмотрите портфолио опытных разработчиков, дизайнеров и специалистов IT
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="container py-4">
+    <form method="get" class="w-100 mb-4">
+        <div class="row g-2">
+            <div class="col-md-6">
+                <input type="text" name="q" class="form-control form-control-lg" 
+                       placeholder="Поиск фрилансеров..." value="{{ request.GET.q }}">
+            </div>
+            <div class="col-md-3">
+                <select name="specialty" class="form-select form-select-lg">
+                    <option value="">Все специальности</option>
+                    <option value="backend" {% if request.GET.specialty == 'backend' %}selected{% endif %}>Backend</option>
+                    <option value="frontend" {% if request.GET.specialty == 'frontend' %}selected{% endif %}>Frontend</option>
+                    <option value="fullstack" {% if request.GET.specialty == 'fullstack' %}selected{% endif %}>Fullstack</option>
+                    <option value="design" {% if request.GET.specialty == 'design' %}selected{% endif %}>Дизайн</option>
+                    <option value="devops" {% if request.GET.specialty == 'devops' %}selected{% endif %}>DevOps</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-marketplace-primary w-100 btn-lg">
+                    <i class="fas fa-search"></i> Поиск
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Freelancers Grid -->
+<div class="container py-5">
+    {% if freelancers %}
+        <div class="row">
+            {% for freelancer in freelancers %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="project-card">
+                        <!-- Header -->
+                        <div class="text-center mb-3">
+                            {% if freelancer.user.avatar %}
+                                <img src="{{ freelancer.user.avatar.url }}" alt="{{ freelancer.user.username }}" 
+                                     class="rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary mx-auto mb-2" style="width: 80px; height: 80px;"></div>
+                            {% endif %}
+                            
+                            <h4 class="project-title">
+                                {{ freelancer.user.get_full_name|default:freelancer.user.username }}
+                            </h4>
+                            <p class="text-muted mb-2">@{{ freelancer.user.username }}</p>
+                            
+                            {% if freelancer.rating %}
+                                <div class="text-warning mb-2">
+                                    <i class="fas fa-star"></i> {{ freelancer.rating|floatformat:1 }}/5.0
+                                </div>
+                            {% endif %}
+                            
+                            <span class="marketplace-badge">
+                                {{ freelancer.get_role_display }}
+                            </span>
+                        </div>
+
+                        <!-- Bio -->
+                        {% if freelancer.bio %}
+                            <p class="text-muted text-center mb-3" style="font-size: 0.9rem;">
+                                {{ freelancer.bio|truncatewords:15 }}
+                            </p>
+                        {% endif %}
+
+                        <!-- Skills -->
+                        {% if freelancer.skills.all %}
+                            <div class="mb-3">
+                                <div style="display: flex; gap: 0.3rem; flex-wrap: wrap; justify-content: center;">
+                                    {% for skill in freelancer.skills.all|slice:":3" %}
+                                        <span class="marketplace-badge" style="font-size: 0.75rem;">
+                                            {{ skill.name }}
+                                        </span>
+                                    {% endfor %}
+                                    {% if freelancer.skills.count > 3 %}
+                                        <span class="marketplace-badge" style="font-size: 0.75rem;">
+                                            +{{ freelancer.skills.count|add:-3 }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Stats -->
+                        <div class="project-footer">
+                            <small class="text-muted">
+                                <i class="fas fa-briefcase"></i>
+                                {{ freelancer.completed_projects|default:0 }} проектов
+                            </small>
+                        </div>
+
+                        <!-- Button -->
+                        <a href="{% url 'marketplace:freelancer_profile' freelancer.user.username %}" 
+                           class="btn btn-marketplace-primary w-100 mt-3">
+                            Просмотр профиля
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info alert-lg text-center" role="alert">
+            <i class="fas fa-info-circle"></i>
+            <strong>Фрилансеров не найдено</strong>
+            <p class="mb-0">Попробуйте изменить критерии поиска</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- CTA Section -->
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 4rem; padding: 3rem 0;">
+    <div class="container text-center">
+        <h2 class="mb-4">Вы фрилансер?</h2>
+        <p class="lead mb-4">Создайте профиль и получайте интересные проекты</p>
+        {% if user.is_authenticated %}
+            {% if not user.freelancer_profile %}
+                <a href="{% url 'marketplace:create_freelancer_profile' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-user-plus"></i> Создать профиль
+                </a>
+            {% else %}
+                <a href="{% url 'marketplace:freelancer_profile' user.username %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-user-circle"></i> Мой профиль
+                </a>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'users:register' %}" class="btn btn-light btn-lg">
+                <i class="fas fa-rocket"></i> Начать
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

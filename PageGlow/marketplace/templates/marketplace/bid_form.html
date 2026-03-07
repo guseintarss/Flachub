@@ -1,0 +1,255 @@
+{% extends "base_market.html" %}
+{% load static %}
+
+{% block title %}Отправить предложение - PageGlow Marketplace{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-5">
+                <h1 class="fw-bold mb-2">Отправить предложение</h1>
+                <p class="text-muted">
+                    Отправьте свое предложение для проекта <strong>{{ project.title }}</strong>
+                </p>
+            </div>
+            
+            <!-- Project Summary -->
+            <div class="card border-0 shadow-sm mb-4 rounded-lg" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted small mb-1">Проект</h6>
+                            <p class="mb-0 fw-bold">{{ project.title }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted small mb-1">Бюджет</h6>
+                            <p class="mb-0 fw-bold" style="color: #28a745;">
+                                ${{ project.min_budget }} - ${{ project.max_budget }}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <h6 class="text-muted small mb-1">Сложность</h6>
+                            <p class="mb-0">
+                                <span class="badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    {{ project.get_difficulty_display }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <h6 class="text-muted small mb-1">Дедлайн</h6>
+                            <p class="mb-0">{{ project.deadline|date:"d.m.Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bid Form -->
+            <form method="post" class="card border-0 shadow-lg rounded-lg p-5">
+                {% csrf_token %}
+                
+                <!-- Bid Amount -->
+                <div class="mb-4">
+                    <label for="id_bid_amount" class="form-label fw-bold">
+                        <i class="fas fa-dollar-sign me-2" style="color: #667eea;"></i>
+                        Размер предложения (USD)
+                    </label>
+                    {{ form.bid_amount }}
+                    <small class="form-text text-muted d-block mt-2">
+                        Предложите сумму в пределах бюджета проекта
+                    </small>
+                    {% if form.bid_amount.errors %}
+                        <div class="alert alert-danger small mt-2">
+                            {{ form.bid_amount.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Duration -->
+                <div class="mb-4">
+                    <label for="id_duration" class="form-label fw-bold">
+                        <i class="fas fa-calendar me-2" style="color: #667eea;"></i>
+                        Ожидаемая продолжительность
+                    </label>
+                    {{ form.duration }}
+                    <small class="form-text text-muted d-block mt-2">
+                        Сколько дней вам нужно, чтобы выполнить проект?
+                    </small>
+                    {% if form.duration.errors %}
+                        <div class="alert alert-danger small mt-2">
+                            {{ form.duration.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Proposal Text -->
+                <div class="mb-4">
+                    <label for="id_proposal_text" class="form-label fw-bold">
+                        <i class="fas fa-pen me-2" style="color: #667eea;"></i>
+                        Ваше предложение
+                    </label>
+                    {{ form.proposal_text }}
+                    <small class="form-text text-muted d-block mt-2">
+                        Объясните, почему вы идеальный кандидат для этого проекта
+                    </small>
+                    {% if form.proposal_text.errors %}
+                        <div class="alert alert-danger small mt-2">
+                            {{ form.proposal_text.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Availability -->
+                <div class="mb-4">
+                    <label for="id_availability" class="form-label fw-bold">
+                        <i class="fas fa-clock me-2" style="color: #667eea;"></i>
+                        Когда вы сможете начать?
+                    </label>
+                    {{ form.availability }}
+                    {% if form.availability.errors %}
+                        <div class="alert alert-danger small mt-2">
+                            {{ form.availability.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Experience Level -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-star me-2" style="color: #667eea;"></i>
+                        Уровень опыта
+                    </label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="experience_level" id="expert" value="expert">
+                            <label class="form-check-label" for="expert">
+                                Эксперт
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="experience_level" id="intermediate" value="intermediate" checked>
+                            <label class="form-check-label" for="intermediate">
+                                Средний уровень
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="experience_level" id="beginner" value="beginner">
+                            <label class="form-check-label" for="beginner">
+                                Новичок
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Terms Agreement -->
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+                        <label class="form-check-label" for="terms">
+                            Я согласен(а) с <a href="#" class="text-decoration-none">условиями использования</a> и готов(а) обсудить проект с клиентом
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="d-flex gap-2 pt-4 border-top">
+                    <button type="submit" class="btn btn-lg rounded-pill fw-bold flex-grow-1" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        Отправить предложение
+                    </button>
+                    <a href="{% url 'marketplace:project-detail' project.id %}" class="btn btn-lg btn-outline-secondary rounded-pill fw-bold">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Отмена
+                    </a>
+                </div>
+            </form>
+            
+            <!-- Tips Section -->
+            <div class="card border-0 shadow-sm rounded-lg mt-5 bg-light">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-lightbulb me-2" style="color: #ffc107;"></i>
+                        Советы для успешного предложения
+                    </h6>
+                    <ul class="list-unstyled small text-muted">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Прочитайте описание проекта и убедитесь, что вы подходите для него
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Предложите честную стоимость в соответствии с вашим опытом
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Объясните конкретно, как вы решите задачу
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Укажите реалистичные сроки выполнения
+                        </li>
+                        <li>
+                            <i class="fas fa-check text-success me-2"></i>
+                            Будьте профессиональны и вежливы в общении
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input[type="number"],
+    input[type="date"],
+    textarea,
+    select {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    input[type="number"]:focus,
+    input[type="date"]:focus,
+    textarea:focus,
+    select:focus {
+        background: white;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 150px;
+    }
+    
+    .form-check-input {
+        width: 1.5em;
+        height: 1.5em;
+        border: 2px solid #dee2e6;
+        border-radius: 0.35em;
+    }
+    
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+    
+    .form-check-input:focus {
+        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-lg:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+</style>

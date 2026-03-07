@@ -47,7 +47,7 @@ class Post(ModelMeta, models.Model):
     # Избранное
     favorites = models.ManyToManyField(
         User,
-        related_name='favorite_posts',
+        related_name='favorited_posts',
         blank=True
     )
 
