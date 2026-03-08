@@ -18,18 +18,18 @@
                 <div class="d-flex gap-2 flex-wrap">
                     {% if user.is_authenticated %}
                         {% if not user.freelancer_profile %}
-                            <a href="{% url 'marketplace:create_freelancer_profile' %}" class="btn btn-light btn-lg">
+                            <a href="{% url 'marketplace:create_freelancer_profile' %}" class="text-decoration-none btn btn-light btn-lg">
                                 <i class="fas fa-user-tie"></i> Стать фрилансером
                             </a>
                         {% endif %}
-                        <a href="{% url 'marketplace:project_create' %}" class="btn btn-outline-light btn-lg">
+                        <a href="{% url 'marketplace:project_create' %}" class="text-decoration-none btn btn-outline-light btn-lg">
                             <i class="fas fa-briefcase"></i> Создать проект
                         </a>
                     {% else %}
-                        <a href="{% url 'users:login' %}" class="btn btn-light btn-lg">
+                        <a href="{% url 'users:login' %}" class="text-decoration-none  btn btn-light btn-lg">
                             <i class="fas fa-sign-in-alt"></i> Вход
                         </a>
-                        <a href="{% url 'users:register' %}" class="btn btn-outline-light btn-lg">
+                        <a href="{% url 'users:register' %}" class="text-decoration-none btn btn-outline-light btn-lg">
                             <i class="fas fa-user-plus"></i> Регистрация
                         </a>
                     {% endif %}
@@ -196,12 +196,12 @@
         <h2 class="mb-4">Готовы начать?</h2>
         <p class="lead mb-4">Присоединитесь к тысячам успешных фрилансеров и клиентов</p>
         {% if not user.is_authenticated %}
-            <a href="{% url 'users:register' %}" class="btn btn-light btn-lg">
+            <a href="{% url 'users:register' %}" class="text-decoration-none btn btn-light btn-lg">
                 <i class="fas fa-rocket"></i> Начать работу
             </a>
         {% else %}
-            <a href="{% url 'marketplace:project_create' %}" class="btn btn-light btn-lg">
-                <i class="fas fa-plus"></i> Создать первый проект
+            <a href="{% url 'marketplace:project_create' %}" class="text-decoration-none btn btn-light btn-lg">
+                <i class=" fas fa-plus"></i> Создать первый проект
             </a>
         {% endif %}
     </div>

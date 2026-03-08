@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load main_extras %}
 
 {% block content %}
 <!-- Прогресс чтения -->
@@ -17,7 +18,7 @@
                 {% endif %}
                 <div class="author-details">
                     <a href="{% url 'users:author_profile' post.author.username %}" class="author-name">{{ post.author.username }}</a>
-                    <span class="post-date">{{ post.time_update|date:"d.m.Y" }}</span>
+                    <span class="post-date" title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span>
                 </div>
             </div>
             {% if user.is_authenticated and post.author != user %}
@@ -162,12 +163,16 @@ window.addEventListener('scroll', function() {
     if (article && progressBar) {
         const articleTop = article.offsetTop;
         const articleHeight = article.offsetHeight;
-        const windowHeight = window.innerHeight;
+        const articleBottom = articleTop + articleHeight;
         const scrolled = window.scrollY;
+        const windowHeight = window.innerHeight;
         
-        const progress = Math.min(100, Math.max(0, 
-            ((scrolled - articleTop + windowHeight) / articleHeight) * 100
-        ));
+        // Расчет прогресса: сколько статьи прокручено от начала до конца
+        let progress = 0;
+        if (scrolled + windowHeight >= articleTop) {
+            progress = ((scrolled + windowHeight - articleTop) / (articleHeight + windowHeight)) * 100;
+        }
+        progress = Math.min(100, Math.max(0, progress));
         
         progressBar.style.width = progress + '%';
     }

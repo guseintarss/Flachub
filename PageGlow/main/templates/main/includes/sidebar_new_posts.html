@@ -1,12 +1,13 @@
 <div class="sidebar-widget">
     <h4>Недавно написанные статьи</h4>
     <ul>
+        {% load main_extras %}
         {% for post in sidebar_new_posts %}
             <hr>
             <li>
                 <a class="new_posts" href="{% url 'post' post.slug %}">{{ post.title }}</a>
-                
-                <small>{{ post.created_at|date:"d.m.Y" }}</small>
+                <!-- <p>{{ post.time_create }}</p> -->
+                <p> <small style="opacity: 0.5;" title="{{ post.time_create|date:'d.m.Y H:i' }}">{{ post.author.username|default:'Неизвестно' }} &bull; {{ post.time_create|time_ago }}</small></p>
             </li>
         {% endfor %}
     </ul>

@@ -4,12 +4,12 @@
 {% block title %}Создание проекта - PageGlow Marketplace{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="project-card">
                 <h1 class="mb-4">
-                    <i class="fas fa-plus"></i> Создать новый проект
+                Создать новый проект
                 </h1>
                 
                 <form method="post" class="needs-validation" novalidate>
@@ -156,7 +156,7 @@
                         <button type="submit" class="btn btn-marketplace-primary btn-lg flex-grow-1">
                             <i class="fas fa-check"></i> Опубликовать проект
                         </button>
-                        <a href="{% url 'marketplace:home' %}" class="btn btn-outline-secondary btn-lg">
+                        <a href="{% url 'marketplace:home' %}" class="text-decoration-none btn btn-outline-secondary btn-lg">
                             <i class="fas fa-times"></i> Отмена
                         </a>
                     </div>

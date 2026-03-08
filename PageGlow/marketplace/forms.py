@@ -30,8 +30,8 @@ class ProjectForm(forms.ModelForm):
                 'placeholder': 'Полное описание задачи',
                 'rows': 6,
             }),
-            'required_skills': forms.CheckboxSelectMultiple(attrs={
-                'class': 'form-check-input',
+            'required_skills': forms.TextInput(attrs={
+                'class': 'form-control',
             }),
             'category': forms.Select(attrs={
                 'class': 'form-select',
@@ -124,8 +124,8 @@ class FreelancerProfileForm(forms.ModelForm):
                 'min': '0',
                 'step': '0.5',
             }),
-            'skills': forms.CheckboxSelectMultiple(attrs={
-                'class': 'form-check-input',
+            'skills': forms.TextInput(attrs={
+                'class': 'form-control',
             }),
             'portfolio_url': forms.URLInput(attrs={
                 'class': 'form-control',
@@ -147,6 +147,18 @@ class FreelancerProfileForm(forms.ModelForm):
             'is_available': forms.CheckboxInput(attrs={
                 'class': 'form-check-input',
             }),
+        }
+        labels = {
+            'is_available': 'Доступен для новых проектов',
+            'hourly_rate': 'Почасовая ставка (USD)',
+            'years_experience': 'Опыт работы (в годах)',
+            'portfolio_url': 'Ссылка на портфолио',
+            'github_url': 'Ссылка на GitHub',
+            'linkedin_url': 'Ссылка на LinkedIn',
+            'bio': 'О себе',
+            'skills': 'Навыки (через запятую)',
+            'avatar': 'Аватар',
+            'role': 'Роль',
         }
 
 

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load main_extras %}
 
 {% block head %}
 <!-- Подключение HTMX -->
@@ -33,8 +34,8 @@ document.body.addEventListener('htmx:configRequest', function (event) {
 
     <div class="author-stats">
         <span><strong>{{ published_posts.count }}</strong> статей</span>
-        <span><strong>{{ subscribers_count }}</strong> подписчиков</span>
-        <span><strong>{{ subscriptions_count }}</strong> подписок</span>
+        <span><strong>{{ user.subscribers.count }}</strong> подписчиков</span>
+        <span><strong>{{ user.subscriptions.count }}</strong> подписок</span>
     </div>
 
     {%if user.about_me%}
@@ -68,7 +69,7 @@ document.body.addEventListener('htmx:configRequest', function (event) {
                   <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
                     <p class="meta">
                         Категория: {{ post.cat.name }} 
-                        &bull; {{ post.time_update|date:"d.m.Y" }}
+                        &bull; <span title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span>
                         &bull; 👁 {{ post.views }}
                         &bull; ❤️ {{ post.number_of_likes }}
                     </p>
@@ -96,7 +97,7 @@ document.body.addEventListener('htmx:configRequest', function (event) {
           {% for post in drafts %}
               <article class="post">
                   <h3>{{ post.title }}</h3>
-                  <p class="meta">Категория: {{post.cat.name}} &bull; Дата: {{post.time_update|date:"d.m.Y"}} {{post.author.username|default:'Неизвестно'}}</p>
+                  <p class="meta">Категория: {{post.cat.name}} &bull; Дата: <span title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span> {{post.author.username|default:'Неизвестно'}}</p>
                       {% if post.photo %}
                         <p><img class="img-article-left thumb" src="{{post.photo.url}}" alt=""></p>
                     {% endif %}
@@ -122,7 +123,7 @@ document.body.addEventListener('htmx:configRequest', function (event) {
                   <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
                     <p class="meta">
                         Категория: {{ post.cat.name }} 
-                        &bull; {{ post.time_update|date:"d.m.Y" }}
+                        &bull; <span title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span>
                         &bull; 👁 {{ post.views }}
                         &bull; ❤️ {{ post.number_of_likes }}
                     </p>                      {% if post.photo %}
@@ -147,7 +148,7 @@ document.body.addEventListener('htmx:configRequest', function (event) {
 
    {% if p.is_published == True %}<p><span class="p-2 mb-2 bg-success text-white">Опубликовано</span></p>{% elif p.is_published == False %}<p><span class="p-2 mb-2 bg-warning text-dark">Черновик</span></p>{% endif %}
     <h2>{{ p.title }}</h2>
-    <p class="meta">Категория: {{p.cat.name}} &bull; Дата: {{p.time_update|date:"d.m.Y"}} {{p.author.username|default:'Неизвестно'}}</p>
+    <p class="meta">Категория: {{p.cat.name}} &bull; Дата: <span title="{{ p.time_update|date:'d.m.Y H:i' }}">{{ p.time_update|time_ago }}</span> {{p.author.username|default:'Неизвестно'}}</p>
     {% if p.photo %}
         <p><img class="img-article-left thumb" src="{{p.photo.url}}" alt=""></p>
     {% endif %}

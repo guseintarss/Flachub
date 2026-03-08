@@ -23,7 +23,7 @@
             <h2>{{ p.title }}</h2>
             <p class="meta">
                 Категория: {{ p.cat.name }} 
-                &bull; {{ p.time_update|date:"d.m.Y" }}
+                &bull; <span title="{{ p.time_create|date:'d.m.Y H:i' }}">{{ p.time_create|time_ago }}</span>
                 &bull; 👁 {{ p.views }}
                 &bull; ❤️ {{ p.number_of_likes }}
             </p>
