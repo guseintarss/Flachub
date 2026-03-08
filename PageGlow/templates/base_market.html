@@ -14,6 +14,7 @@
 
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static '' %}">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Marketplace CSS -->
@@ -38,7 +39,7 @@
                     <a href="{% url 'marketplace:home' %}">Проекты</a>
                     <a href="{% url 'marketplace:freelancers_list' %}">Фрилансеры</a>
                     <a href="{% url 'home' %}">Сообщество</a>
-                    <a href="#">Как это работает</a>
+                    <a href="{% url 'marketplace:how_it_works' %}">Как это работает</a>
                 </nav>
 
                 <div class="marketplace-header-actions">
@@ -85,33 +86,33 @@
                         <h5><i class="fas fa-briefcase"></i> Маркетплейс</h5>
                         <a href="{% url 'marketplace:home' %}">Все проекты</a>
                         <a href="{% url 'marketplace:freelancers_list' %}">Найти фрилансера</a>
-                        <a href="#">Как опубликовать проект</a>
-                        <a href="#">Как найти работу</a>
+                        <a href="{% url 'marketplace:publish_project_guide' %}">Как опубликовать проект</a>
+                        <a href="{% url 'marketplace:find_work_guide' %}">Как найти работу</a>
                     </div>
 
                     <div class="col-md-3 mb-4">
                         <h5><i class="fas fa-comments"></i> Сообщество</h5>
                         <a href="{% url 'home' %}">Посты</a>
-                        <a href="#">Лучшие авторы</a>
-                        <a href="#">Категории</a>
-                        <a href="#">FAQ</a>
+                        <a href="{% url 'marketplace:best_freelancers' %}">Лучшие авторы</a>
+                        <a href="{% url 'marketplace:categories' %}">Категории</a>
+                        <a href="{% url 'marketplace:faq' %}">FAQ</a>
                     </div>
 
                     <div class="col-md-3 mb-4">
                         <h5><i class="fas fa-shield-alt"></i> Информация</h5>
-                        <a href="#">О платформе</a>
-                        <a href="#">Правила и политика</a>
-                        <a href="#">Безопасность</a>
-                        <a href="#">Контакты</a>
+                        <a href="{% url 'marketplace:about_platform' %}">О платформе</a>
+                        <a href="{% url 'marketplace:terms_and_policy' %}">Правила и политика</a>
+                        <a href="{% url 'marketplace:security' %}">Безопасность</a>
+                        <a href="{% url 'marketplace:contact_us' %}">Контакты</a>
                     </div>
 
                     <div class="col-md-3 mb-4">
                         <h5><i class="fas fa-globe"></i> Следите за нами</h5>
                         <div class="social-links">
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-github"></i></a>
-                            <a href="#"><i class="fab fa-linkedin"></i></a>
-                            <a href="#"><i class="fab fa-facebook"></i></a>
+                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a>
+                            <a href="https://github.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+                            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
+                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i></a>
                         </div>
                     </div>
                 </div>

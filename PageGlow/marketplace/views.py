@@ -154,11 +154,14 @@ class FreelancerProfileView(DetailView):
         context = super().get_context_data(**kwargs)
         profile = self.get_object()
         
-        # Завершённые проекты
-        context['completed_projects'] = models.Project.objects.filter(
+        # Завершённые проекты (оптимизированный запрос с использованием aggregate)
+        completed_count = models.Project.objects.filter(
             assigned_to=profile.user,
             status=models.ProjectStatus.COMPLETED
-        ).count()
+        ).aggregate(
+            count=Count('id')
+        )['count']
+        context['completed_projects'] = completed_count
         
         # Отзывы
         context['reviews'] = models.Review.objects.filter(
@@ -244,7 +247,7 @@ class BidCreateView(LoginRequiredMixin, CreateView):
     """Создание предложения на проект"""
     model = models.Bid
     form_class = forms.BidForm
-    template_name = 'marketplace/bid_form.html'
+    # template_name = 'marketplace/bid_form.html'
     
     def dispatch(self, request, *args, **kwargs):
         # Проверяем, что это фрилансер
@@ -477,3 +480,122 @@ class CreateCompanyProfileView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Создать профиль компании'
         return context
+
+
+# ===== СПРАВОЧНЫЕ СТРАНИЦЫ =====
+
+def how_it_works(request):
+    """Как это работает"""
+    context = {
+        'title': 'Как это работает',
+    }
+    return render(request, 'marketplace/how_it_works.html', context)
+
+
+def publish_project_guide(request):
+    """Руководство: Как опубликовать проект"""
+    context = {
+        'title': 'Как опубликовать проект',
+    }
+    return render(request, 'marketplace/publish_guide.html', context)
+
+
+def find_work_guide(request):
+    """Руководство: Как найти работу"""
+    context = {
+        'title': 'Как найти работу',
+    }
+    return render(request, 'marketplace/find_work_guide.html', context)
+
+
+def best_freelancers(request):
+    """Лучшие фрилансеры"""
+    context = {
+        'title': 'Лучшие фрилансеры',
+        'freelancers': models.FreelancerProfile.objects.filter(
+            is_verified=True,
+            is_available=True
+        ).select_related('user').order_by('-rating')[:20]
+    }
+    return render(request, 'marketplace/best_freelancers.html', context)
+
+
+def categories_view(request):
+    """Категории проектов"""
+    context = {
+        'title': 'Категории',
+        'categories': [
+            {'name': 'Веб-разработка', 'value': 'web'},
+            {'name': 'Мобильное приложение', 'value': 'mobile'},
+            {'name': 'Data Science', 'value': 'data'},
+            {'name': 'DevOps', 'value': 'devops'},
+            {'name': 'Дизайн', 'value': 'design'},
+            {'name': 'Другое', 'value': 'other'},
+        ]
+    }
+    return render(request, 'marketplace/categories.html', context)
+
+
+def faq_view(request):
+    """Часто задаваемые вопросы"""
+    context = {
+        'title': 'Часто задаваемые вопросы',
+        'faqs': [
+            {
+                'question': 'Как начать работу на платформе?',
+                'answer': 'Зарегистрируйтесь, создайте профиль и приступайте к поиску работы или публикации проектов.'
+            },
+            {
+                'question': 'Какая комиссия платформы?',
+                'answer': 'Комиссия составляет 10% от стоимости проекта для фрилансеров и 5% для клиентов.'
+            },
+            {
+                'question': 'Как защищены мои платежи?',
+                'answer': 'Мы используем защищённую систему депонирования средств. Оплата переводится фрилансеру только после приёмки работы.'
+            },
+            {
+                'question': 'Могу ли я отменить договор?',
+                'answer': 'Да, вы можете отменить договор в течение 14 дней. Подробные условия указаны в соглашении.'
+            },
+            {
+                'question': 'Как связаться с поддержкой?',
+                'answer': 'Напишите нам на support@pageglow.ru или используйте форму обратной связи на сайте.'
+            },
+        ]
+    }
+    return render(request, 'marketplace/faq.html', context)
+
+
+def about_platform(request):
+    """О платформе"""
+    context = {
+        'title': 'О платформе PageGlow',
+    }
+    return render(request, 'marketplace/about_platform.html', context)
+
+
+def terms_and_policy(request):
+    """Правила и политика"""
+    context = {
+        'title': 'Правила и политика',
+    }
+    return render(request, 'marketplace/terms_and_policy.html', context)
+
+
+def security_view(request):
+    """Безопасность"""
+    context = {
+        'title': 'Безопасность на платформе',
+    }
+    return render(request, 'marketplace/security.html', context)
+
+
+def contact_us(request):
+    """Контакты"""
+    context = {
+        'title': 'Контакты',
+        'email': 'support@pageglow.ru',
+        'phone': '+7 (999) 999-99-99',
+        'address': 'Москва, Россия',
+    }
+    return render(request, 'marketplace/contact.html', context)

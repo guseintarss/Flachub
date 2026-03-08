@@ -2,6 +2,13 @@ from django import forms
 from . import models
 
 
+class SkillsCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
+    """Кастомный виджет для выбора навыков с красивым оформлением"""
+    
+    template_name = 'marketplace/widgets/checkbox_select.html'
+    option_template_name = 'marketplace/widgets/checkbox_option.html'
+
+
 class ProjectForm(forms.ModelForm):
     """Форма для создания/редактирования проекта"""
     
@@ -30,9 +37,7 @@ class ProjectForm(forms.ModelForm):
                 'placeholder': 'Полное описание задачи',
                 'rows': 6,
             }),
-            'required_skills': forms.TextInput(attrs={
-                'class': 'form-control',
-            }),
+            'required_skills': SkillsCheckboxSelectMultiple(),
             'category': forms.Select(attrs={
                 'class': 'form-select',
             }),
@@ -119,14 +124,10 @@ class FreelancerProfileForm(forms.ModelForm):
                 'class': 'form-control',
                 'accept': 'image/*',
             }),
-            'years_experience': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': '0',
-                'step': '0.5',
+            'years_experience': forms.Select(attrs={
+                'class': 'form-select',
             }),
-            'skills': forms.TextInput(attrs={
-                'class': 'form-control',
-            }),
+            'skills': SkillsCheckboxSelectMultiple(),
             'portfolio_url': forms.URLInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'https://example.com',
@@ -141,7 +142,7 @@ class FreelancerProfileForm(forms.ModelForm):
             }),
             'hourly_rate': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Почасовая ставка',
+                'placeholder': 'Почасовая ставка в рублях',
                 'step': '0.01',
             }),
             'is_available': forms.CheckboxInput(attrs={
@@ -150,13 +151,13 @@ class FreelancerProfileForm(forms.ModelForm):
         }
         labels = {
             'is_available': 'Доступен для новых проектов',
-            'hourly_rate': 'Почасовая ставка (USD)',
-            'years_experience': 'Опыт работы (в годах)',
+            'hourly_rate': 'Почасовая ставка (руб)',
+            'years_experience': 'Опыт работы',
             'portfolio_url': 'Ссылка на портфолио',
             'github_url': 'Ссылка на GitHub',
             'linkedin_url': 'Ссылка на LinkedIn',
             'bio': 'О себе',
-            'skills': 'Навыки (через запятую)',
+            'skills': 'Выберите ваши навыки',
             'avatar': 'Аватар',
             'role': 'Роль',
         }

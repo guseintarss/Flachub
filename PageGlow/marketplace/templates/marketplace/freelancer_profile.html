@@ -1,7 +1,7 @@
 {% extends "base_market.html" %}
 {% load static %}
 
-{% block title %}{{ freelancer.user.get_full_name|default:freelancer.user.username }} - Профиль фрилансера{% endblock %}
+{% block title %}{{ profile.user.get_full_name|default:profile.user.username }} - Профиль фрилансера{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-5" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);">
@@ -12,8 +12,8 @@
                 <div class="row g-0 align-items-center">
                     <!-- Avatar -->
                     <div class="col-md-4 text-center p-5">
-                        {% if freelancer.avatar %}
-                            <img src="{{ freelancer.avatar.url }}" alt="{{ freelancer.user.username }}" class="rounded-circle img-fluid border-4 border-white" style="max-width: 200px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                        {% if profile.avatar %}
+                            <img src="{{ profile.avatar.url }}" alt="{{ profile.user.username }}" class="rounded-circle img-fluid border-4 border-white" style="max-width: 200px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
                         {% else %}
                             <div class="rounded-circle bg-white bg-opacity-25" style="width: 200px; height: 200px; margin: 0 auto;"></div>
                         {% endif %}
@@ -21,40 +21,40 @@
                     
                     <!-- Profile Info -->
                     <div class="col-md-8 p-5">
-                        <h1 class="mb-2 fw-bold">{{ freelancer.user.get_full_name|default:freelancer.user.username }}</h1>
-                        <p class="lead mb-3 text-white text-opacity-90">{{ freelancer.get_role_display }}</p>
+                        <h1 class="mb-2 fw-bold">{{ profile.user.get_full_name|default:profile.user.username }}</h1>
+                        <p class="lead mb-3 text-white text-opacity-90">{{ profile.get_role_display }}</p>
                         
                         <!-- Rating and Stats -->
                         <div class="mb-4 d-flex gap-4 flex-wrap">
                             <div>
                                 <div class="fs-5 fw-bold">
-                                    <i class="fas fa-star"></i> {{ freelancer.rating|floatformat:1 }}/5.0
+                                    <i class="fas fa-star"></i> {{ profile.rating|floatformat:1 }}/5.0
                                 </div>
-                                <small class="text-white text-opacity-75">{{ freelancer.total_reviews }} отзывов</small>
+                                <small class="text-white text-opacity-75">{{ profile.total_reviews }} отзывов</small>
                             </div>
                             <div class="border-start ps-4">
                                 <div class="fs-5 fw-bold">
-                                    ${{ freelancer.hourly_rate|default:"0" }}/ч
+                                    ${{ profile.hourly_rate|default:"0" }}/ч
                                 </div>
                                 <small class="text-white text-opacity-75">Почасовая ставка</small>
                             </div>
                             <div class="border-start ps-4">
                                 <div class="fs-5 fw-bold">
-                                    {{ freelancer.completed_projects|default:"0" }}
+                                    {{ profile.completed_projects|default:"0" }}
                                 </div>
                                 <small class="text-white text-opacity-75">Завершено проектов</small>
                             </div>
                         </div>
                         
                         <!-- Bio -->
-                        <p class="text-white text-opacity-90 mb-4">{{ freelancer.bio|default:"Нет описания" }}</p>
+                        <p class="text-white text-opacity-90 mb-4">{{ profile.bio|default:"Нет описания" }}</p>
                         
                         <!-- Action Buttons -->
                         <div class="d-flex gap-3 flex-wrap">
-                            <a href="{% url 'marketplace:bid-create' %}" class="btn btn-light btn-lg rounded-pill px-4 fw-bold">
+                            <a href="" class="btn btn-light btn-lg rounded-pill px-4 fw-bold">
                                 <i class="fas fa-handshake"></i> Отправить предложение
                             </a>
-                            <a href="{% url 'marketplace:project-chat' freelancer.id %}" class="btn btn-outline-light btn-lg rounded-pill px-4 fw-bold">
+                            <a href="" class="btn btn-outline-light btn-lg rounded-pill px-4 fw-bold">
                                 <i class="fas fa-comments"></i> Сообщение
                             </a>
                         </div>
@@ -75,22 +75,29 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        {% if freelancer.skills.all %}
-                            <div class="d-flex flex-wrap gap-2 mb-4">
-                                {% for skill in freelancer.skills.all %}
-                                    <span class="badge rounded-pill" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 0.9rem; padding: 0.6rem 1rem;">
-                                        <i class="fas fa-check me-1"></i>{{ skill.name }}
+                        {% if profile.skills.all %}
+                            <div class="profile-skills mb-4">
+                                {% for skill in profile.skills.all %}
+                                    <span class="skill-tag {{ skill.category }}" title="{{ skill.description }}">
+                                        {% if skill.icon %}
+                                            <i class="{{ skill.icon }}"></i>
+                                        {% else %}
+                                            <i class="fas fa-code"></i>
+                                        {% endif %}
+                                        {{ skill.name }}
                                     </span>
                                 {% endfor %}
                             </div>
                         {% else %}
-                            <p class="text-muted">Навыки не указаны</p>
+                            <p class="text-muted">
+                                <i class="fas fa-info-circle me-2"></i>Навыки не указаны
+                            </p>
                         {% endif %}
                         
                         <!-- Experience -->
                         <div class="mt-4">
                             <h6 class="fw-bold mb-3">Опыт:</h6>
-                            <p class="text-muted">{{ freelancer.experience_description|default:"Нет информации об опыте" }}</p>
+                            <p class="text-muted">{{ profile.experience_description|default:"Нет информации об опыте" }}</p>
                         </div>
                     </div>
                 </div>
@@ -104,9 +111,9 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        {% if freelancer.portfolio_items.all %}
+                        {% if profile.portfolio_items.all %}
                             <div class="row g-3">
-                                {% for item in freelancer.portfolio_items.all %}
+                                {% for item in profile.portfolio_items.all %}
                                     <div class="col-md-6">
                                         <div class="position-relative overflow-hidden rounded-lg" style="height: 200px; background: #f0f0f0;">
                                             {% if item.image %}
@@ -137,12 +144,12 @@
                     <div class="card-header bg-white border-0 py-4">
                         <h5 class="mb-0 fw-bold">
                             <i class="fas fa-comments me-2" style="color: #667eea;"></i>
-                            Отзывы ({{ freelancer.reviews.count }})
+                            Отзывы ({{ reviews.count }})
                         </h5>
                     </div>
                     <div class="card-body">
-                        {% if freelancer.reviews.all %}
-                            {% for review in freelancer.reviews.all|slice:":5" %}
+                        {% if reviews %}
+                            {% for review in reviews %}
                                 <div class="mb-4 pb-4 border-bottom">
                                     <div class="d-flex align-items-start mb-2">
                                         <div class="flex-grow-1">
@@ -251,24 +258,17 @@
                     <div class="card-body text-center">
                         <h6 class="fw-bold mb-3">Начните сотрудничество</h6>
                         <p class="small mb-4 text-white text-opacity-90">Отправьте это фрилансеру предложение на проект</p>
-                        <a href="{% url 'marketplace:bid-create' %}" class="btn btn-light btn-sm rounded-pill w-100 fw-bold mb-2">
+                        <a href="" class="btn btn-light btn-sm rounded-pill w-100 fw-bold mb-2">
                             <i class="fas fa-handshake me-1"></i>Отправить предложение
                         </a>
-                        <a href="{% url 'marketplace:project-chat' freelancer.id %}" class="btn btn-outline-light btn-sm rounded-pill w-100 fw-bold">
+                        <a href="" class="btn btn-outline-light btn-sm rounded-pill w-100 fw-bold">
                             <i class="fas fa-envelope me-1"></i>Написать сообщение
                         </a>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-                                </span>
-                            </div>
-
-                            <div class="mb-3">
-                                {% if freelancer.is_verified %}
-                                    <span class="badge bg-success">
+                <div class="mb-3">
+                    {% if freelancer.is_verified %}
+                        <span class="badge bg-success">
                                         <i class="fas fa-check-circle"></i> Проверен
                                     </span>
                                 {% endif %}
@@ -292,12 +292,7 @@
                                     <i class="fas fa-envelope"></i> Связаться
                                 </a>
                             {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- О себе -->
+                            <!-- О себе -->
             {% if freelancer.bio %}
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-light">
@@ -308,66 +303,6 @@
                     </div>
                 </div>
             {% endif %}
-
-            <!-- Навыки -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="card-title mb-0">Навыки ({{ freelancer.skills.count }})</h5>
-                </div>
-                <div class="card-body">
-                    <div>
-                        {% for skill in freelancer.skills.all %}
-                            <span class="badge bg-primary me-2 mb-2" style="font-size: 0.95rem; padding: 0.5rem 0.75rem;">
-                                {% if skill.icon %}
-                                    <i class="{{ skill.icon }}"></i>
-                                {% endif %}
-                                {{ skill.name }}
-                            </span>
-                        {% empty %}
-                            <p class="text-muted">Навыки не указаны</p>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Портфолио -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="card-title mb-0">Портфолио</h5>
-                </div>
-                <div class="card-body">
-                    {% if freelancer.portfolio_url %}
-                        <div class="mb-3">
-                            <strong>Портфолио:</strong>
-                            <a href="{{ freelancer.portfolio_url }}" target="_blank" class="ms-2">
-                                {{ freelancer.portfolio_url }}
-                                <i class="fas fa-external-link-alt"></i>
-                            </a>
-                        </div>
-                    {% endif %}
-
-                    {% if freelancer.github_url %}
-                        <div class="mb-3">
-                            <strong>GitHub:</strong>
-                            <a href="{{ freelancer.github_url }}" target="_blank" class="ms-2">
-                                {{ freelancer.github_url }}
-                                <i class="fas fa-external-link-alt"></i>
-                            </a>
-                        </div>
-                    {% endif %}
-
-                    {% if freelancer.linkedin_url %}
-                        <div class="mb-3">
-                            <strong>LinkedIn:</strong>
-                            <a href="{{ freelancer.linkedin_url }}" target="_blank" class="ms-2">
-                                {{ freelancer.linkedin_url }}
-                                <i class="fas fa-external-link-alt"></i>
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
             <!-- Статистика -->
             <div class="row mb-4">
                 <div class="col-md-4">
@@ -395,135 +330,9 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Отзывы -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="card-title mb-0">Отзывы ({{ reviews.count }})</h5>
-                </div>
-                <div class="card-body">
-                    {% if reviews %}
-                        {% for review in reviews %}
-                            <div class="border-bottom pb-3 mb-3">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="mb-1">{{ review.reviewer.get_full_name|default:review.reviewer.username }}</h6>
-                                        <div class="mb-2">
-                                            <span class="text-warning">
-                                                {% for i in "12345" %}
-                                                    {% if i|add:"0" <= review.rating %}
-                                                        <i class="fas fa-star"></i>
-                                                    {% else %}
-                                                        <i class="far fa-star"></i>
-                                                    {% endif %}
-                                                {% endfor %}
-                                            </span>
-                                        </div>
-                                        <p class="text-muted mb-2">{{ review.comment }}</p>
-                                        <small class="text-muted">
-                                            Качество: {{ review.quality }}/5 | 
-                                            Коммуникация: {{ review.communication }}/5 | 
-                                            Сроки: {{ review.deadline_adherence }}/5
-                                        </small>
-                                    </div>
-                                    <small class="text-muted">{{ review.created_at|date:"d.m.Y" }}</small>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted">Отзывов еще нет</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Сайдбар -->
-        <div class="col-lg-4">
-            <!-- Быстрые действия -->
-            {% if user.is_authenticated and user != freelancer.user %}
-                <div class="card shadow-sm mb-4 bg-light">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">Действия</h5>
-                        <a href="#" class="btn btn-success w-100 mb-2" data-bs-toggle="modal" data-bs-target="#contactModal">
-                            <i class="fas fa-envelope"></i> Написать сообщение
-                        </a>
-                        <a href="{% url 'marketplace:projects_list' %}" class="btn btn-outline-primary w-100">
-                            <i class="fas fa-briefcase"></i> Мои проекты
-                        </a>
-                    </div>
-                </div>
-            {% endif %}
-
-            <!-- Информация -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="card-title mb-0">Информация</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <strong>Почасовая ставка:</strong>
-                        <br>
-                        <h5 class="text-primary">${{ freelancer.hourly_rate }}/ч</h5>
-                    </div>
-
-                    <div class="mb-3">
-                        <strong>Email:</strong>
-                        <br>
-                        <small>{{ freelancer.user.email }}</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <strong>Присоединился:</strong>
-                        <br>
-                        <small>{{ freelancer.created_at|date:"d.m.Y" }}</small>
-                    </div>
-
-                    <div>
-                        <strong>Последняя активность:</strong>
-                        <br>
-                        <small>{{ freelancer.updated_at|date:"d.m.Y в H:i" }}</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Статус -->
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Статус</h5>
-                    
-                    <div class="mb-2">
-                        <span class="badge bg-warning text-dark w-100 d-block">
-                            Рейтинг: {{ freelancer.rating|floatformat:1 }}/5
-                        </span>
-                    </div>
-
-                    {% if freelancer.is_verified %}
-                        <div class="alert alert-success py-2 px-3 mb-2">
-                            <small>
-                                <i class="fas fa-check-circle"></i> Профиль проверен
-                            </small>
-                        </div>
-                    {% endif %}
-
-                    {% if freelancer.is_available %}
-                        <div class="alert alert-info py-2 px-3">
-                            <small>
-                                <i class="fas fa-check"></i> Доступен для проектов
-                            </small>
-                        </div>
-                    {% else %}
-                        <div class="alert alert-secondary py-2 px-3">
-                            <small>
-                                <i class="fas fa-ban"></i> Временно недоступен
-                            </small>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
         </div>
     </div>
 </div>
-
 <!-- Модальное окно контакта -->
 <div class="modal fade" id="contactModal" tabindex="-1">
     <div class="modal-dialog">

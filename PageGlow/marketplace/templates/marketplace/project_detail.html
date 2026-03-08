@@ -51,10 +51,19 @@
                 <!-- Skills Required -->
                 {% if project.required_skills.all %}
                     <div class="my-4">
-                        <h5>Требуемые навыки</h5>
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <h5>
+                            <i class="fas fa-code me-2" style="color: #667eea;"></i>Требуемые навыки
+                        </h5>
+                        <div class="profile-skills">
                             {% for skill in project.required_skills.all %}
-                                <span class="marketplace-badge">{{ skill.name }}</span>
+                                <span class="skill-tag {{ skill.category }}" title="{{ skill.description }}">
+                                    {% if skill.icon %}
+                                        <i class="{{ skill.icon }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-code"></i>
+                                    {% endif %}
+                                    {{ skill.name }}
+                                </span>
                             {% endfor %}
                         </div>
                     </div>
@@ -219,17 +228,23 @@
 
                     <!-- Требуемые навыки -->
                     <div class="mb-4">
-                        <h5 class="mb-3">Требуемые навыки</h5>
-                        <div>
+                        <h5 class="mb-3">
+                            <i class="fas fa-code me-2" style="color: #667eea;"></i>Требуемые навыки
+                        </h5>
+                        <div class="profile-skills">
                             {% for skill in project.required_skills.all %}
-                                <span class="badge bg-info me-2 mb-2">
+                                <span class="skill-tag {{ skill.category }}" title="{{ skill.description }}">
                                     {% if skill.icon %}
                                         <i class="{{ skill.icon }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-code"></i>
                                     {% endif %}
                                     {{ skill.name }}
                                 </span>
                             {% empty %}
-                                <p class="text-muted">Навыки не указаны</p>
+                                <p class="text-muted">
+                                    <i class="fas fa-info-circle me-2"></i>Навыки не указаны
+                                </p>
                             {% endfor %}
                         </div>
                     </div>

@@ -1,0 +1,6 @@
+<div class="skill-checkbox-wrapper">
+    <input type="checkbox" name="{{ widget.name }}" value="{{ widget.value }}"{% if widget.attrs.id %} id="{{ widget.attrs.id }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+    <label for="{{ widget.attrs.id }}" class="skill-checkbox-label">
+        <span>{{ widget.label }}</span>
+    </label>
+</div>

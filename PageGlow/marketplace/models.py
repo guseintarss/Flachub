@@ -44,7 +44,27 @@ class FreelancerRole(models.TextChoices):
     OTHER = 'other', 'Другое'
 
 
+class ExperienceLevel(models.TextChoices):
+    JUNIOR = 'junior', 'До 1 года'
+    JUNIOR_PLUS = 'junior_plus', 'От 1 до 3 лет'
+    MIDDLE = 'middle', 'От 3 до 6 лет'
+    SENIOR = 'senior', 'От 6 до 10 лет'
+    LEAD = 'lead', 'Более 10 лет'
+
+
 # ===== SKILL MODELS =====
+
+class SkillCategory(models.TextChoices):
+    LANGUAGE = 'language', 'Язык программирования'
+    FRAMEWORK = 'framework', 'Фреймворк'
+    TOOL = 'tool', 'Инструмент'
+    DATABASE = 'database', 'База данных'
+    DESIGN = 'design', 'Дизайн'
+    MOBILE = 'mobile', 'Мобильная разработка'
+    DEVOPS = 'devops', 'DevOps / Infrastructure'
+    TESTING = 'testing', 'Тестирование'
+    OTHER = 'other', 'Другое'
+
 
 class Skill(models.Model):
     """Навыки (теги технологий)"""
@@ -52,21 +72,31 @@ class Skill(models.Model):
     slug = models.SlugField(unique=True)
     category = models.CharField(
         max_length=20,
-        choices=[
-            ('language', 'Язык программирования'),
-            ('framework', 'Фреймворк'),
-            ('tool', 'Инструмент'),
-            ('database', 'База данных'),
-            ('other', 'Другое'),
-        ],
-        default='other'
+        choices=SkillCategory.choices,
+        default=SkillCategory.OTHER
     )
-    icon = models.CharField(max_length=200, blank=True, help_text='CSS класс иконки (например: fab fa-python)')
+    icon = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text='CSS класс иконки (например: fab fa-python или fas fa-database)'
+    )
+    description = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text='Краткое описание навыка'
+    )
+    is_popular = models.BooleanField(
+        default=False,
+        help_text='Показывать в списке популярных навыков'
+    )
 
     class Meta:
         verbose_name = 'Навык'
         verbose_name_plural = 'Навыки'
-        ordering = ['category', 'name']
+        ordering = ['-is_popular', 'category', 'name']
+        indexes = [
+            models.Index(fields=['category', 'is_popular']),
+        ]
 
     def __str__(self):
         return self.name
@@ -88,7 +118,12 @@ class FreelancerProfile(models.Model):
     avatar = models.ImageField(upload_to='freelancers/avatars/', null=True, blank=True)
     
     # Опыт
-    years_experience = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    years_experience = models.CharField(
+        max_length=20,
+        choices=ExperienceLevel.choices,
+        default=ExperienceLevel.JUNIOR,
+        help_text='Уровень опыта работы'
+    )
     skills = models.ManyToManyField('Skill', related_name='freelancers', blank=True)
     
     # Портфолио
@@ -112,7 +147,8 @@ class FreelancerProfile(models.Model):
         decimal_places=2,
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)]
+        validators=[MinValueValidator(1)],
+        help_text='Почасовая ставка в рублях'
     )
     
     # Временные метки

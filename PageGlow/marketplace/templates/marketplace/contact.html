@@ -1,0 +1,51 @@
+{% extends 'base_market.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1>Контакты</h1>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Свяжитесь с нами</h5>
+                    
+                    <div class="mb-3">
+                        <h6>📧 Email:</h6>
+                        <p><a href="mailto:{{ email }}">{{ email }}</a></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6>📞 Телефон:</h6>
+                        <p><a href="tel:{{ phone }}">{{ phone }}</a></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6>📍 Адрес:</h6>
+                        <p>{{ address }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Время ответа</h5>
+                    <p>Мы стараемся ответить на все вопросы в течение <strong>24 часов</strong>.</p>
+                    <p>Техническую поддержку можно получить <strong>24/7</strong> через встроенный чат.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Часы работы поддержки</h5>
+                    <ul>
+                        <li>Пн-Пт: 09:00 - 18:00</li>
+                        <li>Сб-Вс: 10:00 - 16:00</li>
+                        <li>Праздничные дни: Закрыто</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

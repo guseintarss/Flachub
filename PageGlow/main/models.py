@@ -111,6 +111,10 @@ class Post(ModelMeta, models.Model):
         ordering = ['-time_create']
         indexes = [
             models.Index(fields=['-time_create']),
+            models.Index(fields=['slug']),
+            models.Index(fields=['is_published', '-time_create']),
+            models.Index(fields=['author']),
+            models.Index(fields=['cat']),
         ]
 
     def get_absolute_url(self):
@@ -170,6 +174,11 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['post', 'created_at']),
+            models.Index(fields=['author']),
+            models.Index(fields=['is_active']),
+        ]
 
     def __str__(self):
         return f'Comment by {self.author} on {self.post}'
@@ -185,6 +194,11 @@ class Subscription(models.Model):
         unique_together = ('subscriber', 'author')
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        indexes = [
+            models.Index(fields=['subscriber', 'author']),
+            models.Index(fields=['subscriber']),
+            models.Index(fields=['author']),
+        ]
 
     def __str__(self):
         return f'{self.subscriber} подписан на {self.author}'
@@ -211,6 +225,11 @@ class Notification(models.Model):
         ordering = ['-created_at']
         verbose_name = 'Уведомление'
         verbose_name_plural = 'Уведомления'
+        indexes = [
+            models.Index(fields=['recipient', 'is_read']),
+            models.Index(fields=['recipient', 'created_at']),
+            models.Index(fields=['sender']),
+        ]
 
     def __str__(self):
         return f'{self.notification_type}: {self.message}'

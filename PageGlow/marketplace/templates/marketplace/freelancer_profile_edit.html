@@ -62,22 +62,22 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label for="id_first_name" class="form-label fw-bold">Имя</label>
-                            {{ form.first_name }}
-                            {% if form.first_name.errors %}
-                                <div class="alert alert-danger small mt-2">
-                                    {{ form.first_name.errors }}
-                                </div>
-                            {% endif %}
+                            <p class="form-control-plaintext bg-light p-2 rounded">{{ user.first_name|default:"Не заполнено" }}</p>
                         </div>
                         <div class="col-md-6">
                             <label for="id_last_name" class="form-label fw-bold">Фамилия</label>
-                            {{ form.last_name }}
-                            {% if form.last_name.errors %}
-                                <div class="alert alert-danger small mt-2">
-                                    {{ form.last_name.errors }}
-                                </div>
-                            {% endif %}
+                            <p class="form-control-plaintext bg-light p-2 rounded">{{ user.last_name|default:"Не заполнено" }}</p>
                         </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="id_username" class="form-label fw-bold">Логин</label>
+                        <p class="form-control-plaintext bg-light p-2 rounded">{{ user.username }}</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="id_email" class="form-label fw-bold">Email</label>
+                        <p class="form-control-plaintext bg-light p-2 rounded">{{ user.email }}</p>
                     </div>
                     
                     <div class="mb-4">
@@ -105,7 +105,7 @@
                     
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <label for="id_hourly_rate" class="form-label fw-bold">Почасовая ставка (USD)</label>
+                            <label for="id_hourly_rate" class="form-label fw-bold">Почасовая ставка (руб)</label>
                             {{ form.hourly_rate }}
                             {% if form.hourly_rate.errors %}
                                 <div class="alert alert-danger small mt-2">
@@ -114,35 +114,26 @@
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label for="id_experience_level" class="form-label fw-bold">Уровень опыта</label>
-                            {{ form.experience_level }}
-                            {% if form.experience_level.errors %}
+                            <label for="id_years_experience" class="form-label fw-bold">Опыт работы</label>
+                            {{ form.years_experience }}
+                            {% if form.years_experience.errors %}
                                 <div class="alert alert-danger small mt-2">
-                                    {{ form.experience_level.errors }}
+                                    {{ form.years_experience.errors }}
                                 </div>
                             {% endif %}
                         </div>
                     </div>
                     
                     <div class="mb-4">
-                        <label for="id_languages" class="form-label fw-bold">Языки</label>
-                        {{ form.languages }}
+                        <label for="id_role" class="form-label fw-bold">Роль</label>
+                        {{ form.role }}
                         <small class="form-text text-muted d-block mt-2">
-                            Какие языки вы знаете?
+                            <i class="fas fa-info-circle me-1"></i>
+                            Выберите вашу основную роль
                         </small>
-                        {% if form.languages.errors %}
+                        {% if form.role.errors %}
                             <div class="alert alert-danger small mt-2">
-                                {{ form.languages.errors }}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="id_timezone" class="form-label fw-bold">Часовой пояс</label>
-                        {{ form.timezone }}
-                        {% if form.timezone.errors %}
-                            <div class="alert alert-danger small mt-2">
-                                {{ form.timezone.errors }}
+                                {{ form.role.errors }}
                             </div>
                         {% endif %}
                     </div>
@@ -153,19 +144,56 @@
                 <!-- Skills Section -->
                 <div class="mb-5">
                     <h5 class="fw-bold mb-4">
-                        <i class="fas fa-skills me-2" style="color: #667eea;"></i>
+                        <i class="fas fa-star me-2" style="color: #667eea;"></i>
                         Навыки
                     </h5>
                     
-                    {{ form.skills }}
-                    <small class="form-text text-muted d-block mt-2">
-                        Выберите навыки, которыми вы владеете
-                    </small>
-                    {% if form.skills.errors %}
-                        <div class="alert alert-danger small mt-2">
-                            {{ form.skills.errors }}
+                    <div class="mb-4">
+                        <label for="id_skills" class="form-label fw-bold mb-3">Какими навыками владеете?</label>
+                        
+                        <!-- Search Input -->
+                        <div class="position-relative mb-3">
+                            <input 
+                                type="text" 
+                                id="skills-search" 
+                                class="form-control form-control-lg" 
+                                placeholder="Поиск" 
+                                style="border: 2px solid #e9ecef; border-radius: 10px; padding: 0.75rem 1rem 0.75rem 2.5rem; font-size: 1rem;"
+                            >
+                            <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #999;"></i>
                         </div>
-                    {% endif %}
+                        
+                        <!-- Skills Container -->
+                        <div id="skills-container" style="margin-bottom: 1rem;">
+                            <p class="text-muted small mb-3">Рекомендованные навыки</p>
+                            <div id="skills-list" class="d-flex flex-wrap gap-2">
+                                <!-- Skills будут динамически добавлены здесь -->
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden Select -->
+                        <div style="display: none;">
+                            {{ form.skills }}
+                        </div>
+                        
+                        <!-- Selected Skills Display -->
+                        <div id="selected-skills" class="mt-3">
+                            <p class="text-muted small mb-2">Выбранные навыки:</p>
+                            <div id="selected-skills-list" class="d-flex flex-wrap gap-2">
+                                <!-- Selected skills будут отображены здесь -->
+                            </div>
+                        </div>
+                        
+                        <small class="form-text text-muted d-block mt-3">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Выберите навыки, которыми вы владеете
+                        </small>
+                        {% if form.skills.errors %}
+                            <div class="alert alert-danger small mt-2">
+                                {{ form.skills.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
                 
                 <hr class="my-5">
@@ -220,23 +248,29 @@
                 
                 <!-- Availability Section -->
                 <div class="mb-5">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="is_available" name="is_available" {% if form.instance.is_available %}checked{% endif %}>
-                        <label class="form-check-label" for="is_available">
+                    <h5 class="fw-bold mb-4">
+                        <i class="fas fa-check-circle me-2" style="color: #667eea;"></i>
+                        Доступность
+                    </h5>
+                    
+                    <div class="form-check form-switch p-3 bg-light rounded">
+                        <input class="form-check-input" type="checkbox" id="is_available" name="is_available" {% if form.instance.is_available %}checked{% endif %} style="width: 2.5em; height: 1.5em;">
+                        <label class="form-check-label ms-3" for="is_available">
                             <strong>Я доступен(а) для новых проектов</strong>
+                            <small class="d-block text-muted mt-1">Когда вы отмечены как доступные, ваш профиль будет виднее в поиске</small>
                         </label>
                     </div>
                 </div>
                 
                 <!-- Form Actions -->
-                <div class="d-flex gap-2 pt-4 border-top">
-                    <button type="submit" class="btn btn-lg rounded-pill fw-bold flex-grow-1" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                <div class="d-flex gap-3 pt-5 border-top mt-5">
+                    <button type="submit" class="btn btn-lg rounded-pill fw-bold flex-grow-1" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
                         <i class="fas fa-save me-2"></i>
                         Сохранить изменения
                     </button>
-                    <a href="{% url 'marketplace:freelancer-profile' %}" class="btn btn-lg btn-outline-secondary rounded-pill fw-bold">
-                        <i class="fas fa-times me-2"></i>
-                        Отмена
+                    <a href="{% url 'marketplace:freelancer_profile' user.username %}" class="btn btn-lg btn-outline-secondary rounded-pill fw-bold">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        К профилю
                     </a>
                 </div>
             </form>
@@ -279,6 +313,21 @@
         min-height: 120px;
     }
     
+    select[multiple] {
+        min-height: 200px;
+        padding: 0.5rem;
+    }
+    
+    select[multiple] option {
+        padding: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    select[multiple] option:checked {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
     input[type="file"] {
         border: 2px dashed #e9ecef;
         border-radius: 10px;
@@ -308,8 +357,26 @@
         box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
     }
     
+    .form-control-plaintext {
+        color: #666;
+        font-weight: 500;
+    }
+    
+    .form-switch .form-check-input {
+        width: 3.5em;
+        height: 2em;
+        border-radius: 1em;
+        cursor: pointer;
+    }
+    
     .btn {
         transition: all 0.3s ease;
+        font-size: 1.05rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 2rem;
+        min-height: 50px;
     }
     
     .btn-lg:hover {
@@ -317,7 +384,208 @@
         box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     }
     
+    .btn-outline-secondary {
+        color: #6c757d;
+        border-color: #6c757d;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #f8f9fa;
+        border-color: #667eea;
+        color: #667eea;
+    }
+    
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
     .rounded-lg {
         border-radius: 15px;
     }
+    
+    h5 {
+        letter-spacing: 0.3px;
+    }
+    
+    hr {
+        border-color: #e9ecef;
+        opacity: 0.5;
+    }
+    
+    /* Skills Styling */
+    .skill-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        background: #f0f2f5;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #333;
+        user-select: none;
+    }
+    
+    .skill-badge:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+    }
+    
+    .skill-badge.selected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+    }
+    
+    .skill-badge.selected::before {
+        content: '✓';
+        font-weight: bold;
+    }
+    
+    .skill-badge-remove {
+        margin-left: 0.5rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .skill-badge-remove:hover {
+        color: white;
+    }
+    
+    #skills-search {
+        background: white !important;
+        border: 2px solid #e9ecef !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    #skills-search:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+        background: white !important;
+    }
+    
+    #skills-list, #selected-skills-list {
+        min-height: auto;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #999;
+    }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const skillsSelect = document.getElementById('id_skills');
+    const skillsSearch = document.getElementById('skills-search');
+    const skillsList = document.getElementById('skills-list');
+    const selectedSkillsList = document.getElementById('selected-skills-list');
+    const selectedSkillsDiv = document.getElementById('selected-skills');
+    
+    // Get all available skills
+    const allSkills = Array.from(skillsSelect.options).map(option => ({
+        id: option.value,
+        name: option.text,
+        selected: option.selected
+    }));
+    
+    // Initialize
+    renderSkills();
+    updateSelectedSkills();
+    
+    // Skills search functionality
+    skillsSearch.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        renderSkills(searchTerm);
+    });
+    
+    function renderSkills(searchTerm = '') {
+        skillsList.innerHTML = '';
+        
+        const filteredSkills = allSkills.filter(skill => 
+            skill.name.toLowerCase().includes(searchTerm)
+        );
+        
+        if (filteredSkills.length === 0) {
+            skillsList.innerHTML = '<div class="empty-state w-100">Навыки не найдены</div>';
+            return;
+        }
+        
+        filteredSkills.forEach(skill => {
+            const skillBadge = document.createElement('button');
+            skillBadge.type = 'button';
+            skillBadge.className = `skill-badge ${skill.selected ? 'selected' : ''}`;
+            skillBadge.textContent = skill.name;
+            
+            skillBadge.addEventListener('click', function(e) {
+                e.preventDefault();
+                toggleSkill(skill.id);
+                renderSkills(searchTerm);
+                updateSelectedSkills();
+            });
+            
+            skillsList.appendChild(skillBadge);
+        });
+    }
+    
+    function toggleSkill(skillId) {
+        const option = skillsSelect.querySelector(`option[value="${skillId}"]`);
+        if (option) {
+            option.selected = !option.selected;
+            // Update in allSkills array
+            const skill = allSkills.find(s => s.id === skillId);
+            if (skill) {
+                skill.selected = option.selected;
+            }
+        }
+    }
+    
+    function updateSelectedSkills() {
+        const selected = allSkills.filter(s => s.selected);
+        
+        if (selected.length === 0) {
+            selectedSkillsDiv.style.display = 'none';
+            return;
+        }
+        
+        selectedSkillsDiv.style.display = 'block';
+        selectedSkillsList.innerHTML = '';
+        
+        selected.forEach(skill => {
+            const badge = document.createElement('div');
+            badge.className = 'skill-badge selected';
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = skill.name;
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'skill-badge-remove';
+            removeBtn.innerHTML = '×';
+            removeBtn.style.background = 'none';
+            removeBtn.style.border = 'none';
+            removeBtn.style.padding = '0';
+            removeBtn.style.cursor = 'pointer';
+            removeBtn.style.fontSize = '1.2rem';
+            removeBtn.style.lineHeight = '1';
+            
+            removeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                toggleSkill(skill.id);
+                renderSkills(skillsSearch.value);
+                updateSelectedSkills();
+            });
+            
+            badge.appendChild(nameSpan);
+            badge.appendChild(removeBtn);
+            selectedSkillsList.appendChild(badge);
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base_market.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1>О платформе PageGlow</h1>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Наша миссия</h5>
+                    <p>PageGlow - это платформа, которая соединяет талантливых фрилансеров с компаниями и индивидуальными предпринимателями, которым нужна качественная работа.</p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Что мы предлагаем</h5>
+                    <ul>
+                        <li><strong>Безопасная платформа:</strong> Защита ваших проектов и платежей</li>
+                        <li><strong>Широкий выбор специалистов:</strong> От веб-разработчиков до дизайнеров</li>
+                        <li><strong>Справедливые цены:</strong> Конкурентный рынок услуг</li>
+                        <li><strong>Качественная поддержка:</strong> Наша команда готова помочь</li>
+                        <li><strong>Встроенные инструменты:</strong> Чат, управление проектами и платежи</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Почему выбирают PageGlow</h5>
+                    <ul>
+                        <li>✅ Проверенные профили фрилансеров</li>
+                        <li>✅ Система рейтингов и отзывов</li>
+                        <li>✅ Защита от мошенничества</li>
+                        <li>✅ Эскроу система платежей</li>
+                        <li>✅ Гарантия качества работы</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Контакты</h5>
+                    <p><strong>Email:</strong> support@pageglow.ru</p>
+                    <p><strong>Телефон:</strong> +7 (999) 999-99-99</p>
+                    <p><a href="{% url 'marketplace:contact_us' %}" class="btn btn-primary">Связаться с нами</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

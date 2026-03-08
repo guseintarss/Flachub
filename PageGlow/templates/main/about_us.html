@@ -1,0 +1,58 @@
+{% extends 'base_community.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1>О PageGlow</h1>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Что такое PageGlow?</h5>
+                    <p>PageGlow - это интегрированная платформа для создания и обмена контентом, а также для взаимодействия между фрилансерами и клиентами.</p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Наши возможности</h5>
+                    <ul>
+                        <li><strong>Сообщество:</strong> Делитесь статьями, идеями и опытом</li>
+                        <li><strong>Маркетплейс:</strong> Находите работу или нанимайте специалистов</li>
+                        <li><strong>Профили:</strong> Создавайте профессиональный профиль</li>
+                        <li><strong>Рейтинги:</strong> Получайте отзывы и строите репутацию</li>
+                        <li><strong>Безопасность:</strong> Защищённые платежи и система эскроу</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Для кого PageGlow?</h5>
+                    <p>PageGlow подходит для:</p>
+                    <ul>
+                        <li>👨‍💻 Веб-разработчиков</li>
+                        <li>🎨 Дизайнеров</li>
+                        <li>✍️ Копирайтеров</li>
+                        <li>📊 Аналитиков</li>
+                        <li>🚀 Предпринимателей</li>
+                        <li>🏢 Компаний</li>
+                        <li>📱 Мобильных разработчиков</li>
+                        <li>🎯 И многих других специалистов</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Начните прямо сейчас</h5>
+                    <p>
+                        <a href="{% url 'users:register' %}" class="btn btn-primary">Создать аккаунт</a>
+                        <a href="{% url 'marketplace:home' %}" class="btn btn-outline-primary">Перейти на маркетплейс</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

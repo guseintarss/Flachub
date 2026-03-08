@@ -34,4 +34,16 @@ urlpatterns = [
     # Дашборды
     path('freelancer/dashboard/', views.freelancer_dashboard, name='freelancer_dashboard'),
     path('client/dashboard/', views.client_dashboard, name='client_dashboard'),
+    
+    # Справочные страницы
+    path('how-it-works/', views.how_it_works, name='how_it_works'),
+    path('publish-project/', views.publish_project_guide, name='publish_project_guide'),
+    path('find-work/', views.find_work_guide, name='find_work_guide'),
+    path('best-freelancers/', views.best_freelancers, name='best_freelancers'),
+    path('categories/', views.categories_view, name='categories'),
+    path('faq/', views.faq_view, name='faq'),
+    path('about/', views.about_platform, name='about_platform'),
+    path('terms/', views.terms_and_policy, name='terms_and_policy'),
+    path('security/', views.security_view, name='security'),
+    path('contact/', views.contact_us, name='contact_us'),
 ]

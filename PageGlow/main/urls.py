@@ -31,4 +31,9 @@ urlpatterns = [
     path('ajax/notifications/', views.NotificationsView.as_view(), name='notifications'),
     path('ajax/notifications/read/', views.MarkNotificationsReadView.as_view(), name='mark_notifications_read'),
     path('rss/', LatestPostsFeed(), name='rss_feed'),
+    
+    # Информационные страницы
+    path('about-us/', views.about_us, name='about_us'),
+    path('terms/', views.terms_of_use, name='terms_of_use'),
+    path('privacy/', views.privacy_policy, name='privacy_policy'),
 ]

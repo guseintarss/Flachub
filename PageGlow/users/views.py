@@ -117,19 +117,17 @@ def profile_user(request):
 
     # Опубликованные посты (используем кастомный менеджер)
     published_posts = Post.published.filter(author=user)
-    print(f"Published: {published_posts.count()}")
+    
     # Черновики (is_published = DRAFT)
     drafts = Post.objects.filter(
         author=user,
         is_published=Post.Status.DRAFT
-    )    
-    print(f"Drafts: {drafts.count()}")
+    )
 
     # Избранные посты (используем ManyToMany поле 'favorites')
     favorites = Post.objects.filter(
         favorites=user  # Посты, где текущий пользователь в списке избранных
     )
-    print(f"Favorites: {favorites.count()}")
 
     extra_context = {
         'title': 'Профиль пользователя',
@@ -151,12 +149,28 @@ class UserPasswordChange(PasswordChangeView):
 def author_profile(request, username):
     """Публичный профиль автора - только просмотр статей"""
     from main.models import Subscription
+    from django.db.models import Count
     
     author = get_object_or_404(User, username=username, is_active=True)
     
+    # Оптимизированный запрос с подсчётом подписок
     published_posts = Post.published.filter(author=author).order_by('-time_create')
-    subscribers_count = Subscription.objects.filter(author=author).count()
-    subscriptions_count = Subscription.objects.filter(subscriber=author).count()
+    
+    # Подсчитываем подписки в одном запросе с использованием Count
+    subscription_stats = Subscription.objects.filter(
+        author=author
+    ).aggregate(
+        subscribers_count=Count('id')
+    )
+    subscribers_count = subscription_stats['subscribers_count']
+    
+    # Подсчитываем подписки пользователя в одном запросе
+    subscriptions = Subscription.objects.filter(
+        subscriber=author
+    ).aggregate(
+        subscriptions_count=Count('id')
+    )
+    subscriptions_count = subscriptions['subscriptions_count']
     
     is_subscribed = False
     if request.user.is_authenticated and request.user != author:

@@ -526,3 +526,29 @@ class MarkNotificationsReadView(View):
     def post(self, request, *args, **kwargs):
         Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
         return JsonResponse({'success': True})
+
+
+# ===== ДОПОЛНИТЕЛЬНЫЕ СТРАНИЦЫ =====
+
+def about_us(request):
+    """О нас"""
+    context = {
+        'title': 'О платформе PageGlow',
+    }
+    return render(request, 'main/about_us.html', context)
+
+
+def terms_of_use(request):
+    """Условия использования"""
+    context = {
+        'title': 'Условия использования',
+    }
+    return render(request, 'main/terms_of_use.html', context)
+
+
+def privacy_policy(request):
+    """Политика конфиденциальности"""
+    context = {
+        'title': 'Политика конфиденциальности',
+    }
+    return render(request, 'main/privacy_policy.html', context)
