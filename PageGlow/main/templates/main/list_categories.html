@@ -1,6 +1,5 @@
 <p class="t-title">Категории:</p>
 <ul class="menu-list">
-    <li><a class="menu_link" href="{% url 'marketplace:home' %}"><i class="fas fa-briefcase"></i> Маркетплейс</a></li>
 {% for cat in cats %}
   {% if cat.id == cat_selected %}
     <li class="cat-selected"><span class="cat">{{ cat.name }}</span></li>

@@ -839,6 +839,104 @@ input:focus, textarea:focus, select:focus{
   color: var(--muted);
 }
 
+/* Контейнер выбранных тегов */
+.selected-tags-container {
+  margin-bottom: 20px;
+}
+
+.selected-tags {
+  min-height: 40px;
+  padding: 10px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background-color: var(--surface);
+}
+
+/* Стили для выбранных тегов */
+.tag-selected {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  margin: 5px 5px 5px 0;
+  background: var(--tags-bg);
+  color: var(--tags-color);
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tag-selected:hover {
+  background: #cacfd6;
+}
+
+.tag-remove {
+  font-weight: bold;
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+/* Стили для доступных тегов */
+.available-tags {
+  margin-bottom: 20px;
+}
+
+.tags-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tag-option {
+  padding: 8px 16px;
+  background: var(--tags-bg);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  user-select: none;
+}
+
+.tag-option:hover {
+  background: #bdbdbd;
+  transform: translateY(-2px);
+}
+
+.tag-option.selected {
+  background: #2196F3;
+  color: white;
+}
+
+.form-grid{
+  margin-bottom: 2rem;
+}
+
+/* Кнопка отправки */
+.submit-btn {
+  background: #2e68ae;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.submit-btn:hover {
+  background: #28398e;
+}
+
+.category, .status{
+  display: flex;
+  gap:1rem;
+}
+
+.tagOptions{
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+}
+
 /* Похожие статьи */
 .similar-posts {
   display: grid;

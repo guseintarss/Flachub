@@ -1411,6 +1411,160 @@ a , a_text {
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+/* Общий контейнер раздела навыков */
+.skills-section {
+  padding: 1rem;
+  background-color: #f8f9fa; /* Светлый фон раздела */
+  border-radius: 8px;
+  overflow: hidden; /* Скрывает переполнение */
+}
+
+/* Заголовок раздела */
+.skills-section h5 {
+  color: #343a40;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Иконка звезды рядом с заголовком */
+.skills-section i.fas {
+  font-size: 1.1rem;
+  color: #667eea;
+}
+
+/* Блок поиска навыков */
+#skills-search {
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+#skills-search:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+}
+
+/* Контейнер с навыками (рекомендованными) */
+#skills-container {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Список навыков (flex-контейнер) */
+#skills-list {
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  min-height: 60px;
+}
+
+/* Отдельные навыки (теги) */
+#skills-list button {
+  padding: 6px 12px;
+  background-color: #e9ecef;
+  border: 1px solid #dee2e6;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#skills-list button:hover {
+  background-color: #cfe2ff;
+  border-color: #667eea;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+#skills-list button.selected {
+  background-color: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* Блок выбранных навыков */
+#selected-skills {
+  background-color: white;
+  border-radius: 8px;
+  padding: 10px;
+  border: 1px solid #dee2e6;
+}
+
+/* Список выбранных навыков */
+#selected-skills-list {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Элементы выбранных навыков (теги) */
+#selected-skills-list div {
+  padding: 6px 12px;
+  background-color: #667eea;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Кнопка удаления навыка */
+.skill-badge-remove {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #ffffff90;
+  transition: color 0.3s ease;
+}
+
+.skill-badge-remove:hover {
+  color: white;
+}
+
+/* Подсказка под блоком навыков */
+.skills-section small {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+/* Стили для блока ошибок */
+.alert {
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  border-radius: 4px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+  #skills-list {
+    padding: 5px;
+  }
+
+  #skills-list button {
+    font-size: 0.875rem;
+    padding: 5px 10px;
+  }
+
+  #selected-skills-list div {
+    font-size: 0.875rem;
+    padding: 5px 10px;
+  }
+}
+
+
 /* Контейнер с навыками */
 .profile-skills {
   display: flex;

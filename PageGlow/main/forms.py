@@ -17,7 +17,11 @@ class AddPostForm(forms.ModelForm):
         widget=CKEditor5Widget(config_name='default'),
         initial='<h1></h1>'
     )
-
+    tags = forms.ModelMultipleChoiceField(
+        queryset=TagPost.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["content"].required = False
@@ -27,7 +31,6 @@ class AddPostForm(forms.ModelForm):
         fields = ['content', 'is_published', 'cat', 'tags']
         widgets = {
             'photo': forms.ClearableFileInput(attrs={'class':'form-control'}),
-            'tags': forms.SelectMultiple(attrs={'class':'form-control'}),
             'is_published': forms.Select(attrs={'class':'form-control'}),
         }
 

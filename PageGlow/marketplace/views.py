@@ -482,6 +482,8 @@ class CreateCompanyProfileView(LoginRequiredMixin, CreateView):
         return context
 
 
+
+
 # ===== СПРАВОЧНЫЕ СТРАНИЦЫ =====
 
 def how_it_works(request):
