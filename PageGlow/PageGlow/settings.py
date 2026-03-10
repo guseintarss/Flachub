@@ -22,7 +22,7 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Создать директории если их нет
-for directory in ['logs', 'cache', 'staticfiles', 'media']:
+for directory in ['logs', 'cache', 'static', 'media']:
     dir_path = os.path.join(BASE_DIR, directory)
     os.makedirs(dir_path, exist_ok=True)
 
@@ -105,7 +105,7 @@ TEMPLATES = [
     },
 ]
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'main', 'static')]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'main', 'static', 'media')]
 
 
 WSGI_APPLICATION = 'PageGlow.wsgi.application'
