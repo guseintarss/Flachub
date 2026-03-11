@@ -37,7 +37,7 @@ class ProjectForm(forms.ModelForm):
                 'placeholder': 'Полное описание задачи',
                 'rows': 6,
             }),
-            'required_skills': SkillsCheckboxSelectMultiple(),
+            'required_skills': SkillsCheckboxSelectMultiple(attrs={'id':'sync-checkbox'}),
             'category': forms.Select(attrs={
                 'class': 'form-select',
             }),

@@ -127,8 +127,34 @@
                         {% endif %}
                     </div>
 
-                    <div class="skills">
-                        {{ form.required_skills }}
+                     
+                    <div class="selected-skills-container">
+                        <label>Выбранные теги:</label>
+                        <div class="selected-skills" id="selectedTags"></div>
+                    </div>
+
+                    <div class="available-skills">
+                        <label>Выберите навыки:</label>
+                        <div class="skills-grid" id="skillsGrid">
+                            {% for skills in form.required_skills.field.queryset %}
+                            <div class="skill-wrapper" data-tag-id="{{ skills.id }}">
+                                <input 
+                                type="checkbox" 
+                                name="required_skills"
+                                value="{{ skills.id }}"
+                                id="skill-{{ skills.id }}" 
+                                data-tag-id="{{ skills.id }}" 
+                                data-tag-name="{{ skills.name }}"
+                                >
+                                <label 
+                                for="skill-{{ skills.id }}" 
+                                class="skill-option"
+                                >
+                                {{ skills }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
 
                     <div>
@@ -167,115 +193,76 @@
 </div>
 
 
-<!-- <script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
-    const skillsSelect = document.getElementById('id_required_skills');
-    const skillsSearch = document.getElementById('project-skills-search');
-    const skillsList = document.getElementById('project-skills-list');
-    const selectedSkillsList = document.getElementById('project-selected-skills-list');
-    const selectedSkillsDiv = document.getElementById('project-selected-skills');
-    
-    if (!skillsSelect) return;
-    
-    // Get all available skills
-    const allSkills = Array.from(skillsSelect.options).map(option => ({
-        id: option.value,
-        name: option.text,
-        selected: option.selected
-    }));
-    
-    // Initialize
-    renderSkills();
-    updateSelectedSkills();
-    
-    // Skills search functionality
-    skillsSearch.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        renderSkills(searchTerm);
+  const selectedTags = document.getElementById('selectedTags');
+  const tagsGrid = document.getElementById('skillsGrid');
+  const checkboxes = tagsGrid.querySelectorAll('input[type="checkbox"]');
+  
+
+  const selectedTagIds = new Set();
+
+
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const tagId = this.getAttribute('data-tag-id');
+      const tagName = this.getAttribute('data-tag-name');
+
+      if (this.checked && !isNaN(tagId)) {
+        selectedTagIds.add(tagId);
+        addSelectedTag(tagId, tagName);
+        hideOriginalTag(tagId); // Скрываем исходный тег
+      } else {
+        selectedTagIds.delete(tagId);
+        removeSelectedTag(tagId);
+        showOriginalTag(tagId); // Показываем исходный тег снова
+      }
+
     });
-    
-    function renderSkills(searchTerm = '') {
-        skillsList.innerHTML = '';
-        
-        const filteredSkills = allSkills.filter(skill => 
-            skill.name.toLowerCase().includes(searchTerm)
-        );
-        
-        if (filteredSkills.length === 0) {
-            skillsList.innerHTML = '<div class="empty-state w-100">Навыки не найдены</div>';
-            return;
-        }
-        
-        filteredSkills.forEach(skill => {
-            const skillBadge = document.createElement('button');
-            skillBadge.type = 'button';
-            skillBadge.className = `skill-badge ${skill.selected ? 'selected' : ''}`;
-            skillBadge.textContent = skill.name;
-            
-            skillBadge.addEventListener('click', function(e) {
-                e.preventDefault();
-                toggleSkill(skill.id);
-                renderSkills(searchTerm);
-                updateSelectedSkills();
-            });
-            
-            skillsList.appendChild(skillBadge);
-        });
-    }
-    
-    function toggleSkill(skillId) {
-        const option = skillsSelect.querySelector(`option[value="${skillId}"]`);
-        if (option) {
-            option.selected = !option.selected;
-            // Update in allSkills array
-            const skill = allSkills.find(s => s.id === skillId);
-            if (skill) {
-                skill.selected = option.selected;
-            }
-        }
-    }
-    
-    function updateSelectedSkills() {
-        const selected = allSkills.filter(s => s.selected);
-        
-        if (selected.length === 0) {
-            selectedSkillsDiv.style.display = 'none';
-            return;
-        }
-        
-        selectedSkillsDiv.style.display = 'block';
-        selectedSkillsList.innerHTML = '';
-        
-        selected.forEach(skill => {
-            const badge = document.createElement('div');
-            badge.className = 'skill-badge selected';
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = skill.name;
-            
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'skill-badge-remove';
-            removeBtn.innerHTML = '×';
-            removeBtn.style.background = 'none';
-            removeBtn.style.border = 'none';
-            removeBtn.style.padding = '0';
-            removeBtn.style.cursor = 'pointer';
-            removeBtn.style.fontSize = '1.2rem';
-            removeBtn.style.lineHeight = '1';
-            
-            removeBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                toggleSkill(skill.id);
-                renderSkills(skillsSearch.value);
-                updateSelectedSkills();
-            });
-            
-            badge.appendChild(nameSpan);
-            badge.appendChild(removeBtn);
-            selectedSkillsList.appendChild(badge);
-        });
-    }
+  });
+
+  function addSelectedTag(id, name) {
+    const tagElement = document.createElement('span');
+    tagElement.className = 'tag-selected';
+    tagElement.setAttribute('data-id', id);
+    tagElement.innerHTML = `
+      ${name}
+      <span class="tag-remove" data-id="${id}">×</span>
+    `;
+    selectedTags.appendChild(tagElement);
+
+    tagElement.querySelector('.tag-remove').addEventListener('click', function(e) {
+      e.stopPropagation();
+      removeSelectedTag(id);
+      showOriginalTag(id);
+      checkboxes.forEach(cb => {
+        if (cb.getAttribute('data-tag-id') === id) cb.checked = false;
+      });
+    });
+  }
+
+  function removeSelectedTag(id) {
+    const tagElement = selectedTags.querySelector(`[data-id="${id}"]`);
+    if (tagElement) tagElement.remove();
+  }
+
+
+function hideOriginalTag(id) {
+  const originalWrapper = tagsGrid.querySelector(`.skill-wrapper[data-tag-id="${id}"]`);
+  if (originalWrapper) {
+    originalWrapper.style.display = 'none'; // Скрываем весь контейнер навыка
+  }
+}
+
+
+function showOriginalTag(id) {
+  const originalWrapper = tagsGrid.querySelector(`.skill-wrapper[data-tag-id="${id}"]`);
+  if (originalWrapper) {
+    originalWrapper.style.display = 'flex'; // Возвращаем видимость (зависит от ваших стилей)
+  }
+}
 });
-</script> -->
+
+
+</script>
 {% endblock %}

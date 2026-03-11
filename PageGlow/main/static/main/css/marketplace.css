@@ -1107,3 +1107,55 @@ a , a_text {
 .fade-in {
   animation: fadeIn 0.3s ease-out;
 }
+
+/* Скиллы */
+.selected-skills-container {
+  margin-bottom: 20px;
+}
+
+.selected-skills {
+  min-height: 40px;
+  padding: 10px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background-color: var(--surface);
+}
+
+.available-skills{
+  margin-bottom: 20px;
+}
+
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.skills-grid input[type="checkbox"] {
+  display: none; /* Скрываем чекбокс */
+}
+
+.skill-option {
+  padding: 8px 16px;
+  background: var(--tags-bg);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  user-select: none;
+}
+
+.skill-option:hover {
+  background: #bdbdbd;
+  transform: translateY(-2px);
+}
+
+.skill-option.selected {
+  background: #2196F3;
+  color: white;
+}
+.skill-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}

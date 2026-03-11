@@ -55,9 +55,13 @@
                                     </a></li>
                                 {% endif %}
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'users:logout' %}">
-                                    <i class="fas fa-sign-out-alt"></i> Выход
-                                </a></li>
+                                <li>
+                                    <form method="post" action="{% url 'users:logout' %}" class="m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-logout-btn btn">
+                                        <i class="fas fa-sign-out-alt me-2"></i> </button>
+                                    </form>
+                                </li>
                             </ul>
                         </div>
                     {% else %}
