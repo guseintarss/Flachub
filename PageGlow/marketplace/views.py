@@ -370,19 +370,19 @@ def freelancer_dashboard(request):
     profile = request.user.freelancer_profile
 
     # Статистика
-    bids_count = models.Bid.objects.filter(freelancer=profile).count()
+    bids_count = models.Bid.objects.filter(freelancer=request.user).count()
     accepted_bids = models.Bid.objects.filter(
-        freelancer=profile,
+        freelancer=request.user,
         status=models.BidStatus.ACCEPTED
     ).count()
     completed_projects = models.Project.objects.filter(
-        assigned_to=profile,
+        assigned_to=request.user,
         status=models.ProjectStatus.COMPLETED
     ).count()
 
     # Активные проекты
     active_projects = models.Project.objects.filter(
-        assigned_to=profile,
+        assigned_to=request.user,
         status__in=[models.ProjectStatus.IN_PROGRESS, models.ProjectStatus.REVIEW]
     ).select_related('client')
 
@@ -393,7 +393,7 @@ def freelancer_dashboard(request):
 
     recommended_projects = []
     for project in all_projects[:20]:
-        # Передаём профиль фрилансера (а не пользователя) в метод расчёта совместимости
+        # Передаём профиль фрилансера в метод расчёта совместимости
         score = project.ai_matching_score(profile)
         if score >= 70:
             recommended_projects.append({
@@ -419,6 +419,7 @@ def freelancer_dashboard(request):
     }
 
     return render(request, 'marketplace/freelancer_dashboard.html', context)
+
 
 
 
