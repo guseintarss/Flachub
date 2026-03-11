@@ -217,6 +217,13 @@ class CompanyProfile(models.Model):
 # ===== PROJECT MODELS =====
 
 class Project(models.Model):
+    EXPERIENCE_LEVEL_TO_YEARS = {
+        ExperienceLevel.JUNIOR: 0.5,        # До 1 года → берём среднее
+        ExperienceLevel.JUNIOR_PLUS: 2,   # От 1 до 3 лет → среднее 2
+        ExperienceLevel.MIDDLE: 4.5,       # От 3 до 6 лет → среднее 4.5
+        ExperienceLevel.SENIOR: 8,         # От 6 до 10 лет → среднее 8
+        ExperienceLevel.LEAD: 12,         # Более 10 лет → условно 12
+    }
     """Проект/задача на маркетплейсе"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     
@@ -320,49 +327,49 @@ class Project(models.Model):
         return self.bids.filter(status=BidStatus.PENDING)
 
     def ai_matching_score(self, freelancer_user):
-        """
-        Рассчитать AI-оценку совместимости фрилансера с проектом (0-100)
-        """
         score = 0
-        freelancer = freelancer_user.freelancer_profile
-        
-        # 1. Совпадение навыков (40 баллов)
+
+        # Преобразуем категорию опыта в число лет
+        experience_category = freelancer_user.years_experience
+        years_experience = self.EXPERIENCE_LEVEL_TO_YEARS.get(experience_category, 0)
+
+        # 1. Навыки (40 баллов)
         project_skills = set(self.required_skills.values_list('id', flat=True))
-        freelancer_skills = set(freelancer.skills.values_list('id', flat=True))
-        
+        freelancer_skills = set(freelancer_user.skills.values_list('id', flat=True))
+
         if project_skills:
             skill_match = len(project_skills & freelancer_skills) / len(project_skills)
             score += skill_match * 40
         else:
-            score += 40  # Если нет требований по навыкам, даем полный балл
-        
+            score += 40  # Если нет требований по навыкам, даём полный балл
+
         # 2. Опыт (20 баллов)
         if self.difficulty == 'easy':
             score += 20
         elif self.difficulty == 'medium':
-            if freelancer.years_experience >= 1:
+            if years_experience >= 1:
                 score += 20
-            elif freelancer.years_experience >= 0.5:
+            elif years_experience >= 0.5:
                 score += 15
         elif self.difficulty == 'hard':
-            if freelancer.years_experience >= 3:
+            if years_experience >= 3:
                 score += 20
-            elif freelancer.years_experience >= 1:
+            elif years_experience >= 1:
                 score += 15
-        
+
         # 3. Рейтинг (20 баллов)
-        rating_score = (freelancer.rating / 5) * 20
+        rating_score = (freelancer_user.rating / 5) * 20
         score += rating_score
-        
+
         # 4. Доступность (10 баллов)
-        if freelancer.is_available:
+        if freelancer_user.is_available:
             score += 10
-        
+
         # 5. Верификация (10 баллов бонус)
-        if freelancer.is_verified:
+        if freelancer_user.is_verified:
             score += 10
-        
-        return min(100, score)  # Максимум 100 баллов
+
+        return min(100, score)
 
 
 class Bid(models.Model):
@@ -376,7 +383,8 @@ class Bid(models.Model):
     proposed_price = models.DecimalField(max_digits=10, decimal_places=2)
     estimated_days = models.IntegerField(validators=[MinValueValidator(1)])
     cover_letter = models.TextField(max_length=2000)
-    
+
+
     # AI оценка совместимости
     ai_score = models.FloatField(default=0, help_text='AI-оценка совместимости с проектом')
     

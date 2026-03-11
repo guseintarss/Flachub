@@ -249,7 +249,7 @@ class BidCreateView(LoginRequiredMixin, CreateView):
     """Создание предложения на проект"""
     model = models.Bid
     form_class = forms.BidForm
-    # template_name = 'marketplace/bid_form.html'
+    template_name = 'marketplace/bid_form.html'
     
     def dispatch(self, request, *args, **kwargs):
         # Проверяем, что это фрилансер
@@ -366,42 +366,48 @@ def freelancer_dashboard(request):
     """Дашборд фрилансера"""
     if not hasattr(request.user, 'freelancer_profile'):
         return redirect('marketplace:create_freelancer_profile')
-    
+
     profile = request.user.freelancer_profile
-    
+
     # Статистика
-    bids_count = models.Bid.objects.filter(freelancer=request.user).count()
+    bids_count = models.Bid.objects.filter(freelancer=profile).count()
     accepted_bids = models.Bid.objects.filter(
-        freelancer=request.user,
+        freelancer=profile,
         status=models.BidStatus.ACCEPTED
     ).count()
     completed_projects = models.Project.objects.filter(
-        assigned_to=request.user,
+        assigned_to=profile,
         status=models.ProjectStatus.COMPLETED
     ).count()
-    
+
     # Активные проекты
     active_projects = models.Project.objects.filter(
-        assigned_to=request.user,
+        assigned_to=profile,
         status__in=[models.ProjectStatus.IN_PROGRESS, models.ProjectStatus.REVIEW]
     ).select_related('client')
-    
+
     # Доступные проекты с высокой совместимостью
     all_projects = models.Project.objects.filter(
         status=models.ProjectStatus.PUBLISHED
     ).select_related('client').prefetch_related('required_skills')
-    
+
     recommended_projects = []
     for project in all_projects[:20]:
-        score = project.ai_matching_score(request.user)
+        # Передаём профиль фрилансера (а не пользователя) в метод расчёта совместимости
+        score = project.ai_matching_score(profile)
         if score >= 70:
             recommended_projects.append({
                 'project': project,
                 'score': score
             })
-    
-    recommended_projects = sorted(recommended_projects, key=lambda x: x['score'], reverse=True)[:5]
-    
+
+    # Сортируем по убыванию баллов и берём топ‑5
+    recommended_projects = sorted(
+        recommended_projects,
+        key=lambda x: x['score'],
+        reverse=True
+    )[:5]
+
     context = {
         'title': 'Дашборд фрилансера',
         'profile': profile,
@@ -411,8 +417,9 @@ def freelancer_dashboard(request):
         'active_projects': active_projects,
         'recommended_projects': recommended_projects,
     }
-    
+
     return render(request, 'marketplace/freelancer_dashboard.html', context)
+
 
 
 @login_required
