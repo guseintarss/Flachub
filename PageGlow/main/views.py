@@ -505,10 +505,10 @@ class DiscussionsView(DataMixin, ListView):
         return context
     
 
-class CreateDiscussionsView(DataMixin, ListView):
+class CreateDiscussionsView(DataMixin, CreateView):
     form_class = AddQuestionForm
     template_name = 'main/discussions_create.html'
-    title_page = 'Обсуждения | PageGlow'
+    title_page = 'Начать обсуждение | PageGlow'
 
     def form_valid(self, form):
         return super().form_valid(form)

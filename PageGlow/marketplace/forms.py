@@ -193,6 +193,12 @@ class CompanyProfileForm(forms.ModelForm):
                 'placeholder': 'https://example.com',
             }),
         }
+        labels = {
+            'company_name': 'Название',
+            'company_description': 'Описание',
+            'logo': 'Логотип',
+            'website': 'Сайт',
+        }
 
 
 class MilestoneForm(forms.ModelForm):
