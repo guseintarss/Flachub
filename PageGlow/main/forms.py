@@ -76,3 +76,11 @@ class CommentForm(forms.ModelForm):
             'content': forms.Textarea(attrs={'rows': 1, 'class': "form-control",}),
         }
 
+class AddQuestionForm(forms.ModelForm):
+    class Meta:
+        model = Discussion
+        fields = ['title', 'question']
+        wigets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'question': forms.Textarea(attrs={'class': 'form-control'})
+        }

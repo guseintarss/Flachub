@@ -51,10 +51,10 @@
                         
                         <!-- Action Buttons -->
                         <div class="d-flex gap-3 flex-wrap">
-                            <a href="" class="btn btn-light btn-lg rounded-pill px-4 fw-bold">
+                            <a href="" class="text-decoration-none btn btn-light btn-lg rounded-pill px-4 fw-bold">
                                 <i class="fas fa-handshake"></i> Отправить предложение
                             </a>
-                            <a href="" class="btn btn-outline-light btn-lg rounded-pill px-4 fw-bold">
+                            <a href="" class="text-decoration-none btn btn-outline-light btn-lg rounded-pill px-4 fw-bold">
                                 <i class="fas fa-comments"></i> Сообщение
                             </a>
                         </div>
@@ -84,7 +84,7 @@
                                         {% else %}
                                             <i class="fas fa-code"></i>
                                         {% endif %}
-                                        {{ skill.name }}
+                                        {{ skill }}
                                     </span>
                                 {% endfor %}
                             </div>
@@ -258,10 +258,10 @@
                     <div class="card-body text-center">
                         <h6 class="fw-bold mb-3">Начните сотрудничество</h6>
                         <p class="small mb-4 text-white text-opacity-90">Отправьте это фрилансеру предложение на проект</p>
-                        <a href="" class="btn btn-light btn-sm rounded-pill w-100 fw-bold mb-2">
+                        <a href="" class="text-decoration-none btn btn-light btn-sm rounded-pill w-100 fw-bold mb-2">
                             <i class="fas fa-handshake me-1"></i>Отправить предложение
                         </a>
-                        <a href="" class="btn btn-outline-light btn-sm rounded-pill w-100 fw-bold">
+                        <a href="" class="text-decoration-none btn btn-outline-light btn-sm rounded-pill w-100 fw-bold">
                             <i class="fas fa-envelope me-1"></i>Написать сообщение
                         </a>
                     </div>
@@ -288,7 +288,7 @@
                                     <i class="fas fa-edit"></i> Редактировать профиль
                                 </a>
                             {% elif user.is_authenticated %}
-                                <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#contactModal">
+                                <a href="#" class="text-decoration-none btn btn-success" data-bs-toggle="modal" data-bs-target="#contactModal">
                                     <i class="fas fa-envelope"></i> Связаться
                                 </a>
                             {% endif %}

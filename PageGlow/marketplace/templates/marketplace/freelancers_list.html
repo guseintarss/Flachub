@@ -137,16 +137,16 @@
         <p class="lead mb-4">Создайте профиль и получайте интересные проекты</p>
         {% if user.is_authenticated %}
             {% if not user.freelancer_profile %}
-                <a href="{% url 'marketplace:create_freelancer_profile' %}" class="btn btn-light btn-lg">
+                <a href="{% url 'marketplace:create_freelancer_profile' %}" class="text-decoration-none btn btn-light btn-lg">
                     <i class="fas fa-user-plus"></i> Создать профиль
                 </a>
             {% else %}
-                <a href="{% url 'marketplace:freelancer_profile' user.username %}" class="btn btn-light btn-lg">
+                <a href="{% url 'marketplace:freelancer_profile' user.username %}" class="text-decoration-none btn btn-light btn-lg">
                     <i class="fas fa-user-circle"></i> Мой профиль
                 </a>
             {% endif %}
         {% else %}
-            <a href="{% url 'users:register' %}" class="btn btn-light btn-lg">
+            <a href="{% url 'users:register' %}" class="text-decoration-none btn btn-light btn-lg">
                 <i class="fas fa-rocket"></i> Начать
             </a>
         {% endif %}

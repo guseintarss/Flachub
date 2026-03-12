@@ -31,7 +31,7 @@ from django.core.files.storage import FileSystemStorage
 from PageGlow import settings
 from main import serializers
 from main.serializers import PostSerializer
-from .forms import AddPostForm, PostUpdateForm, UploadFileForm, CommentForm
+from .forms import AddPostForm, AddQuestionForm, PostUpdateForm, UploadFileForm, CommentForm
 from .models import Post, Category, TagPost, UploadFiles, Comment, Subscription, Notification
 from .utils import DataMixin
 
@@ -491,6 +491,31 @@ class SubscriptionFeedView(LoginRequiredMixin, DataMixin, ListView):
         ).values_list('author_id', flat=True)
         return Post.published.filter(author_id__in=subscribed_authors).order_by('-time_create')
 
+# Обсуждения
+class DiscussionsView(DataMixin, ListView):
+    template_name = 'main/discussions.html'
+    context_object_name = 'questions'
+    title_page = 'Обсуждения | PageGlow'
+
+    def get_queryset(self):
+        return Post.published.all().select_related('cat', 'author')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+    
+
+class CreateDiscussionsView(DataMixin, ListView):
+    form_class = AddQuestionForm
+    template_name = 'main/discussions_create.html'
+    title_page = 'Обсуждения | PageGlow'
+
+    def form_valid(self, form):
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+            return reverse_lazy('main:discussion_detail')
+    
 
 @method_decorator(login_required, name='dispatch')
 class NotificationsView(View):

@@ -19,29 +19,38 @@
             {{form.is_published}}
         <!-- </div> -->
     </div>
+
   <!-- Контейнер для выбранных тегов -->
   <div class="selected-tags-container">
-    <label>Выбранные теги:</label>
-    <div class="selected-tags" id="selectedTags"></div>
+      <label>Выбранные теги:</label>
+      <div class="selected-tags" id="selectedTags"></div>
   </div>
 
-  <!-- Список доступных тегов из БД -->
-  <div class="available-tags">
-    <label>Выберите теги:</label>
-    <div class="tags-grid" id="tagsGrid">
-      {% for tag in form.tags.field.queryset %}
-        <span
-          class="tag-option"
-          data-tag-id="{{ tag.id }}"
-          data-tag-name="{{ tag.tag }}"
-        >
-          {{ tag.tag }}
-        </span>
-      {% endfor %}
-    </div> 
+  <div class="available-skills">
+      <label>Выберите навыки:</label>
+      <div class="tags-grid" id="tagsGrid">
+          {% for tag in form.tags.field.queryset %}
+          <div class="tag-wrapper" data-tag-id="{{ tag.id }}">
+              <input 
+              type="checkbox" 
+              name="tags"
+              value="{{ tag.id }}"
+              id="tag-{{ tag.id }}" 
+              data-tag-id="{{ tag.id }}" 
+              data-tag-name="{{ tag.tag }}"
+              >
+              <label 
+              for="tag-{{ tag.id }}" 
+              class="tag-option"
+              >
+              {{ tag.tag }}
+              </label>
+          </div>
+          {% endfor %}
+      </div>
   </div>
 
-  <button type="submit" class="submit-btn">Сохранить</button>
+  <button type="submit" class="mt-4 btn btn-primary">Сохранить</button>
 </form>
 </div>
 
@@ -53,60 +62,73 @@
 document.addEventListener('DOMContentLoaded', function() {
   const selectedTags = document.getElementById('selectedTags');
   const tagsGrid = document.getElementById('tagsGrid');
-  const tagOptions = tagsGrid.querySelectorAll('.tag-option');
-  const hiddenInput = document.createElement('input');
-  hiddenInput.type = 'hidden';
-  hiddenInput.name = 'selected_tags';
-  document.querySelector('form').appendChild(hiddenInput);
+  const checkboxes = tagsGrid.querySelectorAll('input[type="checkbox"]');
+  
 
-  // Хранилище выбранных тегов
   const selectedTagIds = new Set();
 
-  // Обработчик клика по тегу
-  tagOptions.forEach(tag => {
-    tag.addEventListener('click', function() {
+
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
       const tagId = this.getAttribute('data-tag-id');
       const tagName = this.getAttribute('data-tag-name');
 
-      if (selectedTagIds.has(tagId)) {
-        // Удаляем тег
-        selectedTagIds.delete(tagId);
-        this.classList.remove('selected');
-        const tagElement = selectedTags.querySelector(`[data-id="${tagId}"]`);
-        if (tagElement) tagElement.remove();
-      } else {
-        // Добавляем тег
+      if (this.checked && !isNaN(tagId)) {
         selectedTagIds.add(tagId);
-        this.classList.add('selected');
-
-        // Создаём элемент выбранного тега
-        const tagElement = document.createElement('span');
-        tagElement.className = 'tag-selected';
-        tagElement.setAttribute('data-id', tagId);
-
-        tagElement.innerHTML = `
-          ${tagName}
-          <span class="tag-remove" data-id="${tagId}">×</span>
-        `;
-
-        selectedTags.appendChild(tagElement);
-
-        // Обработчик удаления тега
-        tagElement.querySelector('.tag-remove').addEventListener('click', function(e) {
-          e.stopPropagation();
-          const removeId = this.getAttribute('data-id');
-          selectedTagIds.delete(removeId);
-          this.parentElement.remove();
-          const tagOption = tagsGrid.querySelector(`[data-tag-id="${removeId}"]`);
-          if (tagOption) tagOption.classList.remove('selected');
-        });
+        addSelectedTag(tagId, tagName);
+        hideOriginalTag(tagId); // Скрываем исходный тег
+      } else {
+        selectedTagIds.delete(tagId);
+        removeSelectedTag(tagId);
+        showOriginalTag(tagId); // Показываем исходный тег снова
       }
 
-      // Обновляем скрытое поле с ID тегов
-      hiddenInput.value = Array.from(selectedTagIds).join(',');
     });
   });
+
+  function addSelectedTag(id, name) {
+    const tagElement = document.createElement('span');
+    tagElement.className = 'tag-selected';
+    tagElement.setAttribute('data-id', id);
+    tagElement.innerHTML = `
+      ${name}
+      <span class="tag-remove" data-id="${id}">×</span>
+    `;
+    selectedTags.appendChild(tagElement);
+
+    tagElement.querySelector('.tag-remove').addEventListener('click', function(e) {
+      e.stopPropagation();
+      removeSelectedTag(id);
+      showOriginalTag(id);
+      checkboxes.forEach(cb => {
+        if (cb.getAttribute('data-tag-id') === id) cb.checked = false;
+      });
+    });
+  }
+
+  function removeSelectedTag(id) {
+    const tagElement = selectedTags.querySelector(`[data-id="${id}"]`);
+    if (tagElement) tagElement.remove();
+  }
+
+
+function hideOriginalTag(id) {
+  const originalWrapper = tagsGrid.querySelector(`.tag-wrapper[data-tag-id="${id}"]`);
+  if (originalWrapper) {
+    originalWrapper.style.display = 'none'; // Скрываем весь контейнер навыка
+  }
+}
+
+
+function showOriginalTag(id) {
+  const originalWrapper = tagsGrid.querySelector(`.tag-wrapper[data-tag-id="${id}"]`);
+  if (originalWrapper) {
+    originalWrapper.style.display = 'flex'; // Возвращаем видимость (зависит от ваших стилей)
+  }
+}
 });
+
+
 </script>
 
 <script>

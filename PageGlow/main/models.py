@@ -234,3 +234,8 @@ class Notification(models.Model):
     def __str__(self):
         return f'{self.notification_type}: {self.message}'
 
+class Discussion(models.Model):
+    title = models.TextField(max_length=55, blank=True, verbose_name='Вопрос')
+    question = models.TextField(max_length=255, blank=True, verbose_name='Пояснение')
+    time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
+    time_update = models.DateTimeField(auto_now=True, verbose_name='Время изменения')

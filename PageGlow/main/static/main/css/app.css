@@ -337,6 +337,7 @@ a:hover{ text-decoration: underline; }
     font-size:15px;
     display:block;
     padding:10px 0;
+    margin-left: 10px;
 }
 .span_published{
     padding:5px;
@@ -578,7 +579,13 @@ a:hover{ text-decoration: underline; }
   font-size: 0.9rem;
 }
 .tag:hover{ text-decoration: none; filter: brightness(0.98); }
-.t-title{ font-weight: 700; margin-top: 18px; }
+.t-title{ font-weight: 700; margin-top: 18px; margin-left: 10px; }
+.am{
+  font-weight: 700; 
+  margin-top: 18px;
+  font-size:15px;
+  display:block;
+}
 .com-t{
 display:flex;
 }
@@ -912,21 +919,6 @@ input:focus, textarea:focus, select:focus{
   margin-bottom: 2rem;
 }
 
-/* Кнопка отправки */
-.submit-btn {
-  background: #2e68ae;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.submit-btn:hover {
-  background: #28398e;
-}
-
 .category, .status{
   display: flex;
   gap:1rem;
@@ -1074,3 +1066,6 @@ input:focus, textarea:focus, select:focus{
   margin-top: 15px;
 }
 
+.tags-grid input[type="checkbox"] {
+  display: none; /* Скрываем чекбокс */
+}

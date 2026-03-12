@@ -141,82 +141,58 @@
                 
                 <hr class="my-5">
                 
-                <!-- Skills Section -->
+                
                 <!-- Раздел с навыками -->
-                <div class="skills-section mb-5">
-                <h5 class="fw-bold mb-4">
-                    <i class="fas fa-star me-2" style="color: #667eea;"></i>
-                    Какими навыками владеете?
-                </h5>
+                <div class="selected-skills-container">
+                    <label>Выбранные теги:</label>
+                    <div class="selected-skills" id="selectedTags"></div>
+                </div>
 
-                <!-- Блок поиска навыков -->
-                <div class="mb-4">
-                    <label for="skills-search" class="form-label fw-bold mb-3">
-                    Выберите свои навыки
-                    </label>
-
-                    <div class="position-relative mb-3">
-                    <input
-                        type="text"
-                        id="skills-search"
-                        class="form-control form-control-lg"
-                        placeholder="Поиск навыков..."
-                        style="
-                        border: 2px solid #e9ecef;
-                        border-radius: 10px;
-                        padding: 0.75rem 1rem 0.75rem 2.5rem;
-                        font-size: 1rem;
-                        "
-                    />
-                    <i class="fas fa-search position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                <div class="available-skills">
+                    <label>Выберите навыки:</label>
+                    <div class="skills-grid" id="skillsGrid">
+                        {% for skills in form.skills.field.queryset %}
+                        <div class="skill-wrapper" data-tag-id="{{ skills.id }}">
+                            <input 
+                            type="checkbox" 
+                            name="skills"
+                            value="{{ skills.id }}"
+                            id="skill-{{ skills.id }}" 
+                            data-tag-id="{{ skills.id }}" 
+                            data-tag-name="{{ skills.name }}"
+                            >
+                            <label 
+                            for="skill-{{ skills.id }}" 
+                            class="skill-option"
+                            >
+                            {{ skills.name }}
+                            </label>
+                        </div>
+                        {% endfor %}
                     </div>
+                </div>
 
-                    <!-- Контейнер с навыками -->
-                    <div id="skills-container" class="mb-3">
-                    <p class="text-muted small mb-3">Рекомендованные навыки</p>
-                    <div
-                        id="skills-list"
-                        class="d-flex flex-wrap gap-2"
-                        style="min-height: 100px; border: 1px dashed #ddd; padding: 10px; border-radius: 8px;"
-                    >
-                        <!-- Здесь будут динамически подгружаться навыки -->
-                    </div>
-                    </div>
+                <!-- Подсказка -->
+                <small class="form-text text-muted d-block mt-3">
+                <i class="fas fa-info-circle me-1"></i>
+                Отметьте 3–5 ключевых навыков, наиболее релевантных для позиции
+                </small>
 
-                    <!-- Скрытый селектор (для передачи данных на бэкенд) -->
-                    <div style="display: none;">
-                    {{ form.skills }}
-                    </div>
-
-                    <!-- Блок выбранных навыков -->
-                    <div id="selected-skills" class="mt-3">
-                    <p class="text-muted small mb-2">Выбранные навыки:</p>
-                    <div
-                        id="selected-skills-list"
-                        class="d-flex flex-wrap gap-2"
-                        style="border: 1px solid #eee; padding: 8px; border-radius: 8px;"
-                    >
-                        <!-- Здесь будут отображаться выбранные навыки -->
-                    </div>
-                    </div>
-
-                    <!-- Подсказка -->
-                    <small class="form-text text-muted d-block mt-3">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Отметьте 3–5 ключевых навыков, наиболее релевантных для позиции
-                    </small>
-
-                    <!-- Блок ошибок (если есть) -->
+                <div>
                     {% if form.skills.errors %}
-                    <div class="alert alert-danger small mt-2">
-                        {{ form.skills.errors }}
-                    </div>
+                        <div class="alert alert-danger mt-2">
+                            {{ form.skills.errors.0 }}
+                        </div>
                     {% endif %}
+                    <small class="d-block mt-3 text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Выберите все необходимые технологии и навыки
+                    </small>
                 </div>
-                </div>
+                
                 
                 <hr class="my-5">
-                
+            
                 <!-- Links Section -->
                 <div class="mb-5">
                     <h5 class="fw-bold mb-4">
@@ -287,7 +263,7 @@
                         <i class="fas fa-save me-2"></i>
                         Сохранить изменения
                     </button>
-                    <a href="{% url 'marketplace:freelancer_profile' user.username %}" class="btn btn-lg btn-outline-secondary rounded-pill fw-bold">
+                    <a href="{% url 'marketplace:freelancer_profile' user.username %}" class="text-decoration-none btn btn-lg btn-outline-secondary rounded-pill fw-bold">
                         <i class="fas fa-arrow-left me-2"></i>
                         К профилю
                     </a>
@@ -297,328 +273,78 @@
     </div>
 </div>
 
-<style>
-    input[type="text"],
-    input[type="email"],
-    input[type="url"],
-    input[type="number"],
-    input[type="date"],
-    textarea,
-    select {
-        background: #f8f9fa;
-        border: 2px solid #e9ecef;
-        border-radius: 10px;
-        padding: 0.75rem 1rem;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        width: 100%;
-    }
-    
-    input[type="text"]:focus,
-    input[type="email"]:focus,
-    input[type="url"]:focus,
-    input[type="number"]:focus,
-    input[type="date"]:focus,
-    textarea:focus,
-    select:focus {
-        background: white;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        outline: none;
-    }
-    
-    textarea {
-        resize: vertical;
-        min-height: 120px;
-    }
-    
-    select[multiple] {
-        min-height: 200px;
-        padding: 0.5rem;
-    }
-    
-    select[multiple] option {
-        padding: 0.5rem;
-        margin-bottom: 0.25rem;
-    }
-    
-    select[multiple] option:checked {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-    
-    input[type="file"] {
-        border: 2px dashed #e9ecef;
-        border-radius: 10px;
-        padding: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    input[type="file"]:hover {
-        border-color: #667eea;
-        background: rgba(102, 126, 234, 0.05);
-    }
-    
-    .form-check-input {
-        width: 1.5em;
-        height: 1.5em;
-        border: 2px solid #dee2e6;
-        border-radius: 0.35em;
-    }
-    
-    .form-check-input:checked {
-        background-color: #667eea;
-        border-color: #667eea;
-    }
-    
-    .form-check-input:focus {
-        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
-    }
-    
-    .form-control-plaintext {
-        color: #666;
-        font-weight: 500;
-    }
-    
-    .form-switch .form-check-input {
-        width: 3.5em;
-        height: 2em;
-        border-radius: 1em;
-        cursor: pointer;
-    }
-    
-    .btn {
-        transition: all 0.3s ease;
-        font-size: 1.05rem;
-    }
-    
-    .btn-lg {
-        padding: 0.75rem 2rem;
-        min-height: 50px;
-    }
-    
-    .btn-lg:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    }
-    
-    .btn-outline-secondary {
-        color: #6c757d;
-        border-color: #6c757d;
-    }
-    
-    .btn-outline-secondary:hover {
-        background-color: #f8f9fa;
-        border-color: #667eea;
-        color: #667eea;
-    }
-    
-    .card {
-        border-radius: 15px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    
-    .rounded-lg {
-        border-radius: 15px;
-    }
-    
-    h5 {
-        letter-spacing: 0.3px;
-    }
-    
-    hr {
-        border-color: #e9ecef;
-        opacity: 0.5;
-    }
-    
-    /* Skills Styling */
-    .skill-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.6rem 1.2rem;
-        background: #f0f2f5;
-        border: 2px solid #e9ecef;
-        border-radius: 25px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
-        font-weight: 500;
-        color: #333;
-        user-select: none;
-    }
-    
-    .skill-badge:hover {
-        border-color: #667eea;
-        background: #f8f9ff;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
-    }
-    
-    .skill-badge.selected {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-color: #667eea;
-    }
-    
-    .skill-badge.selected::before {
-        content: '✓';
-        font-weight: bold;
-    }
-    
-    .skill-badge-remove {
-        margin-left: 0.5rem;
-        color: rgba(255, 255, 255, 0.7);
-    }
-    
-    .skill-badge-remove:hover {
-        color: white;
-    }
-    
-    #skills-search {
-        background: white !important;
-        border: 2px solid #e9ecef !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    #skills-search:focus {
-        border-color: #667eea !important;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
-        background: white !important;
-    }
-    
-    #skills-list, #selected-skills-list {
-        min-height: auto;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 2rem;
-        color: #999;
-    }
-</style>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Получаем элементы с проверкой
-    const skillsSelect = document.getElementById('id_skills');
-    const skillsSearch = document.getElementById('skills-search');
-    const skillsList = document.getElementById('skills-list');
-    const selectedSkillsList = document.getElementById('selected-skills-list');
-    const selectedSkillsDiv = document.getElementById('selected-skills');
+  const selectedTags = document.getElementById('selectedTags');
+  const tagsGrid = document.getElementById('skillsGrid');
+  const checkboxes = tagsGrid.querySelectorAll('input[type="checkbox"]');
+  
 
-    // Проверка существования всех элементов
-    if (!skillsSelect || !skillsSearch || !skillsList || !selectedSkillsList || !selectedSkillsDiv) {
-        console.error('Один из элементов DOM не найден');
-        return;
-    }
+  const selectedTagIds = new Set();
 
-    // Проверяем, есть ли опции в select
-    if (skillsSelect.options.length === 0) {
-        console.warn('В skillsSelect нет опций. Проверьте передачу данных формы.');
-        skillsList.innerHTML = '<div class="empty-state w-100">Навыки не загружены</div>';
-        return;
-    }
 
-    // Создаём массив навыков
-    const allSkills = Array.from(skillsSelect.options).map(option => ({
-        id: option.value,
-        name: option.text,
-        selected: option.selected
-    }));
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const tagId = this.getAttribute('data-tag-id');
+      const tagName = this.getAttribute('data-tag-name');
 
-    // Инициализация
-    renderSkills();
-    updateSelectedSkills();
+      if (this.checked && !isNaN(tagId)) {
+        selectedTagIds.add(tagId);
+        addSelectedTag(tagId, tagName);
+        hideOriginalTag(tagId); // Скрываем исходный тег
+      } else {
+        selectedTagIds.delete(tagId);
+        removeSelectedTag(tagId);
+        showOriginalTag(tagId); // Показываем исходный тег снова
+      }
 
-    // Поиск навыков
-    skillsSearch.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        renderSkills(searchTerm);
     });
+  });
 
-    function renderSkills(searchTerm = '') {
-        skillsList.innerHTML = '';
+  function addSelectedTag(id, name) {
+    const tagElement = document.createElement('span');
+    tagElement.className = 'tag-selected';
+    tagElement.setAttribute('data-id', id);
+    tagElement.innerHTML = `
+      ${name}
+      <span class="tag-remove" data-id="${id}">×</span>
+    `;
+    selectedTags.appendChild(tagElement);
 
-        const filteredSkills = allSkills.filter(skill =>
-            skill.name.toLowerCase().includes(searchTerm)
-        );
+    tagElement.querySelector('.tag-remove').addEventListener('click', function(e) {
+      e.stopPropagation();
+      removeSelectedTag(id);
+      showOriginalTag(id);
+      checkboxes.forEach(cb => {
+        if (cb.getAttribute('data-tag-id') === id) cb.checked = false;
+      });
+    });
+  }
 
-        if (filteredSkills.length === 0) {
-            skillsList.innerHTML = '<div class="empty-state w-100">Навыки не найдены</div>';
-            return;
-        }
+  function removeSelectedTag(id) {
+    const tagElement = selectedTags.querySelector(`[data-id="${id}"]`);
+    if (tagElement) tagElement.remove();
+  }
 
-        filteredSkills.forEach(skill => {
-            const skillBadge = document.createElement('button');
-            skillBadge.type = 'button';
-            skillBadge.className = `skill-badge ${skill.selected ? 'selected' : ''}`;
-            skillBadge.textContent = skill.name;
 
-            skillBadge.addEventListener('click', function(e) {
-                e.preventDefault();
-                toggleSkill(skill.id);
-                renderSkills(searchTerm);
-                updateSelectedSkills();
-            });
+function hideOriginalTag(id) {
+  const originalWrapper = tagsGrid.querySelector(`.skill-wrapper[data-tag-id="${id}"]`);
+  if (originalWrapper) {
+    originalWrapper.style.display = 'none'; // Скрываем весь контейнер навыка
+  }
+}
 
-            skillsList.appendChild(skillBadge);
-        });
-    }
 
-    function toggleSkill(skillId) {
-        const option = skillsSelect.querySelector(`option[value="${skillId}"]`);
-        if (option) {
-            option.selected = !option.selected;
-            const skill = allSkills.find(s => s.id === skillId);
-            if (skill) {
-                skill.selected = option.selected;
-            }
-        }
-    }
-
-    function updateSelectedSkills() {
-        const selected = allSkills.filter(s => s.selected);
-
-        if (selected.length === 0) {
-            selectedSkillsDiv.style.display = 'none';
-            return;
-        }
-
-        selectedSkillsDiv.style.display = 'block';
-        selectedSkillsList.innerHTML = '';
-
-        selected.forEach(skill => {
-            const badge = document.createElement('div');
-            badge.className = 'skill-badge selected';
-
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = skill.name;
-
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'skill-badge-remove';
-            removeBtn.innerHTML = '×';
-            removeBtn.style.background = 'none';
-            removeBtn.style.border = 'none';
-            removeBtn.style.padding = '0';
-            removeBtn.style.cursor = 'pointer';
-            removeBtn.style.fontSize = '1.2rem';
-            removeBtn.style.lineHeight = '1';
-
-            removeBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                toggleSkill(skill.id);
-                renderSkills(skillsSearch.value);
-                updateSelectedSkills();
-            });
-
-            badge.appendChild(nameSpan);
-            badge.appendChild(removeBtn);
-            selectedSkillsList.appendChild(badge);
-        });
-    }
+function showOriginalTag(id) {
+  const originalWrapper = tagsGrid.querySelector(`.skill-wrapper[data-tag-id="${id}"]`);
+  if (originalWrapper) {
+    originalWrapper.style.display = 'flex'; // Возвращаем видимость (зависит от ваших стилей)
+  }
+}
 });
+
 
 </script>
 {% endblock %}

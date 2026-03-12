@@ -73,7 +73,7 @@
                 <div class="my-4 p-3" style="background: #f8f9ff; border-radius: 8px;">
                     <h5><i class="fas fa-calendar"></i> Срок выполнения</h5>
                     {% if project.deadline %}
-                        <p>{{ project.deadline|date:"d MMMM Y" }}</p>
+                        <p>{{ project.deadline|date:"d.m.Y" }}</p>
                     {% else %}
                         <p class="text-muted">Без ограничения по времени</p>
                     {% endif %}
@@ -135,7 +135,7 @@
                 {% if can_bid %}
                     <div class="project-card mb-4" style="background: #f8f9ff; border: 2px solid #667eea;">
                         <h5 class="mb-3">Вы хотите работать над этим проектом?</h5>
-                        <a href="{% url 'marketplace:bid_create' project.pk %}" class="btn btn-marketplace-primary w-100">
+                        <a href="{% url 'marketplace:bid_create' project.pk %}" class="text-decoration-none btn btn-marketplace-primary w-100">
                             <i class="fas fa-paper-plane"></i> Отправить предложение
                         </a>
                     </div>
@@ -148,10 +148,10 @@
                 <div class="project-card mb-4">
                     <h5 class="mb-3">Действия</h5>
                     <div class="d-flex gap-2 flex-column">
-                        <a href="{% url 'marketplace:project_edit' project.pk %}" class="btn btn-outline-secondary">
+                        <a href="{% url 'marketplace:project_edit' project.pk %}" class="text-decoration-none btn btn-outline-secondary">
                             <i class="fas fa-edit"></i> Редактировать
                         </a>
-                        <a href="{% url 'marketplace:project_delete' project.pk %}" class="btn btn-outline-danger">
+                        <a href="{% url 'marketplace:project_delete' project.pk %}" class="text-decoration-none btn btn-outline-danger">
                             <i class="fas fa-trash"></i> Удалить
                         </a>
                     </div>
