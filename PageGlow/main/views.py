@@ -17,6 +17,7 @@ from rest_framework import viewsets, permissions
 import math
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -31,8 +32,8 @@ from django.core.files.storage import FileSystemStorage
 from PageGlow import settings
 from main import serializers
 from main.serializers import PostSerializer
-from .forms import AddPostForm, AddQuestionForm, PostUpdateForm, UploadFileForm, CommentForm
-from .models import Post, Category, TagPost, UploadFiles, Comment, Subscription, Notification
+from .forms import AddPostForm, AddQuestionForm, PostUpdateForm, UploadFileForm, CommentForm, DiscussionCommentForm
+from .models import Post, Category, TagPost, UploadFiles, Comment, Subscription, Notification, Discussion, DiscussionComment
 from .utils import DataMixin
 
 logger = logging.getLogger(__name__)
@@ -400,35 +401,85 @@ class DeleteCommentAjaxView(View):
 #     return redirect('profile')
 
 @method_decorator(login_required, name='dispatch')
+@method_decorator(csrf_exempt, name='dispatch')
 class CKEditorUploadView(View):
+    """Upload view для CKEditor 5 - совместим с django_ckeditor_5"""
     def post(self, request):
-        file = request.FILES.get('upload')
-        if not file:
+        try:
+            # django_ckeditor_5 отправляет файл в поле 'upload'
+            file = request.FILES.get('upload')
+            
+            # Если нет файла, пробуем 'file'
+            if not file:
+                file = request.FILES.get('file')
+            
+            logger.info(f"Upload request: file={file}, content_type={file.content_type if file else None}")
+            
+            if not file:
+                logger.warning("No file in request.FILES")
+                return JsonResponse({
+                    'error': {
+                        'message': 'Файл не найден'
+                    }
+                }, status=400)
+
+            if file.size > 100 * 1024 * 1024:
+                logger.warning(f"File too large: {file.size}")
+                return JsonResponse({
+                    'error': {
+                        'message': 'Файл слишком большой (макс. 100 МБ)'
+                    }
+                }, status=400)
+
+            # Разрешённые типы файлов
+            allowed_types = [
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp',
+                'image/x-icon',
+                'image/vnd.microsoft.icon',
+                'image/svg+xml'
+            ]
+            if file.content_type not in allowed_types:
+                logger.warning(f"Invalid file type: {file.content_type}")
+                return JsonResponse({
+                    'error': {
+                        'message': f'Недопустимый тип файла: {file.content_type}. Разрешены: JPEG, PNG, GIF, WebP, ICO, SVG'
+                    }
+                }, status=400)
+
+            # Создаём директорию для загрузок
+            upload_path = os.path.join(settings.MEDIA_ROOT, 'ckeditor', 'uploads')
+            os.makedirs(upload_path, exist_ok=True)
+            logger.info(f"Upload path: {upload_path}")
+
+            # Генерируем уникальное имя файла
+            import uuid
+            ext = file.name.split('.')[-1] if '.' in file.name else 'jpg'
+            unique_filename = f"{uuid.uuid4().hex}.{ext}" if ext else uuid.uuid4().hex
+            logger.info(f"Saving file as: {unique_filename}")
+
+            fs = FileSystemStorage(location=upload_path)
+            fs.save(unique_filename, file)
+            logger.info(f"File saved successfully")
+
+            # Формируем правильный URL
+            file_url = f"{settings.MEDIA_URL}ckeditor/uploads/{unique_filename}"
+            logger.info(f"File URL: {file_url}")
+
+            # django_ckeditor_5 ожидает такой формат ответа
             return JsonResponse({
-                'error': {'message': 'Файл не найден'}
-            }, status=400)
-
-        if file.size > 100 * 1024 * 1024:
+                'url': file_url,
+                'uploaded': True,
+            })
+        except Exception as e:
+            logger.error(f"Upload error: {str(e)}", exc_info=True)
             return JsonResponse({
-                'error': {'message': 'Файл слишком большой (макс. 100 МБ)'}
-            }, status=400)
-
-        allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-        if file.content_type not in allowed_types:
-            return JsonResponse({
-                'error': {'message': 'Недопустимый тип файла. Разрешены: JPEG, PNG, GIF, WebP'}
-            }, status=400)
-
-        upload_path = os.path.join(settings.MEDIA_ROOT, 'uploads')
-        os.makedirs(upload_path, exist_ok=True)
-        
-        fs = FileSystemStorage(location=upload_path)
-        filename = fs.save(file.name, file)
-        file_url = f"{settings.MEDIA_URL}uploads/{filename}"
-
-        return JsonResponse({
-            'url': file_url
-        })
+                'error': {
+                    'message': f'Ошибка загрузки: {str(e)}'
+                }
+            }, status=500)
 
 
 class PopularPostsView(DataMixin, ListView):
@@ -491,30 +542,250 @@ class SubscriptionFeedView(LoginRequiredMixin, DataMixin, ListView):
         ).values_list('author_id', flat=True)
         return Post.published.filter(author_id__in=subscribed_authors).order_by('-time_create')
 
-# Обсуждения
+
+# ===== ОБСУЖДЕНИЯ =====
+
 class DiscussionsView(DataMixin, ListView):
+    """Список всех обсуждений"""
     template_name = 'main/discussions.html'
-    context_object_name = 'questions'
+    context_object_name = 'discussions'
     title_page = 'Обсуждения | PageGlow'
+    paginate_by = 20
 
     def get_queryset(self):
-        return Post.published.all().select_related('cat', 'author')
+        return Discussion.objects.filter(
+            is_published=True
+        ).select_related('author', 'cat').prefetch_related('tags').order_by('-time_create')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['total_discussions'] = Discussion.objects.filter(is_published=True).count()
         return context
-    
 
-class CreateDiscussionsView(DataMixin, CreateView):
+
+class DiscussionDetailView(DataMixin, DetailView):
+    """Детальное обсуждение с комментариями"""
+    template_name = 'main/discussion_detail.html'
+    context_object_name = 'discussion'
+    pk_url_kwarg = 'pk'
+
+    def get_queryset(self):
+        return Discussion.objects.filter(
+            is_published=True
+        ).select_related('author', 'cat').prefetch_related('tags')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        discussion = self.object
+
+        # Увеличиваем счётчик просмотров
+        session_key = f'viewed_discussion_{discussion.id}'
+        if not self.request.session.get(session_key, False):
+            discussion.views += 1
+            discussion.save(update_fields=['views'])
+            self.request.session[session_key] = True
+
+        # Комментарии с данными авторов и лайками (только top level)
+        comments = discussion.comments.filter(
+            is_active=True, parent__isnull=True
+        ).select_related('author').prefetch_related('likes', 'replies__likes', 'replies__author').order_by('created_at')
+
+        context['comments'] = comments
+        context['comment_form'] = DiscussionCommentForm()
+
+        # Проверяем, закрыто ли обсуждение
+        context['is_closed'] = discussion.is_closed
+        
+        # Передаем объект обсуждения для доступа к лайкам
+        context['discussion'] = discussion
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """Обработка добавления комментария"""
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'success': False,
+                'error': 'Необходимо войти в систему'
+            }, status=403)
+
+        discussion = self.get_object()
+        
+        if discussion.is_closed:
+            return JsonResponse({
+                'success': False,
+                'error': 'Обсуждение закрыто'
+            }, status=403)
+
+        form = DiscussionCommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.discussion = discussion
+            comment.author = request.user
+            comment.save()
+
+            return JsonResponse({
+                'success': True,
+                'comment': {
+                    'id': comment.id,
+                    'content': comment.content,
+                    'author': comment.author.username,
+                    'author_avatar': comment.author.photo.url if comment.author.photo else settings.DEFAULT_USER_IMAGE,
+                    'created_at': comment.created_at.strftime('%d.%m.%Y %H:%M'),
+                    'discussion_id': discussion.id,
+                    'is_author': True
+                }
+            })
+        
+        return JsonResponse({
+            'success': False,
+            'errors': form.errors
+        }, status=400)
+
+
+class CreateDiscussionView(LoginRequiredMixin, DataMixin, CreateView):
+    """Создание нового обсуждения"""
     form_class = AddQuestionForm
-    template_name = 'main/discussions_create.html'
+    template_name = 'main/create_discussion.html'
     title_page = 'Начать обсуждение | PageGlow'
 
     def form_valid(self, form):
+        form.instance.author = self.request.user
         return super().form_valid(form)
-    
+
     def get_success_url(self):
-            return reverse_lazy('main:discussion_detail')
+        return reverse_lazy('discussions')
+
+
+@method_decorator(login_required, name='dispatch')
+class AddDiscussionCommentAjaxView(View):
+    """AJAX добавление комментария к обсуждению"""
+    def post(self, request, *args, **kwargs):
+        try:
+            discussion_id = request.POST.get('discussion_id')
+            content = request.POST.get('content')
+            parent_id = request.POST.get('parent_id')
+
+            if not content or len(content.strip()) == 0:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Текст комментария не может быть пустым'
+                }, status=400)
+
+            discussion = get_object_or_404(Discussion, id=discussion_id)
+
+            if discussion.is_closed:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Обсуждение закрыто'
+                }, status=403)
+
+            parent = None
+            if parent_id:
+                parent = get_object_or_404(DiscussionComment, id=parent_id)
+
+            comment = DiscussionComment.objects.create(
+                discussion=discussion,
+                author=request.user,
+                content=content,
+                parent=parent
+            )
+
+            data = {
+                'success': True,
+                'comment': {
+                    'id': comment.id,
+                    'content': comment.content,
+                    'author': comment.author.username,
+                    'author_avatar': comment.author.photo.url if comment.author.photo else settings.DEFAULT_USER_IMAGE,
+                    'created_at': comment.created_at.strftime('%d.%m.%Y %H:%M'),
+                    'is_reply': parent is not None,
+                    'parent_id': parent.id if parent else None,
+                    'discussion_id': discussion.id,
+                    'is_author': request.user.id == comment.author.id
+                }
+            }
+            return JsonResponse(data)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@method_decorator(login_required, name='dispatch')
+class ToggleDiscussionCommentLikeView(View):
+    """AJAX лайк/дизлайк комментария"""
+    def post(self, request, *args, **kwargs):
+        try:
+            comment_id = request.POST.get('comment_id')
+            if not comment_id:
+                return JsonResponse({'success': False, 'error': 'ID комментария не указан'}, status=400)
+
+            comment = get_object_or_404(DiscussionComment, id=comment_id)
+
+            # Переключаем лайк
+            if comment.likes.filter(id=request.user.id).exists():
+                comment.likes.remove(request.user)
+                liked = False
+            else:
+                comment.likes.add(request.user)
+                liked = True
+
+            return JsonResponse({
+                'success': True,
+                'liked': liked,
+                'likes_count': comment.number_of_likes()
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@method_decorator(login_required, name='dispatch')
+class DeleteDiscussionCommentAjaxView(View):
+    """AJAX удаление комментария"""
+    def post(self, request, *args, **kwargs):
+        try:
+            comment_id = request.POST.get('comment_id')
+            if not comment_id:
+                return JsonResponse({'success': False, 'error': 'ID комментария не указан'}, status=400)
+
+            comment = get_object_or_404(DiscussionComment, id=comment_id)
+
+            # Проверяем, что пользователь — автор комментария или администратор
+            if comment.author != request.user and not request.user.is_staff:
+                return JsonResponse(
+                    {'success': False, 'error': 'У вас нет прав для удаления этого комментария'},
+                    status=403
+                )
+
+            comment.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@method_decorator(login_required, name='dispatch')
+class CloseDiscussionView(View):
+    """Закрытие/открытие обсуждения (только автор или админ)"""
+    def post(self, request, *args, **kwargs):
+        try:
+            discussion_id = request.POST.get('discussion_id')
+            discussion = get_object_or_404(Discussion, id=discussion_id)
+
+            # Проверка прав
+            if discussion.author != request.user and not request.user.is_staff:
+                return JsonResponse(
+                    {'success': False, 'error': 'У вас нет прав для этого действия'},
+                    status=403
+                )
+
+            discussion.is_closed = not discussion.is_closed
+            discussion.save(update_fields=['is_closed'])
+
+            return JsonResponse({
+                'success': True,
+                'is_closed': discussion.is_closed
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
     
 
 @method_decorator(login_required, name='dispatch')

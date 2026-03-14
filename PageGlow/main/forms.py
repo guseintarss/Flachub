@@ -28,7 +28,7 @@ class AddPostForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = ['content', 'is_published', 'cat', 'tags']
+        fields = ['content', 'photo', 'is_published', 'cat', 'tags']
         widgets = {
             'photo': forms.ClearableFileInput(attrs={'class':'form-control'}),
             'is_published': forms.Select(attrs={'class':'form-control'}),
@@ -77,10 +77,46 @@ class CommentForm(forms.ModelForm):
         }
 
 class AddQuestionForm(forms.ModelForm):
+    """Форма создания обсуждения"""
+    cat = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        empty_label='Не выбрано',
+        label='Категория',
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    tags = forms.ModelMultipleChoiceField(
+        queryset=TagPost.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label='Теги'
+    )
+
     class Meta:
         model = Discussion
-        fields = ['title', 'question']
-        wigets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'question': forms.Textarea(attrs={'class': 'form-control'})
+        fields = ['title', 'content', 'cat', 'tags']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Заголовок темы'
+            }),
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Опишите ваш вопрос подробнее...',
+                'rows': 5
+            }),
+        }
+
+
+class DiscussionCommentForm(forms.ModelForm):
+    """Форма комментария к обсуждению"""
+    class Meta:
+        model = DiscussionComment
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={
+                'rows': 3,
+                'class': 'form-control',
+                'placeholder': 'Напишите ваш ответ...'
+            }),
         }

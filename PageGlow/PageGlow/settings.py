@@ -229,6 +229,30 @@ customColorPalette = [
         },
     ]
 
+# CKEditor 5 настройки
+customColorPalette = [
+    {
+        'color': '#hsl(0, 75%, 60%)',
+        'label': 'Red'
+    },
+    {
+        'color': '#hsl(120, 75%, 60%)',
+        'label': 'Green'
+    },
+    {
+        'color': '#hsl(240, 75%, 60%)',
+        'label': 'Blue'
+    },
+]
+
+# Настройка загрузки файлов для django_ckeditor_5
+DJANGO_CKEDITOR_5_FILE_UPLOAD_PERMISSION = 'authenticated'
+CKEDITOR_5_FILE_UPLOAD_PATH = 'ckeditor/uploads/'
+
+# Типы файлов для загрузки
+CKEDITOR_5_UPLOAD_FILE_TYPES = ['jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'ico', 'svg']
+
+# Отключаем встроенный upload и используем кастомный
 CKEDITOR_5_CONFIGS = {
     'default': {
         'language': 'ru-RU',
@@ -243,9 +267,6 @@ CKEDITOR_5_CONFIGS = {
         'toolbar': {
             'items': ['heading', '|', 'bold', 'italic', 'link',
                       'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', ],
-        },
-        'simpleUpload': {
-            'uploadUrl': '/upload/', 
         },
         'placeholder': 'Заголовок',
     },

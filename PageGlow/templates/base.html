@@ -18,6 +18,7 @@
     <meta name="apple-mobile-web-app-title" content="MyWebSite" />
     <link rel="manifest" href="{% static 'images/site.webmanifest' %}" />
     {% block head %}{% endblock %}
+    {% block extra_css %}{% endblock %}
     <script>
         // Устанавливаем тему сразу, до загрузки остального JS
         const savedTheme = localStorage.getItem('theme');

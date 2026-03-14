@@ -1069,3 +1069,247 @@ input:focus, textarea:focus, select:focus{
 .tags-grid input[type="checkbox"] {
   display: none; /* Скрываем чекбокс */
 }
+
+/* ===== ОБСУЖДЕНИЯ ===== */
+
+/* Страница списка обсуждений */
+.discussions-page {
+  padding: 20px 0;
+}
+
+.discussions-header {
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.discussions-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+.btn-create-discussion {
+  white-space: nowrap;
+}
+
+/* Карточка обсуждения */
+.discussion-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.discussion-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.discussion-title-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.discussion-title {
+  color: var(--primary);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.discussion-title:hover {
+  color: var(--primary-700);
+}
+
+.discussion-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.discussion-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.discussion-meta a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.discussion-meta a:hover {
+  text-decoration: underline;
+}
+
+.discussion-preview {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.discussion-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.discussion-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.last-comment {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.last-comment a {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* Детальная страница обсуждения */
+.discussion-detail-page {
+  padding: 20px 0;
+}
+
+.discussion-main {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.discussion-main .discussion-title {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.discussion-content {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--text);
+}
+
+.discussion-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Комментарии */
+.discussion-comments {
+  margin-top: 2rem;
+}
+
+.comments-header {
+  margin-bottom: 1.5rem;
+}
+
+.comment-form-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.comment-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: box-shadow 0.2s ease;
+}
+
+.comment-card:hover {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.comment-author-avatar {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+
+.comment-author-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-author-name {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.comment-author-name:hover {
+  color: var(--primary);
+}
+
+.comment-date {
+  font-size: 0.85rem;
+}
+
+.comment-content {
+  color: var(--text);
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+/* Темная тема для обсуждений */
+body.dark-mode .discussion-card,
+body.dark-mode .discussion-main,
+body.dark-mode .comment-card,
+body.dark-mode .comment-form-container {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+}
+
+body.dark-mode .discussion-title {
+  color: var(--dark-primary);
+}
+
+body.dark-mode .discussion-meta a,
+body.dark-mode .comment-author-name,
+body.dark-mode .last-comment a {
+  color: var(--dark-primary);
+}
+
+body.dark-mode .discussion-preview {
+  color: var(--dark-muted);
+}
+
+body.dark-mode .comment-date {
+  color: var(--dark-muted);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .discussions-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .discussion-card-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .discussion-badges {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .discussion-meta {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .comment-header {
+    flex-wrap: wrap;
+  }
+
+  .delete-comment {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+}
