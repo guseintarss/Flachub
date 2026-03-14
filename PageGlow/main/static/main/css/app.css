@@ -603,6 +603,9 @@ display:flex;
 }
 
 .delete-comment {
+    position: absolute;
+    bottom: 8px;
+    right: 17px;
     opacity: 0;
     transition: opacity 0.3s;
 }

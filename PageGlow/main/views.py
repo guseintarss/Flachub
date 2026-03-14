@@ -184,8 +184,26 @@ class AddPage(LoginRequiredMixin, DataMixin, CreateView):
         else:
             form.instance.title = 'Без заголовка'
 
-        return super().form_valid(form)
-    
+        # Сохраняем пост
+        response = super().form_valid(form)
+        
+        # Создаём уведомления для подписчиков
+        post = self.object
+        if post.author:
+            # Получаем всех подписчиков автора
+            subscribers = Subscription.objects.filter(author=post.author).select_related('subscriber')
+            for sub in subscribers:
+                if sub.subscriber != post.author:  # Не уведомлять самого автора
+                    Notification.objects.create(
+                        recipient=sub.subscriber,
+                        sender=post.author,
+                        notification_type='new_post',
+                        post=post,
+                        message=f'{post.author.username} опубликовал новую статью "{post.title[:30]}..."'
+                    )
+        
+        return response
+
     def get_success_url(self):
             return reverse_lazy('users:profile')
     
@@ -792,28 +810,34 @@ class CloseDiscussionView(View):
 class NotificationsView(View):
     """Получение уведомлений"""
     def get(self, request, *args, **kwargs):
-        notifications = Notification.objects.filter(
-            recipient=request.user
-        ).order_by('-created_at')[:20]
-        
-        unread_count = notifications.filter(is_read=False).count()
-        
-        data = {
-            'unread_count': unread_count,
-            'notifications': [
-                {
-                    'id': n.id,
-                    'type': n.notification_type,
-                    'message': n.message,
-                    'is_read': n.is_read,
-                    'created_at': n.created_at.strftime('%d.%m.%Y %H:%M'),
-                    'post_url': n.post.get_absolute_url() if n.post else None,
-                    'sender_username': n.sender.username if n.sender else None,
-                }
-                for n in notifications
-            ]
-        }
-        return JsonResponse(data)
+        try:
+            notifications = Notification.objects.filter(
+                recipient=request.user
+            ).select_related('sender', 'post', 'comment').order_by('-created_at')[:20]
+
+            unread_count = notifications.filter(is_read=False).count()
+
+            data = {
+                'unread_count': unread_count,
+                'notifications': [
+                    {
+                        'id': n.id,
+                        'type': n.notification_type,
+                        'message': n.message,
+                        'is_read': n.is_read,
+                        'created_at': n.created_at.strftime('%d.%m.%Y %H:%M'),
+                        'post_url': n.post.get_absolute_url() if n.post else None,
+                        'sender_username': n.sender.username if n.sender else None,
+                    }
+                    for n in notifications
+                ]
+            }
+            return JsonResponse(data)
+        except Exception as e:
+            logger.error(f"Notifications error: {str(e)}", exc_info=True)
+            return JsonResponse({
+                'error': str(e)
+            }, status=500)
 
 
 @method_decorator(login_required, name='dispatch')
