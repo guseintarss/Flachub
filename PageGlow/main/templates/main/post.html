@@ -133,7 +133,7 @@
 
 <section id="comments-section">
     <div class="post">
-        <h3>Комментарии {{ object.comments.count }}</h3>
+        <h3>Комментарии ({{ object.comments.count }})</h3>
         <form id="comment-form">
             {% csrf_token %}
             <input type="hidden" name="post_id" value="{{ object.id }}">
@@ -144,7 +144,7 @@
         </form>
     </div>
     <div id="comments-list">
-        {% for comment in object.comments.all %}
+        {% for comment in comments_page %}
         <div class="comment mb-3 p-2 border rounded" data-comment-id="{{ comment.id }}">
             <strong>{{ comment.author.username }}</strong>
             <small class="text-muted">{{ comment.created_at }}</small>
@@ -154,8 +154,13 @@
             {% endif %}
             <p>{{ comment.content }}</p>
         </div>
+        {% empty %}
+        <p class="text-muted">Комментариев пока нет. Будьте первым!</p>
         {% endfor %}
     </div>
+    
+    <!-- Пагинация комментариев -->
+    {% render_pagination comments_page 'comments' %}
 </section>
 
 {% endblock %}

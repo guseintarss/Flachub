@@ -4,6 +4,7 @@ from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
 from django.utils import timezone
 from datetime import timedelta
+from django.core.paginator import Paginator
 
 register = template.Library()
 
@@ -78,3 +79,18 @@ def has_user_liked(comment, user):
     if not user or not user.is_authenticated:
         return False
     return comment.likes.filter(id=user.id).exists()
+
+
+@register.inclusion_tag('main/includes/pagination.html')
+def render_pagination(page_obj, page_type='posts'):
+    """
+    Отображает навигацию пагинации
+    
+    Args:
+        page_obj: объект страницы Django Paginator
+        page_type: тип пагинации ('posts', 'comments', 'discussions')
+    """
+    return {
+        'page_obj': page_obj,
+        'page_type': page_type,
+    }

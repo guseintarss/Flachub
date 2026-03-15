@@ -49,33 +49,8 @@
     </div>
 </article>
 {% endfor %}
+
+<!-- Пагинация -->
+{% render_pagination page_obj %}
+
 {% endblock %}
-{% block navigation %}
-{% if page_obj.has_other_pages %}
-<nav aria-label="Page navigation example" class="list-pages">
-    <ul class="pagination">
-        {% if page_obj.has_previous %}
-        <li class="page-item">
-            <a class="page-link" aria-label="Previous" href="?page={{ page_obj.previous_page_number }}">&lt;</a>
-        </li>
-        {% endif %}
-        {% for p in paginator.page_range %}
-        {% if page_obj.number == p %}
-        <li class="page-link disabled">{{p}}</li>
-        {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ p }}">{{p}}</a>
-        </li>
-        {% endif %}
-        {% endfor %}
-        {% if page_obj.has_next %}
-        <li class="page-item">
-            <a class="page-link" aria-label="Next" href="?page={{ page_obj.next_page_number }}">&gt;</a>
-        </li>
-        {% endif %}
-    </ul>
-</nav>
-{% endif %}
-{% endblock %}
-</body>
-</html>

@@ -57,7 +57,7 @@ class MainHome(DataMixin, ListView):
     context_object_name = 'posts'
     title_page = 'Главная страница | PageGlow'
     cat_selected = 0
-
+    paginate_by = 10
 
     def get_queryset(self):
         return Post.published.all().select_related('cat', 'author')
@@ -133,15 +133,23 @@ class ShowPost(FormMixin, DataMixin, DetailView):
         return post
 
     def get_context_data(self, **kwargs):
+        from django.core.paginator import Paginator
+        
         context = super().get_context_data(**kwargs)
         post = self.object
         context['similar_posts'] = post.get_similar_posts()
         context['reading_time'] = post.reading_time()
-        
+
+        # Пагинация комментариев
+        comments = post.comments.select_related('author').order_by('-created_at')
+        comment_paginator = Paginator(comments, 20)  # 20 комментариев на страницу
+        page_number = self.request.GET.get('comments-page')
+        context['comments_page'] = comment_paginator.get_page(page_number)
+
         # Проверяем подписку на автора
         if self.request.user.is_authenticated and post.author:
             context['is_subscribed'] = Subscription.objects.filter(
-                subscriber=self.request.user, 
+                subscriber=self.request.user,
                 author=post.author
             ).exists()
         return context
@@ -238,6 +246,7 @@ class MainCategory(DataMixin, ListView):
     template_name = 'main/index.html'
     context_object_name = 'posts'
     allow_empty = False
+    paginate_by = 10
 
     def get_queryset(self):
         return Post.published.filter(cat__slug=self.kwargs['cat_slug']).select_related('cat')
@@ -254,6 +263,7 @@ class TagPostList(DataMixin, ListView):
     template_name = 'main/index.html'
     context_object_name = 'posts'
     allow_empty = False
+    paginate_by = 10
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -267,6 +277,7 @@ class TagPostList(DataMixin, ListView):
 class Search(DataMixin, ListView):
     template_name = 'main/index.html'
     context_object_name = 'posts'
+    paginate_by = 10
 
     def get_queryset(self):
         query = self.request.GET.get('q', '')  # Получаем поисковый запрос (пустая строка, если нет)
@@ -505,9 +516,10 @@ class PopularPostsView(DataMixin, ListView):
     template_name = 'main/index.html'
     context_object_name = 'posts'
     title_page = 'Популярное'
+    paginate_by = 10
 
     def get_queryset(self):
-        return Post.published.all().order_by('-views')[:20]
+        return Post.published.all().order_by('-views')
 
 
 @method_decorator(login_required, name='dispatch')
@@ -553,6 +565,7 @@ class SubscriptionFeedView(LoginRequiredMixin, DataMixin, ListView):
     template_name = 'main/index.html'
     context_object_name = 'posts'
     title_page = 'Мои подписки'
+    paginate_by = 10
 
     def get_queryset(self):
         subscribed_authors = Subscription.objects.filter(

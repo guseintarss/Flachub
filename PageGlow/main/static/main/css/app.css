@@ -1336,6 +1336,99 @@ body.dark-mode .comment-date {
   color: var(--dark-muted);
 }
 
+/* ===== ПАГИНАЦИЯ ===== */
+
+.pagination-container {
+  margin: 30px 0;
+  padding: 20px 0;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.pagination .page-item {
+  list-style: none;
+}
+
+.pagination .page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  cursor: default;
+}
+
+.pagination .page-item.disabled .page-link {
+  background: var(--bg);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Темная тема для пагинации */
+.dark-mode .pagination .page-link {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+  color: var(--dark-text);
+}
+
+.dark-mode .pagination .page-link:hover {
+  background: var(--dark-primary);
+  border-color: var(--dark-primary);
+}
+
+.dark-mode .pagination .page-item.active .page-link {
+  background: var(--dark-primary);
+  border-color: var(--dark-primary);
+}
+
+/* Адаптивность для пагинации */
+@media (max-width: 576px) {
+  .pagination {
+    gap: 4px;
+  }
+  
+  .pagination .page-link {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    font-size: 0.9rem;
+  }
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
   .discussions-header {
