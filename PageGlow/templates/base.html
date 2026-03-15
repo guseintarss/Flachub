@@ -154,6 +154,11 @@
 <!-- Переключатель темы -->
 <script src="{% static 'main/js/theme-toggle.js' %}"></script>
 
+<!-- WebSocket уведомления (только для авторизованных) -->
+{% if user.is_authenticated %}
+<script src="{% static 'main/js/notifications-ws.js' %}"></script>
+{% endif %}
+
 {% block extra_js %}{% endblock %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {

@@ -202,13 +202,25 @@ class AddPage(LoginRequiredMixin, DataMixin, CreateView):
             subscribers = Subscription.objects.filter(author=post.author).select_related('subscriber')
             for sub in subscribers:
                 if sub.subscriber != post.author:  # Не уведомлять самого автора
-                    Notification.objects.create(
+                    notification = Notification.objects.create(
                         recipient=sub.subscriber,
                         sender=post.author,
                         notification_type='new_post',
                         post=post,
                         message=f'{post.author.username} опубликовал новую статью "{post.title[:30]}..."'
                     )
+                    # Отправляем уведомление через WebSocket
+                    try:
+                        from main.consumers import send_notification_to_user
+                        send_notification_to_user(sub.subscriber.id, {
+                            'id': notification.id,
+                            'message': notification.message,
+                            'type': notification.notification_type,
+                            'post_url': post.get_absolute_url(),
+                            'created_at': notification.created_at.isoformat()
+                        })
+                    except Exception as e:
+                        logger.error(f'Ошибка отправки WebSocket уведомления: {e}')
         
         return response
 
@@ -315,13 +327,25 @@ class PostLikeAjaxView(View):
             liked = True
             # Уведомление автору о лайке
             if post.author and post.author != request.user:
-                Notification.objects.create(
+                notification = Notification.objects.create(
                     recipient=post.author,
                     sender=request.user,
                     notification_type='like',
                     post=post,
                     message=f'{request.user.username} оценил вашу статью "{post.title[:30]}..."'
                 )
+                # Отправляем уведомление через WebSocket
+                try:
+                    from main.consumers import send_notification_to_user
+                    send_notification_to_user(post.author.id, {
+                        'id': notification.id,
+                        'message': notification.message,
+                        'type': notification.notification_type,
+                        'post_url': post.get_absolute_url(),
+                        'created_at': notification.created_at.isoformat()
+                    })
+                except Exception as e:
+                    logger.error(f'Ошибка отправки WebSocket уведомления: {e}')
 
         data = {
             'success': True,
@@ -375,7 +399,7 @@ class AddCommentAjaxView(View):
             
             # Уведомление автору статьи о комментарии
             if post.author and post.author != request.user:
-                Notification.objects.create(
+                notification = Notification.objects.create(
                     recipient=post.author,
                     sender=request.user,
                     notification_type='comment',
@@ -383,6 +407,18 @@ class AddCommentAjaxView(View):
                     comment=comment,
                     message=f'{request.user.username} прокомментировал "{post.title[:30]}..."'
                 )
+                # Отправляем уведомление через WebSocket
+                try:
+                    from main.consumers import send_notification_to_user
+                    send_notification_to_user(post.author.id, {
+                        'id': notification.id,
+                        'message': notification.message,
+                        'type': notification.notification_type,
+                        'post_url': post.get_absolute_url(),
+                        'created_at': notification.created_at.isoformat()
+                    })
+                except Exception as e:
+                    logger.error(f'Ошибка отправки WebSocket уведомления: {e}')
 
             data = {
                 'success': True,
@@ -544,12 +580,23 @@ class SubscribeAuthorView(View):
         else:
             subscribed = True
             # Создаём уведомление для автора
-            Notification.objects.create(
+            notification = Notification.objects.create(
                 recipient=author,
                 sender=request.user,
                 notification_type='follow',
                 message=f'{request.user.username} подписался на вас'
             )
+            # Отправляем уведомление через WebSocket
+            try:
+                from main.consumers import send_notification_to_user
+                send_notification_to_user(author.id, {
+                    'id': notification.id,
+                    'message': notification.message,
+                    'type': notification.notification_type,
+                    'created_at': notification.created_at.isoformat()
+                })
+            except Exception as e:
+                logger.error(f'Ошибка отправки WebSocket уведомления: {e}')
         
         subscribers_count = Subscription.objects.filter(author=author).count()
         

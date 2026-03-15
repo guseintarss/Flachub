@@ -1429,6 +1429,61 @@ body.dark-mode .comment-date {
   }
 }
 
+/* ===== WS УВЕДОМЛЕНИЯ ===== */
+
+.ws-notification-toast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  padding: 15px 20px;
+  z-index: 9999;
+  transform: translateX(400px);
+  transition: transform 0.3s ease;
+  max-width: 350px;
+}
+
+.ws-notification-toast.show {
+  transform: translateX(0);
+}
+
+.ws-notification-toast .toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ws-notification-toast .toast-icon {
+  font-size: 1.5rem;
+}
+
+.ws-notification-toast .toast-message {
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Темная тема для toast */
+.dark-mode .ws-notification-toast {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .ws-notification-toast {
+    top: auto;
+    bottom: 20px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
   .discussions-header {

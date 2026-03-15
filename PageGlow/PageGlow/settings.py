@@ -64,6 +64,9 @@ INSTALLED_APPS = [
 
     'django.contrib.sites',
     'django.contrib.sitemaps',
+    
+    # WebSocket / Channels
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -109,6 +112,17 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'main', 'static', 'media')]
 
 
 WSGI_APPLICATION = 'PageGlow.wsgi.application'
+ASGI_APPLICATION = 'PageGlow.asgi.application'
+
+# Channels / WebSocket
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [config('REDIS_URL', default='redis://localhost:6379/0')],
+        },
+    },
+}
 
 
 # Database
