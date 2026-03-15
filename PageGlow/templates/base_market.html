@@ -143,24 +143,28 @@
             elements.forEach((el, index) => {
                 el.style.animation = `fadeInUp 0.6s ease-out ${index * 0.1}s both`;
             });
-            
-            // Обновление счётчика уведомлений чатов
-            function updateChatNotifications() {
-                fetch('{% url "marketplace:chat_notifications" %}')
-                    .then(response => response.json())
-                    .then(data => {
-                        const badge = document.getElementById('chat-notification-badge');
+        });
+        
+        // Глобальная функция обновления счётчика уведомлений чатов
+        function updateChatNotifications() {
+            fetch('{% url "marketplace:chat_notifications" %}')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('chat-notification-badge');
+                    if (badge) {
                         if (data.unread_count > 0) {
                             badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
                             badge.style.display = 'inline-block';
                         } else {
                             badge.style.display = 'none';
                         }
-                    })
-                    .catch(error => console.error('Error loading chat notifications:', error));
-            }
-            
-            // Обновляем при загрузке и каждые 30 секунд
+                    }
+                })
+                .catch(error => console.error('Error loading chat notifications:', error));
+        }
+        
+        // Обновляем при загрузке и каждые 30 секунд
+        document.addEventListener('DOMContentLoaded', function() {
             updateChatNotifications();
             setInterval(updateChatNotifications, 30000);
         });

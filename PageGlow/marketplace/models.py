@@ -515,7 +515,10 @@ class ChatMessage(models.Model):
     chat = models.ForeignKey(ProjectChat, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
-    content = models.TextField()
+    content = models.TextField(blank=True)
+    
+    # Файлы
+    attachment = models.FileField(upload_to='chat_attachments/%Y/%m/%d/', blank=True, null=True)
     attachments = models.JSONField(default=list, blank=True)
 
     # Встраивание превью (Figma, Miro)

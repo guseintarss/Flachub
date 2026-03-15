@@ -21,7 +21,7 @@
                         
                         <div class="mb-3 pb-3 border-bottom">
                             <small class="text-muted d-block mb-1">Бюджет</small>
-                            <p class="mb-0 fw-bold">${{ project.min_budget }} - ${{ project.max_budget }}</p>
+                            <p class="mb-0 fw-bold">${{ project.budget_min }} - ${{ project.budget_max }}</p>
                         </div>
                         
                         <div class="mb-3 pb-3 border-bottom">
@@ -125,7 +125,22 @@
                                             </small>
                                         </div>
                                         <div class="p-3 rounded-lg message-bubble {% if message.sender == request.user %}message-sent{% else %}message-received{% endif %}">
-                                            <p class="mb-0">{{ message.content }}</p>
+                                            {% if message.content %}
+                                                <p class="mb-2">{{ message.content }}</p>
+                                            {% endif %}
+                                            {% if message.attachment %}
+                                                <div class="message-attachment mt-2">
+                                                    <a href="{{ message.attachment.url }}" target="_blank" class="text-decoration-none">
+                                                        <div class="d-flex align-items-center p-2 rounded" style="background: rgba(0,0,0,0.1);">
+                                                            <i class="fas fa-file me-2" style="font-size: 1.5rem;"></i>
+                                                            <div>
+                                                                <div class="fw-bold small">{{ message.attachment.name }}</div>
+                                                                <small class="text-muted"><i class="fas fa-download"></i> Скачать</small>
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -140,13 +155,23 @@
                     
                     <!-- Message Input -->
                     <div class="card-footer bg-white border-top rounded-bottom-lg p-3">
-                        <form id="message-form" method="post" class="d-flex gap-2">
+                        <form id="message-form" method="post" class="d-flex gap-2" enctype="multipart/form-data">
                             {% csrf_token %}
-                            <input type="text" id="message-input" name="content" class="form-control rounded-pill" placeholder="Введите сообщение..." required style="border: 2px solid #e9ecef; background: #f8f9fa;">
+                            <input type="file" id="attachment-input" name="attachment" class="d-none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.zip,.rar">
+                            <button type="button" id="attachment-btn" class="btn btn-outline-secondary rounded-circle" style="width: 45px; height: 45px;" title="Прикрепить файл">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <input type="text" id="message-input" name="content" class="form-control rounded-pill" placeholder="Введите сообщение..." style="border: 2px solid #e9ecef; background: #f8f9fa;">
                             <button type="submit" class="btn rounded-circle p-0" style="width: 45px; height: 45px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; display: flex; align-items: center; justify-content: center;">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </form>
+                        <div id="file-preview" class="mt-2 d-none">
+                            <div class="alert alert-info d-flex justify-content-between align-items-center mb-0">
+                                <span id="file-name"><i class="fas fa-file"></i> <span id="file-name-text"></span></span>
+                                <button type="button" id="remove-file-btn" class="btn btn-sm btn-outline-danger"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -234,7 +259,32 @@ document.addEventListener('DOMContentLoaded', function() {
         headers: {
             'X-CSRFToken': '{{ csrf_token }}'
         }
-    }).catch(err => console.error('Error marking messages read:', err));
+    })
+    .then(() => {
+        // Обновляем счётчик уведомлений после прочтения
+        console.log('Messages marked as read, updating badge...');
+        if (typeof updateChatNotifications === 'function') {
+            updateChatNotifications();
+        } else {
+            // Если функция недоступна, пробуем обновить напрямую
+            fetch('{% url "marketplace:chat_notifications" %}')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Notification data:', data);
+                    const badge = document.getElementById('chat-notification-badge');
+                    if (badge) {
+                        if (data.unread_count > 0) {
+                            badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(error => console.error('Error loading chat notifications:', error));
+        }
+    })
+    .catch(err => console.error('Error marking messages read:', err));
 
     // Проверяем статус прочтения сообщений каждые 5 секунд
     function updateMessageStatus() {
@@ -264,28 +314,67 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обновляем статус каждые 5 секунд
     setInterval(updateMessageStatus, 5000);
 
+    // Обработка кнопки прикрепления файла
+    const attachmentBtn = document.getElementById('attachment-btn');
+    const attachmentInput = document.getElementById('attachment-input');
+    const filePreview = document.getElementById('file-preview');
+    const fileNameText = document.getElementById('file-name-text');
+    const removeFileBtn = document.getElementById('remove-file-btn');
+    let selectedFile = null;
+
+    if (attachmentBtn) {
+        attachmentBtn.addEventListener('click', function() {
+            attachmentInput.click();
+        });
+    }
+
+    if (attachmentInput) {
+        attachmentInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                fileNameText.textContent = file.name;
+                filePreview.classList.remove('d-none');
+            }
+        });
+    }
+
+    if (removeFileBtn) {
+        removeFileBtn.addEventListener('click', function() {
+            selectedFile = null;
+            attachmentInput.value = '';
+            filePreview.classList.add('d-none');
+        });
+    }
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
         const content = input.value.trim();
-        if (!content) {
-            console.error('Empty content');
+        if (!content && !selectedFile) {
+            console.error('Empty content and no file');
             return;
         }
 
-        console.log('Sending message:', content);
+        console.log('Sending message:', content, selectedFile ? 'with file: ' + selectedFile.name : '');
 
         const submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
+        // Используем FormData для отправки файлов
+        const formData = new FormData();
+        formData.append('content', content);
+        if (selectedFile) {
+            formData.append('attachment', selectedFile);
+        }
+
         fetch('{% url "marketplace:send_message" chat.id %}', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
                 'X-CSRFToken': '{{ csrf_token }}'
             },
-            body: `content=${encodeURIComponent(content)}`
+            body: formData
         })
         .then(response => {
             console.log('Response status:', response.status);
@@ -294,7 +383,24 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             console.log('Response data:', data);
             if (data.id) {
-                // Добавляем сообщение в DOM с индикатором "доставлено"
+                // Добавляем сообщение в DOM
+                let attachmentHtml = '';
+                if (data.attachment_url) {
+                    attachmentHtml = `
+                        <div class="message-attachment mt-2">
+                            <a href="${data.attachment_url}" target="_blank" class="text-decoration-none">
+                                <div class="d-flex align-items-center p-2 rounded" style="background: rgba(0,0,0,0.1);">
+                                    <i class="fas fa-file me-2" style="font-size: 1.5rem;"></i>
+                                    <div>
+                                        <div class="fw-bold small">${data.attachment_name}</div>
+                                        <small class="text-muted"><i class="fas fa-download"></i> Скачать</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    `;
+                }
+                
                 const messageHtml = `
                     <div class="mb-4 d-flex justify-content-end" data-message-id="${data.id}">
                         <div style="max-width: 70%;">
@@ -306,7 +412,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </small>
                             </div>
                             <div class="p-3 rounded-lg message-bubble message-sent">
-                                <p class="mb-0">${data.content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+                                ${data.content ? `<p class="mb-2">${data.content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
+                                ${attachmentHtml}
                             </div>
                         </div>
                     </div>
@@ -314,6 +421,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 input.value = '';
+                
+                // Сбрасываем файл
+                selectedFile = null;
+                attachmentInput.value = '';
+                filePreview.classList.add('d-none');
             } else if (data.error) {
                 alert('Ошибка: ' + data.error);
             }

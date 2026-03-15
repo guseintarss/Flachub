@@ -360,12 +360,17 @@ def get_chat_notifications(request):
         Q(project__client=request.user) |
         Q(project__assigned_to=request.user)
     )
-    
+
     total_unread = 0
     for chat in chats:
-        unread = chat.messages.exclude(sender=request.user).count()
+        # Считаем только непрочитанные сообщения не от текущего пользователя
+        unread = chat.messages.filter(
+            is_read=False
+        ).exclude(
+            sender=request.user
+        ).count()
         total_unread += unread
-    
+
     return JsonResponse({
         'unread_count': total_unread,
         'chats_count': chats.count()
@@ -376,11 +381,15 @@ def get_chat_notifications(request):
 @require_http_methods(["POST"])
 def mark_messages_read_view(request, chat_id):
     """Отметить сообщения как прочитанные"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     chat = get_object_or_404(models.ProjectChat, pk=chat_id)
     
     # Проверяем права
     if (request.user != chat.project.client and
         request.user != chat.project.assigned_to):
+        logger.warning(f"User {request.user} not authorized for chat {chat_id}")
         return HttpResponseForbidden('You are not a participant in this project')
     
     # Отмечаем все непрочитанные сообщения как прочитанные
@@ -391,10 +400,14 @@ def mark_messages_read_view(request, chat_id):
         sender=request.user
     )
     
+    logger.info(f"Marking {unread_messages.count()} messages as read for user {request.user}")
+    
     updated_count = unread_messages.update(
         is_read=True,
         read_at=timezone.now()
     )
+    
+    logger.info(f"Marked {updated_count} messages as read")
     
     return JsonResponse({
         'success': True,
@@ -437,21 +450,36 @@ def send_message_view(request, chat_id):
 
         content = request.POST.get('content', '').strip()
         
-        if not content:
-            return JsonResponse({'error': 'Message cannot be empty'}, status=400)
+        # Обработка файла
+        attachment = None
+        attachment_url = None
+        attachment_name = None
+        if request.FILES.get('attachment'):
+            attachment = request.FILES.get('attachment')
+            attachment_name = attachment.name
+        
+        if not content and not attachment:
+            return JsonResponse({'error': 'Message or attachment required'}, status=400)
 
         message = models.ChatMessage.objects.create(
             chat=chat,
             sender=request.user,
             content=content,
+            attachment=attachment,
         )
 
-        return JsonResponse({
+        response_data = {
             'id': str(message.id),
             'sender': request.user.username,
             'content': message.content,
             'created_at': message.created_at.isoformat(),
-        })
+        }
+        
+        if message.attachment:
+            response_data['attachment_url'] = message.attachment.url
+            response_data['attachment_name'] = message.attachment.name
+
+        return JsonResponse(response_data)
     except Exception as e:
         import logging
         logger = logging.getLogger(__name__)
