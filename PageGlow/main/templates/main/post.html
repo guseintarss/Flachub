@@ -47,7 +47,6 @@
 
     {% with post.tags.all as tags %}
     {% if tags %}
-    <p class="t-title">Теги:</p>
     <ul class="tags-list">
         {% for t in tags %}
         <li><a href="{{ t.get_absolute_url }}" class="badge bg-light text-dark text-decoration-none me-1">{{ t.tag }}</a></li>
