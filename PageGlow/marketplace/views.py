@@ -276,26 +276,30 @@ class BidAcceptView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """Принять предложение"""
     model = models.Bid
     fields = []
-    
+
     def test_func(self):
         bid = self.get_object()
         return bid.project.client == self.request.user
-    
+
     def post(self, request, *args, **kwargs):
         bid = self.get_object()
-        
+
         # Отклоняем все остальные предложения
         bid.project.bids.exclude(id=bid.id).update(status=models.BidStatus.REJECTED)
-        
+
         # Принимаем это предложение
         bid.status = models.BidStatus.ACCEPTED
         bid.save()
-        
+
         # Обновляем статус проекта
         bid.project.status = models.ProjectStatus.IN_PROGRESS
         bid.project.assigned_to = bid.freelancer
         bid.project.save()
         
+        # Создаём чат для проекта
+        from marketplace.models import ProjectChat
+        ProjectChat.objects.get_or_create(project=bid.project)
+
         return redirect('marketplace:project_detail', pk=bid.project.pk)
 
 
@@ -326,37 +330,133 @@ def project_chat_view(request, project_id):
 
 
 @login_required
+def chats_list_view(request):
+    """Список всех чатов пользователя"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # Получаем все чаты, где пользователь участвует
+    chats = models.ProjectChat.objects.filter(
+        Q(project__client=request.user) |
+        Q(project__assigned_to=request.user)
+    ).select_related('project', 'project__client', 'project__assigned_to').order_by('-project__created_at')
+    
+    logger.info(f"User {request.user} has {chats.count()} chats")
+    for chat in chats:
+        logger.info(f"Chat for project {chat.project.title}: client={chat.project.client}, assigned_to={chat.project.assigned_to}")
+        chat.unread_count = chat.messages.exclude(sender=request.user).count()
+    
+    context = {
+        'title': 'Мои чаты',
+        'chats': chats,
+    }
+    return render(request, 'marketplace/chats_list.html', context)
+
+
+@login_required
+def get_chat_notifications(request):
+    """Получить количество непрочитанных сообщений"""
+    chats = models.ProjectChat.objects.filter(
+        Q(project__client=request.user) |
+        Q(project__assigned_to=request.user)
+    )
+    
+    total_unread = 0
+    for chat in chats:
+        unread = chat.messages.exclude(sender=request.user).count()
+        total_unread += unread
+    
+    return JsonResponse({
+        'unread_count': total_unread,
+        'chats_count': chats.count()
+    })
+
+
+@login_required
 @require_http_methods(["POST"])
-def send_message_view(request, chat_id):
-    """Отправить сообщение в чат"""
+def mark_messages_read_view(request, chat_id):
+    """Отметить сообщения как прочитанные"""
     chat = get_object_or_404(models.ProjectChat, pk=chat_id)
     
     # Проверяем права
-    if (request.user != chat.project.client and 
+    if (request.user != chat.project.client and
         request.user != chat.project.assigned_to):
         return HttpResponseForbidden('You are not a participant in this project')
     
-    content = request.POST.get('content', '').strip()
-    embedded_url = request.POST.get('embedded_url', '').strip()
-    embedded_type = request.POST.get('embedded_type', '')
+    # Отмечаем все непрочитанные сообщения как прочитанные
+    from django.utils import timezone
+    unread_messages = chat.messages.filter(
+        is_read=False
+    ).exclude(
+        sender=request.user
+    )
     
-    if not content:
-        return JsonResponse({'error': 'Message cannot be empty'}, status=400)
-    
-    message = models.ChatMessage.objects.create(
-        chat=chat,
-        sender=request.user,
-        content=content,
-        embedded_url=embedded_url if embedded_url else None,
-        embedded_type=embedded_type if embedded_type else None
+    updated_count = unread_messages.update(
+        is_read=True,
+        read_at=timezone.now()
     )
     
     return JsonResponse({
-        'id': str(message.id),
-        'sender': request.user.username,
-        'content': message.content,
-        'created_at': message.created_at.isoformat(),
+        'success': True,
+        'marked_count': updated_count
     })
+
+
+@login_required
+def get_messages_status_view(request, chat_id):
+    """Получить статус прочтения сообщений"""
+    chat = get_object_or_404(models.ProjectChat, pk=chat_id)
+    
+    # Проверяем права
+    if (request.user != chat.project.client and
+        request.user != chat.project.assigned_to):
+        return HttpResponseForbidden('You are not a participant in this project')
+    
+    # Получаем все сообщения отправителя, которые были прочитаны
+    read_messages = chat.messages.filter(
+        is_read=True,
+        sender=request.user
+    ).values_list('id', flat=True)
+    
+    return JsonResponse({
+        'read_message_ids': [str(id) for id in read_messages]
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def send_message_view(request, chat_id):
+    """Отправить сообщение в чат"""
+    try:
+        chat = get_object_or_404(models.ProjectChat, pk=chat_id)
+
+        # Проверяем права
+        if (request.user != chat.project.client and
+            request.user != chat.project.assigned_to):
+            return HttpResponseForbidden('You are not a participant in this project')
+
+        content = request.POST.get('content', '').strip()
+        
+        if not content:
+            return JsonResponse({'error': 'Message cannot be empty'}, status=400)
+
+        message = models.ChatMessage.objects.create(
+            chat=chat,
+            sender=request.user,
+            content=content,
+        )
+
+        return JsonResponse({
+            'id': str(message.id),
+            'sender': request.user.username,
+            'content': message.content,
+            'created_at': message.created_at.isoformat(),
+        })
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Send message error: {str(e)}", exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 # ===== DASHBOARD VIEWS =====

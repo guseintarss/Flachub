@@ -27,9 +27,13 @@ urlpatterns = [
     path('projects/<uuid:project_id>/bid/', views.BidCreateView.as_view(), name='bid_create'),
     path('bids/<uuid:pk>/accept/', views.BidAcceptView.as_view(), name='bid_accept'),
     
-    # Чат нету
+    # Чат
+    path('chats/', views.chats_list_view, name='chats_list'),
+    path('chat/notifications/', views.get_chat_notifications, name='chat_notifications'),
     path('projects/<uuid:project_id>/chat/', views.project_chat_view, name='project_chat'),
     path('chat/<uuid:chat_id>/message/', views.send_message_view, name='send_message'),
+    path('chat/<uuid:chat_id>/mark-read/', views.mark_messages_read_view, name='mark_messages_read'),
+    path('chat/<uuid:chat_id>/messages-status/', views.get_messages_status_view, name='get_messages_status'),
     
     # Дашборды 
     path('freelancer/dashboard/', views.freelancer_dashboard, name='freelancer_dashboard'), # есть

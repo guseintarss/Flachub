@@ -66,9 +66,48 @@
         opacity: 0.7;
         transition: opacity 0.2s;
     }
-    
+
     .delete-comment:hover {
         opacity: 1;
+    }
+    
+    /* Стили для кнопки с комментариями */
+    .comments-toggle {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .comments-toggle:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Стили для лайков обсуждения */
+    .like-discussion-btn.liked i {
+        color: #dc3545 !important;
+    }
+    
+    .like-discussion-btn:hover i {
+        color: #dc3545 !important;
+    }
+    
+    /* Скрытые ответы */
+    .hidden-replies {
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .show-all-replies {
+        color: #0d6efd;
+        font-size: 0.875rem;
+    }
+    
+    .show-all-replies:hover {
+        color: #0a58ca;
+        text-decoration: underline;
     }
 </style>
 {% endblock %}
@@ -126,12 +165,34 @@
                 {% endfor %}
             </div>
             {% endif %}
+            
+            <!-- Лайки и поделиться -->
+            <div class="discussion-stats d-flex  mb-3">
+                {% if user.is_authenticated %}
+                <button class="like-discussion-btn btn btn-sm btn-link text-decoration-none"
+                        data-discussion-id="{{ discussion.id }}">
+                    <i class="fas fa-heart {% if user in discussion.likes.all %}text-danger{% else %}text-muted{% endif %}"></i>
+                    <span class="likes-count">{{ discussion.number_of_likes }}</span>
+                </button>
+                {% else %}
+                <span class="text-muted">
+                    <i class="fas fa-heart text-muted"></i>
+                    <span class="likes-count">{{ discussion.number_of_likes }}</span>
+                </span>
+                {% endif %}
+                
+                <button class="share-discussion-btn btn btn-sm btn-link text-decoration-none"
+                        data-discussion-url="{{ request.build_absolute_uri }}">
+                    <i class="fas fa-share text-muted"></i>
+                    <span>Поделиться</span>
+                </button>
+            </div>
 
             <!-- Кнопки управления для автора/админа -->
             {% if user == discussion.author or user.is_staff %}
             <div class="discussion-controls mt-3 pt-3 border-top">
                 {% if user == discussion.author or user.is_staff %}
-                <button id="close-discussion-btn" class="btn btn-sm btn-outline-secondary" 
+                <button id="close-discussion-btn" class="btn btn-sm btn-outline-secondary"
                         data-discussion-id="{{ discussion.id }}"
                         data-is-closed="{{ discussion.is_closed|yesno:'true,false' }}">
                     {% if discussion.is_closed %}
@@ -144,26 +205,27 @@
             </div>
             {% endif %}
         </div>
-        <div class="comments-header d-flex justify-content-between align-items-center mb-3">
-            <h3 class="h4 mb-0">
-                <i class="fas fa-comments"></i>
-                {{ discussion.comments_count }}
-            </h3>
-            {% if is_closed %}
-            <span class="badge bg-warning text-dark">
-                <i class="fas fa-lock"></i> Обсуждение закрыто
-            </span>
-            {% endif %}
+        
+        <!-- Кнопка с количеством комментариев -->
+        <div class="comments-toggle card mb-3" id="comments-toggle">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <h3 class="h4 mb-0">
+                    <i class="fas fa-comments"></i>
+                     {{ discussion.comments_count }}
+                </h3>
+                <button class="btn btn-outline-primary" id="toggle-comment-form-btn">
+                    <i class="fas fa-pen"></i> Написать комментарий
+                </button>
+            </div>
         </div>
     </article>
 
     <!-- Комментарии -->
     <section id="comments-section" class="discussion-comments">
         
-
-        <!-- Форма добавления комментария -->
+        <!-- Форма добавления комментария (скрыта по умолчанию) -->
         {% if user.is_authenticated and not is_closed %}
-        <div class="comment-form-container card mb-4">
+        <div class="comment-form-container card mb-4" id="comment-form-container" style="display: none;">
             <div class="card-body">
                 <form id="comment-form">
                     {% csrf_token %}
@@ -563,6 +625,109 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    
+    // Лайки обсуждения
+    document.addEventListener('click', function(e) {
+        const likeBtn = e.target.closest('.like-discussion-btn');
+        if (likeBtn) {
+            e.preventDefault();
+            const discussionId = likeBtn.getAttribute('data-discussion-id');
+            const icon = likeBtn.querySelector('i');
+            const countSpan = likeBtn.querySelector('.likes-count');
+
+            fetch('{% url "toggle_discussion_like" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `discussion_id=${discussionId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    countSpan.textContent = data.likes_count;
+                    if (data.liked) {
+                        icon.classList.remove('text-muted');
+                        icon.classList.add('text-danger');
+                    } else {
+                        icon.classList.remove('text-danger');
+                        icon.classList.add('text-muted');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling like:', error);
+            });
+        }
+    });
+    
+    // Поделиться обсуждением
+    document.addEventListener('click', function(e) {
+        const shareBtn = e.target.closest('.share-discussion-btn');
+        if (shareBtn) {
+            e.preventDefault();
+            const url = shareBtn.getAttribute('data-discussion-url');
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '{{ discussion.title }}',
+                    url: url
+                }).catch(err => console.log('Share error:', err));
+            } else {
+                // Копируем в буфер обмена
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Ссылка скопирована в буфер обмена!');
+                }).catch(err => {
+                    // Fallback для старых браузеров
+                    const textarea = document.createElement('textarea');
+                    textarea.value = url;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    alert('Ссылка скопирована в буфер обмена!');
+                });
+            }
+        }
+    });
+    
+    // Toggle формы комментария
+    const toggleFormBtn = document.getElementById('toggle-comment-form-btn');
+    const commentFormContainer = document.getElementById('comment-form-container');
+    
+    if (toggleFormBtn && commentFormContainer) {
+        toggleFormBtn.addEventListener('click', function() {
+            if (commentFormContainer.style.display === 'none') {
+                commentFormContainer.style.display = 'block';
+                toggleFormBtn.innerHTML = '<i class="fas fa-times"></i> Закрыть';
+                // Прокрутка к форме
+                commentFormContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                // Фокус на textarea
+                setTimeout(() => {
+                    document.getElementById('comment-content').focus();
+                }, 500);
+            } else {
+                commentFormContainer.style.display = 'none';
+                toggleFormBtn.innerHTML = '<i class="fas fa-pen"></i> Написать комментарий';
+            }
+        });
+    }
+    
+    // Показать все ответы
+    document.addEventListener('click', function(e) {
+        const showAllBtn = e.target.closest('.show-all-replies');
+        if (showAllBtn) {
+            e.preventDefault();
+            const parentId = showAllBtn.getAttribute('data-parent-id');
+            const hiddenReplies = document.querySelector(`.hidden-replies[data-parent-id="${parentId}"]`);
+            
+            if (hiddenReplies) {
+                hiddenReplies.style.display = 'block';
+                showAllBtn.style.display = 'none';
+            }
+        }
+    });
 });
 </script>
 {% endblock %}

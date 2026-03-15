@@ -108,12 +108,20 @@
                                             {% endif %}
                                         </div>
                                     {% endif %}
-                                    
+
                                     <div style="max-width: 70%;">
                                         <div class="{% if message.sender == request.user %}text-end{% endif %} mb-1">
                                             <small class="text-muted">
                                                 <strong>{{ message.sender.get_full_name|default:message.sender.username }}</strong>
                                                 <span class="ms-2">{{ message.created_at|date:"H:i" }}</span>
+                                                {% if message.sender == request.user %}
+                                                    <!-- Индикаторы статуса для отправителя -->
+                                                    {% if message.is_read %}
+                                                        <i class="fas fa-check-double text-primary ms-1" title="Прочитано"></i>
+                                                    {% elif message.is_delivered %}
+                                                        <i class="fas fa-check text-muted ms-1" title="Доставлено"></i>
+                                                    {% endif %}
+                                                {% endif %}
                                             </small>
                                         </div>
                                         <div class="p-3 rounded-lg message-bubble {% if message.sender == request.user %}message-sent{% else %}message-received{% endif %}">
@@ -213,19 +221,64 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('message-form');
     const input = document.getElementById('message-input');
     const messagesContainer = document.querySelector('.card-body.overflow-auto');
-    
+
     // Автопрокрутка вниз при загрузке
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
+
+    console.log('Chat ID:', '{{ chat.id }}');
+    console.log('Send URL:', '{% url "marketplace:send_message" chat.id %}');
+
+    // Отмечаем сообщения как прочитанные при загрузке
+    fetch('{% url "marketplace:mark_messages_read" chat.id %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    }).catch(err => console.error('Error marking messages read:', err));
+
+    // Проверяем статус прочтения сообщений каждые 5 секунд
+    function updateMessageStatus() {
+        fetch('{% url "marketplace:get_messages_status" chat.id %}', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.read_message_ids) {
+                data.read_message_ids.forEach(id => {
+                    const icon = document.querySelector(`[data-message-id="${id}"] .fa-check`);
+                    if (icon && icon.getAttribute('data-status') !== 'read') {
+                        icon.classList.remove('fa-check', 'text-muted');
+                        icon.classList.add('fa-check-double', 'text-primary');
+                        icon.title = 'Прочитано';
+                        icon.setAttribute('data-status', 'read');
+                    }
+                });
+            }
+        })
+        .catch(err => console.error('Error updating message status:', err));
+    }
+
+    // Обновляем статус каждые 5 секунд
+    setInterval(updateMessageStatus, 5000);
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         const content = input.value.trim();
-        if (!content) return;
-        
+        if (!content) {
+            console.error('Empty content');
+            return;
+        }
+
+        console.log('Sending message:', content);
+
         const submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
-        
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
         fetch('{% url "marketplace:send_message" chat.id %}', {
             method: 'POST',
             headers: {
@@ -234,17 +287,22 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: `content=${encodeURIComponent(content)}`
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('Response data:', data);
             if (data.id) {
-                // Добавляем сообщение в DOM
+                // Добавляем сообщение в DOM с индикатором "доставлено"
                 const messageHtml = `
-                    <div class="mb-4 d-flex justify-content-end">
+                    <div class="mb-4 d-flex justify-content-end" data-message-id="${data.id}">
                         <div style="max-width: 70%;">
                             <div class="text-end mb-1">
                                 <small class="text-muted">
                                     <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
                                     <span class="ms-2">${new Date(data.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                    <i class="fas fa-check text-muted ms-1" title="Доставлено" data-status="delivered"></i>
                                 </small>
                             </div>
                             <div class="p-3 rounded-lg message-bubble message-sent">
@@ -256,15 +314,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 input.value = '';
+            } else if (data.error) {
+                alert('Ошибка: ' + data.error);
             }
             submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
         })
         .catch(error => {
             console.error('Error:', error);
+            alert('Ошибка отправки сообщения');
             submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
         });
     });
-    
+
     // Отправка по Enter
     input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {

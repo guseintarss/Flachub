@@ -757,6 +757,34 @@ class ToggleDiscussionCommentLikeView(View):
 
 
 @method_decorator(login_required, name='dispatch')
+class ToggleDiscussionLikeView(View):
+    """AJAX лайк/дизлайк обсуждения"""
+    def post(self, request, *args, **kwargs):
+        try:
+            discussion_id = request.POST.get('discussion_id')
+            if not discussion_id:
+                return JsonResponse({'success': False, 'error': 'ID обсуждения не указан'}, status=400)
+
+            discussion = get_object_or_404(Discussion, id=discussion_id)
+
+            # Переключаем лайк
+            if discussion.likes.filter(id=request.user.id).exists():
+                discussion.likes.remove(request.user)
+                liked = False
+            else:
+                discussion.likes.add(request.user)
+                liked = True
+
+            return JsonResponse({
+                'success': True,
+                'liked': liked,
+                'likes_count': discussion.number_of_likes()
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@method_decorator(login_required, name='dispatch')
 class DeleteDiscussionCommentAjaxView(View):
     """AJAX удаление комментария"""
     def post(self, request, *args, **kwargs):

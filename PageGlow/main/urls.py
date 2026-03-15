@@ -23,6 +23,7 @@ urlpatterns = [
     path('ajax/discussions/delete-comment/', views.DeleteDiscussionCommentAjaxView.as_view(), name='delete_discussion_comment_ajax'),
     path('ajax/discussions/close/', views.CloseDiscussionView.as_view(), name='close_discussion'),
     path('ajax/discussions/toggle-comment-like/', views.ToggleDiscussionCommentLikeView.as_view(), name='toggle_discussion_comment_like'),
+    path('ajax/discussions/toggle-like/', views.ToggleDiscussionLikeView.as_view(), name='toggle_discussion_like'),
     
     path('post/<slug:post_slug>/', views.ShowPost.as_view(), name='post'),
     path('category/<slug:cat_slug>/', views.MainCategory.as_view(), name='category'),

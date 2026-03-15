@@ -511,13 +511,13 @@ class ProjectChat(models.Model):
 class ChatMessage(models.Model):
     """Сообщение в чате проекта"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    
+
     chat = models.ForeignKey(ProjectChat, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    
+
     content = models.TextField()
     attachments = models.JSONField(default=list, blank=True)
-    
+
     # Встраивание превью (Figma, Miro)
     embedded_url = models.URLField(blank=True, help_text='URL для встраивания (Figma, Miro)')
     embedded_type = models.CharField(
@@ -529,7 +529,12 @@ class ChatMessage(models.Model):
         ],
         blank=True
     )
-    
+
+    # Статусы прочтения
+    is_delivered = models.BooleanField(default=True, help_text='Сообщение доставлено')
+    is_read = models.BooleanField(default=False, help_text='Сообщение прочитано')
+    read_at = models.DateTimeField(null=True, blank=True, help_text='Время прочтения')
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -539,6 +544,7 @@ class ChatMessage(models.Model):
         ordering = ['created_at']
         indexes = [
             models.Index(fields=['chat', 'created_at']),
+            models.Index(fields=['is_read']),
         ]
 
     def __str__(self):

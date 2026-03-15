@@ -28,7 +28,7 @@
                 </span>
                 {% endif %}
             </div>
-            <div class="comment-actions ms-auto d-flex align-items-center" style="margin-left: auto !important; flex-shrink: 0; gap: 0.25rem; position: absolute; bottom: 8px; right: 17px;">
+            <div class="comment-actions ms-auto d-flex align-items-center" style="margin-left: auto !important; flex-shrink: 0; gap: 0.25rem; position: absolute; bottom: 17px; left: 8px;">
                 {% if user.is_authenticated %}
                 <button class="like-comment-btn btn btn-sm btn-link text-decoration-none p-0 me-1"
                         data-comment-id="{{ comment.id }}"
@@ -51,27 +51,49 @@
                     <span class="ms-1">Ответить</span>
                 </button>
                 {% endif %}
-
-                {% if comment.author == user or user.is_staff %}
-                <button class="delete-comment btn btn-sm btn-outline-danger"
-                        data-comment-id="{{ comment.id }}">
-                    <i class="fas fa-trash"></i>
-                </button>
-                {% endif %}
             </div>
         </div>
         <div class="comment-content">
             {{ comment.content|linebreaks }}
         </div>
+        
+        <!-- Кнопка удаления внизу -->
+        {% if comment.author == user or user.is_staff %}
+        <div class="comment-delete mt-2 text-end">
+            <button class="delete-comment btn btn-sm btn-outline-danger"
+                    data-comment-id="{{ comment.id }}">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        {% endif %}
     </div>
 </div>
 
 <!-- Вложенные ответы -->
 {% if comment.replies.all %}
-<div class="replies-list" style="margin-top: 1rem; margin-left: 0.5rem;">
-    {% for reply in comment.replies.all %}
-        {% include 'main/includes/comment.html' with comment=reply depth=depth|add:1 %}
-    {% endfor %}
+<div class="replies-container" data-parent-id="{{ comment.id }}">
+    <div class="replies-list" style="margin-top: 1rem; margin-left: 0.5rem;">
+        {% for reply in comment.replies.all %}
+            {% if forloop.counter <= 2 %}
+                {% include 'main/includes/comment.html' with comment=reply depth=depth|add:1 %}
+            {% endif %}
+        {% endfor %}
+    </div>
+    
+    {% if comment.replies.count > 2 %}
+    <button class="show-all-replies btn btn-sm btn-link text-decoration-none ms-4 mt-2" 
+            data-parent-id="{{ comment.id }}" 
+            data-total-replies="{{ comment.replies.count }}">
+        <i class="fas fa-comment-dots"></i> Все ответы ({{ comment.replies.count }})
+    </button>
+    <div class="hidden-replies" data-parent-id="{{ comment.id }}" style="display: none;">
+        {% for reply in comment.replies.all %}
+            {% if forloop.counter > 2 %}
+                {% include 'main/includes/comment.html' with comment=reply depth=depth|add:1 %}
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 {% endif %}
 

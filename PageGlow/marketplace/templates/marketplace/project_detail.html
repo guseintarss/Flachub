@@ -100,7 +100,7 @@
             <!-- Bids Section -->
             <div class="project-card">
                 <h3 class="mb-4">Предложения ({{ bids.count }})</h3>
-                
+
                 {% if bids %}
                     {% for bid in bids %}
                         <div class="p-3 border-bottom">
@@ -118,9 +118,24 @@
                                     <small class="text-muted">
                                         <i class="fas fa-hourglass-half"></i> ~{{ bid.estimated_days }} дн.
                                     </small>
-                                    
+
                                 {% endif %}
                             </div>
+                            
+                            <!-- Кнопки для клиента -->
+                            {% if user == project.client %}
+                                <div class="mt-3 d-flex gap-2">
+                                    <form method="post" action="{% url 'marketplace:bid_accept' bid.pk %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Принять это предложение?')">
+                                            <i class="fas fa-check"></i> Принять
+                                        </button>
+                                    </form>
+                                    <a href="{% url 'marketplace:project_chat' project.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-comments"></i> Написать
+                                    </a>
+                                </div>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 {% else %}
@@ -176,8 +191,16 @@
                         <span class="float-end">{{ bids.count }}</span>
                     </li>
                     <li class="mb-2">
-                        <strong><i class="fas fa-comments"></i> Сообщения:</strong>
-                        <span class="float-end">{{ project.chat.messages.count|default:0 }}</span>
+                        <strong><i class="fas fa-comments"></i> Чат:</strong>
+                        <span class="float-end">
+                            {% if project.chat %}
+                                <a href="{% url 'marketplace:project_chat' project.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-comments"></i> {{ project.chat.messages.count|default:0 }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </span>
                     </li>
                 </ul>
             </div>
