@@ -17,15 +17,28 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}" />
     <meta name="apple-mobile-web-app-title" content="MyWebSite" />
     <link rel="manifest" href="{% static 'images/site.webmanifest' %}" />
+    <meta name="apple-mobile-web-app-title" content="PageGlow" />
     {% block head %}{% endblock %}
     {% block extra_css %}{% endblock %}
     <script>
-        // Устанавливаем тему сразу, до загрузки остального JS
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.documentElement.classList.add('dark-mode');
-            document.documentElement.setAttribute('data-bs-theme', 'dark');
-        }
+        // Мгновенное применение темы до загрузки DOM (предотвращает мерцание)
+        (function() {
+            const savedTheme = localStorage.getItem('pageglow-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+            } else if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark-mode');
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+            } else {
+                // Нет сохраненной темы - используем системную
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (prefersDark) {
+                    document.documentElement.classList.add('dark-mode');
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                }
+            }
+        })();
     </script>
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -42,8 +55,9 @@
         </nav>
         {% block header %} {% endblock %}
         <div class="user-area">
-            <button id="theme-toggle" class="theme-toggle" aria-pressed="false">
-                ☀️
+            <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему" aria-pressed="false" title="Переключить тему">
+                <span class="icon sun-icon">☀️</span>
+                <span class="icon moon-icon" style="display:none;">🌙</span>
             </button>
             <a id="search" href="#">
                 <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0,0,256,256">
@@ -136,6 +150,10 @@
       <p>&copy; 2026 PageGlow. Все права защищены.</p>
     </div>
 </footer>
+
+<!-- Переключатель темы -->
+<script src="{% static 'main/js/theme-toggle.js' %}"></script>
+
 {% block extra_js %}{% endblock %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {

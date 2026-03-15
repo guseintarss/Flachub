@@ -33,9 +33,9 @@ document.body.addEventListener('htmx:configRequest', function (event) {
       
 
     <div class="author-stats">
-        <span><strong>{{ published_posts.count }}</strong> статей</span>
-        <span><strong>{{ user.subscribers.count }}</strong> подписчиков</span>
-        <span><strong>{{ user.subscriptions.count }}</strong> подписок</span>
+        <span><strong>{{ published_posts.count }}</strong> 📄 статей</span>
+        <span><strong>{{ user.subscribers.count }}</strong> 👥 подписчиков</span>
+        <span><strong>{{ user.subscriptions.count }}</strong> ➕ подписок</span>
     </div>
 
     {%if user.about_me%}
