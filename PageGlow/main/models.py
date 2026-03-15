@@ -155,7 +155,7 @@ class TagPost(models.Model):
 
     def get_absolute_url(self):
         return reverse('tag', kwargs={'tag_slug': self.slug})
-    
+
     def save(self, *args, **kwargs):
         key = make_template_fragment_key("side_cache")
         cache.delete(key)

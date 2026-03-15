@@ -103,8 +103,12 @@
     </div>
 </article>
 <div class="alert alert-light" role="alert">
-  💼 Ищете разработчика для вашего API?
-   <a href="{% url 'marketplace:home' %}">[Найти специалиста в маркетплейсе]</a>
+  
+   {% if post.cat and post.cat.slug == 'obuchenie' %}
+       C теорией закончили пора перейти к практике -><a href="{% url 'marketplace:home' %}"><strong>[Перейти к практике в маркетплейсе]</strong></a>
+   {% else %}
+       💼 Ищете разработчика для вашего API?-><a href="{% url 'marketplace:freelancers_list' %}">[Найти специалиста в маркетплейсе]</a>
+   {% endif %}
 </div>
 
 <!-- Похожие статьи -->
