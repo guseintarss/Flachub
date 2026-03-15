@@ -269,7 +269,7 @@ class Discussion(models.Model):
     is_published = models.BooleanField(
         choices=tuple(map(lambda x: (bool(x[0]), x[1]), Status.choices)),
         default=Status.PUBLISHED,
-        verbose_name='Опубликовано?'
+        verbose_name='Опубликовано?' 
     )
     is_closed = models.BooleanField(default=False, verbose_name='Закрыто')
     views = models.PositiveIntegerField(default=0, verbose_name='Просмотры')

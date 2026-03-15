@@ -22,7 +22,7 @@
         <div>
             <h2>{{ p.title }}</h2>
             <p class="meta">
-                Категория: {{ p.cat.name }} 
+                <span class="badge bg-primary">{{ p.cat.name }} </span>
                 &bull; <span title="{{ p.time_create|date:'d.m.Y H:i' }}">{{ p.time_create|time_ago }}</span>
                 &bull; 👁 {{ p.views }}
                 &bull; ❤️ {{ p.number_of_likes }}
@@ -38,16 +38,14 @@
         <hr>
             {% with p.tags.all as tags %}
                 {% if tags %}
-                    <p class="t-title">Теги:</p>
                     <ul class="tags-list">
                         {% for t in tags %}
                             <li><a href="{{t.get_absolute_url}}" class="badge bg-light text-dark text-decoration-none me-1">{{t.tag}}</a></li>
                         {% endfor %}
                     </ul>
-                    
                 {%endif%}
             {% endwith %}
-        <p><a class="read-more" href="{{ p.get_absolute_url }}">Читать далее→</a></p>
+        <a class="read-more" href="{{ p.get_absolute_url }}">Читать далее→</a>
     </div>
 </article>
 {% endfor %}

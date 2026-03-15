@@ -15,7 +15,7 @@ from django.contrib import messages
 from rest_framework import viewsets, permissions
 
 from PageGlow import settings
-from main.models import Post
+from main.models import Discussion, Post
 from main.utils import DataMixin
 from users.forms import LoginUserForm, RegisterUserForm, ProfileUserForm, UserPasswordChangeForm
 from users.models import User, Rule
@@ -129,6 +129,10 @@ def profile_user(request):
         favorites=user  # Посты, где текущий пользователь в списке избранных
     )
 
+    discussions_data = Discussion.objects.filter(
+        author = user,
+    )
+
     extra_context = {
         'title': 'Профиль пользователя',
         'default_image': settings.DEFAULT_USER_IMAGE,
@@ -136,6 +140,7 @@ def profile_user(request):
         'published_posts': published_posts,
         'drafts': drafts,
         'favorites': favorites,
+        'discussion_dis': discussions_data,
         'user': user,
     }
     return render(request, 'users/profile.html', extra_context)

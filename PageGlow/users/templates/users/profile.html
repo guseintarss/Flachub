@@ -50,7 +50,7 @@ document.body.addEventListener('htmx:configRequest', function (event) {
 </div>
 
 <div class="post">
-  <ul class="nav nav-underline">
+  <ul class="nav-head nav nav-underline">
           <li class="nav-item">
             <a href="#published" class="nav-link tab" aria-current="page">Опубликованные </a>
           </li>
@@ -60,113 +60,173 @@ document.body.addEventListener('htmx:configRequest', function (event) {
           <li class="nav-item">
             <a href="#favorites" class="nav-link tab" aria-current="page">Избранные </a>
           </li>
+          <li class="nav-item">
+            <a href="#discussions" class="nav-link tab" aria-current="page">Обсуждения </a>
+          </li>
   </ul>
 </div>
       <!-- Контент вкладок -->
-      <div id="published" class="content-tab">
-          {% for post in published_posts %}
-              <article class="post">
-                  <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
-                    <p class="meta">
-                        Категория: {{ post.cat.name }} 
-                        &bull; <span title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span>
-                        &bull; 👁 {{ post.views }}
-                        &bull; ❤️ {{ post.number_of_likes }}
-                    </p>
-                    {% if post.photo %}
-                        <p><img class="img-article-left thumb" src="{{post.photo.url}}" alt=""></p>
-                    {% endif %}
-                  {% autoescape off %}
-                  <p class="meta">{{ post.meta }}</p>
-                  {{ post.content|truncatewords:20|safe }}
-                  {% endautoescape %}
-                  <p><a class="read-more" href="{% url 'edit_page' post.slug %}">Редактировать пост</a></p>
-                  <p><a class="read-more" href="{{ post.get_absolute_url }}">Читать далее→</a></p>
-                  <p><a class="delete-post" href="{% url 'users:article-delete' post.slug %}"><svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" >
-              <path d="M17 6V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H2v2h2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8h2V6zM9 4h6v2H9zM6 20V8h12v12z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path>
-              </svg></a></p>
-              </article>
-          {% empty %}
-            <div class="alert alert-info" role="alert">
-                <p>Нет опубликованных постов.</p>
-            </div>
-          {% endfor %}
-      </div>
+        <div id="published" class="content-tab">
+            {% for post in published_posts %}
+                <article class="post">
+                    <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+                        <p class="meta">
+                            Категория: {{ post.cat.name }} 
+                            &bull; <span title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span>
+                            &bull; 👁 {{ post.views }}
+                            &bull; ❤️ {{ post.number_of_likes }}
+                        </p>
+                        {% if post.photo %}
+                            <p><img class="img-article-left thumb" src="{{post.photo.url}}" alt=""></p>
+                        {% endif %}
+                    {% autoescape off %}
+                    <p class="meta">{{ post.meta }}</p>
+                    {{ post.content|truncatewords:20|safe }}
+                    {% endautoescape %}
+                    <p><a class="read-more" href="{% url 'edit_page' post.slug %}">Редактировать пост</a></p>
+                    <p><a class="read-more" href="{{ post.get_absolute_url }}">Читать далее→</a></p>
+                    <p><a class="delete-post" href="{% url 'users:article-delete' post.slug %}"><svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" >
+                <path d="M17 6V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H2v2h2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8h2V6zM9 4h6v2H9zM6 20V8h12v12z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path>
+                </svg></a></p>
+                </article>
+            {% empty %}
+                <div class="alert alert-info" role="alert">
+                    <p>Нет опубликованных постов.</p>
+                </div>
+            {% endfor %}
+        </div>
 
-      <div id="drafts" class="content-tab" style="display: none;">
-          {% for post in drafts %}
-              <article class="post">
-                  <h3>{{ post.title }}</h3>
-                  <p class="meta">Категория: {{post.cat.name}} &bull; Дата: <span title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span> {{post.author.username|default:'Неизвестно'}}</p>
-                      {% if post.photo %}
-                        <p><img class="img-article-left thumb" src="{{post.photo.url}}" alt=""></p>
-                    {% endif %}
-                  {% autoescape off %}
-                  <p class="meta">{{ post.meta }}</p>
-                  {{ post.content|truncatewords:20|safe }}
-                  {% endautoescape %}
-                  <p><a class="read-more" href="{% url 'edit_page' post.slug %}">Редактировать пост</a></p>
-                  <p><a class="delete-post" href="{% url 'users:article-delete' post.slug %}"><svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" >
-              <path d="M17 6V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H2v2h2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8h2V6zM9 4h6v2H9zM6 20V8h12v12z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path>
-              </svg></a></p>
-              </article>
-          {% empty %}
-            <div class="alert alert-info" role="alert">
-                <p>Нет черновиков.</p>
-            </div>
-          {% endfor %}
-      </div>
+        <!-- Черновики -->
+        <div id="drafts" class="content-tab" style="display: none;">
+            {% for post in drafts %}
+                <article class="post">
+                    <h3>{{ post.title }}</h3>
+                    <p class="meta">Категория: {{post.cat.name}} &bull; Дата: <span title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span> {{post.author.username|default:'Неизвестно'}}</p>
+                        {% if post.photo %}
+                            <p><img class="img-article-left thumb" src="{{post.photo.url}}" alt=""></p>
+                        {% endif %}
+                    {% autoescape off %}
+                    <p class="meta">{{ post.meta }}</p>
+                    {{ post.content|truncatewords:20|safe }}
+                    {% endautoescape %}
+                    <p><a class="read-more" href="{% url 'edit_page' post.slug %}">Редактировать пост</a></p>
+                    <p><a class="delete-post" href="{% url 'users:article-delete' post.slug %}"><svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" >
+                <path d="M17 6V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H2v2h2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8h2V6zM9 4h6v2H9zM6 20V8h12v12z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path>
+                </svg></a></p>
+                </article>
+            {% empty %}
+                <div class="alert alert-info" role="alert">
+                    <p>Нет черновиков.</p>
+                </div>
+            {% endfor %}
+        </div>
 
-      <div id="favorites" class="content-tab" style="display: none;">
-          {% for post in favorites %}
-              <article class="post">
-                  <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
-                    <p class="meta">
-                        Категория: {{ post.cat.name }} 
-                        &bull; <span title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span>
-                        &bull; 👁 {{ post.views }}
-                        &bull; ❤️ {{ post.number_of_likes }}
-                    </p>                      {% if post.photo %}
-                        <p><img class="img-article-left thumb" src="{{post.photo.url}}" alt=""></p>
-                    {% endif %}
-                  {% autoescape off %}
-                  <p class="meta">{{ post.meta }}</p>
-                  {{ post.content|truncatewords:20|safe }}
-                  {% endautoescape %}
-                  <p><a class="read-more" href="{{ post.get_absolute_url }}">Читать далее→</a></p>
-              </article>
-          {% empty %}
-            <div class="alert alert-info" role="alert">
-                <p>Нет избранных постов.</p>
-            </div>
-          {% endfor %}
-      </div>
+        <div id="favorites" class="content-tab" style="display: none;">
+            {% for post in favorites %}
+                <article class="post">
+                    <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+                        <p class="meta">
+                            Категория: {{ post.cat.name }} 
+                            &bull; <span title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span>
+                            &bull; 👁 {{ post.views }}
+                            &bull; ❤️ {{ post.number_of_likes }}
+                        </p>
+                        {% if post.photo %}
+                            <p><img class="img-article-left thumb" src="{{post.photo.url}}" alt=""></p>
+                        {% endif %}
+                    {% autoescape off %}
+                    <p class="meta">{{ post.meta }}</p>
+                    {{ post.content|truncatewords:20|safe }}
+                    {% endautoescape %}
+                    <p><a class="read-more" href="{{ post.get_absolute_url }}">Читать далее→</a></p>
+                </article>
+            {% empty %}
+                <div class="alert alert-info" role="alert">
+                    <p>Нет избранных постов.</p>
+                </div>
+            {% endfor %}
+        </div>
 
-<!-- 
-{% for p in posts %}
-<article class="post">
+        <!-- Обсуждения -->
+        <div id="discussions" class="content-tab" style="display: none;">
+            {% for discussion in discussion_dis %}
+                <div class="discussion-card card mb-3">
+                    <div class="card-body">
+                        <div class="discussion-card-header d-flex justify-content-between align-items-start">
+                            <div class="discussion-title-wrapper">
+                                <h3 class="discussion-title h5 mb-2">
+                                    <a href="{% url 'discussion_detail' discussion.pk %}" class="text-decoration-none">
+                                        {{ discussion.title }}
+                                    </a>
+                                </h3>
+                                <div class="discussion-meta text-muted small">
+                                    <span class="me-3">
+                                        <i class="fas fa-user"></i>
+                                        <a href="{% url 'users:author_profile' discussion.author.username %}" class="text-decoration-none">
+                                            {{ discussion.author.username }}
+                                        </a>
+                                    </span>
+                                    <span class="me-3">
+                                        <i class="fas fa-clock"></i>
+                                        {{ discussion.time_create|date:"d.m.Y H:i" }}
+                                    </span>
+                                    <span class="me-3">
+                                        <i class="fas fa-eye"></i>
+                                        {{ discussion.views }}
+                                    </span>
+                                    <span>
+                                        <i class="fas fa-comments"></i>
+                                        {{ discussion.comments_count }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="discussion-badges">
+                                {% if discussion.is_closed %}
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-lock"></i> Закрыто
+                                </span>
+                                {% endif %}
+                                {% if discussion.cat %}
+                                <span class="badge bg-primary">
+                                    {{ discussion.cat.name }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
 
-   {% if p.is_published == True %}<p><span class="p-2 mb-2 bg-success text-white">Опубликовано</span></p>{% elif p.is_published == False %}<p><span class="p-2 mb-2 bg-warning text-dark">Черновик</span></p>{% endif %}
-    <h2>{{ p.title }}</h2>
-    <p class="meta">Категория: {{p.cat.name}} &bull; Дата: <span title="{{ p.time_update|date:'d.m.Y H:i' }}">{{ p.time_update|time_ago }}</span> {{p.author.username|default:'Неизвестно'}}</p>
-    {% if p.photo %}
-        <p><img class="img-article-left thumb" src="{{p.photo.url}}" alt=""></p>
-    {% endif %}
-    <div class="post-content">
-        {% autoescape off %}
-        <p class="meta">{{ p.meta }}</p>
-        {{ p.content|truncatewords:20|safe }}
-        {% endautoescape %}
-    </div>
-    <p><a class="read-more" href="{% url 'edit_page' p.slug %}">Редактировать пост</a></p>
-    <p><a class="read-more" href="{{ p.get_absolute_url }}">Читать далее→</a></p>
-    <p><a class="delete-post" href="{% url 'users:article-delete' p.slug %}"><svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" >
-<path d="M17 6V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H2v2h2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8h2V6zM9 4h6v2H9zM6 20V8h12v12z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path>
-</svg></a></p>
-</article>
-{% empty %}
-<p>Постов нет</p>
-{% endfor %} -->
+                        <p class="discussion-preview text-muted mb-3">
+                            {{ discussion.content|truncatewords:20 }}
+                        </p>
+
+                        {% if discussion.tags.all %}
+                        <div class="discussion-tags">
+                            {% for tag in discussion.tags.all %}
+                            <a href="{% url 'tag' tag.slug %}" class="badge bg-light text-dark text-decoration-none me-1">
+                                #{{ tag.tag }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        {% with discussion.get_last_comment_author as last_author %}
+                        {% if last_author %}
+                        <div class="last-comment mt-2 text-muted small">
+                            <i class="fas fa-reply"></i>
+                            Последний комментарий:
+                            <a href="{% url 'users:author_profile' last_author.username %}" class="text-decoration-none">
+                                {{ last_author.username }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="alert alert-info" role="alert">
+                    <p>Нет обсуждений.</p>
+                </div>
+            {% endfor %}
+        </div>
 {% endblock %}
 
 {% block extra_js %}

@@ -270,6 +270,9 @@ a:hover{ text-decoration: underline; }
   margin: 0;
   padding:0;
 }
+.nav-head{
+  gap:5rem;
+}
 .top-nav a{
   padding: 8px 12px;
   border-radius: 10px;
@@ -569,7 +572,7 @@ a:hover{ text-decoration: underline; }
   cursor: default;
   text-decoration: none;
 }
-.tags-list{ list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 12px; }
+.tags-list{ list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; margin-bottom: 15px;}
 .tag{
   padding: 6px 12px;
   background: var(--tags-bg);
