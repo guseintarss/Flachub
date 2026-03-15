@@ -75,15 +75,6 @@
 
 {% block content %}
 <div class="discussion-detail-page">
-    <!-- Навигация -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{% url 'discussions' %}" class="text-decoration-none">Обсуждения</a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">{{ discussion.title|truncatechars:50 }}</li>
-        </ol>
-    </nav>
 
     <!-- Основное обсуждение -->
     <article class="discussion-main card mb-4">
@@ -153,14 +144,10 @@
             </div>
             {% endif %}
         </div>
-    </article>
-
-    <!-- Комментарии -->
-    <section id="comments-section" class="discussion-comments">
         <div class="comments-header d-flex justify-content-between align-items-center mb-3">
             <h3 class="h4 mb-0">
                 <i class="fas fa-comments"></i>
-                Комментарии ({{ discussion.comments_count }})
+                {{ discussion.comments_count }}
             </h3>
             {% if is_closed %}
             <span class="badge bg-warning text-dark">
@@ -168,6 +155,11 @@
             </span>
             {% endif %}
         </div>
+    </article>
+
+    <!-- Комментарии -->
+    <section id="comments-section" class="discussion-comments">
+        
 
         <!-- Форма добавления комментария -->
         {% if user.is_authenticated and not is_closed %}

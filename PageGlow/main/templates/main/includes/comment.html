@@ -28,7 +28,7 @@
                 </span>
                 {% endif %}
             </div>
-            <div class="comment-actions ms-auto d-flex align-items-center" style="margin-left: auto !important; flex-shrink: 0; gap: 0.25rem;">
+            <div class="comment-actions ms-auto d-flex align-items-center" style="margin-left: auto !important; flex-shrink: 0; gap: 0.25rem; position: absolute; bottom: 8px; right: 17px;">
                 {% if user.is_authenticated %}
                 <button class="like-comment-btn btn btn-sm btn-link text-decoration-none p-0 me-1"
                         data-comment-id="{{ comment.id }}"

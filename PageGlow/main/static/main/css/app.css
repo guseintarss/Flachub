@@ -603,9 +603,6 @@ display:flex;
 }
 
 .delete-comment {
-    position: absolute;
-    bottom: 8px;
-    right: 17px;
     opacity: 0;
     transition: opacity 0.3s;
 }
@@ -1176,7 +1173,7 @@ input:focus, textarea:focus, select:focus{
 
 /* Детальная страница обсуждения */
 .discussion-detail-page {
-  padding: 20px 0;
+  padding: 0;
 }
 
 .discussion-main {
