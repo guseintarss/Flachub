@@ -356,6 +356,26 @@ a:hover{ text-decoration: underline; }
   display:block;
 }
 
+/* Overlay для затемнения фона */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 998;
+    backdrop-filter: blur(3px);
+}
+
+.site-header.open .menu-overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
 .top-nav{
     position:absolute;
     left: -300px;
@@ -868,26 +888,444 @@ input:focus, textarea:focus, select:focus{
 
 /* Responsive */
 @media (max-width: 992px){
-  .layout{ grid-template-columns: 1fr; }
-  .sidebar{ position: static; }
-  .user-area{justify-content: flex-end; }
-
-  .top-nav{
-    left: -250px;
-    width: 250px;
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 15px;
   }
-  .site-header.open .header__burger-menu span{
+  
+  .sidebar {
+    position: static;
+    order: 2; /* Сайдбар вторым */
+  }
+  
+  .content {
+    order: 1; /* Контент первым */
+  }
+  
+  .user-area {
+    justify-content: flex-end;
+  }
+
+  .top-nav {
+    left: -300px;
+    width: 280px;
+  }
+  
+  .site-header.open .header__burger-menu span {
     background-color: black;
   }
-  .dark-mode .site-header.open .header__burger-menu span{
+  
+  .dark-mode .site-header.open .header__burger-menu span {
     background-color: var(--text);
+  }
+  
+  /* Профиль */
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .profile-avatar {
+    margin: 0 auto;
+  }
+  
+  .profile-stats {
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .stat-item {
+    padding: 10px 20px;
+  }
+  
+  .profile-actions {
+    justify-content: center;
+  }
+  
+  /* Сетка постов */
+  .posts-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+  }
+  
+  /* Сайдбар */
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (max-width: 520px){
-  .header-inner{ gap: 10px; }
-  .top-nav a{ padding: 8px 10px; }
-  .addbutton{ right: 14px; bottom: 14px; }
+@media (max-width: 768px) {
+  .header-inner {
+    gap: 10px;
+    padding: 10px 15px;
+  }
+  
+  .brand {
+    font-size: 18px;
+  }
+  
+  .top-nav {
+    width: 100%;
+    left: -100%;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+  
+  .addbutton {
+    right: 14px;
+    bottom: 14px;
+    width: 50px;
+    height: 50px;
+  }
+  
+  /* Профиль */
+  .profile-name {
+    font-size: 1.5rem;
+  }
+  
+  .profile-stats {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .stat-item {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
+  }
+  
+  .nav-tabs {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .nav-link {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+  }
+  
+  /* Сетка постов */
+  .posts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Форма добавления статьи */
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Сайдбар */
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+  
+  .stat-value {
+    font-size: 1.2rem;
+  }
+  
+  .stat-label {
+    font-size: 0.7rem;
+  }
+  
+  /* Поиск в сайдбаре */
+  .search-input-wrapper {
+    flex-direction: column;
+  }
+  
+  .search-input {
+    border-radius: 8px;
+    margin-bottom: 5px;
+  }
+  
+  .search-btn {
+    border-radius: 8px;
+    width: 100%;
+  }
+  
+  /* Теги */
+  .tags-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  /* Обсуждения */
+  .discussion-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .discussion-badges {
+    width: 100%;
+  }
+  
+  .discussion-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .header-inner {
+    padding: 8px 10px;
+  }
+  
+  .brand {
+    font-size: 16px;
+  }
+  
+  .user-area {
+    gap: 8px;
+  }
+  
+  .theme-toggle {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+  
+  /* Профиль */
+  .profile-header {
+    padding: 15px;
+  }
+  
+  .avatar-img {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .edit-avatar-btn {
+    width: 35px;
+    height: 35px;
+    bottom: 5px;
+    right: 5px;
+  }
+  
+  .profile-name {
+    font-size: 1.3rem;
+  }
+  
+  .profile-fullname {
+    font-size: 1rem;
+  }
+  
+  .profile-bio {
+    font-size: 0.9rem;
+  }
+  
+  .profile-actions .btn {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+  }
+  
+  /* Посты */
+  .post-card-image {
+    height: 150px;
+  }
+  
+  .post-card-content h3 {
+    font-size: 1rem;
+  }
+  
+  .post-card-stats {
+    font-size: 0.8rem;
+    gap: 10px;
+  }
+  
+  .post-card-actions {
+    flex-direction: column;
+  }
+  
+  .post-card-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Пустое состояние */
+  .empty-state {
+    padding: 40px 15px;
+  }
+  
+  .empty-state i {
+    font-size: 3rem;
+  }
+  
+  /* Сайдбар */
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    padding: 10px;
+  }
+  
+  /* Форма редактирования */
+  .form-section {
+    padding: 15px;
+  }
+  
+  .avatar-wrapper .user-img-article {
+    width: 100px;
+    height: 100px;
+  }
+  
+  /* Меню */
+  .menu-link {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .menu-category-title {
+    font-size: 11px;
+  }
+}
+
+/* Пейзажная ориентация на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+  .profile-header {
+    flex-direction: row;
+    text-align: left;
+  }
+  
+  .profile-stats {
+    flex-direction: row;
+  }
+  
+  .avatar-img {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* Печать */
+@media print {
+  .site-header,
+  .sidebar,
+  .addbutton,
+  .post-actions,
+  .theme-toggle,
+  .notification-bell {
+    display: none !important;
+  }
+  
+  .layout {
+    display: block;
+  }
+  
+  .post {
+    break-inside: avoid;
+  }
+}
+
+/* ===== TOUCH-FRIENDLY СТИЛИ ===== */
+
+/* Увеличиваем размер кликабельных областей на мобильных */
+@media (max-width: 768px) {
+  /* Кнопки и ссылки */
+  .btn,
+  .menu-link,
+  .nav-link,
+  .page-link,
+  .tag,
+  .category-item,
+  .recent-post-card,
+  .post-card-actions .btn {
+    min-height: 44px; /* Рекомендованный минимум для touch */
+  }
+  
+  /* Увеличиваем padding для кнопок */
+  .btn {
+    padding: 12px 20px;
+  }
+  
+  /* Убираем hover эффекты на touch устройствах */
+  .post-card:hover,
+  .discussion-card:hover,
+  .stat-item:hover,
+  .tag-option:hover {
+    transform: none;
+  }
+  
+  /* Добавляем active состояния */
+  .btn:active,
+  .menu-link:active,
+  .nav-link:active,
+  .tag-option:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+  
+  /* Увеличиваем чекбоксы и радиокнопки */
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Поля ввода */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="date"],
+  textarea,
+  select {
+    font-size: 16px; /* Предотвращает зум на iOS */
+    min-height: 44px;
+  }
+  
+  /* Выпадающие меню */
+  .dropdown-menu,
+  .notification-dropdown {
+    min-width: 250px;
+  }
+  
+  /* Модальные окна */
+  .modal-dialog {
+    margin: 10px;
+  }
+  
+  /* Увеличиваем область для бургер-меню */
+  .header__burger-menu {
+    width: 44px;
+    height: 44px;
+    z-index: 1001;
+  }
+  
+  /* Скролл с улучшенной поддержкой touch */
+  .tags-grid,
+  .recent-posts,
+  .top-nav {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Поддержка темной темы для системных элементов */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--dark-bg);
+    --surface: var(--dark-surface);
+    --text: var(--dark-text);
+    --muted: var(--dark-muted);
+    --border: var(--dark-border);
+  }
 }
 
 /* Прогресс чтения */
