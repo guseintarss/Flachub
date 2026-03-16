@@ -51,6 +51,104 @@ def health_check(request):
         return JsonResponse({'status': 'unhealthy', 'error': str(e)}, status=503)
 
 
+def robots_txt(request):
+    """Robots.txt endpoint"""
+    return render(request, 'robots.txt', content_type='text/plain')
+
+
+class AdminDashboardView(LoginRequiredMixin, DataMixin, TemplateView):
+    """Dashboard для администраторов"""
+    template_name = 'main/admin_dashboard.html'
+    title_page = 'Панель администратора'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, 'Доступ запрещён')
+            return redirect('home')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        from django.db.models import Count, Sum, Q
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        context = super().get_context_data(**kwargs)
+        
+        now = timezone.now()
+        week_ago = now - timedelta(days=7)
+        month_ago = now - timedelta(days=30)
+        
+        # Общая статистика
+        context['total_posts'] = Post.objects.count()
+        context['published_posts'] = Post.published.count()
+        context['total_users'] = User.objects.filter(is_active=True).count()
+        context['total_comments'] = Comment.objects.count()
+        context['total_discussions'] = Discussion.objects.filter(is_published=True).count()
+        
+        # Статистика за неделю
+        context['posts_week'] = Post.objects.filter(
+            time_create__gte=week_ago
+        ).count()
+        context['users_week'] = User.objects.filter(
+            date_joined__gte=week_ago
+        ).count()
+        context['comments_week'] = Comment.objects.filter(
+            created_at__gte=week_ago
+        ).count()
+        
+        # Статистика за месяц
+        context['posts_month'] = Post.objects.filter(
+            time_create__gte=month_ago
+        ).count()
+        context['users_month'] = User.objects.filter(
+            date_joined__gte=month_ago
+        ).count()
+        
+        # Популярные статьи (топ 10)
+        context['popular_posts'] = Post.published.select_related(
+            'author', 'cat'
+        ).annotate(
+            likes_count=Count('likes')
+        ).order_by('-views', '-likes_count')[:10]
+        
+        # Активные пользователи (топ 10 по постам)
+        context['active_users'] = User.objects.annotate(
+            posts_count=Count('posts', filter=Q(posts__is_published=True))
+        ).filter(posts_count__gt=0).order_by('-posts_count')[:10]
+        
+        # Последние комментарии
+        context['recent_comments'] = Comment.objects.select_related(
+            'author', 'post'
+        ).order_by('-created_at')[:10]
+        
+        # Статистика по категориям
+        context['category_stats'] = Category.objects.annotate(
+            posts_count=Count('posts', filter=Q(posts__is_published=True))
+        ).filter(posts_count__gt=0).order_by('-posts_count')
+        
+        # Статистика просмотров по дням (последние 30 дней)
+        from django.db.models import Func, F, CharField
+        from django.db.models.functions import TruncDate
+        
+        daily_views = Post.objects.filter(
+            time_create__gte=month_ago
+        ).annotate(
+            date=TruncDate('time_create')
+        ).values('date').annotate(
+            views=Sum('views'),
+            posts=Count('id')
+        ).order_by('date')
+        
+        context['daily_stats'] = list(daily_views)
+        
+        # Уведомления (непрочитанные)
+        from main.models import Notification
+        context['unread_notifications'] = Notification.objects.filter(
+            is_read=False
+        ).count()
+        
+        return context
+
 
 class MainHome(DataMixin, ListView):
     template_name = 'main/index.html'

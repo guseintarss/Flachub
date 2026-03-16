@@ -2,11 +2,15 @@ from django.contrib import admin
 from django.urls import path
 
 from . import views
-from .feeds import LatestPostsFeed
+from .feeds import (
+    LatestPostsFeed, CategoryPostsFeed, TagPostsFeed,
+    DiscussionsFeed, FullContentPostsFeed, AtomLatestPostsFeed
+)
 
 
 urlpatterns = [
     path('health/', views.health_check, name='health_check'),
+    path('robots.txt', views.robots_txt, name='robots_txt'),
     path('', views.MainHome.as_view(), name='home'),
     path('admin/', admin.site.urls, name='admin'),
     path('about/', views.about, name='about'),
@@ -41,7 +45,14 @@ urlpatterns = [
     path('ajax/subscribe/', views.SubscribeAuthorView.as_view(), name='subscribe_author'),
     path('ajax/notifications/', views.NotificationsView.as_view(), name='notifications'),
     path('ajax/notifications/read/', views.MarkNotificationsReadView.as_view(), name='mark_notifications_read'),
+    
+    # RSS/Atom feeds
     path('rss/', LatestPostsFeed(), name='rss_feed'),
+    path('rss/full/', FullContentPostsFeed(), name='rss_full_feed'),
+    path('atom/', AtomLatestPostsFeed(), name='atom_feed'),
+    path('category/<slug:cat_slug>/rss/', CategoryPostsFeed(), name='category_rss_feed'),
+    path('tag/<slug:tag_slug>/rss/', TagPostsFeed(), name='tag_rss_feed'),
+    path('discussions/rss/', DiscussionsFeed(), name='discussions_rss_feed'),
     
     # Информационные страницы
     path('about-us/', views.about_us, name='about_us'),

@@ -3,7 +3,10 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from PageGlow import settings
 from main.views import page_not_found, CKEditorUploadView
-from .sitemaps import PostSitemap, StaticViewSitemap
+from .sitemaps import (
+    PostSitemap, StaticViewSitemap, CategorySitemap, 
+    TagSitemap, UserSitemap, DiscussionsSitemap
+)
 from django.contrib.sitemaps.views import sitemap
 
 from rest_framework.routers import DefaultRouter
@@ -11,10 +14,15 @@ from users.views import RuleViewSet
 
 router = DefaultRouter()
 router.register(r'rules', RuleViewSet, basename='rule')
-# Карта сайта 
+
+# Карта сайта
 sitemaps = {
     'static': StaticViewSitemap,
     'posts': PostSitemap,
+    'categories': CategorySitemap,
+    'tags': TagSitemap,
+    'users': UserSitemap,
+    'discussions': DiscussionsSitemap,
 }
 
 urlpatterns = [

@@ -1,5 +1,69 @@
 {% extends 'base.html' %}
 {% load main_extras %}
+{% load meta %}
+
+{% block extra_css %}
+{% meta 'title' post.title %}
+{% meta 'description' post.meta|default:post.content|striptags|truncatewords:20 %}
+{% meta 'image' post.photo.url|default:'static/images/og-default.jpg' %}
+{% meta 'url' request.build_absolute_uri %}
+{% meta 'keywords' post.tags.all|join:', '|default:'статьи,блог' %}
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="article" />
+<meta property="og:url" content="{{ request.build_absolute_uri }}" />
+<meta property="og:title" content="{{ post.title }}" />
+<meta property="og:description" content="{{ post.meta|default:post.content|striptags|truncatewords:20 }}" />
+<meta property="og:image" content="{{ post.photo.url|default:'static/images/og-default.jpg' }}" />
+<meta property="og:image:alt" content="{{ post.title }}" />
+{% if post.cat %}
+<meta property="article:section" content="{{ post.cat.name }}" />
+{% endif %}
+{% for tag in post.tags.all %}
+<meta property="article:tag" content="{{ tag.tag }}" />
+{% endfor %}
+<meta property="article:published_time" content="{{ post.time_create|date:'c' }}" />
+<meta property="article:modified_time" content="{{ post.time_update|date:'c' }}" />
+<meta property="article:author" content="{{ post.author.username }}" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ post.title }}" />
+<meta name="twitter:description" content="{{ post.meta|default:post.content|striptags|truncatewords:20 }}" />
+<meta name="twitter:image" content="{{ post.photo.url|default:'static/images/og-default.jpg'" />
+
+<!-- Schema.org Article -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ post.title }}",
+  "image": "{{ post.photo.url|default:'static/images/og-default.jpg' }}",
+  "datePublished": "{{ post.time_create|date:'c' }}",
+  "dateModified": "{{ post.time_update|date:'c' }}",
+  "author": {
+    "@type": "Person",
+    "name": "{{ post.author.username }}",
+    "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'users:author_profile' post.author.username %}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "PageGlow",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ request.scheme }}://{{ request.get_host }}/static/images/favicon-96x96.png"
+    }
+  },
+  "description": "{{ post.meta|default:post.content|striptags|truncatewords:20 }}",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ request.build_absolute_uri }}"
+  },
+  "articleSection": "{{ post.cat.name|default:'Блог' }}",
+  "keywords": "{% for tag in post.tags.all %}{{ tag.tag }}{% if not forloop.last %}, {% endif %}{% endfor %}"
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <!-- Прогресс чтения -->

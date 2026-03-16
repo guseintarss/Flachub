@@ -183,7 +183,7 @@
 }
 .theme-toggle {
   position: relative;
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;
   width: 40px;
   height: 40px;
   border: none;
@@ -217,7 +217,7 @@
 
 /* Темная тема - инверсия иконки */
 .dark-mode .theme-toggle {
-  background: rgba(255, 255, 255, 0.15);
+  background: transparent;
 }
 
 .dark-mode .theme-toggle:hover {
