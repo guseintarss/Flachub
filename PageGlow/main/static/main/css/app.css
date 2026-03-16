@@ -454,8 +454,6 @@ a:hover{ text-decoration: underline; }
     margin: 15px 0;
     border: none;
 }
-    margin-left: 10px;
-}
 .span_published{
     padding:5px;
     background-color: green;
@@ -556,11 +554,6 @@ a:hover{ text-decoration: underline; }
 .sidebar{
   position: sticky;
   top: 82px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 16px;
 }
 .con {
     margin:0 auto;

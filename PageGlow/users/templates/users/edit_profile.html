@@ -453,16 +453,22 @@ document.addEventListener('DOMContentLoaded', function() {
         // Очищаем от лишних символов
         let cleaned = ('' + value).replace(/\D/g, '');
         
-        // Добавляем + в начале если есть цифры
-        if (cleaned.startsWith('7') || cleaned.startsWith('8')) {
-            cleaned = '7' + cleaned.slice(1);
+        // Автоматически добавляем 7 в начале
+        if (cleaned.length > 0) {
+            if (cleaned.startsWith('8')) {
+                cleaned = '7' + cleaned.slice(1);
+            } else if (!cleaned.startsWith('7')) {
+                cleaned = '7' + cleaned;
+            }
         }
         
-        // Форматируем
-        if (cleaned.length > 0) {
+        // Обрезаем до 11 цифр (7 + код + номер)
+        cleaned = cleaned.slice(0, 11);
+        
+        // Форматируем: +7 (XXX) XXX-XX-XX
+        if (cleaned.length >= 1) {
             cleaned = '+' + cleaned;
         }
-        
         if (cleaned.length > 2) {
             cleaned = cleaned.slice(0, 2) + ' (' + cleaned.slice(2);
         }
@@ -475,24 +481,29 @@ document.addEventListener('DOMContentLoaded', function() {
         if (cleaned.length > 13) {
             cleaned = cleaned.slice(0, 13) + '-' + cleaned.slice(13);
         }
-        if (cleaned.length > 16) {
-            cleaned = cleaned.slice(0, 16) + '-' + cleaned.slice(16);
-        }
         
-        // Обрезаем до максимальной длины
-        return cleaned.slice(0, 20);
+        return cleaned;
     }
     
     // Функция очистки телефона (только цифры и +)
     function cleanPhone(value) {
         let cleaned = ('' + value).replace(/\D/g, '');
-        if (cleaned.startsWith('7') || cleaned.startsWith('8')) {
-            cleaned = '7' + cleaned.slice(1);
+        
+        // Автоматически добавляем 7
+        if (cleaned.length > 0) {
+            if (cleaned.startsWith('8')) {
+                cleaned = '7' + cleaned.slice(1);
+            } else if (!cleaned.startsWith('7')) {
+                cleaned = '7' + cleaned;
+            }
         }
+        
+        cleaned = cleaned.slice(0, 11);
+        
         if (cleaned.length > 0) {
             cleaned = '+' + cleaned;
         }
-        return cleaned.slice(0, 12);
+        return cleaned;
     }
     
     // Обработка даты - конвертация формата для input type="date"

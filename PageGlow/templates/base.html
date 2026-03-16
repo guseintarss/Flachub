@@ -164,11 +164,10 @@
                 {% block sidebar %}
                     <aside>
                         {% block sidebar_content %}
-                            {% include 'main/includes/sidebar_new_posts.html' %}
+                            {% include 'main/includes/sidebar.html' %}
                         {% endblock %}
                     </aside>
                 {% endblock %}
-                {% show_all_tags %}
             </aside>
         {% endcache %}
     </div>
