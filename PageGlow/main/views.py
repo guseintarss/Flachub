@@ -33,7 +33,11 @@ from PageGlow import settings
 from main import serializers
 from main.serializers import PostSerializer
 from .forms import AddPostForm, AddQuestionForm, PostUpdateForm, UploadFileForm, CommentForm, DiscussionCommentForm
-from .models import Post, Category, TagPost, UploadFiles, Comment, Subscription, Notification, Discussion, DiscussionComment
+from .models import (
+    Post, Category, TagPost, UploadFiles, Comment, Subscription,
+    Notification, Discussion, DiscussionComment, Bookmark, Collection,
+    UserBadge, UserAchievement
+)
 from .utils import DataMixin
 
 logger = logging.getLogger(__name__)
@@ -71,7 +75,9 @@ class AdminDashboardView(LoginRequiredMixin, DataMixin, TemplateView):
         from django.db.models import Count, Sum, Q
         from django.utils import timezone
         from datetime import timedelta
+        from django.contrib.auth import get_user_model
         
+        User = get_user_model()
         context = super().get_context_data(**kwargs)
         
         now = timezone.now()
@@ -148,6 +154,189 @@ class AdminDashboardView(LoginRequiredMixin, DataMixin, TemplateView):
         ).count()
         
         return context
+
+
+class AnalyticsAPIView(LoginRequiredMixin, View):
+    """API для получения статистики"""
+    def get(self, request):
+        from django.db.models import Count, Sum, Q
+        from django.utils import timezone
+        from datetime import timedelta
+        from django.http import JsonResponse
+        from django.contrib.auth import get_user_model
+        
+        if not request.user.is_staff:
+            return JsonResponse({'error': 'Доступ запрещён'}, status=403)
+        
+        User = get_user_model()
+        now = timezone.now()
+        period = request.GET.get('period', '30')  # дней
+        
+        try:
+            period = int(period)
+        except (ValueError, TypeError):
+            period = 30
+        
+        start_date = now - timedelta(days=period)
+        
+        # Статистика
+        stats = {
+            'total_posts': Post.objects.count(),
+            'published_posts': Post.published.count(),
+            'total_users': User.objects.filter(is_active=True).count(),
+            'total_comments': Comment.objects.count(),
+            'total_discussions': Discussion.objects.filter(is_published=True).count(),
+            'period_stats': {
+                'new_posts': Post.objects.filter(time_create__gte=start_date).count(),
+                'new_users': User.objects.filter(date_joined__gte=start_date).count(),
+                'new_comments': Comment.objects.filter(created_at__gte=start_date).count(),
+            }
+        }
+        
+        return JsonResponse(stats)
+
+
+# ===== SOCIAL FEATURES =====
+
+class BookmarksView(LoginRequiredMixin, DataMixin, ListView):
+    """Закладки пользователя"""
+    template_name = 'main/bookmarks.html'
+    context_object_name = 'bookmarks'
+    paginate_by = 15
+    title_page = 'Мои закладки'
+
+    def get_queryset(self):
+        return Bookmark.objects.filter(
+            user=self.request.user
+        ).select_related('post', 'post__author', 'post__cat').order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['collections'] = Collection.objects.filter(user=self.request.user)
+        return context
+
+
+class CollectionDetailView(LoginRequiredMixin, DataMixin, DetailView):
+    """Детальный просмотр коллекции"""
+    model = Collection
+    template_name = 'main/collection_detail.html'
+    context_object_name = 'collection'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.user != request.user and not self.object.is_public:
+            return redirect('bookmarks')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['bookmarks'] = self.object.bookmarks.select_related(
+            'post', 'post__author'
+        ).order_by('-created_at')
+        return context
+
+
+class BookmarkToggleView(LoginRequiredMixin, View):
+    """Добавить/удалить закладку"""
+    def post(self, request):
+        post_id = request.POST.get('post_id')
+        post = get_object_or_404(Post, id=post_id)
+        
+        bookmark, created = Bookmark.objects.get_or_create(
+            user=request.user,
+            post=post
+        )
+        
+        if not created:
+            bookmark.delete()
+            is_bookmarked = False
+        else:
+            is_bookmarked = True
+            # Проверяем достижение "Коллекционер"
+            bookmark_count = Bookmark.objects.filter(user=request.user).count()
+            if bookmark_count == 10:
+                badge, _ = UserBadge.objects.get_or_create(
+                    key='collector',
+                    defaults={
+                        'name': 'Коллекционер',
+                        'description': 'Собрано 10 закладок',
+                        'icon': '📚',
+                        'color': '#9c27b0'
+                    }
+                )
+                UserAchievement.objects.get_or_create(
+                    user=request.user,
+                    badge=badge,
+                    defaults={'reason': '10 закладок'}
+                )
+        
+        return JsonResponse({
+            'success': True,
+            'is_bookmarked': is_bookmarked,
+            'bookmarks_count': Bookmark.objects.filter(user=request.user).count()
+        })
+
+
+class CreateCollectionView(LoginRequiredMixin, CreateView):
+    """Создание коллекции"""
+    model = Collection
+    fields = ['name', 'description', 'is_public']
+    template_name = 'main/collection_form.html'
+    success_url = reverse_lazy('bookmarks')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+def get_user_recommendations(request, limit=10):
+    """
+    Система рекомендаций статей для пользователя
+    
+    Алгоритм:
+    1. Статьи из любимых категорий
+    2. Статьи с похожими тегами
+    3. Популярное за неделю
+    """
+    if not request.user.is_authenticated:
+        return Post.published.order_by('-views', '-time_create')[:limit]
+    
+    # Любимые категории (где пользователь чаще всего читает)
+    viewed_posts = Post.objects.filter(
+        bookmarks__user=request.user
+    ).values('cat').annotate(
+        count=Count('id')
+    ).order_by('-count')
+    
+    favorite_categories = [item['cat'] for item in viewed_posts[:5]]
+    
+    # Теги из закладок
+    bookmarked_tags = Post.objects.filter(
+        bookmarks__user=request.user
+    ).values('tags').annotate(
+        count=Count('id')
+    ).order_by('-count')
+    
+    favorite_tags = [item['tags'] for item in bookmarked_tags[:10]]
+    
+    # Рекомендации
+    recommendations = Post.published.exclude(
+        bookmarks__user=request.user  # Исключаем уже сохранённые
+    ).filter(
+        Q(cat__in=favorite_categories) |
+        Q(tags__in=favorite_tags)
+    ).distinct().annotate(
+        score=Count('likes') * 2 + Count('views') / 100
+    ).order_by('-score', '-time_create')[:limit]
+    
+    if len(recommendations) < limit:
+        # Дополняем популярным
+        extra = Post.published.exclude(
+            id__in=[p.id for p in recommendations]
+        ).order_by('-views', '-time_create')[:limit - len(recommendations)]
+        recommendations = list(recommendations) + list(extra)
+    
+    return recommendations
 
 
 class MainHome(DataMixin, ListView):

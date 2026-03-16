@@ -1,20 +1,19 @@
 {% extends 'base.html' %}
 {% load main_extras %}
 {% load meta %}
+{% load static %}
 
 {% block extra_css %}
-{% meta 'title' post.title %}
-{% meta 'description' post.meta|default:post.content|striptags|truncatewords:20 %}
-{% meta 'image' post.photo.url|default:'static/images/og-default.jpg' %}
-{% meta 'url' request.build_absolute_uri %}
-{% meta 'keywords' post.tags.all|join:', '|default:'статьи,блог' %}
-
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="article" />
 <meta property="og:url" content="{{ request.build_absolute_uri }}" />
 <meta property="og:title" content="{{ post.title }}" />
 <meta property="og:description" content="{{ post.meta|default:post.content|striptags|truncatewords:20 }}" />
-<meta property="og:image" content="{{ post.photo.url|default:'static/images/og-default.jpg' }}" />
+{% if post.photo %}
+<meta property="og:image" content="{{ post.photo.url }}" />
+{% else %}
+<meta property="og:image" content="{% static 'images/og-default.jpg' %}" />
+{% endif %}
 <meta property="og:image:alt" content="{{ post.title }}" />
 {% if post.cat %}
 <meta property="article:section" content="{{ post.cat.name }}" />
@@ -30,7 +29,11 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="{{ post.title }}" />
 <meta name="twitter:description" content="{{ post.meta|default:post.content|striptags|truncatewords:20 }}" />
-<meta name="twitter:image" content="{{ post.photo.url|default:'static/images/og-default.jpg'" />
+{% if post.photo %}
+<meta name="twitter:image" content="{{ post.photo.url }}" />
+{% else %}
+<meta name="twitter:image" content="{% static 'images/og-default.jpg' %}" />
+{% endif %}
 
 <!-- Schema.org Article -->
 <script type="application/ld+json">
@@ -38,7 +41,7 @@
   "@context": "https://schema.org",
   "@type": "Article",
   "headline": "{{ post.title }}",
-  "image": "{{ post.photo.url|default:'static/images/og-default.jpg' }}",
+  "image": "{% if post.photo %}{{ post.photo.url }}{% else %}{% static 'images/og-default.jpg' %}{% endif %}",
   "datePublished": "{{ post.time_create|date:'c' }}",
   "dateModified": "{{ post.time_update|date:'c' }}",
   "author": {
@@ -128,6 +131,12 @@
                 data-post-id="{{ object.id }}"
                 data-liked="{{ post_is_liked|yesno:'true,false' }}">
             ❤️ {{ number_of_likes }}
+        </button>
+
+        <button id="bookmark-btn"
+                class="btn {% if post_is_bookmarked %}btn-primary{% else %}btn-outline-primary{% endif %}"
+                data-post-id="{{ object.id }}">
+            📑 {% if post_is_bookmarked %}В закладках{% else %}В закладки{% endif %}
         </button>
 
         <button id="favorite-btn"
@@ -295,6 +304,40 @@ document.addEventListener('DOMContentLoaded', function() {
     // Комментарии
     const commentForm = document.getElementById('comment-form');
     const commentsList = document.getElementById('comments-list');
+
+    // Закладки
+    const bookmarkBtn = document.getElementById('bookmark-btn');
+    if (bookmarkBtn) {
+        bookmarkBtn.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            
+            fetch('{% url "bookmark_toggle" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `post_id=${postId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.is_bookmarked) {
+                        bookmarkBtn.className = 'btn btn-primary';
+                        bookmarkBtn.innerHTML = '📑 В закладках';
+                    } else {
+                        bookmarkBtn.className = 'btn btn-outline-primary';
+                        bookmarkBtn.innerHTML = '📑 В закладки';
+                    }
+                    // Показывем уведомление
+                    const message = data.is_bookmarked ? 
+                        '✅ Статья добавлена в закладки' : 
+                        '🗑️ Статья удалена из закладок';
+                    showToast(message);
+                }
+            });
+        });
+    }
 
     commentForm.addEventListener('submit', function(e) {
         e.preventDefault();

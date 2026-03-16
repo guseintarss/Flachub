@@ -51,6 +51,8 @@
         <nav class="top-nav" aria-label="Основное меню">
             <ul class="menu-list">
                 {% show_categories %}
+                <li><a href="{% url 'marketplace:home' %}" class="n">Marketplace</a></li>
+                <li><a href="{% url 'discussions' %}" class="n">Обсуждения</a></li>
             </ul>
         </nav>
         {% block header %} {% endblock %}

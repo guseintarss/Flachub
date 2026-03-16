@@ -368,10 +368,10 @@ class DiscussionComment(models.Model):
 
     def __str__(self):
         return f'Comment by {self.author} on {self.discussion}'
-    
+
     def number_of_likes(self):
         return self.likes.count()
-    
+
     def user_has_liked(self, user):
         if not user or not user.is_authenticated:
             return False
@@ -380,3 +380,116 @@ class DiscussionComment(models.Model):
     def get_absolute_url(self):
         from django.urls import reverse
         return reverse('discussion_detail', kwargs={'pk': self.discussion.pk})
+
+
+# ===== SOCIAL FEATURES =====
+
+class Bookmark(models.Model):
+    """Закладки пользователей"""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='bookmarks'
+    )
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='bookmarked_by'
+    )
+    collection = models.ForeignKey(
+        'Collection',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='bookmarks'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True, max_length=500, help_text='Заметка к закладке')
+
+    class Meta:
+        verbose_name = 'Закладка'
+        verbose_name_plural = 'Закладки'
+        ordering = ['-created_at']
+        unique_together = ('user', 'post')
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['post']),
+        ]
+
+    def __str__(self):
+        return f'{self.user.username} → {self.post.title}'
+
+
+class Collection(models.Model):
+    """Коллекции статей (папки для закладок)"""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='collections'
+    )
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, max_length=500)
+    is_public = models.BooleanField(default=False, help_text='Показывать коллекцию другим')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Коллекция'
+        verbose_name_plural = 'Коллекции'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_public']),
+        ]
+
+    def __str__(self):
+        return f'{self.name} ({self.user.username})'
+
+    def bookmarks_count(self):
+        return self.bookmarks.count()
+
+
+class UserBadge(models.Model):
+    """Достижения пользователей"""
+    key = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    icon = models.CharField(max_length=50, help_text='Название иконки (emoji или CSS class)')
+    color = models.CharField(max_length=20, default='#007bff', help_text='Цвет бейджа')
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0, help_text='Порядок отображения')
+
+    class Meta:
+        verbose_name = 'Достижение'
+        verbose_name_plural = 'Достижения'
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
+class UserAchievement(models.Model):
+    """Полученные пользователем достижения"""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='achievements'
+    )
+    badge = models.ForeignKey(
+        UserBadge,
+        on_delete=models.CASCADE,
+        related_name='awarded_to'
+    )
+    earned_at = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField(blank=True, help_text='Причина получения')
+
+    class Meta:
+        verbose_name = 'Полученное достижение'
+        verbose_name_plural = 'Полученные достижения'
+        ordering = ['-earned_at']
+        unique_together = ('user', 'badge')
+        indexes = [
+            models.Index(fields=['user', '-earned_at']),
+        ]
+
+    def __str__(self):
+        return f'{self.user.username} → {self.badge.name}'

@@ -1,0 +1,442 @@
+{% extends 'base.html' %}
+{% load main_extras %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="dashboard-header mb-4">
+        <h1>📊 Панель администратора</h1>
+        <p class="text-muted">Статистика и аналитика PageGlow</p>
+    </div>
+
+    <!-- Карточки общей статистики -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card stat-card-primary">
+                <div class="stat-card-body">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-details">
+                        <h3>{{ total_posts }}</h3>
+                        <p>Всего статей</p>
+                        <small class="text-muted">+{{ posts_week }} за неделю</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card stat-card-success">
+                <div class="stat-card-body">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-details">
+                        <h3>{{ published_posts }}</h3>
+                        <p>Опубликовано</p>
+                        <small class="text-muted">+{{ posts_month }} за месяц</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card stat-card-info">
+                <div class="stat-card-body">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-details">
+                        <h3>{{ total_users }}</h3>
+                        <p>Пользователей</p>
+                        <small class="text-muted">+{{ users_week }} за неделю</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card stat-card-warning">
+                <div class="stat-card-body">
+                    <div class="stat-icon">💬</div>
+                    <div class="stat-details">
+                        <h3>{{ total_comments }}</h3>
+                        <p>Комментариев</p>
+                        <small class="text-muted">+{{ comments_week }} за неделю</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Графики -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📈 Активность за 30 дней</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="activityChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📊 По категориям</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Популярные статьи и активные пользователи -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>🔥 Популярные статьи</h5>
+                    <a href="{% url 'popular' %}" class="btn btn-sm btn-outline-primary">Все</a>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for post in popular_posts %}
+                        <a href="{{ post.get_absolute_url }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ post.title|truncatechars:50 }}</h6>
+                                <small class="text-muted">👁 {{ post.views }}</small>
+                            </div>
+                            <p class="mb-1 small text-muted">
+                                {{ post.author.username }} • {{ post.cat.name }} • ❤️ {{ post.likes_count }}
+                            </p>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>⭐ Активные авторы</h5>
+                    <a href="{% url 'home' %}" class="btn btn-sm btn-outline-primary">Все</a>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for user in active_users %}
+                        <a href="{% url 'users:author_profile' user.username %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ user.username }}</h6>
+                                <span class="badge bg-primary">{{ user.posts_count }} статей</span>
+                            </div>
+                            {% if user.first_name or user.last_name %}
+                            <p class="mb-1 small text-muted">{{ user.last_name }} {{ user.first_name }}</p>
+                            {% endif %}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Последние комментарии и обсуждения -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>💬 Последние комментарии</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for comment in recent_comments %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <small class="text-muted">{{ comment.author.username }}</small>
+                                <small class="text-muted">{{ comment.created_at|time_ago }}</small>
+                            </div>
+                            <p class="mb-1">{{ comment.content|truncatechars:100 }}</p>
+                            <small>
+                                <a href="{{ comment.post.get_absolute_url }}#comments" class="text-decoration-none">
+                                    → {{ comment.post.title|truncatechars:30 }}
+                                </a>
+                            </small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📋 Статистика</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Обсуждения
+                            <span class="badge bg-primary rounded-pill">{{ total_discussions }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Непрочитанные уведомления
+                            <span class="badge bg-danger rounded-pill">{{ unread_notifications }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Категорий
+                            <span class="badge bg-success rounded-pill">{{ category_stats.count }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Новых пользователей (неделя)
+                            <span class="badge bg-info rounded-pill">{{ users_week }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Новых статей (месяц)
+                            <span class="badge bg-warning rounded-pill">{{ posts_month }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-dashboard {
+    padding: 20px 0;
+}
+
+.dashboard-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.stat-card-body {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+}
+
+.stat-details h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1;
+}
+
+.stat-details p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.stat-details small {
+    font-size: 0.8rem;
+}
+
+.stat-card-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.stat-card-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.stat-card-info {
+    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+    color: white;
+}
+
+.stat-card-warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    border-radius: 12px;
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--border, #e5e7eb);
+    font-weight: 600;
+}
+
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid var(--border, #e5e7eb);
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.list-group-item-action:hover {
+    background: var(--bg, #f7f8fb);
+}
+
+/* Темная тема */
+.dark-mode .stat-card {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.dark-mode .card {
+    background: var(--dark-surface, #222325);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
+
+.dark-mode .list-group-item {
+    background: transparent;
+    border-color: var(--dark-border, #2a2f33);
+}
+
+.dark-mode .list-group-item-action:hover {
+    background: var(--dark-bg2, #2a2b2d);
+}
+
+@media (max-width: 768px) {
+    .stat-details h3 {
+        font-size: 1.5rem;
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+        width: 50px;
+        height: 50px;
+    }
+}
+</style>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Данные для графика активности
+    const dailyStats = {{ daily_stats|safe|default:"[]" }};
+    
+    const labels = dailyStats.map(item => {
+        const date = new Date(item.date);
+        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    });
+    
+    const viewsData = dailyStats.map(item => item.views || 0);
+    const postsData = dailyStats.map(item => item.posts || 0);
+    
+    // График активности
+    const activityCtx = document.getElementById('activityChart').getContext('2d');
+    new Chart(activityCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Просмотры',
+                    data: viewsData,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Статьи',
+                    data: postsData,
+                    borderColor: '#38ef7d',
+                    backgroundColor: 'rgba(56, 239, 125, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+    
+    // График категорий
+    const categoryStats = [
+        {% for cat in category_stats %}
+        { label: '{{ cat.name }}', count: {{ cat.posts_count }} },
+        {% endfor %}
+    ];
+    
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: categoryStats.map(item => item.label),
+            datasets: [{
+                data: categoryStats.map(item => item.count),
+                backgroundColor: [
+                    '#667eea', '#764ba2', '#11998e', '#38ef7d',
+                    '#00c6ff', '#0072ff', '#f093fb', '#f5576c',
+                    '#f6d365', '#fda085'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 10
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

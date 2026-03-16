@@ -11,6 +11,15 @@ from .feeds import (
 urlpatterns = [
     path('health/', views.health_check, name='health_check'),
     path('robots.txt', views.robots_txt, name='robots_txt'),
+    path('dashboard/', views.AdminDashboardView.as_view(), name='admin_dashboard'),
+    path('api/analytics/', views.AnalyticsAPIView.as_view(), name='analytics_api'),
+    
+    # Социальные функции
+    path('bookmarks/', views.BookmarksView.as_view(), name='bookmarks'),
+    path('bookmarks/toggle/', views.BookmarkToggleView.as_view(), name='bookmark_toggle'),
+    path('collections/<int:pk>/', views.CollectionDetailView.as_view(), name='collection_detail'),
+    path('collections/create/', views.CreateCollectionView.as_view(), name='collection_create'),
+    
     path('', views.MainHome.as_view(), name='home'),
     path('admin/', admin.site.urls, name='admin'),
     path('about/', views.about, name='about'),

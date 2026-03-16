@@ -43,6 +43,23 @@ INTERNAL_IPS = ["127.0.0.1"]
 
 # CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+
+# ===== SENTRY =====
+SENTRY_DSN = config('SENTRY_DSN', default='')
+
+if SENTRY_DSN:
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            # Django integration
+        ],
+        traces_sample_rate=0.1,  # 10% транзакций
+        profiles_sample_rate=0.1,  # 10% профилей
+        environment=config('SENTRY_ENVIRONMENT', default='development'),
+        release=config('SENTRY_RELEASE', default='unknown'),
+    )
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -67,6 +84,9 @@ INSTALLED_APPS = [
     
     # WebSocket / Channels
     'channels',
+    
+    # Backup
+    'dbbackup',
 ]
 
 MIDDLEWARE = [
@@ -488,16 +508,13 @@ LOGGING = {
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'formatter': 'simple'
         },
         'file': {
             'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
-            'maxBytes': 1024 * 1024 * 10,  # 10MB
-            'backupCount': 10,
             'formatter': 'verbose',
-            'encoding': 'utf-8',
         },
     },
     'root': {
@@ -507,8 +524,39 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console', 'file'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['file'],
+            'level': 'ERROR',
             'propagate': False,
         },
     },
 }
+
+# ===== DBBACKUP =====
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': os.path.join(BASE_DIR, 'backups')}
+DBBACKUP_CONNECTORS = {
+    'default': {
+        'SINGLE_TRANSACTION': True,
+        'IF_EXISTS': True,
+    }
+}
+DBBACKUP_CLEANUP_KEEP = 7  # Хранить 7 последних бэкапов
+DBBACKUP_CLEANUP_KEEP_MEDIA = 7
+
+# ===== SENTRY =====
+SENTRY_DSN = config('SENTRY_DSN', default='')
+
+if SENTRY_DSN:
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[],
+        traces_sample_rate=0.1,
+        profiles_sample_rate=0.1,
+        environment=config('SENTRY_ENVIRONMENT', default='development'),
+        release=config('SENTRY_RELEASE', default='unknown'),
+    )
