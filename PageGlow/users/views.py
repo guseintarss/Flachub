@@ -6,6 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count
 from django.http import HttpResponseForbidden, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -143,22 +144,22 @@ def profile_user(request):
     user = request.user
 
     # Опубликованные посты (используем кастомный менеджер)
-    published_posts = Post.published.filter(author=user)
-    
+    published_posts = Post.published.filter(author=user).select_related('cat', 'author').annotate(likes_count=Count('likes', distinct=True))
+
     # Черновики (is_published = DRAFT)
     drafts = Post.objects.filter(
         author=user,
         is_published=Post.Status.DRAFT
-    )
+    ).select_related('cat', 'author').annotate(likes_count=Count('likes', distinct=True))
 
     # Избранные посты (используем ManyToMany поле 'favorites')
     favorites = Post.objects.filter(
         favorites=user  # Посты, где текущий пользователь в списке избранных
-    )
+    ).select_related('cat', 'author').annotate(likes_count=Count('likes', distinct=True))
 
     discussions_data = Discussion.objects.filter(
         author = user,
-    )
+    ).prefetch_related('tags').select_related('author', 'cat')
 
     extra_context = {
         'title': 'Профиль пользователя',
@@ -182,11 +183,15 @@ def author_profile(request, username):
     """Публичный профиль автора - только просмотр статей"""
     from main.models import Subscription
     from django.db.models import Count
-    
+
     author = get_object_or_404(User, username=username, is_active=True)
-    
+
     # Оптимизированный запрос с подсчётом подписок
-    published_posts = Post.published.filter(author=author).order_by('-time_create')
+    published_posts = Post.published.filter(
+        author=author
+    ).select_related('cat', 'author').prefetch_related('tags').annotate(
+        likes_count=Count('likes', distinct=True)
+    ).order_by('-time_create')
     
     # Подсчитываем подписки в одном запросе с использованием Count
     subscription_stats = Subscription.objects.filter(

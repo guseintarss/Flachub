@@ -51,10 +51,10 @@
 <article class="post">
     <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
     <p class="meta">
-        Категория: {{ post.cat.name }} 
+        Категория: {{ post.cat.name }}
         &bull; <span title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span>
         &bull; 👁 {{ post.views }}
-        &bull; ❤️ {{ post.number_of_likes }}
+        &bull; ❤️ {{ post.likes_count|default:0 }}
     </p>
     {% if post.photo %}
     <p><img class="img-article-left thumb" src="{{ post.photo.url }}" alt=""></p>
