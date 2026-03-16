@@ -48,11 +48,68 @@
             <span></span><span></span><span></span>
         </button>
         <a class="brand" href="{% url 'home' %}">PageGlow</a>
+        
+        <!-- Overlay для затемнения фона -->
+        <div class="menu-overlay" id="menu-overlay"></div>
+        
         <nav class="top-nav" aria-label="Основное меню">
             <ul class="menu-list">
-                {% show_categories %}
-                <li><a href="{% url 'marketplace:home' %}" class="n">Marketplace</a></li>
-                <li><a href="{% url 'discussions' %}" class="n">Обсуждения</a></li>
+                <!-- Основные разделы -->
+                <li class="menu-category">
+                    <div class="menu-category-title">
+                        <i class="fas fa-compass"></i> Навигация
+                    </div>
+                    <a href="{% url 'home' %}" class="menu_link">
+                        <i class="fas fa-home"></i> Главная
+                    </a>
+                    <a href="{% url 'marketplace:home' %}" class="menu_link">
+                        <i class="fas fa-store"></i> Marketplace
+                    </a>
+                    <a href="{% url 'discussions' %}" class="menu_link">
+                        <i class="fas fa-comments"></i> Обсуждения
+                    </a>
+                </li>
+
+                <hr class="menu-divider">
+
+                <!-- Категории -->
+                <li class="menu-category">
+                    <div class="menu-category-title">
+                        <i class="fas fa-folder"></i> Категории
+                    </div>
+                    {% show_categories %}
+                </li>
+
+                <hr class="menu-divider">
+
+                <!-- Пользователь -->
+                {% if user.is_authenticated %}
+                <li class="menu-category">
+                    <div class="menu-category-title">
+                        <i class="fas fa-user"></i> Профиль
+                    </div>
+                    <a href="{% url 'users:profile' %}" class="menu_link">
+                        <i class="fas fa-user-circle"></i> Мой профиль
+                    </a>
+                    <a href="{% url 'bookmarks' %}" class="menu_link">
+                        <i class="fas fa-bookmark"></i> Закладки
+                    </a>
+                    <a href="{% url 'subscription_feed' %}" class="menu_link">
+                        <i class="fas fa-pen-fancy"></i> Подписки
+                    </a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="menu_link">
+                        <i class="fas fa-chart-line"></i> Админка
+                    </a>
+                    {% endif %}
+                </li>
+                {% else %}
+                <li class="menu-category">
+                    <a href="{% url 'users:login' %}" class="menu_link" style="background: var(--primary); color: white; justify-content: center;">
+                        <i class="fas fa-sign-in-alt"></i> Войти
+                    </a>
+                </li>
+                {% endif %}
             </ul>
         </nav>
         {% block header %} {% endblock %}
@@ -245,7 +302,8 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   const burger = document.getElementById('burger');
   const menu = document.getElementById('menu');
-  const siteHeader = document.querySelector('.site-header'); // Сохраняем для удобства
+  const siteHeader = document.querySelector('.site-header');
+  const overlay = document.getElementById('menu-overlay');
 
   // Функция для закрытия меню
   function closeMenu() {
@@ -253,9 +311,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Обработчик клика на бургер — toggles меню
-  burger.addEventListener('click', () => {
+  burger.addEventListener('click', (e) => {
+    e.stopPropagation();
     siteHeader.classList.toggle('open');
   });
+  
+  // Закрытие по клику на overlay
+  if (overlay) {
+    overlay.addEventListener('click', closeMenu);
+  }
 
   // Обработчик клика по всему документу
   document.addEventListener('click', (event) => {

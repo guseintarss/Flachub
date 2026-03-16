@@ -1,12 +1,12 @@
 
-<a class="am" href="{% url 'discussions' %}">Обсуждения</a>
-<p class="t-title">Категории:</p>
-<ul class="menu-list">
 {% for cat in cats %}
   {% if cat.id == cat_selected %}
-    <li class="cat-selected"><span class="cat">{{ cat.name }}</span></li>
+    <a class="menu_link" href="{{ cat.get_absolute_url }}" style="background: var(--primary); color: white;">
+      <i class="fas fa-folder-open"></i> {{ cat.name }}
+    </a>
   {% else %}
-    <li><a class="menu_link" href="{{ cat.get_absolute_url }}">{{ cat.name }}</a></li>
+    <a class="menu_link" href="{{ cat.get_absolute_url }}">
+      <i class="fas fa-folder"></i> {{ cat.name }}
+    </a>
   {% endif %}
 {% endfor %}
-</ul>

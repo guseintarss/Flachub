@@ -364,20 +364,96 @@ a:hover{ text-decoration: underline; }
     height: 100vh;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding:55px 20px 20px 20px;
-    transition: transform .2s;
-    z-index: 1;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    box-shadow: 5px 0 25px rgba(0,0,0,0.15);
+    padding: 70px 0 20px 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    overflow-y: auto;
 }
+
+.top-nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.top-nav::-webkit-scrollbar-track {
+    background: var(--bg);
+}
+
+.top-nav::-webkit-scrollbar-thumb {
+    background: var(--muted);
+    border-radius: 3px;
+}
+
 .menu-list{
     display:block;
     color:var(--text);
+    padding: 0 15px;
 }
+
+.menu-category {
+    margin-bottom: 25px;
+}
+
+.menu-category-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    padding-left: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.menu-category-title::before {
+    content: '';
+    display: block;
+    width: 3px;
+    height: 12px;
+    background: var(--primary);
+    border-radius: 2px;
+}
+
 .menu_link{
-    font-size:15px;
-    display:block;
-    padding:10px 0;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    margin: 4px 0;
+    border-radius: 10px;
+    color: var(--text);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.menu_link:hover{
+    background: var(--primary);
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.menu_link i {
+    width: 20px;
+    text-align: center;
+    font-size: 16px;
+    opacity: 0.8;
+}
+
+.menu_link:hover i {
+    opacity: 1;
+}
+
+.menu-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 15px 0;
+    border: none;
+}
     margin-left: 10px;
 }
 .span_published{

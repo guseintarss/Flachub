@@ -39,25 +39,50 @@ class RegisterUserForm(UserCreationForm):
         return email
 
 class ProfileUserForm(forms.ModelForm):
-    username = forms.CharField(disabled=True,label='Логин', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    email = forms.CharField(disabled=True,label='E-mail', widget=forms.EmailInput(attrs={'class': 'form-control', 'id': 'floatingInputDisabled', 'placeholder': 'name@example.com', 'value': 'mdo@example.com',}))
-    # this_year = datetime.date.today().year
-    # date_birth = forms.DateField( label='Дата рождения' ,widget=forms.SelectDateWidget(years=range(this_year-50, this_year+1)))
-
+    username = forms.CharField(label='Логин', widget=forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}))
+    email = forms.CharField(label='E-mail', widget=forms.EmailInput(attrs={'class': 'form-control', 'readonly': 'readonly'}))
+    
     class Meta:
         model = get_user_model()
-        fields = ['photo', 'username', 'email', 'first_name', 'last_name', 'about_me']
+        fields = ['photo', 'username', 'email', 'first_name', 'last_name', 'about_me', 'data_birth', 'phone_namber']
         labels = {
             'first_name': 'Имя',
             'last_name': 'Фамилия',
+            'data_birth': 'Дата рождения',
+            'phone_namber': 'Номер телефона',
+            'about_me': 'О себе',
         }
         widgets = {
-            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control', 'type':'text'}),
-            # 'date_birth': forms.DateInput(attrs={'class': 'form-input'}),
-            'photo': forms.FileInput(attrs={'class': 'form-control'}),
-            'about_me': forms.Textarea(attrs={'class':'form-control', 'id':'exampleFormControlTextarea1', 'rows':'3'})
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ваше имя'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ваша фамилия'}),
+            'photo': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+            'about_me': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Расскажите немного о себе...', 'maxlength': 255}),
+            'data_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'format': '%Y-%m-%d'}),
+            'phone_namber': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+7 (___) ___-__-__', 'type': 'tel', 'id': 'phone-mask'}),
         }
+    
+    def clean_data_birth(self):
+        data = self.cleaned_data.get('data_birth')
+        if data and isinstance(data, str):
+            from datetime import datetime
+            try:
+                data = datetime.strptime(data, '%Y-%m-%d').date()
+            except ValueError:
+                try:
+                    data = datetime.strptime(data, '%d.%m.%Y').date()
+                except ValueError:
+                    raise forms.ValidationError('Неверный формат даты. Используйте ГГГГ-ММ-ДД')
+        return data
+    
+    def clean_phone_namber(self):
+        phone = self.cleaned_data.get('phone_namber')
+        if phone:
+            # Удаляем все лишние символы, оставляем только цифры и +
+            cleaned = ''.join(filter(lambda x: x.isdigit() or x == '+', phone))
+            if cleaned and not cleaned.startswith('+'):
+                cleaned = '+' + cleaned
+            return cleaned
+        return phone
 
 
 class UserPasswordChangeForm(PasswordChangeForm):

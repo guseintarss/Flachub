@@ -102,6 +102,33 @@ class EditProfileUser(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user
+    
+    def form_valid(self, form):
+        # Обрабатываем дату рождения если она есть
+        if form.cleaned_data.get('data_birth'):
+            from datetime import datetime
+            data_birth = form.cleaned_data['data_birth']
+            if isinstance(data_birth, str):
+                try:
+                    data_birth = datetime.strptime(data_birth, '%Y-%m-%d').date()
+                except ValueError:
+                    try:
+                        data_birth = datetime.strptime(data_birth, '%d.%m.%Y').date()
+                    except ValueError:
+                        form.add_error('data_birth', 'Неверный формат даты')
+                        return self.form_invalid(form)
+            form.instance.data_birth = data_birth
+        
+        # Обрабатываем телефон
+        if form.cleaned_data.get('phone_namber'):
+            phone = form.cleaned_data['phone_namber']
+            # Очищаем от форматирования
+            cleaned = ''.join(filter(lambda x: x.isdigit() or x == '+', phone))
+            if cleaned and not cleaned.startswith('+'):
+                cleaned = '+' + cleaned
+            form.instance.phone_namber = cleaned[:12]
+        
+        return super().form_valid(form)
 
 
 @login_required
