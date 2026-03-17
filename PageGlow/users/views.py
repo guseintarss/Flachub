@@ -6,6 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count
 from django.http import HttpResponseForbidden, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -15,7 +16,7 @@ from django.contrib import messages
 from rest_framework import viewsets, permissions
 
 from PageGlow import settings
-from main.models import Post
+from main.models import Discussion, Post
 from main.utils import DataMixin
 from users.forms import LoginUserForm, RegisterUserForm, ProfileUserForm, UserPasswordChangeForm
 from users.models import User, Rule
@@ -102,6 +103,33 @@ class EditProfileUser(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user
+    
+    def form_valid(self, form):
+        # Обрабатываем дату рождения если она есть
+        if form.cleaned_data.get('data_birth'):
+            from datetime import datetime
+            data_birth = form.cleaned_data['data_birth']
+            if isinstance(data_birth, str):
+                try:
+                    data_birth = datetime.strptime(data_birth, '%Y-%m-%d').date()
+                except ValueError:
+                    try:
+                        data_birth = datetime.strptime(data_birth, '%d.%m.%Y').date()
+                    except ValueError:
+                        form.add_error('data_birth', 'Неверный формат даты')
+                        return self.form_invalid(form)
+            form.instance.data_birth = data_birth
+        
+        # Обрабатываем телефон
+        if form.cleaned_data.get('phone_namber'):
+            phone = form.cleaned_data['phone_namber']
+            # Очищаем от форматирования
+            cleaned = ''.join(filter(lambda x: x.isdigit() or x == '+', phone))
+            if cleaned and not cleaned.startswith('+'):
+                cleaned = '+' + cleaned
+            form.instance.phone_namber = cleaned[:12]
+        
+        return super().form_valid(form)
 
 
 @login_required
@@ -116,20 +144,22 @@ def profile_user(request):
     user = request.user
 
     # Опубликованные посты (используем кастомный менеджер)
-    published_posts = Post.published.filter(author=user)
-    print(f"Published: {published_posts.count()}")
+    published_posts = Post.published.filter(author=user).select_related('cat', 'author').annotate(likes_count=Count('likes', distinct=True))
+
     # Черновики (is_published = DRAFT)
     drafts = Post.objects.filter(
         author=user,
         is_published=Post.Status.DRAFT
-    )    
-    print(f"Drafts: {drafts.count()}")
+    ).select_related('cat', 'author').annotate(likes_count=Count('likes', distinct=True))
 
     # Избранные посты (используем ManyToMany поле 'favorites')
     favorites = Post.objects.filter(
         favorites=user  # Посты, где текущий пользователь в списке избранных
-    )
-    print(f"Favorites: {favorites.count()}")
+    ).select_related('cat', 'author').annotate(likes_count=Count('likes', distinct=True))
+
+    discussions_data = Discussion.objects.filter(
+        author = user,
+    ).prefetch_related('tags').select_related('author', 'cat')
 
     extra_context = {
         'title': 'Профиль пользователя',
@@ -138,6 +168,7 @@ def profile_user(request):
         'published_posts': published_posts,
         'drafts': drafts,
         'favorites': favorites,
+        'discussion_dis': discussions_data,
         'user': user,
     }
     return render(request, 'users/profile.html', extra_context)
@@ -151,12 +182,32 @@ class UserPasswordChange(PasswordChangeView):
 def author_profile(request, username):
     """Публичный профиль автора - только просмотр статей"""
     from main.models import Subscription
-    
+    from django.db.models import Count
+
     author = get_object_or_404(User, username=username, is_active=True)
+
+    # Оптимизированный запрос с подсчётом подписок
+    published_posts = Post.published.filter(
+        author=author
+    ).select_related('cat', 'author').prefetch_related('tags').annotate(
+        likes_count=Count('likes', distinct=True)
+    ).order_by('-time_create')
     
-    published_posts = Post.published.filter(author=author).order_by('-time_create')
-    subscribers_count = Subscription.objects.filter(author=author).count()
-    subscriptions_count = Subscription.objects.filter(subscriber=author).count()
+    # Подсчитываем подписки в одном запросе с использованием Count
+    subscription_stats = Subscription.objects.filter(
+        author=author
+    ).aggregate(
+        subscribers_count=Count('id')
+    )
+    subscribers_count = subscription_stats['subscribers_count']
+    
+    # Подсчитываем подписки пользователя в одном запросе
+    subscriptions = Subscription.objects.filter(
+        subscriber=author
+    ).aggregate(
+        subscriptions_count=Count('id')
+    )
+    subscriptions_count = subscriptions['subscriptions_count']
     
     is_subscribed = False
     if request.user.is_authenticated and request.user != author:

@@ -19,16 +19,20 @@
     <ul class="dropdown-list">
       <li><a href="{% url 'users:profile' %}"><i class="fas fa-user me-2"></i> Мой профиль</a></li>
       <li><a href="{% url 'users:edit_profile' %}"><i class="fas fa-cog me-2"></i> Настройки</a></li>
+      <li><a href="{% url 'bookmarks' %}"><i class="fas fa-bookmark me-2"></i> Закладки</a></li>
       <li><a href="{% url 'subscription_feed' %}" ><i class="fas fa-pen me-2"></i>Подписки</a></li>
+      {% if user.is_staff %}
+      <li><hr></li>
+      <li><a href="{% url 'admin_dashboard' %}"><i class="fas fa-chart-line me-2"></i> Панель админа</a></li>
+      <li><a href="{% url 'admin:index' %}"><i class="fas fa-shield-alt me-2"></i> Админка</a></li>
+      {% endif %}
       <!-- <li><a href="#" aria-disabled="true"><i class="fas fa-star me-2"></i> </a></li> -->
       <li><hr></li>
       <li>
         <form method="post" action="{% url 'users:logout' %}" class="m-0">
           {% csrf_token %}
           <button type="submit" class="dropdown-logout-btn btn">
-            <i class="fas fa-sign-out-alt me-2"></i> <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" >
-            <path d="M14.29 6.71 18.59 11 9 11 9 13 18.59 13 14.29 17.29 15.71 18.71 22.41 12 15.71 5.29 14.29 6.71z"/><path d="m11,5v-2C6.04,3,2,7.04,2,12s4.04,9,9,9v-2c-3.86,0-7-3.14-7-7s3.14-7,7-7Z"/></svg>
-          </button>
+            <i class="fas fa-sign-out-alt me-2"></i> </button>
         </form>
       </li>
     </ul>

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load main_extras %}
 
 {% block content %}
 <div class="post">
@@ -18,9 +19,9 @@
             {% endif %}
             
             <div class="author-stats">
-                <span><strong>{{ published_posts.count }}</strong> статей</span>
-                <span><strong>{{ subscribers_count }}</strong> подписчиков</span>
-                <span><strong>{{ subscriptions_count }}</strong> подписок</span>
+                <span><strong>{{ published_posts.count }}</strong> 📄 статей</span>
+                <span><strong>{{ subscribers_count }}</strong> 👥 подписчиков</span>
+                <span><strong>{{ subscriptions_count }}</strong> ➕ подписок</span>
             </div>
             
             {% if author.about_me %}
@@ -50,10 +51,10 @@
 <article class="post">
     <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
     <p class="meta">
-        Категория: {{ post.cat.name }} 
-        &bull; {{ post.time_update|date:"d.m.Y" }}
+        Категория: {{ post.cat.name }}
+        &bull; <span title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span>
         &bull; 👁 {{ post.views }}
-        &bull; ❤️ {{ post.number_of_likes }}
+        &bull; ❤️ {{ post.likes_count|default:0 }}
     </p>
     {% if post.photo %}
     <p><img class="img-article-left thumb" src="{{ post.photo.url }}" alt=""></p>

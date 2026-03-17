@@ -1,0 +1,58 @@
+# robots.txt for PageGlow
+# https://www.pageglow.com/robots.txt
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.pageglow.com/sitemap.xml
+
+# RSS feeds
+Sitemap: https://www.pageglow.com/rss/
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /ckeditor5/
+Disallow: /static/admin/
+Disallow: /media/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /users/password/
+Disallow: /users/edit/
+
+# Allow public content
+Allow: /static/
+Allow: /media/photos/
+Allow: /post/
+Allow: /category/
+Allow: /tag/
+Allow: /discussions/
+Allow: /users/
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Google bots
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0.5
+
+# Yandex bots
+User-agent: Yandex
+Allow: /
+Crawl-delay: 1
+
+# Yandex Images
+User-agent: YandexImages
+Allow: /media/photos/
+Crawl-delay: 2
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Baidu
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 2

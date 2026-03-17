@@ -47,7 +47,7 @@ class Post(ModelMeta, models.Model):
     # Избранное
     favorites = models.ManyToManyField(
         User,
-        related_name='favorite_posts',
+        related_name='favorited_posts',
         blank=True
     )
 
@@ -111,6 +111,10 @@ class Post(ModelMeta, models.Model):
         ordering = ['-time_create']
         indexes = [
             models.Index(fields=['-time_create']),
+            models.Index(fields=['slug']),
+            models.Index(fields=['is_published', '-time_create']),
+            models.Index(fields=['author']),
+            models.Index(fields=['cat']),
         ]
 
     def get_absolute_url(self):
@@ -151,7 +155,7 @@ class TagPost(models.Model):
 
     def get_absolute_url(self):
         return reverse('tag', kwargs={'tag_slug': self.slug})
-    
+
     def save(self, *args, **kwargs):
         key = make_template_fragment_key("side_cache")
         cache.delete(key)
@@ -170,6 +174,11 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['post', 'created_at']),
+            models.Index(fields=['author']),
+            models.Index(fields=['is_active']),
+        ]
 
     def __str__(self):
         return f'Comment by {self.author} on {self.post}'
@@ -185,6 +194,11 @@ class Subscription(models.Model):
         unique_together = ('subscriber', 'author')
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        indexes = [
+            models.Index(fields=['subscriber', 'author']),
+            models.Index(fields=['subscriber']),
+            models.Index(fields=['author']),
+        ]
 
     def __str__(self):
         return f'{self.subscriber} подписан на {self.author}'
@@ -211,7 +225,271 @@ class Notification(models.Model):
         ordering = ['-created_at']
         verbose_name = 'Уведомление'
         verbose_name_plural = 'Уведомления'
+        indexes = [
+            models.Index(fields=['recipient', 'is_read']),
+            models.Index(fields=['recipient', 'created_at']),
+            models.Index(fields=['sender']),
+        ]
 
     def __str__(self):
         return f'{self.notification_type}: {self.message}'
 
+
+class Discussion(models.Model):
+    """Модель обсуждения (вопрос/тема)"""
+    class Status(models.IntegerChoices):
+        DRAFT = 0, 'Черновик'
+        PUBLISHED = 1, 'Опубликовано'
+        CLOSED = 2, 'Закрыто'
+
+    title = models.CharField(max_length=255, verbose_name='Заголовок темы', default='', blank=True)
+    content = models.TextField(max_length=2000, verbose_name='Описание вопроса', default='', blank=True)
+    author = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='discussions',
+        verbose_name='Автор',
+        null=True,
+        blank=True
+    )
+    cat = models.ForeignKey(
+        'Category', 
+        on_delete=models.SET_NULL, 
+        related_name='discussions',
+        null=True, 
+        blank=True,
+        verbose_name='Категория'
+    )
+    tags = models.ManyToManyField(
+        'TagPost', 
+        blank=True, 
+        related_name='discussions',
+        verbose_name='Теги'
+    )
+    is_published = models.BooleanField(
+        choices=tuple(map(lambda x: (bool(x[0]), x[1]), Status.choices)),
+        default=Status.PUBLISHED,
+        verbose_name='Опубликовано?' 
+    )
+    is_closed = models.BooleanField(default=False, verbose_name='Закрыто')
+    views = models.PositiveIntegerField(default=0, verbose_name='Просмотры')
+    time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
+    time_update = models.DateTimeField(auto_now=True, verbose_name='Время изменения')
+
+    # Лайки
+    likes = models.ManyToManyField(
+        User,
+        related_name='discussion_likes',
+        blank=True
+    )
+
+    # Избранное
+    favorites = models.ManyToManyField(
+        User,
+        related_name='discussion_favorites',
+        blank=True
+    )
+
+    def number_of_likes(self):
+        return self.likes.count()
+
+    def number_of_favorites(self):
+        return self.favorites.count()
+
+    class Meta:
+        verbose_name = 'Обсуждение'
+        verbose_name_plural = 'Обсуждения'
+        ordering = ['-time_create']
+        indexes = [
+            models.Index(fields=['-time_create']),
+            models.Index(fields=['is_published', '-time_create']),
+            models.Index(fields=['author']),
+            models.Index(fields=['cat']),
+        ]
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('discussion_detail', kwargs={'pk': self.pk})
+
+    def comments_count(self):
+        return self.comments.count()
+
+    def get_last_comment_author(self):
+        last_comment = self.comments.order_by('-created_at').first()
+        return last_comment.author if last_comment else None
+
+
+class DiscussionComment(models.Model):
+    """Комментарий к обсуждению"""
+    discussion = models.ForeignKey(
+        Discussion,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Обсуждение'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='discussion_comments',
+        verbose_name='Автор'
+    )
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='replies',
+        verbose_name='Родительский комментарий'
+    )
+    content = models.TextField(max_length=2000, verbose_name='Текст комментария')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
+    is_active = models.BooleanField(default=True, verbose_name='Активен')
+    
+    # Лайки на комментарий
+    likes = models.ManyToManyField(
+        User,
+        related_name='discussion_comment_likes',
+        blank=True
+    )
+
+    class Meta:
+        verbose_name = 'Комментарий обсуждения'
+        verbose_name_plural = 'Комментарии обсуждений'
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['discussion', 'created_at']),
+            models.Index(fields=['author']),
+            models.Index(fields=['is_active']),
+            models.Index(fields=['parent']),
+        ]
+
+    def __str__(self):
+        return f'Comment by {self.author} on {self.discussion}'
+
+    def number_of_likes(self):
+        return self.likes.count()
+
+    def user_has_liked(self, user):
+        if not user or not user.is_authenticated:
+            return False
+        return self.likes.filter(id=user.id).exists()
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('discussion_detail', kwargs={'pk': self.discussion.pk})
+
+
+# ===== SOCIAL FEATURES =====
+
+class Bookmark(models.Model):
+    """Закладки пользователей"""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='bookmarks'
+    )
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='bookmarked_by'
+    )
+    collection = models.ForeignKey(
+        'Collection',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='bookmarks'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True, max_length=500, help_text='Заметка к закладке')
+
+    class Meta:
+        verbose_name = 'Закладка'
+        verbose_name_plural = 'Закладки'
+        ordering = ['-created_at']
+        unique_together = ('user', 'post')
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['post']),
+        ]
+
+    def __str__(self):
+        return f'{self.user.username} → {self.post.title}'
+
+
+class Collection(models.Model):
+    """Коллекции статей (папки для закладок)"""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='collections'
+    )
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, max_length=500)
+    is_public = models.BooleanField(default=False, help_text='Показывать коллекцию другим')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Коллекция'
+        verbose_name_plural = 'Коллекции'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_public']),
+        ]
+
+    def __str__(self):
+        return f'{self.name} ({self.user.username})'
+
+    def bookmarks_count(self):
+        return self.bookmarks.count()
+
+
+class UserBadge(models.Model):
+    """Достижения пользователей"""
+    key = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    icon = models.CharField(max_length=50, help_text='Название иконки (emoji или CSS class)')
+    color = models.CharField(max_length=20, default='#007bff', help_text='Цвет бейджа')
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0, help_text='Порядок отображения')
+
+    class Meta:
+        verbose_name = 'Достижение'
+        verbose_name_plural = 'Достижения'
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
+class UserAchievement(models.Model):
+    """Полученные пользователем достижения"""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='achievements'
+    )
+    badge = models.ForeignKey(
+        UserBadge,
+        on_delete=models.CASCADE,
+        related_name='awarded_to'
+    )
+    earned_at = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField(blank=True, help_text='Причина получения')
+
+    class Meta:
+        verbose_name = 'Полученное достижение'
+        verbose_name_plural = 'Полученные достижения'
+        ordering = ['-earned_at']
+        unique_together = ('user', 'badge')
+        indexes = [
+            models.Index(fields=['user', '-earned_at']),
+        ]
+
+    def __str__(self):
+        return f'{self.user.username} → {self.badge.name}'

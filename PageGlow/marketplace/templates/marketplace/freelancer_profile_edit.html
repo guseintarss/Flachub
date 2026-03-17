@@ -1,0 +1,350 @@
+{% extends "base_market.html" %}
+{% load static %}
+
+{% block title %}Редактирование профиля - PageGlow{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-5">
+                <h1 class="fw-bold mb-2">Редактирование профиля</h1>
+                <p class="text-muted">Обновите информацию о себе и своих услугах</p>
+            </div>
+            
+            <!-- Edit Form -->
+            <form method="post" enctype="multipart/form-data" class="card border-0 shadow-lg rounded-lg p-5">
+                {% csrf_token %}
+                
+                <!-- Avatar Section -->
+                <div class="mb-5">
+                    <h5 class="fw-bold mb-4">
+                        <i class="fas fa-image me-2" style="color: #667eea;"></i>
+                        Фотография профиля
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4">
+                            <div class="rounded-circle mx-auto mb-3" style="width: 150px; height: 150px; overflow: hidden; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                                {% if form.instance.avatar %}
+                                    <img src="{{ form.instance.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <i class="fas fa-user" style="font-size: 3rem; color: #ccc;"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <label for="id_avatar" class="form-label fw-bold">Загрузить фотографию</label>
+                            {{ form.avatar }}
+                            <small class="form-text text-muted d-block mt-2">
+                                Рекомендуемый размер: 200x200px. Максимум: 5MB
+                            </small>
+                            {% if form.avatar.errors %}
+                                <div class="alert alert-danger small mt-2">
+                                    {{ form.avatar.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-5">
+                
+                <!-- Personal Info -->
+                <div class="mb-5">
+                    <h5 class="fw-bold mb-4">
+                        <i class="fas fa-user me-2" style="color: #667eea;"></i>
+                        Личная информация
+                    </h5>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="id_first_name" class="form-label fw-bold">Имя</label>
+                            <p class="form-control-plaintext bg-light p-2 rounded">{{ user.first_name|default:"Не заполнено" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_last_name" class="form-label fw-bold">Фамилия</label>
+                            <p class="form-control-plaintext bg-light p-2 rounded">{{ user.last_name|default:"Не заполнено" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="id_username" class="form-label fw-bold">Логин</label>
+                        <p class="form-control-plaintext bg-light p-2 rounded">{{ user.username }}</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="id_email" class="form-label fw-bold">Email</label>
+                        <p class="form-control-plaintext bg-light p-2 rounded">{{ user.email }}</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="id_bio" class="form-label fw-bold">О себе</label>
+                        {{ form.bio }}
+                        <small class="form-text text-muted d-block mt-2">
+                            Расскажите о себе и ваших услугах (до 500 символов)
+                        </small>
+                        {% if form.bio.errors %}
+                            <div class="alert alert-danger small mt-2">
+                                {{ form.bio.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <hr class="my-5">
+                
+                <!-- Professional Info -->
+                <div class="mb-5">
+                    <h5 class="fw-bold mb-4">
+                        <i class="fas fa-briefcase me-2" style="color: #667eea;"></i>
+                        Профессиональная информация
+                    </h5>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="id_hourly_rate" class="form-label fw-bold">Почасовая ставка (руб)</label>
+                            {{ form.hourly_rate }}
+                            {% if form.hourly_rate.errors %}
+                                <div class="alert alert-danger small mt-2">
+                                    {{ form.hourly_rate.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_years_experience" class="form-label fw-bold">Опыт работы</label>
+                            {{ form.years_experience }}
+                            {% if form.years_experience.errors %}
+                                <div class="alert alert-danger small mt-2">
+                                    {{ form.years_experience.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="id_role" class="form-label fw-bold">Роль</label>
+                        {{ form.role }}
+                        <small class="form-text text-muted d-block mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Выберите вашу основную роль
+                        </small>
+                        {% if form.role.errors %}
+                            <div class="alert alert-danger small mt-2">
+                                {{ form.role.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <hr class="my-5">
+                
+                
+                <!-- Раздел с навыками -->
+                <div class="selected-skills-container">
+                    <label>Выбранные теги:</label>
+                    <div class="selected-skills" id="selectedTags"></div>
+                </div>
+
+                <div class="available-skills">
+                    <label>Выберите навыки:</label>
+                    <div class="skills-grid" id="skillsGrid">
+                        {% for skills in form.skills.field.queryset %}
+                        <div class="skill-wrapper" data-tag-id="{{ skills.id }}">
+                            <input 
+                            type="checkbox" 
+                            name="skills"
+                            value="{{ skills.id }}"
+                            id="skill-{{ skills.id }}" 
+                            data-tag-id="{{ skills.id }}" 
+                            data-tag-name="{{ skills.name }}"
+                            >
+                            <label 
+                            for="skill-{{ skills.id }}" 
+                            class="skill-option"
+                            >
+                            {{ skills.name }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Подсказка -->
+                <small class="form-text text-muted d-block mt-3">
+                <i class="fas fa-info-circle me-1"></i>
+                Отметьте 3–5 ключевых навыков, наиболее релевантных для позиции
+                </small>
+
+                <div>
+                    {% if form.skills.errors %}
+                        <div class="alert alert-danger mt-2">
+                            {{ form.skills.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <small class="d-block mt-3 text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Выберите все необходимые технологии и навыки
+                    </small>
+                </div>
+                
+                
+                <hr class="my-5">
+            
+                <!-- Links Section -->
+                <div class="mb-5">
+                    <h5 class="fw-bold mb-4">
+                        <i class="fas fa-link me-2" style="color: #667eea;"></i>
+                        Ссылки на портфолио
+                    </h5>
+                    
+                    <div class="mb-4">
+                        <label for="id_portfolio_url" class="form-label fw-bold">
+                            <i class="fas fa-globe me-1"></i>Портфолио
+                        </label>
+                        {{ form.portfolio_url }}
+                        <small class="form-text text-muted d-block mt-2">
+                            Ссылка на ваше портфолио или веб-сайт
+                        </small>
+                        {% if form.portfolio_url.errors %}
+                            <div class="alert alert-danger small mt-2">
+                                {{ form.portfolio_url.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="id_github_url" class="form-label fw-bold">
+                                <i class="fab fa-github me-1"></i>GitHub
+                            </label>
+                            {{ form.github_url }}
+                            {% if form.github_url.errors %}
+                                <div class="alert alert-danger small mt-2">
+                                    {{ form.github_url.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_linkedin_url" class="form-label fw-bold">
+                                <i class="fab fa-linkedin me-1"></i>LinkedIn
+                            </label>
+                            {{ form.linkedin_url }}
+                            {% if form.linkedin_url.errors %}
+                                <div class="alert alert-danger small mt-2">
+                                    {{ form.linkedin_url.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Availability Section -->
+                <div class="mb-5">
+                    <h5 class="fw-bold mb-4">
+                        <i class="fas fa-check-circle me-2" style="color: #667eea;"></i>
+                        Доступность
+                    </h5>
+                    
+                    <div class="form-check form-switch p-3 bg-light rounded">
+                        <input class="form-check-input" type="checkbox" id="is_available" name="is_available" {% if form.instance.is_available %}checked{% endif %} style="width: 2.5em; height: 1.5em; margin-left: 0.2rem;">
+                        <label class="form-check-label ms-3" for="is_available">
+                            <strong>Я доступен(а) для новых проектов</strong>
+                            <small class="d-block text-muted mt-1">Когда вы отмечены как доступные, ваш профиль будет виднее в поиске</small>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="d-flex gap-3 pt-5 border-top mt-5">
+                    <button type="submit" class="btn btn-lg rounded-pill fw-bold flex-grow-1" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                        <i class="fas fa-save me-2"></i>
+                        Сохранить изменения
+                    </button>
+                    <a href="{% url 'marketplace:freelancer_profile' user.username %}" class="text-decoration-none btn btn-lg btn-outline-secondary rounded-pill fw-bold">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        К профилю
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const selectedTags = document.getElementById('selectedTags');
+  const tagsGrid = document.getElementById('skillsGrid');
+  const checkboxes = tagsGrid.querySelectorAll('input[type="checkbox"]');
+  
+
+  const selectedTagIds = new Set();
+
+
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const tagId = this.getAttribute('data-tag-id');
+      const tagName = this.getAttribute('data-tag-name');
+
+      if (this.checked && !isNaN(tagId)) {
+        selectedTagIds.add(tagId);
+        addSelectedTag(tagId, tagName);
+        hideOriginalTag(tagId); // Скрываем исходный тег
+      } else {
+        selectedTagIds.delete(tagId);
+        removeSelectedTag(tagId);
+        showOriginalTag(tagId); // Показываем исходный тег снова
+      }
+
+    });
+  });
+
+  function addSelectedTag(id, name) {
+    const tagElement = document.createElement('span');
+    tagElement.className = 'tag-selected';
+    tagElement.setAttribute('data-id', id);
+    tagElement.innerHTML = `
+      ${name}
+      <span class="tag-remove" data-id="${id}">×</span>
+    `;
+    selectedTags.appendChild(tagElement);
+
+    tagElement.querySelector('.tag-remove').addEventListener('click', function(e) {
+      e.stopPropagation();
+      removeSelectedTag(id);
+      showOriginalTag(id);
+      checkboxes.forEach(cb => {
+        if (cb.getAttribute('data-tag-id') === id) cb.checked = false;
+      });
+    });
+  }
+
+  function removeSelectedTag(id) {
+    const tagElement = selectedTags.querySelector(`[data-id="${id}"]`);
+    if (tagElement) tagElement.remove();
+  }
+
+
+function hideOriginalTag(id) {
+  const originalWrapper = tagsGrid.querySelector(`.skill-wrapper[data-tag-id="${id}"]`);
+  if (originalWrapper) {
+    originalWrapper.style.display = 'none'; // Скрываем весь контейнер навыка
+  }
+}
+
+
+function showOriginalTag(id) {
+  const originalWrapper = tagsGrid.querySelector(`.skill-wrapper[data-tag-id="${id}"]`);
+  if (originalWrapper) {
+    originalWrapper.style.display = 'flex'; // Возвращаем видимость (зависит от ваших стилей)
+  }
+}
+});
+
+
+</script>
+{% endblock %}

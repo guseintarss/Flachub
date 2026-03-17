@@ -11,30 +11,59 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
 from pathlib import Path
-from decouple import config
+
+# Используем деньюю версию python-decouple
+try:
+    from decouple import config
+except ImportError:
+    from os import getenv as config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Создать директории если их нет
+for directory in ['logs', 'cache', 'static', 'media']:
+    dir_path = os.path.join(BASE_DIR, directory)
+    os.makedirs(dir_path, exist_ok=True)
+
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-temp-dev-key-do-not-use-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG')
+DEBUG = config('DEBUG', default='True') == 'True'
 
-ALLOWED_HOSTS=["pageglow.ru", "www.pageglow.ru", '127.0.0.1']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,pageglow.ru,www.pageglow.ru').split(',')
 
 INTERNAL_IPS = ["127.0.0.1"]
 
 # CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+
+# ===== SENTRY =====
+SENTRY_DSN = config('SENTRY_DSN', default='')
+
+if SENTRY_DSN:
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            # Django integration
+        ],
+        traces_sample_rate=0.1,  # 10% транзакций
+        profiles_sample_rate=0.1,  # 10% профилей
+        environment=config('SENTRY_ENVIRONMENT', default='development'),
+        release=config('SENTRY_RELEASE', default='unknown'),
+    )
+
 # Application definition
 
 INSTALLED_APPS = [
+    'marketplace.apps.MarketplaceConfig',
     'users.apps.UsersConfig',
     'main.apps.MainConfig',
     'django.contrib.admin',
@@ -52,6 +81,12 @@ INSTALLED_APPS = [
 
     'django.contrib.sites',
     'django.contrib.sitemaps',
+    
+    # WebSocket / Channels
+    'channels',
+    
+    # Backup
+    'dbbackup',
 ]
 
 MIDDLEWARE = [
@@ -93,10 +128,21 @@ TEMPLATES = [
     },
 ]
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'main', 'static')]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'main', 'static', 'media')]
 
 
 WSGI_APPLICATION = 'PageGlow.wsgi.application'
+ASGI_APPLICATION = 'PageGlow.asgi.application'
+
+# Channels / WebSocket
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [config('REDIS_URL', default='redis://localhost:6379/0')],
+        },
+    },
+}
 
 
 # Database
@@ -156,14 +202,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATICFILES_DIRS = [
-#     BASE_DIR / 'static',
-# ]
-STATIC_ROOT = os.path.join(BASE_DIR, '/static')
-# STATIC_ROOT = BASE_DIR / '/var/www/pageglow/PageGlow3.0/PageGlow/staticfiles/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -222,6 +263,30 @@ customColorPalette = [
         },
     ]
 
+# CKEditor 5 настройки
+customColorPalette = [
+    {
+        'color': '#hsl(0, 75%, 60%)',
+        'label': 'Red'
+    },
+    {
+        'color': '#hsl(120, 75%, 60%)',
+        'label': 'Green'
+    },
+    {
+        'color': '#hsl(240, 75%, 60%)',
+        'label': 'Blue'
+    },
+]
+
+# Настройка загрузки файлов для django_ckeditor_5
+DJANGO_CKEDITOR_5_FILE_UPLOAD_PERMISSION = 'authenticated'
+CKEDITOR_5_FILE_UPLOAD_PATH = 'ckeditor/uploads/'
+
+# Типы файлов для загрузки
+CKEDITOR_5_UPLOAD_FILE_TYPES = ['jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'ico', 'svg']
+
+# Отключаем встроенный upload и используем кастомный
 CKEDITOR_5_CONFIGS = {
     'default': {
         'language': 'ru-RU',
@@ -236,9 +301,6 @@ CKEDITOR_5_CONFIGS = {
         'toolbar': {
             'items': ['heading', '|', 'bold', 'italic', 'link',
                       'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', ],
-        },
-        'simpleUpload': {
-            'uploadUrl': '/upload/', 
         },
         'placeholder': 'Заголовок',
     },
@@ -324,19 +386,177 @@ DJOSER = {
     'ACTIVATION_URL': 'auth/verify/{uid}/{token}'
 }
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BASE_DIR, 'cache'),
+# Кэширование - используем Redis если доступен, иначе файловое
+CACHE_BACKEND = config('CACHE_BACKEND', default='filebased')
+
+if CACHE_BACKEND == 'redis':
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/0'),
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'PARSER_KWARGS': {'encoding': 'utf8'},
+                'CONNECTION_POOL_KWARGS': {'max_connections': 50, 'retry_on_timeout': True}
+            },
+            'KEY_PREFIX': 'pageglow',
+            'TIMEOUT': 300,
+        }
     }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+            'LOCATION': os.path.join(BASE_DIR, 'cache'),
+            'TIMEOUT': 300,
+        }
+    }
+
+# Session configuration
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# CSRF
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://localhost:3000,http://127.0.0.1:3000').split(',')
+
+# Security headers
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_SECURITY_POLICY = {
+    'default-src': ("'self'",),
+    'script-src': ("'self'", "'unsafe-inline'", "cdn.jsdelivr.net"),
+    'style-src': ("'self'", "'unsafe-inline'", "cdn.jsdelivr.net"),
+    'img-src': ("'self'", "data:", "https:"),
+    'font-src': ("'self'", "data:", "https:"),
+    'connect-src': ("'self'",),
+    'frame-ancestors': ("'none'",),
 }
 
+# If not in DEBUG mode, enforce HTTPS
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
-META_SITE_PROTOCOL = 'https'
-META_SITE_DOMAIN = 'pageglow.ru'
+META_SITE_PROTOCOL = 'https' if not DEBUG else 'http'
+META_SITE_DOMAIN = config('META_SITE_DOMAIN', default='pageglow.ru')
 META_SITE_TYPE = 'website'
 META_SITE_NAME = 'PageGlow'
 META_INCLUDE_KEYWORDS = ['статьи', 'информация', 'рекомендации', 'руководства']
 META_USE_OG_PROPERTIES = True
 META_USE_TWITTER_PROPERTIES = True
 META_USE_SCHEMAORG_PROPERTIES = True
+
+# REST Framework configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour'
+    }
+}
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {asctime} {message}',
+            'style': '{',
+        },
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
+
+# ===== DBBACKUP =====
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': os.path.join(BASE_DIR, 'backups')}
+DBBACKUP_CONNECTORS = {
+    'default': {
+        'SINGLE_TRANSACTION': True,
+        'IF_EXISTS': True,
+    }
+}
+DBBACKUP_CLEANUP_KEEP = 7  # Хранить 7 последних бэкапов
+DBBACKUP_CLEANUP_KEEP_MEDIA = 7
+
+# ===== SENTRY =====
+SENTRY_DSN = config('SENTRY_DSN', default='')
+
+if SENTRY_DSN:
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[],
+        traces_sample_rate=0.1,
+        profiles_sample_rate=0.1,
+        environment=config('SENTRY_ENVIRONMENT', default='development'),
+        release=config('SENTRY_RELEASE', default='unknown'),
+    )

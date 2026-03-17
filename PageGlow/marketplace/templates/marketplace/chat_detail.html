@@ -1,0 +1,277 @@
+{% extends "base_market.html" %}
+{% load static %}
+
+{% block title %}Чат {{ project.title }} - PageGlow{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5" style="background: #f8f9fa; min-height: calc(100vh - 150px);">
+    <div class="container">
+        <div class="row h-100">
+            <!-- Project Info Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="card border-0 shadow-sm rounded-lg mb-4">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">Проект</h6>
+                        <h5 class="mb-3">{{ project.title }}</h5>
+                        
+                        <div class="mb-3 pb-3 border-bottom">
+                            <small class="text-muted d-block mb-1">Статус</small>
+                            <span class="badge bg-info">{{ project.get_status_display }}</span>
+                        </div>
+                        
+                        <div class="mb-3 pb-3 border-bottom">
+                            <small class="text-muted d-block mb-1">Бюджет</small>
+                            <p class="mb-0 fw-bold">${{ project.budget_min }} - ${{ project.budget_max }}</p>
+                        </div>
+                        
+                        <div class="mb-3 pb-3 border-bottom">
+                            <small class="text-muted d-block mb-1">Дедлайн</small>
+                            <p class="mb-0">{{ project.deadline|date:"d.m.Y" }}</p>
+                        </div>
+                        
+                        <a href="{% url 'marketplace:project_detail' project.id %}" class="btn btn-sm btn-outline-primary w-100 rounded-pill">
+                            <i class="fas fa-arrow-right me-1"></i>Перейти к проекту
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Participants -->
+                <div class="card border-0 shadow-sm rounded-lg">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">Участники</h6>
+                        
+                        <!-- Client -->
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                {% if project.client.avatar %}
+                                    <img src="{{ project.client.avatar.url }}" alt="{{ project.client.user.username }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle me-2" style="width: 40px; height: 40px; background: #e9ecef;"></div>
+                                {% endif %}
+                                <div>
+                                    <p class="mb-0 small fw-bold">{{ project.client.user.get_full_name }}</p>
+                                    <p class="mb-0 text-muted text-xs">Клиент</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Freelancer (if assigned) -->
+                        {% if project.assigned_freelancer %}
+                            <div>
+                                <div class="d-flex align-items-center">
+                                    {% if project.assigned_freelancer.avatar %}
+                                        <img src="{{ project.assigned_freelancer.avatar.url }}" alt="{{ project.assigned_freelancer.user.username }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="rounded-circle me-2" style="width: 40px; height: 40px; background: #e9ecef;"></div>
+                                    {% endif %}
+                                    <div>
+                                        <p class="mb-0 small fw-bold">{{ project.assigned_freelancer.user.get_full_name }}</p>
+                                        <p class="mb-0 text-muted text-xs">Фрилансер</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Area -->
+            <div class="col-lg-9">
+                <div class="card border-0 shadow-sm rounded-lg h-100 d-flex flex-column" style="height: 600px;">
+                    <!-- Chat Header -->
+                    <div class="card-header bg-white border-bottom py-3 rounded-top-lg">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0 fw-bold">
+                                    <i class="fas fa-comments me-2" style="color: #667eea;"></i>
+                                    Чат проекта
+                                </h6>
+                            </div>
+                            <div class="text-muted small">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {{ messages.count }} сообщений
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Messages Area -->
+                    <div class="card-body overflow-auto flex-grow-1 p-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="mb-4 d-flex {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
+                                    {% if message.sender != request.user %}
+                                        <div class="me-3">
+                                            {% if message.sender.profile.avatar %}
+                                                <img src="{{ message.sender.profile.avatar.url }}" alt="{{ message.sender.username }}" class="rounded-circle" style="width: 36px; height: 36px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded-circle" style="width: 36px; height: 36px; background: #e9ecef;"></div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div style="max-width: 70%;">
+                                        <div class="{% if message.sender == request.user %}text-end{% endif %} mb-1">
+                                            <small class="text-muted">
+                                                <strong>{{ message.sender.get_full_name|default:message.sender.username }}</strong>
+                                                <span class="ms-2">{{ message.created_at|date:"H:i" }}</span>
+                                            </small>
+                                        </div>
+                                        <div class="p-3 rounded-lg message-bubble {% if message.sender == request.user %}message-sent{% else %}message-received{% endif %}">
+                                            <p class="mb-0">{{ message.content }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-comments" style="font-size: 3rem; opacity: 0.2;"></i>
+                                <p class="mt-3">Нет сообщений. Начните беседу!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Message Input -->
+                    <div class="card-footer bg-white border-top rounded-bottom-lg p-3">
+                        <form id="message-form" method="post" class="d-flex gap-2">
+                            {% csrf_token %}
+                            <input type="text" id="message-input" name="content" class="form-control rounded-pill" placeholder="Введите сообщение..." required style="border: 2px solid #e9ecef; background: #f8f9fa;">
+                            <button type="submit" class="btn rounded-circle p-0" style="width: 45px; height: 45px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .rounded-lg {
+        border-radius: 15px;
+    }
+
+    .rounded-top-lg {
+        border-radius: 15px 15px 0 0;
+    }
+
+    .rounded-bottom-lg {
+        border-radius: 0 0 15px 15px;
+    }
+
+    .text-xs {
+        font-size: 0.75rem;
+    }
+
+    .overflow-auto {
+        scroll-behavior: smooth;
+    }
+
+    input[type="text"] {
+        transition: all 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+        background: white !important;
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .btn:hover {
+        transform: scale(1.05);
+    }
+
+    .message-bubble {
+        border-radius: 15px;
+        animation: fadeInUp 0.3s ease;
+    }
+
+    .message-sent {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .message-received {
+        background: #e9ecef;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('message-form');
+    const input = document.getElementById('message-input');
+    const messagesContainer = document.querySelector('.card-body.overflow-auto');
+    
+    // Автопрокрутка вниз при загрузке
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const content = input.value.trim();
+        if (!content) return;
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        
+        fetch('{% url "marketplace:send_message" chat.id %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `content=${encodeURIComponent(content)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.id) {
+                // Добавляем сообщение в DOM
+                const messageHtml = `
+                    <div class="mb-4 d-flex justify-content-end">
+                        <div style="max-width: 70%;">
+                            <div class="text-end mb-1">
+                                <small class="text-muted">
+                                    <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                                    <span class="ms-2">${new Date(data.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                </small>
+                            </div>
+                            <div class="p-3 rounded-lg message-bubble message-sent">
+                                <p class="mb-0">${data.content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                input.value = '';
+            }
+            submitBtn.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            submitBtn.disabled = false;
+        });
+    });
+    
+    // Отправка по Enter
+    input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            form.dispatchEvent(new Event('submit'));
+        }
+    });
+});
+</script>
+{% endblock %}

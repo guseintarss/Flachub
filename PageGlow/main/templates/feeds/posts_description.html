@@ -1,0 +1,10 @@
+{% load static %}
+<div xmlns="http://www.w3.org/1999/xhtml">
+  {% if item.photo %}
+    <img src="{{ item.photo.url }}" alt="{{ item.title }}" style="max-width: 100%; height: auto;" />
+  {% endif %}
+  <p><strong>Автор:</strong> {{ item.author.username }}</p>
+  <p><strong>Категория:</strong> {{ item.cat.name }}</p>
+  <p>{{ item.meta|default:item.content|truncatewords:50 }}</p>
+  <p><a href="{{ item.get_absolute_url }}">Читать далее →</a></p>
+</div>

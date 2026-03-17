@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load main_extras %}
 
 {% block head %}
 <!-- Подключение HTMX -->
@@ -13,177 +14,1036 @@ document.body.addEventListener('htmx:configRequest', function (event) {
     event.detail.headers['X-CSRFToken'] = document.querySelector('meta[name="csrf-token"]').content;
 });
 </script>
-
 {% endblock %}
 
 {% block content %}
-<div class="post">
-
-    <div class="user-photo">
-        {% if user.photo %}
-        <p><img class="user-img-article" src="{{ user.photo.url }}">
-        {% else %}
-        <p><img class="user-img-article" src="{{ default_image }}">
-        {% endif %}
+<div class="profile-page">
+    <!-- Шапка профиля -->
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {% if user.photo %}
+            <img src="{{ user.photo.url }}" alt="{{ user.username }}" class="avatar-img">
+            {% else %}
+            <img src="{{ default_image }}" alt="{{ user.username }}" class="avatar-img">
+            {% endif %}
+        </div>
+        
+        <div class="profile-info">
+            <h1 class="profile-name">{{ user.username }}</h1>
+            {% if user.first_name or user.last_name %}
+            <p class="profile-fullname">{{ user.last_name }} {{ user.first_name }}</p>
+            {% endif %}
+            {% if user.about_me %}
+            <p class="profile-bio">{{ user.about_me }}</p>
+            {% endif %}
+            
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ published_posts.count }}</div>
+                    <div class="stat-label">
+                        <i class="fas fa-file-alt"></i> статей
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ user.subscribers.count }}</div>
+                    <div class="stat-label">
+                        <i class="fas fa-users"></i> подписчиков
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ user.subscriptions.count }}</div>
+                    <div class="stat-label">
+                        <i class="fas fa-user-plus"></i> подписок
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-actions">
+                <a href="{% url 'users:edit_profile' %}" class="btn btn-primary">
+                    <i class="fas fa-cog"></i> 
+                </a>
+                <a href="{% url 'bookmarks' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-bookmark"></i>
+                </a>
+            </div>
+        </div>
     </div>
 
-    <h1>{{user.username}}</h1>
-    <p><span class="span">{{user.last_name}} {{user.first_name}}</span></p>
-      
-
-    <div class="author-stats">
-        <span><strong>{{ published_posts.count }}</strong> статей</span>
-        <span><strong>{{ subscribers_count }}</strong> подписчиков</span>
-        <span><strong>{{ subscriptions_count }}</strong> подписок</span>
+    <!-- Табы -->
+    <div class="profile-tabs">
+        <ul class="nav-tabs">
+            <li class="nav-item">
+                <a href="#published" class="nav-link tab active" data-tab="published">
+                    <i class="fas fa-check-circle"></i> <span>Опубликованные</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#drafts" class="nav-link tab" data-tab="drafts">
+                    <i class="fas fa-file"></i> <span>Черновики</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#favorites" class="nav-link tab" data-tab="favorites">
+                    <i class="fas fa-heart"></i> <span>Избранные</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#discussions" class="nav-link tab" data-tab="discussions">
+                    <i class="fas fa-comments"></i> <span>Обсуждения</span>
+                </a>
+            </li>
+        </ul>
     </div>
 
-    {%if user.about_me%}
-    <p>{{user.about_me}}</p>
-    {%endif%}
-    <hr>
-    <h4>Посты пользователя {{user.username}}</h4>
-    <a class="a-link position-absolute bottom-0 mb-1 p-3 end-0" href="{% url 'users:edit_profile' %}">
-        <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" >
-        <path d="M5 21h14c1.1 0 2-.9 2-2v-7h-2v7H5V5h7V3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2"/><path d="M7 13v3c0 .55.45 1 1 1h3c.27 0 .52-.11.71-.29l9-9a.996.996 0 0 0 0-1.41l-3-3a.996.996 0 0 0-1.41 0l-9.01 8.99A1 1 0 0 0 7 13m10-7.59L18.59 7 17.5 8.09 15.91 6.5zm-8 8 5.5-5.5 1.59 1.59-5.5 5.5H9z"/></svg>
-    </a>  
-</div>
-
-<div class="post">
-  <ul class="nav nav-underline">
-          <li class="nav-item">
-            <a href="#published" class="nav-link tab" aria-current="page">Опубликованные </a>
-          </li>
-          <li class="nav-item">
-            <a href="#drafts" class="nav-link tab" aria-current="page">Черновики </a>
-          </li>
-          <li class="nav-item">
-            <a href="#favorites" class="nav-link tab" aria-current="page">Избранные </a>
-          </li>
-  </ul>
-</div>
-      <!-- Контент вкладок -->
-      <div id="published" class="content-tab">
-          {% for post in published_posts %}
-              <article class="post">
-                  <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
-                    <p class="meta">
-                        Категория: {{ post.cat.name }} 
-                        &bull; {{ post.time_update|date:"d.m.Y" }}
-                        &bull; 👁 {{ post.views }}
-                        &bull; ❤️ {{ post.number_of_likes }}
-                    </p>
+    <!-- Контент табов -->
+    <div class="tab-content">
+        <!-- Опубликованные -->
+        <div id="published" class="content-tab active">
+            <div class="posts-grid">
+                {% for post in published_posts %}
+                <article class="post-card">
                     {% if post.photo %}
-                        <p><img class="img-article-left thumb" src="{{post.photo.url}}" alt=""></p>
+                    <div class="post-card-image">
+                        <img src="{{ post.photo.url }}" alt="{{ post.title }}">
+                    </div>
                     {% endif %}
-                  {% autoescape off %}
-                  <p class="meta">{{ post.meta }}</p>
-                  {{ post.content|truncatewords:20|safe }}
-                  {% endautoescape %}
-                  <p><a class="read-more" href="{% url 'edit_page' post.slug %}">Редактировать пост</a></p>
-                  <p><a class="read-more" href="{{ post.get_absolute_url }}">Читать далее→</a></p>
-                  <p><a class="delete-post" href="{% url 'users:article-delete' post.slug %}"><svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" >
-              <path d="M17 6V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H2v2h2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8h2V6zM9 4h6v2H9zM6 20V8h12v12z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path>
-              </svg></a></p>
-              </article>
-          {% empty %}
-              <p>Нет опубликованных постов.</p>
-          {% endfor %}
-      </div>
+                    <div class="post-card-content">
+                        <h3><a href="{{ post.get_absolute_url }}">{{ post.title|truncatechars:60 }}</a></h3>
+                        <div class="post-card-meta">
+                            <span class="badge">{{ post.cat.name }}</span>
+                            <span class="post-time" title="{{ post.time_update|date:'d.m.Y H:i' }}">
+                                <i class="fas fa-clock"></i> {{ post.time_update|time_ago }}
+                            </span>
+                        </div>
+                        <div class="post-card-stats">
+                            <span title="Просмотры">
+                                <i class="fas fa-eye"></i> {{ post.views }}
+                            </span>
+                            <span title="Лайки">
+                                <i class="fas fa-heart"></i> {{ post.likes_count|default:0 }}
+                            </span>
+                        </div>
+                        <div class="post-card-actions">
+                            <a href="{% url 'edit_page' post.slug %}" class="text-decoration-none btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> Редактировать
+                            </a>
+                            <a href="{% url 'users:article-delete' post.slug %}" class="text-decoration-none btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i> Удалить
+                            </a>
+                        </div>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>Опубликованных статей пока нет</p>
+                    <a href="{% url 'addpage' %}" class="text-decoration-none btn btn-primary">
+                        <i class="fas fa-plus"></i> Создать статью
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
 
-      <div id="drafts" class="content-tab" style="display: none;">
-          {% for post in drafts %}
-              <article class="post">
-                  <h3>{{ post.title }}</h3>
-                  <p class="meta">Категория: {{post.cat.name}} &bull; Дата: {{post.time_update|date:"d.m.Y"}} {{post.author.username|default:'Неизвестно'}}</p>
-                      {% if post.photo %}
-                        <p><img class="img-article-left thumb" src="{{post.photo.url}}" alt=""></p>
+        <!-- Черновики -->
+        <div id="drafts" class="content-tab">
+            <div class="posts-grid">
+                {% for post in drafts %}
+                <article class="post-card draft">
+                    {% if post.photo %}
+                    <div class="post-card-image">
+                        <img src="{{ post.photo.url }}" alt="{{ post.title }}">
+                    </div>
                     {% endif %}
-                  {% autoescape off %}
-                  <p class="meta">{{ post.meta }}</p>
-                  {{ post.content|truncatewords:20|safe }}
-                  {% endautoescape %}
-                  <p><a class="read-more" href="{% url 'edit_page' post.slug %}">Редактировать пост</a></p>
-                  <p><a class="delete-post" href="{% url 'users:article-delete' post.slug %}"><svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" >
-              <path d="M17 6V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H2v2h2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8h2V6zM9 4h6v2H9zM6 20V8h12v12z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path>
-              </svg></a></p>
-              </article>
-          {% empty %}
-              <p>Нет черновиков.</p>
-          {% endfor %}
-      </div>
+                    <div class="post-card-content">
+                        <div class="draft-badge">
+                            <i class="fas fa-file"></i> Черновик
+                        </div>
+                        <h3><a href="{% url 'edit_page' post.slug %}">{{ post.title|truncatechars:60 }}</a></h3>
+                        <div class="post-card-meta">
+                            <span class="badge">{{ post.cat.name }}</span>
+                            <span class="post-time" title="{{ post.time_update|date:'d.m.Y H:i' }}">
+                                <i class="fas fa-clock"></i> {{ post.time_update|time_ago }}
+                            </span>
+                        </div>
+                        <div class="post-card-actions">
+                            <a href="{% url 'edit_page' post.slug %}" class="text-decoration-none btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> Редактировать
+                            </a>
+                            <a href="{% url 'users:article-delete' post.slug %}" class="text-decoration-none btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i> Удалить
+                            </a>
+                        </div>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-file"></i>
+                    <p>Черновиков нет</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
 
-      <div id="favorites" class="content-tab" style="display: none;">
-          {% for post in favorites %}
-              <article class="post">
-                  <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
-                    <p class="meta">
-                        Категория: {{ post.cat.name }} 
-                        &bull; {{ post.time_update|date:"d.m.Y" }}
-                        &bull; 👁 {{ post.views }}
-                        &bull; ❤️ {{ post.number_of_likes }}
-                    </p>                      {% if post.photo %}
-                        <p><img class="img-article-left thumb" src="{{post.photo.url}}" alt=""></p>
+        <!-- Избранные -->
+        <div id="favorites" class="content-tab">
+            <div class="posts-grid">
+                {% for post in favorites %}
+                <article class="post-card">
+                    {% if post.photo %}
+                    <div class="post-card-image">
+                        <img src="{{ post.photo.url }}" alt="{{ post.title }}">
+                    </div>
                     {% endif %}
-                  {% autoescape off %}
-                  <p class="meta">{{ post.meta }}</p>
-                  {{ post.content|truncatewords:20|safe }}
-                  {% endautoescape %}
-                  <p><a class="read-more" href="{{ post.get_absolute_url }}">Читать далее→</a></p>
-              </article>
-          {% empty %}
-              <p>Нет избранных постов.</p>
-          {% endfor %}
-      </div>
+                    <div class="post-card-content">
+                        <div class="favorite-badge">
+                            <i class="fas fa-heart"></i> В избранном
+                        </div>
+                        <h3><a href="{{ post.get_absolute_url }}">{{ post.title|truncatechars:60 }}</a></h3>
+                        <div class="post-card-meta">
+                            <span class="badge">{{ post.cat.name }}</span>
+                            <span class="post-time" title="{{ post.time_update|date:'d.m.Y H:i' }}">
+                                <i class="fas fa-clock"></i> {{ post.time_update|time_ago }}
+                            </span>
+                        </div>
+                        <div class="post-card-stats">
+                            <span title="Просмотры">
+                                <i class="fas fa-eye"></i> {{ post.views }}
+                            </span>
+                            <span title="Лайки">
+                                <i class="fas fa-heart"></i> {{ post.likes_count|default:0 }}
+                            </span>
+                        </div>
+                        <div class="post-card-actions">
+                            <a href="{{ post.get_absolute_url }}" class="text-decoration-none btn btn-sm btn-primary">
+                                <i class="fas fa-book-open"></i> Читать
+                            </a>
+                        </div>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-heart"></i>
+                    <p>Избранных статей пока нет</p>
+                    <a href="{% url 'home' %}" class="text-decoration-none btn btn-outline-secondary">
+                        <i class="fas fa-search"></i> Найти статьи
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
 
-<!-- 
-{% for p in posts %}
-<article class="post">
-
-   {% if p.is_published == True %}<p><span class="p-2 mb-2 bg-success text-white">Опубликовано</span></p>{% elif p.is_published == False %}<p><span class="p-2 mb-2 bg-warning text-dark">Черновик</span></p>{% endif %}
-    <h2>{{ p.title }}</h2>
-    <p class="meta">Категория: {{p.cat.name}} &bull; Дата: {{p.time_update|date:"d.m.Y"}} {{p.author.username|default:'Неизвестно'}}</p>
-    {% if p.photo %}
-        <p><img class="img-article-left thumb" src="{{p.photo.url}}" alt=""></p>
-    {% endif %}
-    <div class="post-content">
-        {% autoescape off %}
-        <p class="meta">{{ p.meta }}</p>
-        {{ p.content|truncatewords:20|safe }}
-        {% endautoescape %}
+        <!-- Обсуждения -->
+        <div id="discussions" class="content-tab">
+            <div class="discussions-list">
+                {% for discussion in discussion_dis %}
+                <div class="discussion-card">
+                    <div class="discussion-header">
+                        <h3 class="discussion-title">
+                            <a href="{% url 'discussion_detail' discussion.pk %}">{{ discussion.title|truncatechars:80 }}</a>
+                        </h3>
+                        <div class="discussion-badges">
+                            {% if discussion.is_closed %}
+                            <span class="badge badge-closed">
+                                <i class="fas fa-lock"></i> Закрыто
+                            </span>
+                            {% endif %}
+                            {% if discussion.cat %}
+                            <span class="badge badge-category">
+                                {{ discussion.cat.name }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="discussion-meta">
+                        <span>
+                            <i class="fas fa-user"></i>
+                            <a href="{% url 'users:author_profile' discussion.author.username %}">
+                                {{ discussion.author.username }}
+                            </a>
+                        </span>
+                        <span>
+                            <i class="fas fa-clock"></i>
+                            {{ discussion.time_create|date:"d.m.Y H:i" }}
+                        </span>
+                        <span>
+                            <i class="fas fa-eye"></i> {{ discussion.views }}
+                        </span>
+                        <span>
+                            <i class="fas fa-comments"></i> {{ discussion.comments_count }}
+                        </span>
+                    </div>
+                    <p class="discussion-preview">
+                        {{ discussion.content|truncatewords:20 }}
+                    </p>
+                    {% if discussion.tags.all %}
+                    <div class="discussion-tags">
+                        {% for tag in discussion.tags.all %}
+                        <a href="{% url 'tag' tag.slug %}" class="text-decoration-none badge badge-tag">
+                            #{{ tag.tag }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-comments"></i>
+                    <p>Обсуждений пока нет</p>
+                    <a href="{% url 'discussions' %}" class="text-decoration-none btn btn-outline-secondary">
+                        <i class="fas fa-plus"></i> Создать обсуждение
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
-    <p><a class="read-more" href="{% url 'edit_page' p.slug %}">Редактировать пост</a></p>
-    <p><a class="read-more" href="{{ p.get_absolute_url }}">Читать далее→</a></p>
-    <p><a class="delete-post" href="{% url 'users:article-delete' p.slug %}"><svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" >
-<path d="M17 6V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H2v2h2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8h2V6zM9 4h6v2H9zM6 20V8h12v12z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path>
-</svg></a></p>
-</article>
-{% empty %}
-<p>Постов нет</p>
-{% endfor %} -->
-{% endblock %}
+</div>
 
-{% block extra_js %}
+<style>
+/* Профиль страница */
+.profile-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+/* Шапка профиля */
+.profile-header {
+    display: flex;
+    gap: 30px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 30px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.profile-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.avatar-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--border);
+}
+
+.edit-avatar-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.edit-avatar-btn:hover {
+    background: var(--primary-700);
+    transform: scale(1.1);
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-name {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+    color: var(--text);
+}
+
+.profile-fullname {
+    color: var(--muted);
+    font-size: 1.1rem;
+    margin: 0 0 15px 0;
+}
+
+.profile-bio {
+    color: var(--text);
+    font-size: 1rem;
+    margin: 0 0 20px 0;
+    line-height: 1.6;
+}
+
+.profile-stats {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 25px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px 25px;
+    background: var(--bg);
+    border-radius: 12px;
+    transition: transform 0.2s;
+}
+
+.stat-item:hover {
+    transform: translateY(-3px);
+    background: var(--primary);
+    color: white;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    opacity: 0.9;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.profile-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-weight: 600;
+}
+
+/* Табы */
+.profile-tabs {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 0;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Градиенты для индикации скролла */
+.profile-tabs::before,
+.profile-tabs::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.profile-tabs::before {
+    left: 0;
+    background: linear-gradient(to right, var(--surface), transparent);
+}
+
+.profile-tabs::after {
+    right: 0;
+    background: linear-gradient(to left, var(--surface), transparent);
+}
+
+.profile-tabs.scrolled-left::before {
+    opacity: 1;
+}
+
+.profile-tabs.scrolled-right::after {
+    opacity: 1;
+}
+
+.nav-tabs {
+    display: flex;
+    gap: 5px;
+    list-style: none;
+    padding: 0 20px;
+    margin: 0;
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) var(--bg);
+    /* Предотвращаем выделение текста при скролле */
+    user-select: none;
+    -webkit-user-select: none;
+    /* Плавный скролл */
+    scroll-behavior: smooth;
+    /* Тень для разделения */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Скрываем скроллбар но оставляем функциональность */
+.nav-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+.nav-tabs::-webkit-scrollbar-track {
+    background: var(--bg);
+    border-radius: 2px;
+}
+
+.nav-tabs::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 2px;
+    transition: background 0.2s;
+}
+
+.nav-tabs::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-700);
+}
+
+/* Показываем скроллбар только при скролле */
+.nav-tabs:not(:hover)::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+
+/* Индикаторы скролла для мобильных */
+@media (max-width: 768px) {
+    .nav-tabs {
+        /* Показываем скроллбар всегда на мобильных */
+        scrollbar-width: auto;
+        scrollbar-color: var(--primary) var(--bg);
+    }
+    
+    .nav-tabs::-webkit-scrollbar {
+        height: 3px;
+    }
+    
+    .nav-tabs::-webkit-scrollbar-thumb {
+        background: var(--primary);
+    }
+}
+
+.nav-item {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 15px 20px;
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.nav-link i {
+    flex-shrink: 0;
+}
+
+/* Темная тема для иконок */
+.dark-mode .nav-link i {
+    color: inherit;
+}
+
+.nav-link span {
+    white-space: nowrap;
+}
+
+.nav-link:hover {
+    color: var(--primary);
+}
+
+.nav-link.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+/* Темная тема для активного таба */
+.dark-mode .nav-link.active {
+    background: rgba(41, 156, 245, 0.1);
+    border-bottom-color: var(--dark-primary);
+}
+
+/* На мобильном активный таб с фоном */
+@media (max-width: 768px) {
+    .nav-link.active {
+        background: var(--primary);
+        color: white;
+        border-bottom: none;
+    }
+    
+    .nav-link.active i {
+        color: white;
+    }
+    
+    /* Темная тема для мобильных */
+    .dark-mode .nav-link {
+        background: rgba(255,255,255,0.05);
+    }
+    
+    .dark-mode .nav-link.active {
+        background: var(--dark-primary);
+        color: white;
+    }
+    
+    .dark-mode .nav-link.active i {
+        color: white;
+    }
+}
+
+/* Контент табов */
+.tab-content {
+    display: block;
+}
+
+.content-tab {
+    display: none;
+}
+
+.content-tab.active {
+    display: block;
+}
+
+/* Сетка постов */
+.posts-grid {
+    display: grid;
+    gap: 25px;
+}
+
+.post-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.post-card-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.post-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.post-card:hover .post-card-image img {
+    transform: scale(1.1);
+}
+
+.post-card-content {
+    padding: 20px;
+}
+
+.post-card-content h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.2rem;
+    line-height: 1.4;
+}
+
+.post-card-content h3 a {
+    color: var(--text);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.post-card-content h3 a:hover {
+    color: var(--primary);
+}
+
+.post-card-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    padding: 4px 12px;
+    background: var(--primary);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.post-time {
+    color: var(--muted);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.post-card-stats {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.post-card-stats span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.post-card-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.draft-badge, .favorite-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.draft-badge {
+    background: #ffc107;
+    color: #000;
+}
+
+.favorite-badge {
+    background: #dc3545;
+    color: white;
+}
+
+/* Пустое состояние */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--surface);
+    border-radius: var(--radius);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--muted);
+    margin-bottom: 20px;
+}
+
+.empty-state p {
+    color: var(--muted);
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+/* Обсуждения */
+.discussions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.discussion-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    transition: transform 0.2s;
+}
+
+.discussion-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+.discussion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    gap: 15px;
+}
+
+.discussion-title {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.discussion-title a {
+    color: var(--text);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.discussion-title a:hover {
+    color: var(--primary);
+}
+
+.discussion-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.badge-closed {
+    background: #6c757d;
+}
+
+.badge-category {
+    background: var(--primary);
+}
+
+.badge-tag {
+    background: var(--tags-bg);
+    color: var(--tags-color);
+    text-decoration: none;
+}
+
+.discussion-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+.discussion-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.discussion-meta a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.discussion-preview {
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.discussion-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Темная тема */
+.dark-mode .profile-header,
+.dark-mode .profile-tabs,
+.dark-mode .post-card,
+.dark-mode .discussion-card,
+.dark-mode .empty-state {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.dark-mode .nav-tabs {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.dark-mode .profile-tabs::before {
+    background: linear-gradient(to right, var(--dark-surface), transparent);
+}
+
+.dark-mode .profile-tabs::after {
+    background: linear-gradient(to left, var(--dark-surface), transparent);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        margin: 0 auto;
+    }
+
+    .profile-stats {
+        justify-content: center;
+    }
+
+    .profile-actions {
+        justify-content: center;
+    }
+
+    /* Табы скроллятся горизонтально на мобильном */
+    .nav-tabs {
+        padding: 0 15px;
+        gap: 10px;
+        /* Градиенты для индикации скролла */
+        mask-image: linear-gradient(to right, black 90%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
+    }
+    
+    .nav-tabs.can-scroll-left {
+        mask-image: linear-gradient(to right, transparent 5%, black 15%, black 85%, transparent 95%);
+        -webkit-mask-image: linear-gradient(to right, transparent 5%, black 15%, black 85%, transparent 95%);
+    }
+
+    .nav-link {
+        padding: 12px 15px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        margin-bottom: 0;
+        border-bottom: none;
+    }
+
+    .nav-link i {
+        font-size: 0.9rem;
+    }
+
+    .nav-link span {
+        display: inline;
+    }
+
+    .posts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
 <script>
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = this.getAttribute('href').replace('#', '');
-                document.querySelectorAll('.content-tab').forEach(tab => {
-                    tab.style.display = tab.id === target ? 'block' : 'none';
-                });
-            });
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.nav-link.tab');
+    const tabContents = document.querySelectorAll('.content-tab');
+    const navTabs = document.querySelector('.nav-tabs');
+    const profileTabs = document.querySelector('.profile-tabs');
+    
+    // Touch события для свайпа
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    if (navTabs) {
+        navTabs.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        navTabs.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
+    }
+    
+    function handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = touchStartX - touchEndX;
+        
+        if (Math.abs(diff) > swipeThreshold) {
+            if (diff > 0) {
+                // Свайп влево - скроллим вправо
+                navTabs.scrollBy({ left: 100, behavior: 'smooth' });
+            } else {
+                // Свайп вправо - скроллим влево
+                navTabs.scrollBy({ left: -100, behavior: 'smooth' });
+            }
+        }
+    }
+    
+    // Функция обновления градиентов
+    function updateScrollGradients() {
+        if (!navTabs || !profileTabs) return;
+        
+        const scrollLeft = navTabs.scrollLeft;
+        const scrollWidth = navTabs.scrollWidth;
+        const clientWidth = navTabs.clientWidth;
+        
+        // Показываем градиент слева если проскроллено вправо
+        if (scrollLeft > 10) {
+            profileTabs.classList.add('scrolled-left');
+            navTabs.classList.add('can-scroll-left');
+        } else {
+            profileTabs.classList.remove('scrolled-left');
+            navTabs.classList.remove('can-scroll-left');
+        }
+        
+        // Показываем градиент справа если можно скроллить вправо
+        if (scrollLeft + clientWidth < scrollWidth - 10) {
+            profileTabs.classList.add('scrolled-right');
+        } else {
+            profileTabs.classList.remove('scrolled-right');
+        }
+    }
+    
+    // Слушаем скролл
+    if (navTabs) {
+        navTabs.addEventListener('scroll', updateScrollGradients);
+        // Проверяем при загрузке
+        updateScrollGradients();
+    }
+    
+    // Обработка кликов по табам
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Удаляем активный класс у всех табов
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            // Добавляем активный класс текущему табу
+            this.classList.add('active');
+            const target = this.getAttribute('href').replace('#', '');
+            document.getElementById(target).classList.add('active');
+            
+            // Сохраняем в localStorage
+            localStorage.setItem('profile-tab', target);
+            
+            // Обновляем градиенты
+            setTimeout(updateScrollGradients, 100);
         });
-    </script>
-<script>
-    document.querySelectorAll('.nav-link').forEach(link => {
-  link.addEventListener('click', function(e) {
-    e.preventDefault(); // отменяем переход по ссылке
-    const filter = this.dataset.filter; // получаем значение data-filter
-    loadArticles(filter); // вызываем функцию загрузки статей
-    // обновляем активную вкладку
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    this.classList.add('active');
-  });
+    });
+    
+    // Восстанавливаем последний активный таб
+    const savedTab = localStorage.getItem('profile-tab');
+    if (savedTab) {
+        const tab = document.querySelector(`.nav-link[href="#${savedTab}"]`);
+        if (tab) {
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(savedTab).classList.add('active');
+        }
+    }
+    
+    // Скролл к активному табу при загрузке
+    if (navTabs) {
+        const activeTab = navTabs.querySelector('.nav-link.active');
+        if (activeTab) {
+            setTimeout(() => {
+                activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }, 100);
+        }
+    }
 });
 </script>
-{%endblock%}
+{% endblock %}

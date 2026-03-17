@@ -22,8 +22,8 @@
         <div>
             <h2>{{ p.title }}</h2>
             <p class="meta">
-                Категория: {{ p.cat.name }} 
-                &bull; {{ p.time_update|date:"d.m.Y" }}
+                <span class="badge bg-primary">{{ p.cat.name }} </span>
+                &bull; <span title="{{ p.time_create|date:'d.m.Y H:i' }}">{{ p.time_create|time_ago }}</span>
                 &bull; 👁 {{ p.views }}
                 &bull; ❤️ {{ p.number_of_likes }}
             </p>
@@ -38,46 +38,19 @@
         <hr>
             {% with p.tags.all as tags %}
                 {% if tags %}
-                    <p class="t-title">Теги:</p>
                     <ul class="tags-list">
                         {% for t in tags %}
-                            <li><a href="{{t.get_absolute_url}}">{{t.tag}}</a></li>
+                            <li><a href="{{t.get_absolute_url}}" class="badge bg-light text-dark text-decoration-none me-1">{{t.tag}}</a></li>
                         {% endfor %}
                     </ul>
-                    
                 {%endif%}
             {% endwith %}
-        <p><a class="read-more" href="{{ p.get_absolute_url }}">Читать далее→</a></p>
+        <a class="read-more" href="{{ p.get_absolute_url }}">Читать далее→</a>
     </div>
 </article>
 {% endfor %}
+
+<!-- Пагинация -->
+{% render_pagination page_obj %}
+
 {% endblock %}
-{% block navigation %}
-{% if page_obj.has_other_pages %}
-<nav aria-label="Page navigation example" class="list-pages">
-    <ul class="pagination">
-        {% if page_obj.has_previous %}
-        <li class="page-item">
-            <a class="page-link" aria-label="Previous" href="?page={{ page_obj.previous_page_number }}">&lt;</a>
-        </li>
-        {% endif %}
-        {% for p in paginator.page_range %}
-        {% if page_obj.number == p %}
-        <li class="page-link disabled">{{p}}</li>
-        {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ p }}">{{p}}</a>
-        </li>
-        {% endif %}
-        {% endfor %}
-        {% if page_obj.has_next %}
-        <li class="page-item">
-            <a class="page-link" aria-label="Next" href="?page={{ page_obj.next_page_number }}">&gt;</a>
-        </li>
-        {% endif %}
-    </ul>
-</nav>
-{% endif %}
-{% endblock %}
-</body>
-</html>

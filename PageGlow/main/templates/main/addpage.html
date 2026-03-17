@@ -1,34 +1,770 @@
 {% extends 'base.html' %}
-{% block content %}
-<div class="post">
-    <h1>{{ title }}</h1>
-    <form class="article-form" action="" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
 
-        {% if form.non_field_errors %}
-            <div class="form-error">{{ form.non_field_errors }}</div>
-        {% endif %}
-        {% for f in form %}
-            <div class="form-group">
-                <label for="{{ field.id_for_label }}">{{ f.label }}</label>
-                {{ f }}
-                {% if f.errors %}
-                    <div class="form-error">{{ f.errors }}</div>
-                {% endif %}
+{% block content %}
+<div class="add-article-page">
+    <div class="page-header">
+        <h1><i class="fas fa-pen-fancy"></i> Создание статьи</h1>
+        <p class="subtitle">Заполните все поля для публикации качественного материала</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="article-form">
+        {% csrf_token %}
+        
+        <!-- Основной контент -->
+        <div class="form-section main-content">
+            <div class="section-header">
+                <i class="fas fa-file-alt"></i>
+                <div>
+                    <h3>Содержание</h3>
+                    <small>Основной текст вашей статьи</small>
+                </div>
             </div>
-        {% endfor %}
+            
+            <div class="form-group full-width">
+                {{ form.content }}
+            </div>
+        </div>
+
+        <!-- Основная информация -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <h3>Основная информация</h3>
+                    <small>Категория, статус и обложка</small>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.cat.id_for_label }}">
+                        <i class="fas fa-folder"></i> Категория <span class="required">*</span>
+                    </label>
+                    {{ form.cat }}
+                    <small class="help-text">Выберите подходящую категорию</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.is_published.id_for_label }}">
+                        <i class="fas fa-toggle-on"></i> Статус
+                    </label>
+                    {{ form.is_published }}
+                    <small class="help-text">Опубликовано или черновик</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.photo.id_for_label }}">
+                        <i class="fas fa-image"></i> Обложка статьи
+                    </label>
+                    <div class="file-upload-wrapper">
+                        {{ form.photo }}
+                        <div class="file-preview" id="photo-preview"></div>
+                    </div>
+                    <small class="help-text">
+                        <i class="fas fa-info-circle"></i> Рекомендуемый размер: 1200×630px
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Теги -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="fas fa-tags"></i>
+                <div>
+                    <h3>Теги</h3>
+                    <small>Добавьте теги для лучшей обнаруживаемости</small>
+                </div>
+            </div>
+
+            <!-- Поиск тегов -->
+            <div class="tag-search-container">
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="tag-search" class="tag-search-input" 
+                           placeholder="Поиск тегов (например: Python, Django, JavaScript...)">
+                </div>
+                <div class="search-results" id="tag-search-results"></div>
+            </div>
+
+            <!-- Выбранные теги -->
+            <div class="selected-tags-container">
+                <label class="selected-label">
+                    <i class="fas fa-check-circle"></i> Выбранные теги:
+                </label>
+                <div class="selected-tags" id="selectedTags">
+                    <span class="no-tags" id="no-tags-msg">
+                        <i class="fas fa-info-circle"></i> Теги не выбраны
+                    </span>
+                </div>
+            </div>
+
+            <!-- Все теги -->
+            <div class="available-skills">
+                <div class="tags-header">
+                    <label><i class="fas fa-th-large"></i> Все доступные теги:</label>
+                    <div class="tags-filter">
+                        <button type="button" class="filter-btn active" data-filter="all">Все</button>
+                        <button type="button" class="filter-btn" data-filter="popular">Популярные</button>
+                    </div>
+                </div>
+                
+                <div class="tags-grid" id="tagsGrid">
+                    {% for tag in form.tags.field.queryset %}
+                    <div class="tag-wrapper {% if tag.is_popular %}popular{% endif %}" 
+                         data-tag-id="{{ tag.id }}" 
+                         data-tag-name="{{ tag.tag }}">
+                        <input type="checkbox"
+                               name="tags"
+                               value="{{ tag.id }}"
+                               id="tag-{{ tag.id }}"
+                               data-tag-id="{{ tag.id }}"
+                               data-tag-name="{{ tag.tag }}">
+                        <label for="tag-{{ tag.id }}" class="tag-option">
+                            {{ tag.tag }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Кнопки действий -->
         <div class="form-actions">
-            <button class="btn btn-primary" type="submit">Отправить</button>
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Опубликовать
+            </button>
+            <button type="submit" name="is_published" value="0" class="btn btn-secondary btn-lg">
+                <i class="fas fa-file"></i> Сохранить как черновик
+            </button>
+            <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-times"></i> Отмена
+            </a>
         </div>
     </form>
 </div>
+
+<style>
+/* Основная страница */
+.add-article-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+.page-header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    color: var(--text);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.page-header h1 i {
+    color: var(--primary);
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+}
+
+/* Секции формы */
+.form-section {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--primary);
+}
+
+.section-header i {
+    font-size: 1.5rem;
+    color: var(--primary);
+    width: 40px;
+    text-align: center;
+}
+
+.section-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--text);
+}
+
+.section-header small {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+/* Группы полей */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group label i {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.form-group select,
+.form-group input[type="file"] {
+    padding: 12px 15px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: var(--bg);
+    color: var(--text);
+    transition: all 0.3s;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(12, 106, 207, 0.1);
+}
+
+.help-text {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Загрузка файла */
+.file-upload-wrapper {
+    position: relative;
+}
+
+.file-upload-wrapper input[type="file"] {
+    width: 100%;
+}
+
+.file-preview {
+    margin-top: 10px;
+    border-radius: 8px;
+    overflow: hidden;
+    max-height: 200px;
+    display: none;
+}
+
+.file-preview img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+/* Поиск тегов */
+.tag-search-container {
+    margin-bottom: 20px;
+}
+
+.search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-wrapper i {
+    position: absolute;
+    left: 15px;
+    color: var(--muted);
+    font-size: 1rem;
+}
+
+.tag-search-input {
+    width: 100%;
+    padding: 12px 15px 12px 45px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: var(--bg);
+    color: var(--text);
+    transition: all 0.3s;
+}
+
+.tag-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(12, 106, 207, 0.1);
+}
+
+.search-results {
+    margin-top: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    display: none;
+}
+
+.search-results.active {
+    display: block;
+}
+
+.search-result-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-result-item:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.search-result-item.selected {
+    background: var(--bg);
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Выбранные теги */
+.selected-tags-container {
+    margin-bottom: 20px;
+}
+
+.selected-label {
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+}
+
+.selected-label i {
+    color: #28a745;
+}
+
+.selected-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 15px;
+    background: var(--bg);
+    border-radius: 8px;
+    min-height: 60px;
+}
+
+.no-tags {
+    color: var(--muted);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tag-selected {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--primary);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    animation: tagAppear 0.3s ease;
+}
+
+@keyframes tagAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.tag-remove {
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.tag-remove:hover {
+    background: rgba(255,255,255,0.4);
+}
+
+/* Сетка тегов */
+.tags-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.tags-header label {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tags-filter {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-btn {
+    padding: 6px 12px;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    border-color: var(--primary);
+}
+
+.filter-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.tags-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    background: var(--bg);
+    border-radius: 8px;
+}
+
+.tag-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.tag-wrapper input[type="checkbox"] {
+    display: none;
+}
+
+.tag-option {
+    display: inline-block;
+    padding: 8px 16px;
+    background: var(--tags-bg);
+    color: var(--tags-color);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    user-select: none;
+}
+
+.tag-option:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(12, 106, 207, 0.3);
+}
+
+.tag-wrapper input:checked + .tag-option {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 10px rgba(12, 106, 207, 0.3);
+}
+
+.tag-wrapper.popular .tag-option {
+    border: 2px solid #ffc107;
+}
+
+.tag-wrapper.popular input:checked + .tag-option {
+    border-color: transparent;
+}
+
+/* Кнопки действий */
+.form-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+}
+
+.form-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-weight: 600;
+}
+
+/* Темная тема */
+.dark-mode .form-section {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .tags-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+}
+</style>
 
 {% endblock %}
 
 {% block extra_js %}
 {{ form.media }}
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const selectedTags = document.getElementById('selectedTags');
+    const tagsGrid = document.getElementById('tagsGrid');
+    const checkboxes = tagsGrid.querySelectorAll('input[type="checkbox"]');
+    const tagSearchInput = document.getElementById('tag-search');
+    const searchResults = document.getElementById('tag-search-results');
+    const noTagsMsg = document.getElementById('no-tags-msg');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+
+    const selectedTagIds = new Set();
+    const allTags = Array.from(tagsGrid.querySelectorAll('.tag-wrapper')).map(wrapper => ({
+        id: wrapper.getAttribute('data-tag-id'),
+        name: wrapper.getAttribute('data-tag-name'),
+        isPopular: wrapper.classList.contains('popular')
+    }));
+
+    // Обработка кликов по чекбоксам
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const tagId = this.getAttribute('data-tag-id');
+            const tagName = this.getAttribute('data-tag-name');
+
+            if (this.checked) {
+                selectedTagIds.add(tagId);
+                addSelectedTag(tagId, tagName);
+                hideOriginalTag(tagId);
+            } else {
+                selectedTagIds.delete(tagId);
+                removeSelectedTag(tagId);
+                showOriginalTag(tagId);
+            }
+            
+            updateNoTagsVisibility();
+            updateSearchResults();
+        });
+    });
+
+    // Поиск тегов
+    tagSearchInput.addEventListener('input', function() {
+        updateSearchResults();
+    });
+
+    function updateSearchResults() {
+        const query = tagSearchInput.value.toLowerCase().trim();
+        
+        if (query.length < 2) {
+            searchResults.classList.remove('active');
+            return;
+        }
+
+        const filtered = allTags.filter(tag => 
+            tag.name.toLowerCase().includes(query) && 
+            !selectedTagIds.has(tag.id)
+        );
+
+        if (filtered.length === 0) {
+            searchResults.innerHTML = '<div class="search-result-item">Ничего не найдено</div>';
+            searchResults.classList.add('active');
+            return;
+        }
+
+        searchResults.innerHTML = filtered.map(tag => `
+            <div class="search-result-item" data-tag-id="${tag.id}" data-tag-name="${tag.name}">
+                <span>${tag.name}</span>
+                <i class="fas fa-plus-circle"></i>
+            </div>
+        `).join('');
+
+        searchResults.classList.add('active');
+
+        // Клик по результату поиска
+        searchResults.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const tagId = this.getAttribute('data-tag-id');
+                const tagName = this.getAttribute('data-tag-name');
+                
+                if (!selectedTagIds.has(tagId)) {
+                    const checkbox = tagsGrid.querySelector(`input[data-tag-id="${tagId}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        selectedTagIds.add(tagId);
+                        addSelectedTag(tagId, tagName);
+                        hideOriginalTag(tagId);
+                        updateNoTagsVisibility();
+                        tagSearchInput.value = '';
+                        searchResults.classList.remove('active');
+                    }
+                }
+            });
+        });
+    }
+
+    // Фильтрация тегов
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.getAttribute('data-filter');
+            const tagWrappers = tagsGrid.querySelectorAll('.tag-wrapper');
+            
+            tagWrappers.forEach(wrapper => {
+                if (filter === 'all' || 
+                    (filter === 'popular' && wrapper.classList.contains('popular'))) {
+                    wrapper.style.display = 'flex';
+                } else {
+                    wrapper.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    function addSelectedTag(id, name) {
+        if (noTagsMsg) noTagsMsg.style.display = 'none';
+        
+        const tagElement = document.createElement('span');
+        tagElement.className = 'tag-selected';
+        tagElement.setAttribute('data-id', id);
+        tagElement.innerHTML = `
+            ${name}
+            <span class="tag-remove" data-id="${id}"><i class="fas fa-times"></i></span>
+        `;
+        selectedTags.appendChild(tagElement);
+
+        tagElement.querySelector('.tag-remove').addEventListener('click', function(e) {
+            e.stopPropagation();
+            removeSelectedTag(id);
+            showOriginalTag(id);
+            updateNoTagsVisibility();
+        });
+    }
+
+    function removeSelectedTag(id) {
+        const tagElement = selectedTags.querySelector(`[data-id="${id}"]`);
+        if (tagElement) {
+            tagElement.style.opacity = '0';
+            tagElement.style.transform = 'scale(0.8)';
+            setTimeout(() => tagElement.remove(), 200);
+        }
+    }
+
+    function hideOriginalTag(id) {
+        const wrapper = tagsGrid.querySelector(`.tag-wrapper[data-tag-id="${id}"]`);
+        if (wrapper) wrapper.style.display = 'none';
+    }
+
+    function showOriginalTag(id) {
+        const wrapper = tagsGrid.querySelector(`.tag-wrapper[data-tag-id="${id}"]`);
+        if (wrapper) wrapper.style.display = 'flex';
+    }
+
+    function updateNoTagsVisibility() {
+        if (noTagsMsg) {
+            noTagsMsg.style.display = selectedTagIds.size === 0 ? 'flex' : 'none';
+        }
+    }
+
+    // Предпросмотр обложки
+    const photoInput = document.querySelector('input[name="photo"]');
+    const photoPreview = document.getElementById('photo-preview');
+    
+    if (photoInput) {
+        photoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photoPreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    photoPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // CKEditor темная тема
     function toggleCKEditorTheme() {
         const editorElement = document.querySelector('.ck');
         if (editorElement) {
@@ -39,11 +775,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-    
+
     setTimeout(toggleCKEditorTheme, 500);
-    
-    window.matchMedia('(prefers-color-scheme: dark)')
-        .addEventListener('change', toggleCKEditorTheme);
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', toggleCKEditorTheme);
+
+    // Закрытие поиска при клике вне
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.tag-search-container')) {
+            searchResults.classList.remove('active');
+        }
+    });
 });
 </script>
 {% endblock %}

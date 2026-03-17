@@ -3,26 +3,55 @@
 {% block content %}
 <div class="con">
     <div class="auth">
+        <h1>
+            <i class="fas fa-sign-in-alt me-2"></i>Авторизация
+        </h1>
 
-        <h1>Авторизация</h1>
-
-        <form method="post">
+        <form method="post" novalidate>
             {% csrf_token %}
-        <!--    <input type="hidden" name="next" value="{{next}}" />-->
-             <div class="form-error">{{ form.non_field_errors }}</div>
-                {% for f in  form %}
-                 <p><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}</label>{{ f }}</p>
-                <div class="form-error">{{ f.errors }}</div>
-                {% endfor %}
-                <a href="{% url 'users:password_reset' %}">Забыли пароль?</a>
-            <p><button style="width:100%" class="btn btn-primary" type="submit">Войти</button></p>
+            
+            {% if form.non_field_errors %}
+                <div class="form-error">
+                    <strong>Ошибка входа:</strong>
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="form-label">
+                        {% if field.field.required %}
+                            <i class="fas fa-asterisk" style="color: #ef4444; font-size: 8px; margin-right: 4px;"></i>
+                        {% endif %}
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="form-error">{{ field.errors }}</div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <small class="help-text">{{ field.help_text|safe }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <a href="{% url 'users:password_reset' %}" style="align-self: flex-end; font-size: 12px;">
+                <i class="fas fa-key me-1"></i>Забыли пароль?
+            </a>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-lock me-2"></i>Войти в аккаунт
+            </button>
         </form>
     </div>
 
     <div class="auth">
-        <p>Нет аккаунта? <a href="{% url 'users:register' %}">Зарегистрироваться</a></p>
+        <p style="text-align: center; margin: 0;">
+            Нет аккаунта? 
+            <a href="{% url 'users:register' %}" style="display: inline; color: var(--auth-primary); font-weight: 700;">
+                Зарегистрироваться здесь
+            </a>
+        </p>
     </div>
 </div>
-
-
 {% endblock %}
