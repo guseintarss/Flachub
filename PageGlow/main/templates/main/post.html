@@ -438,7 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                this.innerHTML = `🤍 ${data.likes_count}`;
+                this.innerHTML = (data.liked ? '🤍' : '❤️') + ` ${data.likes_count}`;
                 this.className = data.liked ? 'btn btn-danger' : 'btn btn-outline-danger';
             }
         });
