@@ -703,7 +703,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function addSelectedTag(id, name) {
         if (noTagsMsg) noTagsMsg.style.display = 'none';
-        
+
         const tagElement = document.createElement('span');
         tagElement.className = 'tag-selected';
         tagElement.setAttribute('data-id', id);
@@ -715,9 +715,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
         tagElement.querySelector('.tag-remove').addEventListener('click', function(e) {
             e.stopPropagation();
-            removeSelectedTag(id);
-            showOriginalTag(id);
+            const tagId = this.getAttribute('data-id');
+            
+            // Удаляем из множества
+            selectedTagIds.delete(tagId);
+            
+            // Снимаем чекбокс
+            const checkbox = tagsGrid.querySelector(`input[data-tag-id="${tagId}"]`);
+            if (checkbox) checkbox.checked = false;
+            
+            // Удаляем из выбранных
+            removeSelectedTag(tagId);
+            
+            // Показываем оригинальный тег
+            showOriginalTag(tagId);
+            
+            // Обновляем видимость
             updateNoTagsVisibility();
+            updateSearchResults();
         });
     }
 
