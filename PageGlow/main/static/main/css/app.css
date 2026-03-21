@@ -64,121 +64,517 @@
   --ck-color-input-border: var(--ck-light-border);
   --ck-color-input-text: var(--ck-light-text);
 }
-/* Базовые стили для CKEditor */
-.ck {
-  --ck-color-base-background: var(--ck-light-surface);
-  --ck-color-text: var(--ck-light-text);
-  --ck-color-border: var(--ck-light-border);
+/* =====================================================
+   CKEditor 5 - Полная стилизация
+   ===================================================== */
+
+/* --- Базовые стили редактора --- */
+.ck.ck-editor {
+  width: 100%;
 }
-/* Стили для панели инструментов */
+
 .ck.ck-editor__main {
   background: var(--ck-light-surface);
   border-color: var(--ck-light-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
 }
+
 .ck.ck-editor__editable {
-  background-color: #1a1a1a;
-  color: var(--text);
+  background-color: var(--ck-light-surface);
+  color: var(--ck-light-text);
+  font-size: 15px;
+  line-height: 1.6;
+  padding: 24px;
+  min-height: 350px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
-.ck-content blockquote {
-  border-left:5px solid #0c6acf !important;
+
+.ck.ck-editor__editable:focus {
+  box-shadow: inset 0 0 0 2px var(--primary);
 }
-.ck.ck-dropdown__panel{
-  background: var(--ck-light-bg) !important;
+
+.ck.ck-editor__editable[contenteditable="true"]:empty::before {
+  content: attr(placeholder);
+  color: var(--muted);
+  opacity: 0.6;
 }
+
+/* --- Панель инструментов --- */
 .ck.ck-toolbar {
   background: var(--ck-light-surface) !important;
   border-bottom: 1px solid var(--ck-light-border) !important;
+  padding: 8px;
+  gap: 4px;
+  flex-wrap: wrap;
 }
-.ck.ck-list{
-  background: var(--ck-light-bg) !important;
+
+.ck.ck-toolbar__items {
+  gap: 4px;
 }
+
+.ck.ck-toolbar__separator {
+  background: var(--ck-light-border) !important;
+  margin: 0 4px;
+}
+
+/* --- Кнопки панели --- */
 .ck.ck-button {
   color: var(--ck-light-text) !important;
   background: var(--ck-light-surface) !important;
-}
-.language-plaintext{
-  color: var(--text);
-}
-.ck.ck-button:hover {
-  background: rgba(0,0,0,0.05) !important;
+  border-radius: 6px;
+  padding: 6px 8px;
+  transition: all 0.2s ease;
 }
 
-.ck.ck-editor__main .ck-button:focus {
+.ck.ck-button:hover {
+  background: rgba(0,0,0,0.05) !important;
+  transform: translateY(-1px);
+}
+
+.ck.ck-button:active {
+  transform: translateY(0);
+}
+
+.ck.ck-button:focus {
   outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.ck.ck-button.ck-button_with-text .ck-button__label {
+  font-size: 13px;
+  font-weight: 500;
 }
 
 /* Активное состояние кнопок */
 .ck.ck-editor__main .ck-button_is_active {
-  background: var(--primary);
-  color: var(--ck-light-surface);
+  background: var(--primary) !important;
+  color: var(--ck-light-surface) !important;
 }
 
-/* Стили для редактора контента */
+.ck.ck-editor__main .ck-button_is_active:hover {
+  background: var(--primary-700) !important;
+}
+
+/* --- Выпадающие списки --- */
+.ck.ck-dropdown__panel {
+  background: var(--ck-light-bg) !important;
+  border: 1px solid var(--ck-light-border) !important;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  padding: 8px;
+  min-width: 200px;
+}
+
+.ck.ck-list {
+  background: var(--ck-light-bg) !important;
+  padding: 4px;
+}
+
+.ck.ck-list__item {
+  border-radius: 6px;
+}
+
+.ck.ck-list__item:hover {
+  background: rgba(0,0,0,0.05) !important;
+}
+
+/* --- Контент редактора --- */
 .ck-content {
   color: var(--ck-light-text);
   background: var(--ck-light-surface);
 }
 
-.ck-content a {
-  color: var(--primary);
+.ck-content h1,
+.ck-content h2,
+.ck-content h3,
+.ck-content h4,
+.ck-content h5,
+.ck-content h6 {
+  color: var(--ck-light-text);
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 24px 0 16px 0;
 }
 
-/* Стили для изображений внутри редактора CKEditor */
+.ck-content h1 {
+  font-size: 2em;
+  border-bottom: 2px solid var(--ck-light-border);
+  padding-bottom: 8px;
+}
+
+.ck-content h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--ck-light-border);
+  padding-bottom: 6px;
+}
+
+.ck-content h3 {
+  font-size: 1.25em;
+}
+
+.ck-content p {
+  margin: 12px 0;
+}
+
+.ck-content a {
+  color: var(--primary);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.ck-content a:hover {
+  color: var(--primary-700);
+}
+
+/* Списки */
+.ck-content ul,
+.ck-content ol {
+  padding-left: 24px;
+  margin: 12px 0;
+}
+
+.ck-content li {
+  margin: 6px 0;
+  line-height: 1.6;
+}
+
+/* Цитаты */
+.ck-content blockquote {
+  border-left: 5px solid var(--primary) !important;
+  background: rgba(12, 106, 207, 0.05);
+  padding: 15px 20px;
+  margin: 20px 0;
+  font-style: italic;
+  border-radius: 0 8px 8px 0;
+}
+
+.ck-content blockquote p {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* Код */
+.ck-content pre {
+  background: #f4f4f4;
+  border: 1px solid var(--ck-light-border);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  overflow-x: auto;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ck-content code {
+  background: rgba(0,0,0,0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+.ck-content pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* Изображения */
 .ck-content img,
 .ck-editor__editable img,
 .ck.ck-editor__editable img {
   max-width: 100%;
   height: auto;
   display: block;
-  margin: 10px 0;
-  border-radius: 8px;
-}
-
-.ck-content figure.image,
-.ck-editor__editable figure.image {
   margin: 15px 0;
-  display: table;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.ck-content figure.image {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.ck-content figure.image img {
+  display: inline-block;
   max-width: 100%;
 }
 
-.ck-content figure.image img,
-.ck-editor__editable figure.image img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-.ck-content figure.image > figcaption,
-.ck-editor__editable figure.image > figcaption {
+.ck-content figure.image > figcaption {
   display: table-caption;
   caption-side: bottom;
   color: var(--muted);
   font-size: 0.9rem;
-  padding: 5px;
+  padding: 8px;
   text-align: center;
+  font-style: italic;
 }
 
-/* Стили для модальных окон */
+/* Таблицы */
+.ck-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.ck-content table th,
+.ck-content table td {
+  border: 1px solid var(--ck-light-border);
+  padding: 12px;
+  text-align: left;
+}
+
+.ck-content table th {
+  background: rgba(0,0,0,0.03);
+  font-weight: 600;
+}
+
+.ck-content table tr:nth-child(even) {
+  background: rgba(0,0,0,0.02);
+}
+
+/* Горизонтальная линия */
+.ck-content hr {
+  border: none;
+  border-top: 2px solid var(--ck-light-border);
+  margin: 24px 0;
+}
+
+/* Параграфы */
+.ck-content p {
+  line-height: 1.8;
+  margin: 12px 0;
+}
+
+/* --- Модальные окна и диалоги --- */
 .ck-dialog {
   background: var(--ck-light-surface);
   color: var(--ck-light-text);
   border: 1px solid var(--ck-light-border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
 }
 
-/* Стили для всплывающих подсказок */
+.ck-dialog .ck-form__header {
+  background: var(--ck-light-surface);
+  border-bottom: 1px solid var(--ck-light-border);
+  padding: 16px 20px;
+}
+
+.ck-dialog .ck-form__header h2 {
+  color: var(--ck-light-text);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ck-dialog input,
+.ck-dialog textarea,
+.ck-dialog select {
+  background: var(--ck-light-surface);
+  color: var(--ck-light-text);
+  border: 1px solid var(--ck-light-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.ck-dialog input:focus,
+.ck-dialog textarea:focus,
+.ck-dialog select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(12, 106, 207, 0.1);
+}
+
+/* --- Всплывающие подсказки --- */
 .ck-bubble {
   background: var(--ck-light-surface);
   color: var(--ck-light-text);
   border: 1px solid var(--ck-light-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  padding: 8px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .ck {
-    --ck-color-base-background: var(--obs-surface);
-    --ck-color-text: var(--obs-text);
-    --ck-color-button-background: var(--obs-surface);
-    --ck-color-button-hover-background: rgba(255,255,255,0.1);
-  }
+/* --- Полоса форматирования --- */
+.ck.ck-balloon-panel {
+  background: var(--ck-light-surface) !important;
+  border: 1px solid var(--ck-light-border) !important;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+/* --- Индикатор загрузки --- */
+.ck.ck-loader {
+  color: var(--primary);
+}
+
+/* =====================================================
+   CKEditor 5 - Тёмная тема
+   ===================================================== */
+
+html.dark-mode .ck,
+.ck.ck-dark-mode {
+  --ck-color-base-background: var(--obs-surface);
+  --ck-color-text: var(--obs-text);
+  --ck-color-border: var(--obs-border);
+}
+
+html.dark-mode .ck.ck-editor__main,
+.ck.ck-dark-mode .ck-editor__main {
+  background: var(--obs-surface);
+  border-color: var(--obs-border);
+}
+
+html.dark-mode .ck.ck-editor__editable,
+.ck.ck-dark-mode .ck-editor__editable {
+  background-color: var(--obs-surface);
+  color: var(--obs-text);
+}
+
+html.dark-mode .ck.ck-editor__editable:focus,
+.ck.ck-dark-mode .ck-editor__editable:focus {
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+html.dark-mode .ck.ck-toolbar,
+.ck.ck-dark-mode .ck-toolbar {
+  background: var(--obs-surface) !important;
+  border-bottom: 1px solid var(--obs-border) !important;
+}
+
+html.dark-mode .ck.ck-list,
+.ck.ck-dark-mode .ck-list {
+  background: var(--obs-bg) !important;
+}
+
+html.dark-mode .ck.ck-button,
+.ck.ck-dark-mode .ck-button {
+  color: var(--obs-text) !important;
+  background: var(--obs-surface) !important;
+}
+
+html.dark-mode .ck.ck-button:hover,
+.ck.ck-dark-mode .ck-button:hover {
+  background: rgba(255,255,255,0.1) !important;
+}
+
+html.dark-mode .ck.ck-editor__main .ck-button_is_active,
+.ck.ck-dark-mode .ck-editor__main .ck-button_is_active {
+  background: var(--primary) !important;
+  color: var(--obs-surface) !important;
+}
+
+html.dark-mode .ck-content,
+.ck.ck-dark-mode .ck-content {
+  color: var(--obs-text);
+  background: var(--obs-surface);
+}
+
+html.dark-mode .ck-content a,
+.ck.ck-dark-mode .ck-content a {
+  color: var(--primary);
+}
+
+html.dark-mode .ck-dialog,
+.ck.ck-dark-mode .ck-dialog {
+  background: var(--obs-surface);
+  color: var(--obs-text);
+  border: 1px solid var(--obs-border);
+}
+
+html.dark-mode .ck-bubble,
+.ck.ck-dark-mode .ck-bubble {
+  background: var(--obs-surface);
+  color: var(--obs-text);
+  border: 1px solid var(--obs-border);
+}
+
+/* Тёмная тема - контент */
+.ck.ck-dark-mode .ck-content h1,
+.ck.ck-dark-mode .ck-content h2,
+.ck.ck-dark-mode .ck-content h3 {
+  color: var(--obs-text);
+}
+
+.ck.ck-dark-mode .ck-content h1,
+.ck.ck-dark-mode .ck-content h2 {
+  border-bottom-color: var(--obs-border);
+}
+
+.ck.ck-dark-mode .ck-content blockquote {
+  border-left-color: var(--primary) !important;
+  background: rgba(41, 156, 245, 0.1);
+}
+
+.ck.ck-dark-mode .ck-content blockquote p {
+  color: var(--obs-muted);
+}
+
+.ck.ck-dark-mode .ck-content pre {
+  background: #1a1a1a;
+  border-color: var(--obs-border);
+}
+
+.ck.ck-dark-mode .ck-content code {
+  background: rgba(255,255,255,0.05);
+}
+
+.ck.ck-dark-mode .ck-content table th {
+  background: rgba(255,255,255,0.03);
+}
+
+.ck.ck-dark-mode .ck-content table tr:nth-child(even) {
+  background: rgba(255,255,255,0.02);
+}
+
+.ck.ck-dark-mode .ck-content table th,
+.ck.ck-dark-mode .ck-content table td {
+  border-color: var(--obs-border);
+}
+
+.ck.ck-dark-mode .ck-content hr {
+  border-top-color: var(--obs-border);
+}
+
+.ck.ck-dark-mode .ck-content img {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Тёмная тема - выпадающие списки */
+.ck.ck-dark-mode .ck-dropdown__panel {
+  background: var(--obs-bg) !important;
+  border-color: var(--obs-border) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.ck.ck-dark-mode .ck-list__item:hover {
+  background: rgba(255,255,255,0.05) !important;
+}
+
+/* Тёмная тема - диалоги */
+.ck.ck-dark-mode .ck-dialog input,
+.ck.ck-dark-mode .ck-dialog textarea,
+.ck.ck-dark-mode .ck-dialog select {
+  background: var(--obs-surface);
+  color: var(--obs-text);
+  border-color: var(--obs-border);
+}
+
+.ck.ck-dark-mode .ck-dialog input:focus,
+.ck.ck-dark-mode .ck-dialog textarea:focus,
+.ck.ck-dark-mode .ck-dialog select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(41, 156, 245, 0.2);
+}
+
+/* Тёмная тема - placeholder */
+.ck.ck-dark-mode .ck-editor__editable[contenteditable="true"]:empty::before {
+  color: var(--obs-muted);
 }
 
 /* Темная тема - переопределяем переменные на уровне html */
@@ -210,43 +606,71 @@ html.dark-mode body {
 }
 
 /* CKEditor dark mode */
-html.dark-mode .ck {
+html.dark-mode .ck,
+.ck.ck-dark-mode {
   --ck-color-base-background: var(--obs-surface);
   --ck-color-text: var(--obs-text);
   --ck-color-border: var(--obs-border);
 }
-html.dark-mode .ck.ck-editor__main {
+html.dark-mode .ck.ck-editor__main,
+.ck.ck-dark-mode .ck-editor__main {
   background: var(--obs-surface);
   border-color: var(--obs-border);
 }
-html.dark-mode .ck.ck-toolbar {
+html.dark-mode .ck.ck-editor__editable,
+.ck.ck-dark-mode .ck-editor__editable {
+  background-color: var(--obs-surface);
+  color: var(--obs-text);
+}
+html.dark-mode .ck.ck-editor__editable:focus,
+.ck.ck-dark-mode .ck-editor__editable:focus {
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+html.dark-mode .ck-content blockquote,
+.ck.ck-dark-mode .ck-content blockquote {
+  border-left:5px solid var(--primary) !important;
+  background: rgba(41, 156, 245, 0.1);
+}
+html.dark-mode .ck.ck-toolbar,
+.ck.ck-dark-mode .ck-toolbar {
   background: var(--obs-surface) !important;
   border-bottom: 1px solid var(--obs-border) !important;
 }
-html.dark-mode .ck.ck-list{
+html.dark-mode .ck.ck-list,
+.ck.ck-dark-mode .ck-list{
   background: var(--obs-bg) !important;
 }
-html.dark-mode .ck.ck-button {
+html.dark-mode .ck.ck-button,
+.ck.ck-dark-mode .ck-button {
   color: var(--obs-text) !important;
   background: var(--obs-surface) !important;
 }
-html.dark-mode .ck.ck-button:hover {
+html.dark-mode .ck.ck-button:hover,
+.ck.ck-dark-mode .ck-button:hover {
   background: rgba(255,255,255,0.1) !important;
 }
-html.dark-mode .ck.ck-editor__main .ck-button_is_active {
+html.dark-mode .ck.ck-editor__main .ck-button_is_active,
+.ck.ck-dark-mode .ck-editor__main .ck-button_is_active {
   background: var(--primary);
-  color: var(--obs-surface);
+  color: var(--obs-surface) !important;
 }
-html.dark-mode .ck-content {
+html.dark-mode .ck-content,
+.ck.ck-dark-mode .ck-content {
   color: var(--obs-text);
   background: var(--obs-surface);
 }
-html.dark-mode .ck-dialog {
+html.dark-mode .ck-content a,
+.ck.ck-dark-mode .ck-content a {
+  color: var(--primary);
+}
+html.dark-mode .ck-dialog,
+.ck.ck-dark-mode .ck-dialog {
   background: var(--obs-surface);
   color: var(--obs-text);
   border: 1px solid var(--obs-border);
 }
-html.dark-mode .ck-bubble {
+html.dark-mode .ck-bubble,
+.ck.ck-dark-mode .ck-bubble {
   background: var(--obs-surface);
   color: var(--obs-text);
   border: 1px solid var(--obs-border);
