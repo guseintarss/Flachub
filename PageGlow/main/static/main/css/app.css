@@ -582,18 +582,27 @@ html.dark-mode .header-icon {
   background-color: var(--primary-700);
   border-color: var(--primary-700);
 }
-/* Floating add button */
+/* Add button in header */
 .addbutton{
-  position: fixed;
-  right: 45px;
-  bottom: 30px;
-  width: 56px;
-  height: 56px;
-  display: grid;
-  place-items: center;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(12,106,207,0.25);
-  z-index:2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  color: #fff;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.addbutton:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+.addbutton svg {
+  width: 20px;
+  height: 20px;
 }
 /* Layout */
 .page{
@@ -1065,20 +1074,13 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
   .brand {
     font-size: 18px;
   }
-  
+
   .top-nav {
     width: 100%;
     left: -100%;
     border-radius: 0 0 var(--radius) var(--radius);
   }
-  
-  .addbutton {
-    right: 14px;
-    bottom: 14px;
-    width: 50px;
-    height: 50px;
-  }
-  
+
   /* Профиль */
   .profile-name {
     font-size: 1.5rem;
@@ -1186,11 +1188,11 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
   .header-inner {
     padding: 8px 10px;
   }
-  
+
   .brand {
     font-size: 16px;
   }
-  
+
   .user-area {
     gap: 8px;
   }

@@ -111,6 +111,12 @@
         </nav>
         {% block header %} {% endblock %}
         <div class="user-area">
+            {% if user.is_authenticated %}
+            <a class="addbutton" href="{% url 'addpage' %}" title="Добавить пост">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"></path></svg>
+            </a>
+            {% endif %}
             <a id="search" href="#">
                 <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0,0,256,256" class="header-icon">
                     <g fill="currentColor" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(10.66667,10.66667)"><path d="M22,20l-2,2l-6,-6v-2h2z"></path><path d="M9,16c-3.9,0 -7,-3.1 -7,-7c0,-3.9 3.1,-7 7,-7c3.9,0 7,3.1 7,7c0,3.9 -3.1,7 -7,7zM9,4c-2.8,0 -5,2.2 -5,5c0,2.8 2.2,5 5,5c2.8,0 5,-2.2 5,-5c0,-2.8 -2.2,-5 -5,-5z"></path><path transform="translate(-5.90254,14.24719) rotate(-44.992)" d="M13.7,12.5h1v3.5h-1z"></path></g></g>
