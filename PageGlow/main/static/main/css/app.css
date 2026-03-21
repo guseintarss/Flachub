@@ -30,63 +30,77 @@
   --dark-tags-color: #a59eff;
   --dark-bg2: #2a2b2d;
 
-  --ck-color-base-background: var(--obs-surface); /* фон редактора */
-  --ck-color-text: var(--obs-text); /* цвет текста */
-  --ck-color-border: var(--obs-border); /* цвет границ */
+  /* Obsidian-like variables (aliases for dark mode) */
+  --obs-surface: var(--dark-surface);
+  --obs-text: var(--dark-text);
+  --obs-border: var(--dark-border);
+  --obs-bg: var(--dark-bg);
+  --obs-muted: var(--dark-muted);
+  --obs-shadow: var(--dark-shadow);
+
+  /* Light mode variables for CKEditor */
+  --ck-light-surface: var(--surface);
+  --ck-light-text: var(--text);
+  --ck-light-border: var(--border);
+  --ck-light-bg: var(--bg);
+
+  --ck-color-base-background: var(--ck-light-surface);
+  --ck-color-text: var(--ck-light-text);
+  --ck-color-border: var(--ck-light-border);
   
   /* Цвета кнопок */
-  --ck-color-button-default-background: var(--obs-surface);
-  --ck-color-button-default-hover-background: rgba(255,255,255,0.1);
-  --ck-color-button-default-active-background: rgba(255,255,255,0.08);
+  --ck-color-button-default-background: var(--ck-light-surface);
+  --ck-color-button-default-hover-background: rgba(0,0,0,0.05);
+  --ck-color-button-default-active-background: rgba(0,0,0,0.08);
   --ck-color-button-action-background: var(--primary);
   --ck-color-button-action-hover-background: var(--primary-700);
   
   /* Тени и эффекты */
-  --ck-color-shadow-drop: rgba(255,255,255,0.1);
-  --ck-color-shadow-inner: rgba(255,255,255,0.05);
+  --ck-color-shadow-drop: rgba(0,0,0,0.1);
+  --ck-color-shadow-inner: rgba(0,0,0,0.05);
   
   /* Цвета для ввода */
-  --ck-color-input-background: var(--obs-surface);
-  --ck-color-input-border: var(--obs-border);
-  --ck-color-input-text: var(--obs-text);
+  --ck-color-input-background: var(--ck-light-surface);
+  --ck-color-input-border: var(--ck-light-border);
+  --ck-color-input-text: var(--ck-light-text);
 }
 /* Базовые стили для CKEditor */
 .ck {
-  --ck-color-base-background: var(--obs-surface);
-  --ck-color-text: var(--obs-text);
-  --ck-color-border: var(--obs-border);
+  --ck-color-base-background: var(--ck-light-surface);
+  --ck-color-text: var(--ck-light-text);
+  --ck-color-border: var(--ck-light-border);
 }
 /* Стили для панели инструментов */
 .ck.ck-editor__main {
-  background: var(--obs-surface);
-  border-color: var(--obs-border);
+  background: var(--ck-light-surface);
+  border-color: var(--ck-light-border);
 }
 .ck.ck-editor__editable {
   background-color: #1a1a1a;
-  color: var(--text); /* контрастный цвет текста */
+  color: var(--text);
 }
 .ck-content blockquote {
   border-left:5px solid #0c6acf !important;
 }
 .ck.ck-dropdown__panel{
-  background: var(--bg) !important;
+  background: var(--ck-light-bg) !important;
 }
 .ck.ck-toolbar {
-  background: var(--obs-surface) !important;
-  border-bottom: 1px solid var(--obs-border) !important;
+  background: var(--ck-light-surface) !important;
+  border-bottom: 1px solid var(--ck-light-border) !important;
 }
 .ck.ck-list{
-  background: var(--bg) !important;
+  background: var(--ck-light-bg) !important;
 }
 .ck.ck-button {
-  color: var(--obs-text) !important;
-  background: var(--obs-surface) !important;
+  color: var(--ck-light-text) !important;
+  background: var(--ck-light-surface) !important;
 }
 .language-plaintext{
   color: var(--text);
 }
 .ck.ck-button:hover {
-  background: rgba(255,255,255,0.1) !important;
+  background: rgba(0,0,0,0.05) !important;
 }
 
 .ck.ck-editor__main .ck-button:focus {
@@ -96,13 +110,13 @@
 /* Активное состояние кнопок */
 .ck.ck-editor__main .ck-button_is_active {
   background: var(--primary);
-  color: var(--obs-surface);
+  color: var(--ck-light-surface);
 }
 
 /* Стили для редактора контента */
 .ck-content {
-  color: var(--obs-text);
-  background: var(--obs-surface);
+  color: var(--ck-light-text);
+  background: var(--ck-light-surface);
 }
 
 .ck-content a {
@@ -146,16 +160,16 @@
 
 /* Стили для модальных окон */
 .ck-dialog {
-  background: var(--obs-surface);
-  color: var(--obs-text);
-  border: 1px solid var(--obs-border);
+  background: var(--ck-light-surface);
+  color: var(--ck-light-text);
+  border: 1px solid var(--ck-light-border);
 }
 
 /* Стили для всплывающих подсказок */
 .ck-bubble {
-  background: var(--obs-surface);
-  color: var(--obs-text);
-  border: 1px solid var(--obs-border);
+  background: var(--ck-light-surface);
+  color: var(--ck-light-text);
+  border: 1px solid var(--ck-light-border);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -180,6 +194,55 @@
   --tags-bg: var(--dark-tags-bg);
   --tags-color: var(--dark-tags-color);
   --bg2: var(--dark-bg2);
+  --obs-surface: var(--dark-surface);
+  --obs-text: var(--dark-text);
+  --obs-border: var(--dark-border);
+  --obs-bg: var(--dark-bg);
+  --obs-muted: var(--dark-muted);
+  --obs-shadow: var(--dark-shadow);
+}
+
+/* CKEditor dark mode */
+.dark-mode .ck {
+  --ck-color-base-background: var(--obs-surface);
+  --ck-color-text: var(--obs-text);
+  --ck-color-border: var(--obs-border);
+}
+.dark-mode .ck.ck-editor__main {
+  background: var(--obs-surface);
+  border-color: var(--obs-border);
+}
+.dark-mode .ck.ck-toolbar {
+  background: var(--obs-surface) !important;
+  border-bottom: 1px solid var(--obs-border) !important;
+}
+.dark-mode .ck.ck-list{
+  background: var(--obs-bg) !important;
+}
+.dark-mode .ck.ck-button {
+  color: var(--obs-text) !important;
+  background: var(--obs-surface) !important;
+}
+.dark-mode .ck.ck-button:hover {
+  background: rgba(255,255,255,0.1) !important;
+}
+.dark-mode .ck.ck-editor__main .ck-button_is_active {
+  background: var(--primary);
+  color: var(--obs-surface);
+}
+.dark-mode .ck-content {
+  color: var(--obs-text);
+  background: var(--obs-surface);
+}
+.dark-mode .ck-dialog {
+  background: var(--obs-surface);
+  color: var(--obs-text);
+  border: 1px solid var(--obs-border);
+}
+.dark-mode .ck-bubble {
+  background: var(--obs-surface);
+  color: var(--obs-text);
+  border: 1px solid var(--obs-border);
 }
 .theme-toggle {
   position: relative;
@@ -193,7 +256,7 @@
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease, color 0.3s ease;
   color: #fff;
 }
 
@@ -223,8 +286,7 @@
 .dark-mode .theme-toggle:hover {
   background: rgba(255, 255, 255, 0.25);
 }
-*{ box-sizing: border-box; 
-transition: all 0.1s;}
+*{ box-sizing: border-box; }
 html, body{ height: 100%; overflow-x: hidden; }
 body{
   margin: 0;
@@ -366,7 +428,7 @@ a:hover{ text-decoration: underline; }
     background: rgba(0, 0, 0, 0.5);
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
     z-index: 998;
     backdrop-filter: blur(3px);
 }
@@ -447,7 +509,7 @@ a:hover{ text-decoration: underline; }
     border-radius: 10px;
     color: var(--text);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
     font-weight: 500;
 }
 
@@ -482,7 +544,7 @@ a:hover{ text-decoration: underline; }
 .span_draft{
     padding:5px;
     background-color:orange;
-    color:var(te);
+    color:var(--text);
 }
 
 .n:hover{
@@ -575,10 +637,12 @@ a:hover{ text-decoration: underline; }
   position: sticky;
   top: 82px;
 }
+
+/* Container - общие стили, специфичные для auth-форм в auth.css */
 .con {
-    margin:0 auto;
+    margin: 0 auto;
     min-width: 300px;
-    max-width:500px;
+    max-width: 500px;
 }
 
 .sidebar-widget {
@@ -593,15 +657,6 @@ a:hover{ text-decoration: underline; }
 
 .sidebar-widget li {
     margin-bottom: 5px;
-}
-.auth {
-  margin-top:10px;
-  background: var(--surface);
-  padding: 25px;
-  margin-bottom: 25px;
-  border-radius: 10px;
-  box-shadow: var(--shadow);
-  transition: transform 0.2s;
 }
 
 /* Cards / posts */
@@ -1449,7 +1504,7 @@ input:focus, textarea:focus, select:focus{
   background: var(--tags-bg);
   border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: background-color 0.3s, transform 0.3s;
   user-select: none;
 }
 
@@ -1876,7 +1931,7 @@ body.dark-mode .comment-date {
   color: var(--text);
   text-decoration: none;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 .pagination .page-link:hover {

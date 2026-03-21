@@ -22,8 +22,14 @@
   --mp-radius: 12px;
   --mp-radius-lg: 16px;
 }
-a , a_text {
+
+/* Base link styles */
+a {
   text-decoration: none;
+  color: inherit;
+}
+a:hover {
+  text-decoration: underline;
 }
 
 .dark-mode {
@@ -112,7 +118,7 @@ a , a_text {
   border-radius: 8px;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: background-color 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -188,7 +194,7 @@ a , a_text {
   border-radius: var(--mp-radius-lg);
   border: 1px solid var(--mp-border);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
   display: flex;
   flex-direction: column;
   box-shadow: var(--mp-shadow);
@@ -305,7 +311,7 @@ a , a_text {
   border: 1px solid var(--mp-border);
   padding: 24px;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
   box-shadow: var(--mp-shadow);
 }
 
@@ -404,7 +410,7 @@ a , a_text {
   cursor: pointer;
   text-decoration: none;
   font-size: 14px;
-  transition: all 0.2s;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .freelancer-actions .btn-primary {
@@ -548,7 +554,7 @@ a , a_text {
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s, box-shadow 0.2s;
   margin-bottom: 12px;
 }
 
@@ -644,7 +650,7 @@ a , a_text {
   padding: 20px;
   margin-bottom: 16px;
   border: 1px solid var(--mp-border);
-  transition: all 0.2s;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 .bid-card:hover {
@@ -711,7 +717,7 @@ a , a_text {
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s, color 0.2s;
   text-decoration: none;
 }
 
@@ -757,7 +763,7 @@ a , a_text {
   text-decoration: none;
   font-size: 14px;
   margin-bottom: 8px;
-  transition: all 0.2s;
+  transition: color 0.2s;
 }
 
 .project-footer a:hover {
@@ -848,7 +854,7 @@ a , a_text {
   font-size: 14px;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
   text-decoration: none;
 }
 
@@ -915,7 +921,7 @@ a , a_text {
   color: var(--mp-text);
   text-decoration: none;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .pagination a:hover {
@@ -1140,7 +1146,7 @@ a , a_text {
   background: var(--tags-bg);
   border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: background-color 0.3s, transform 0.3s;
   user-select: none;
 }
 
