@@ -25,22 +25,15 @@
     {% block head %}{% endblock %}
     {% block extra_css %}{% endblock %}
     <script>
-        // Мгновенное применение темы до загрузки DOM (предотвращает мерцание)
+        // Автоматическое применение системной темы
         (function() {
-            const savedTheme = localStorage.getItem('pageglow-theme');
-            if (savedTheme === 'dark') {
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (isDark) {
                 document.documentElement.classList.add('dark-mode');
                 document.documentElement.setAttribute('data-bs-theme', 'dark');
-            } else if (savedTheme === 'light') {
+            } else {
                 document.documentElement.classList.remove('dark-mode');
                 document.documentElement.setAttribute('data-bs-theme', 'light');
-            } else {
-                // Нет сохраненной темы - используем системную
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (prefersDark) {
-                    document.documentElement.classList.add('dark-mode');
-                    document.documentElement.setAttribute('data-bs-theme', 'dark');
-                }
             }
         })();
     </script>
@@ -118,20 +111,16 @@
         </nav>
         {% block header %} {% endblock %}
         <div class="user-area">
-            <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему" aria-pressed="false" title="Переключить тему">
-                <span class="icon sun-icon">☀️</span>
-                <span class="icon moon-icon" style="display:none;">🌙</span>
-            </button>
             <a id="search" href="#">
-                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0,0,256,256">
-                    <g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(10.66667,10.66667)"><path d="M22,20l-2,2l-6,-6v-2h2z"></path><path d="M9,16c-3.9,0 -7,-3.1 -7,-7c0,-3.9 3.1,-7 7,-7c3.9,0 7,3.1 7,7c0,3.9 -3.1,7 -7,7zM9,4c-2.8,0 -5,2.2 -5,5c0,2.8 2.2,5 5,5c2.8,0 5,-2.2 5,-5c0,-2.8 -2.2,-5 -5,-5z"></path><path transform="translate(-5.90254,14.24719) rotate(-44.992)" d="M13.7,12.5h1v3.5h-1z"></path></g></g>
+                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0,0,256,256" class="header-icon">
+                    <g fill="currentColor" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(10.66667,10.66667)"><path d="M22,20l-2,2l-6,-6v-2h2z"></path><path d="M9,16c-3.9,0 -7,-3.1 -7,-7c0,-3.9 3.1,-7 7,-7c3.9,0 7,3.1 7,7c0,3.9 -3.1,7 -7,7zM9,4c-2.8,0 -5,2.2 -5,5c0,2.8 2.2,5 5,5c2.8,0 5,-2.2 5,-5c0,-2.8 -2.2,-5 -5,-5z"></path><path transform="translate(-5.90254,14.24719) rotate(-44.992)" d="M13.7,12.5h1v3.5h-1z"></path></g></g>
                 </svg>
             </a>
             {% if user.is_authenticated %}
                 <div class="notific-cont">
                     <!-- Уведомления -->
                     <div class="notification-bell" id="notification-bell">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffffff" viewBox="0 0 24 24">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="header-icon">
                             <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
                         </svg>
                         <span class="notification-badge" id="notification-badge" style="display:none;">0</span>
@@ -213,9 +202,6 @@
     </div>
 </footer>
 
-<!-- Переключатель темы -->
-<script src="{% static 'main/js/theme-toggle.js' %}"></script>
-
 <!-- WebSocket уведомления (только для авторизованных) -->
 {% if user.is_authenticated %}
 <script src="{% static 'main/js/notifications-ws.js' %}"></script>
@@ -254,51 +240,6 @@
   document.body.addEventListener('htmx:configRequest', function (event) {
     event.detail.headers['X-CSRFToken'] = document.querySelector('meta[name="csrf-token"]').content;
 });
-
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const toggleButton = document.getElementById('theme-toggle');
-    const body = document.body;
-    const htmlElement = document.documentElement;
-
-    // Функция для установки темы
-    function setTheme(isDark) {
-        if (isDark) {
-            body.classList.add('dark-mode');
-            htmlElement.setAttribute('data-bs-theme', 'dark');
-            if (toggleButton) {
-                toggleButton.setAttribute('data-bs-theme', 'dark');
-                toggleButton.textContent = '🌙';
-                toggleButton.setAttribute('aria-pressed', 'true');
-            }
-            localStorage.setItem('theme', 'dark');
-        } else {
-            body.classList.remove('dark-mode');
-            htmlElement.removeAttribute('data-bs-theme');
-            if (toggleButton) {
-                toggleButton.removeAttribute('data-bs-theme');
-                toggleButton.textContent = '☀️';
-                toggleButton.setAttribute('aria-pressed', 'false');
-            }
-            localStorage.removeItem('theme');
-        }
-    }
-
-    // Применяем тему ДО того, как страница станет видимой пользователю
-    const savedTheme = localStorage.getItem('theme') === 'dark';
-    setTheme(savedTheme);
-
-    // Обработчик клика для переключения темы
-    if (toggleButton) {
-        toggleButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            const isCurrentlyDark = body.classList.contains('dark-mode');
-            setTheme(!isCurrentlyDark);
-        });
-    }
-});
-
 
 </script>
 <script>

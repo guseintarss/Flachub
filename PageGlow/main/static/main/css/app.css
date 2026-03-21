@@ -181,111 +181,77 @@
   }
 }
 
-.dark-mode {
-  --bg: var(--dark-bg);
-  --bg-header: var(--dark-bg-header);
-  --surface: var(--dark-surface);
-  --text: var(--dark-text);
-  --muted: var(--dark-muted);
-  --border: var(--dark-border);
-  --primary: var(--dark-primary);
-  --primary-700: var(--dark-primary-700);
-  --shadow: var(--dark-shadow);
-  --tags-bg: var(--dark-tags-bg);
-  --tags-color: var(--dark-tags-color);
-  --bg2: var(--dark-bg2);
-  --obs-surface: var(--dark-surface);
-  --obs-text: var(--dark-text);
-  --obs-border: var(--dark-border);
-  --obs-bg: var(--dark-bg);
-  --obs-muted: var(--dark-muted);
-  --obs-shadow: var(--dark-shadow);
+/* Темная тема - переопределяем переменные на уровне html */
+html.dark-mode {
+  --bg: #191a1b;
+  --bg-header: #252525;
+  --surface: #222325;
+  --text: #ffffff;
+  --muted: #8892b0;
+  --border: #2a2f33;
+  --primary: #299cf5;
+  --primary-700: #0e62a7;
+  --shadow: 0 2px 10px rgba(68, 68, 68, 0.1);
+  --tags-bg: #33333d;
+  --tags-color: #a59eff;
+  --bg2: #2a2b2d;
+  --obs-surface: #222325;
+  --obs-text: #ffffff;
+  --obs-border: #2a2f33;
+  --obs-bg: #191a1b;
+  --obs-muted: #8892b0;
+  --obs-shadow: 0 2px 10px rgba(68, 68, 68, 0.1);
+}
+
+/* Body dark mode */
+html.dark-mode body {
+  background: var(--bg);
+  color: var(--text);
 }
 
 /* CKEditor dark mode */
-.dark-mode .ck {
+html.dark-mode .ck {
   --ck-color-base-background: var(--obs-surface);
   --ck-color-text: var(--obs-text);
   --ck-color-border: var(--obs-border);
 }
-.dark-mode .ck.ck-editor__main {
+html.dark-mode .ck.ck-editor__main {
   background: var(--obs-surface);
   border-color: var(--obs-border);
 }
-.dark-mode .ck.ck-toolbar {
+html.dark-mode .ck.ck-toolbar {
   background: var(--obs-surface) !important;
   border-bottom: 1px solid var(--obs-border) !important;
 }
-.dark-mode .ck.ck-list{
+html.dark-mode .ck.ck-list{
   background: var(--obs-bg) !important;
 }
-.dark-mode .ck.ck-button {
+html.dark-mode .ck.ck-button {
   color: var(--obs-text) !important;
   background: var(--obs-surface) !important;
 }
-.dark-mode .ck.ck-button:hover {
+html.dark-mode .ck.ck-button:hover {
   background: rgba(255,255,255,0.1) !important;
 }
-.dark-mode .ck.ck-editor__main .ck-button_is_active {
+html.dark-mode .ck.ck-editor__main .ck-button_is_active {
   background: var(--primary);
   color: var(--obs-surface);
 }
-.dark-mode .ck-content {
+html.dark-mode .ck-content {
   color: var(--obs-text);
   background: var(--obs-surface);
 }
-.dark-mode .ck-dialog {
-  background: var(--obs-surface);
-  color: var(--obs-text);
-  border: 1px solid var(--obs-border);
-}
-.dark-mode .ck-bubble {
+html.dark-mode .ck-dialog {
   background: var(--obs-surface);
   color: var(--obs-text);
   border: 1px solid var(--obs-border);
 }
-.theme-toggle {
-  position: relative;
-  background: transparent;
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  transition: background-color 0.3s ease, transform 0.3s ease, color 0.3s ease;
-  color: #fff;
+html.dark-mode .ck-bubble {
+  background: var(--obs-surface);
+  color: var(--obs-text);
+  border: 1px solid var(--obs-border);
 }
 
-.theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
-}
-
-.theme-toggle:active {
-  transform: scale(0.95);
-}
-
-/* Анимация иконки */
-.theme-toggle .icon {
-  transition: transform 0.3s ease;
-}
-
-.theme-toggle:hover .icon {
-  transform: rotate(30deg);
-}
-
-/* Темная тема - инверсия иконки */
-.dark-mode .theme-toggle {
-  background: transparent;
-}
-
-.dark-mode .theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
 *{ box-sizing: border-box; }
 html, body{ height: 100%; overflow-x: hidden; }
 body{
@@ -313,9 +279,16 @@ a:hover{ text-decoration: underline; }
   top: 0;
   z-index: 999;
   background: var(--bg-header);
+  color: var(--bg-header-text);
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Dark mode header */
+html.dark-mode .site-header {
+  background: var(--dark-bg-header);
   color: #fff;
   border-bottom: 1px solid rgba(255, 255, 255, 0.075);
-
 }
 .header-inner{
   display: flex;
@@ -337,10 +310,16 @@ a:hover{ text-decoration: underline; }
     position:absolute;
     width:25px;
     height:3px;
-    background-color:white;
+    background-color: var(--bg-header-text);
     left: 2px;
     transition: transform .2s, opacity .2s, background-color .2s;
 }
+
+/* Dark mode burger */
+html.dark-mode .header__burger-menu span{
+    background-color: white;
+}
+
 .site-header.open .header__burger-menu span:nth-child(1){
     transform:translateY(0) rotate(-45deg);
 }
@@ -362,7 +341,25 @@ a:hover{ text-decoration: underline; }
   letter-spacing: 0.2px;
   white-space: nowrap;
   z-index: 2;
+  color: var(--bg-header-text);
+  transition: color 0.3s ease;
 }
+
+/* Dark mode brand */
+html.dark-mode .brand {
+  color: #fff;
+}
+
+/* Header icons (search, notifications) */
+.header-icon {
+  color: var(--bg-header-text);
+  transition: color 0.3s ease;
+}
+
+html.dark-mode .header-icon {
+  color: #fff;
+}
+
 .menu-list{
   display:flex;
   align-items: center;
@@ -636,6 +633,12 @@ a:hover{ text-decoration: underline; }
 .sidebar{
   position: sticky;
   top: 82px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Container - общие стили, специфичные для auth-форм в auth.css */
@@ -901,6 +904,29 @@ select{
 }
   */
 textarea{ min-height: 160px; resize: vertical; }
+
+/* Dark mode form styles */
+html.dark-mode input:not([type="submit"]):not([type="button"]),
+html.dark-mode textarea,
+html.dark-mode select {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+html.dark-mode input::placeholder,
+html.dark-mode textarea::placeholder {
+  color: var(--muted) !important;
+}
+
+html.dark-mode input:focus,
+html.dark-mode textarea:focus,
+html.dark-mode select:focus {
+  outline: none !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 4px rgba(41, 156, 245, 0.2) !important;
+}
+
 input:focus, textarea:focus, select:focus{
   outline: none;
   border-color: rgba(12,106,207,0.65);
@@ -1148,13 +1174,7 @@ input:focus, textarea:focus, select:focus{
   .user-area {
     gap: 8px;
   }
-  
-  .theme-toggle {
-    width: 35px;
-    height: 35px;
-    font-size: 1rem;
-  }
-  
+
   /* Профиль */
   .profile-header {
     padding: 15px;
@@ -1274,7 +1294,6 @@ input:focus, textarea:focus, select:focus{
   .sidebar,
   .addbutton,
   .post-actions,
-  .theme-toggle,
   .notification-bell {
     display: none !important;
   }

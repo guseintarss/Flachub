@@ -9,12 +9,14 @@
     <link type="text/css" href="{% static 'main/css/app.css' %}" rel="stylesheet"/>
     <link type="text/css" href="{% static 'main/css/auth.css' %}" rel="stylesheet"/>
     <script>
-        // Устанавливаем тему сразу, до загрузки остального JS
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.documentElement.classList.add('dark-mode');
-            document.documentElement.setAttribute('data-bs-theme', 'dark');
-        }
+        // Автоматическое применение системной темы
+        (function() {
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (isDark) {
+                document.documentElement.classList.add('dark-mode');
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+            }
+        })();
     </script>
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -33,44 +35,5 @@
 
     </div>
 </main>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const toggleButton = document.getElementById('theme-toggle');
-    const body = document.body;
-    const htmlElement = document.documentElement;
-
-    // Функция для установки темы
-    function setTheme(isDark) {
-        if (isDark) {
-            body.classList.add('dark-mode');
-            htmlElement.setAttribute('data-bs-theme', 'dark');
-            if (toggleButton) {
-                toggleButton.setAttribute('data-bs-theme', 'dark');
-            }
-            localStorage.setItem('theme', 'dark');
-        } else {
-            body.classList.remove('dark-mode');
-            htmlElement.removeAttribute('data-bs-theme');
-            if (toggleButton) {
-                toggleButton.removeAttribute('data-bs-theme');
-            }
-            localStorage.removeItem('theme');
-        }
-    }
-
-    // Применяем тему ДО того, как страница станет видимой пользователю
-    const savedTheme = localStorage.getItem('theme') === 'dark';
-    setTheme(savedTheme);
-
-    // Обработчик клика для переключения темы
-    if (toggleButton) {
-        toggleButton.addEventListener('click', () => {
-            const isCurrentlyDark = body.classList.contains('dark-mode');
-            setTheme(!isCurrentlyDark);
-        });
-    }
-});
-
-</script>
 </body>
 </html>
