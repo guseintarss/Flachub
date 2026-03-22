@@ -8,39 +8,49 @@
    ===================================================== */
 
 .add-article-page {
-    max-width: 1100px;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 30px 20px;
+    padding: 0 20px;
 }
+
 .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) {
     border: none !important;
 }
+
 .ck.ck-editor__top .ck-sticky-panel .ck-sticky-panel__content {
-    border:2px solid #1d1d1d35 !important;
+    border: 2px solid #1d1d1d35 !important;
 }
+
 .page-header {
     margin-bottom: 40px;
     text-align: center;
+    padding: 30px;
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(12, 106, 207, 0.05) 100%);
+    border-radius: 16px;
+    border: 1px solid var(--border);
 }
 
 .page-header h1 {
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: 2.2rem;
+    font-weight: 800;
     color: var(--text);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 14px;
+    letter-spacing: -0.02em;
 }
 
 .page-header h1 i {
     color: var(--primary);
+    font-size: 2.4rem;
 }
 
 .subtitle {
     color: var(--muted);
-    font-size: 1rem;
+    font-size: 1.05rem;
+    font-weight: 400;
 }
 
 /* =====================================================
