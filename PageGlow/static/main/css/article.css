@@ -565,87 +565,132 @@
 }
 
 /* =====================================================
-   ПОХОЖИЕ СТАТЬИ
+   ПОХОЖИЕ СТАТЬИ - НОВЫЙ ДИЗАЙН
    ===================================================== */
 
 .similar-articles {
-    margin-top: 40px;
+    margin-top: 50px;
     padding: 40px;
-    background: var(--bg);
+    background: linear-gradient(135deg, rgba(12, 106, 207, 0.03) 0%, rgba(12, 106, 207, 0.01) 100%);
     border-radius: 16px;
+    border: 1px solid var(--border);
 }
 
 .similar-articles h3 {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--text);
-    margin: 0 0 24px 0;
+    margin: 0 0 30px 0;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .similar-articles h3 i {
     color: var(--primary);
+    font-size: 1.6rem;
 }
 
-.similar-posts {
+.similar-posts-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    gap: 24px;
 }
 
-.similar-post-card {
+.similar-article-card {
+    display: block;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
     overflow: hidden;
-    transition: all 0.25s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    color: inherit;
 }
 
-.similar-post-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+.similar-article-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
     border-color: rgba(12, 106, 207, 0.3);
 }
 
-.similar-post-img {
+.similar-article-image {
+    position: relative;
     width: 100%;
-    height: 160px;
+    height: 180px;
+    overflow: hidden;
+    background: var(--bg);
+}
+
+.similar-article-image img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    display: block;
+    transition: transform 0.3s ease;
 }
 
-.similar-post-content {
-    padding: 16px;
+.similar-article-card:hover .similar-article-image img {
+    transform: scale(1.08);
 }
 
-.similar-post-title {
-    font-size: 1rem;
+.similar-article-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
+    color: var(--muted);
+    font-size: 3rem;
+}
+
+.similar-article-content {
+    padding: 20px;
+}
+
+.similar-article-title {
+    font-size: 1.05rem;
     font-weight: 600;
     color: var(--text);
-    text-decoration: none;
-    line-height: 1.4;
-    display: block;
-    margin-bottom: 8px;
+    margin: 0 0 12px 0;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     transition: color 0.2s ease;
 }
 
-.similar-post-title:hover {
+.similar-article-card:hover .similar-article-title {
     color: var(--primary);
 }
 
-.similar-post-meta {
+.similar-article-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-size: 0.85rem;
     color: var(--muted);
 }
 
+.similar-article-category,
+.similar-article-views {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.similar-article-category i,
+.similar-article-views i {
+    font-size: 0.8rem;
+}
+
 /* =====================================================
-   КОММЕНТАРИИ
+   КОММЕНТАРИИ - НОВЫЙ ДИЗАЙН
    ===================================================== */
 
 .comments-section {
-    margin-top: 40px;
+    margin-top: 50px;
     padding: 40px;
     background: var(--surface);
     border-radius: 16px;
@@ -656,29 +701,32 @@
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--text);
-    margin: 0 0 24px 0;
+    margin: 0 0 30px 0;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .comments-section h3 i {
     color: var(--primary);
+    font-size: 1.6rem;
 }
 
 #comment-form {
-    margin-bottom: 30px;
+    margin-bottom: 35px;
 }
 
 #comment-form textarea {
+    width: 100%;
     border: 2px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 18px;
+    border-radius: 12px;
+    padding: 16px 20px;
     font-size: 0.95rem;
     font-family: inherit;
     line-height: 1.6;
     transition: all 0.25s ease;
     resize: vertical;
+    min-height: 100px;
 }
 
 #comment-form textarea:focus {
@@ -687,8 +735,13 @@
     box-shadow: 0 0 0 4px rgba(12, 106, 207, 0.1);
 }
 
+#comment-form textarea::placeholder {
+    color: var(--muted);
+}
+
 #comment-form button {
-    padding: 12px 24px;
+    margin-top: 12px;
+    padding: 12px 28px;
     font-weight: 600;
     border-radius: 8px;
     transition: all 0.25s ease;
@@ -696,64 +749,91 @@
 
 #comment-form button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(12, 106, 207, 0.3);
+    box-shadow: 0 6px 16px rgba(12, 106, 207, 0.3);
 }
 
 /* Список комментариев */
 #comments-list {
-    margin-top: 24px;
+    margin-top: 30px;
 }
 
 .comment {
     background: var(--bg);
-    border-radius: 10px;
-    padding: 18px !important;
+    border-radius: 12px;
+    padding: 20px;
     margin-bottom: 16px;
     transition: all 0.25s ease;
+    border: 1px solid var(--border);
 }
 
 .comment:hover {
     background: rgba(12, 106, 207, 0.03);
     border-color: rgba(12, 106, 207, 0.2);
+    transform: translateX(4px);
 }
 
-.comment strong {
-    display: block;
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.comment-author {
     font-size: 1rem;
+    font-weight: 600;
     color: var(--text);
-    margin-bottom: 6px;
 }
 
-.comment small {
+.comment-time {
     font-size: 0.85rem;
     color: var(--muted);
+    margin-left: auto;
 }
 
-.comment p {
-    margin-top: 12px;
-    margin-bottom: 0;
-    line-height: 1.6;
-    color: var(--text);
-}
-
-.delete-comment {
-    padding: 4px 12px !important;
-    font-size: 0.8rem;
+.delete-comment-btn {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 6px 10px;
     border-radius: 6px;
     transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.delete-comment:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+.delete-comment-btn:hover {
+    background: #ef4444;
+    color: #ffffff;
+    transform: scale(1.1);
+}
+
+.comment-content {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text);
+    font-size: 0.95rem;
 }
 
 /* Пустое состояние */
-#comments-list .text-muted {
-    color: var(--muted) !important;
+.no-comments {
     text-align: center;
-    padding: 30px;
-    font-size: 0.95rem;
+    padding: 50px 20px;
+    color: var(--muted);
+}
+
+.no-comments i {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.no-comments p {
+    font-size: 1rem;
+    margin: 0;
 }
 
 /* =====================================================
@@ -804,16 +884,22 @@ html.dark-mode .article-body figure.image figcaption {
 }
 
 html.dark-mode .similar-articles {
-    background: var(--dark-bg);
+    background: linear-gradient(135deg, rgba(41, 156, 245, 0.05) 0%, rgba(41, 156, 245, 0.02) 100%);
+    border-color: var(--dark-border);
 }
 
-html.dark-mode .similar-post-card {
+html.dark-mode .similar-article-card {
     background: var(--dark-surface);
     border-color: var(--dark-border);
 }
 
-html.dark-mode .similar-post-card:hover {
+html.dark-mode .similar-article-card:hover {
     border-color: var(--dark-primary);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+}
+
+html.dark-mode .similar-article-placeholder {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, var(--dark-bg2) 100%);
 }
 
 html.dark-mode .comments-section {
@@ -823,11 +909,48 @@ html.dark-mode .comments-section {
 
 html.dark-mode .comment {
     background: var(--dark-bg);
+    border-color: var(--dark-border);
 }
 
 html.dark-mode .comment:hover {
     background: rgba(41, 156, 245, 0.05);
     border-color: var(--dark-primary);
+}
+
+html.dark-mode .delete-comment-btn:hover {
+    background: #dc2626;
+}
+
+html.dark-mode .no-comments {
+    color: var(--dark-muted);
+}
+
+/* =====================================================
+   TOAST УВЕДОМЛЕНИЯ
+   ===================================================== */
+
+.toast-notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--surface);
+    color: var(--text);
+    padding: 14px 24px;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid var(--primary);
+    font-weight: 500;
+    font-size: 0.95rem;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateX(100px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 400px;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translateX(0);
 }
 
 /* =====================================================

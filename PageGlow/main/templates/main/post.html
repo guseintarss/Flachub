@@ -153,7 +153,7 @@
                     class="action-btn {% if post_is_liked %}liked{% endif %}"
                     data-post-id="{{ object.id }}"
                     data-liked="{{ post_is_liked|yesno:'true,false' }}">
-                <i class="fas fa-heart"></i> {{ number_of_likes }}
+                <i class="fas fa-heart"></i>{{ number_of_likes }}
             </button>
 
             <button id="bookmark-btn"
@@ -202,18 +202,31 @@
     <!-- Похожие статьи -->
     {% if similar_posts %}
     <div class="similar-articles">
-        <h3><i class="fas fa-newspaper"></i> Похожие статьи</h3>
-        <div class="similar-posts">
+        <h3><i class="fas fa-copy"></i> Читайте также</h3>
+        <div class="similar-posts-grid">
             {% for p in similar_posts %}
-            <div class="similar-post-card">
-                {% if p.photo %}
-                <img src="{{ p.photo.url }}" alt="{{ p.title }}" class="similar-post-img">
-                {% endif %}
-                <div class="similar-post-content">
-                    <a href="{{ p.get_absolute_url }}" class="similar-post-title">{{ p.title }}</a>
-                    <span class="similar-post-meta"><i class="fas fa-eye"></i> {{ p.views }} просмотров</span>
+            <a href="{{ p.get_absolute_url }}" class="similar-article-card">
+                <div class="similar-article-image">
+                    {% if p.photo %}
+                    <img src="{{ p.photo.url }}" alt="{{ p.title }}">
+                    {% else %}
+                    <div class="similar-article-placeholder">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    {% endif %}
                 </div>
-            </div>
+                <div class="similar-article-content">
+                    <h4 class="similar-article-title">{{ p.title|truncatechars:60 }}</h4>
+                    <div class="similar-article-meta">
+                        <span class="similar-article-category">
+                            <i class="fas fa-folder"></i> {{ p.cat.name }}
+                        </span>
+                        <span class="similar-article-views">
+                            <i class="fas fa-eye"></i> {{ p.views }}
+                        </span>
+                    </div>
+                </div>
+            </a>
             {% endfor %}
         </div>
     </div>
@@ -232,17 +245,23 @@
         </form>
         <div id="comments-list">
             {% for comment in comments_page %}
-            <div class="comment mb-3 p-2 border rounded" data-comment-id="{{ comment.id }}">
-                <strong>{{ comment.author.username }}</strong>
-                <small class="text-muted">{{ comment.created_at }}</small>
-                {% if comment.author == user or user.is_staff %}
-                <button class="delete-comment btn btn-sm btn-danger float-end"
-                        data-comment-id="{{ comment.id }}">Удалить</button>
-                {% endif %}
-                <p>{{ comment.content }}</p>
+            <div class="comment" data-comment-id="{{ comment.id }}">
+                <div class="comment-header">
+                    <strong class="comment-author">{{ comment.author.username }}</strong>
+                    <small class="comment-time">{{ comment.created_at }}</small>
+                    {% if comment.author == user or user.is_staff %}
+                    <button class="delete-comment-btn" data-comment-id="{{ comment.id }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    {% endif %}
+                </div>
+                <p class="comment-content">{{ comment.content }}</p>
             </div>
             {% empty %}
-            <p class="text-muted">Комментариев пока нет. Будьте первым!</p>
+            <div class="no-comments">
+                <i class="fas fa-comments"></i>
+                <p>Комментариев пока нет. Будьте первым!</p>
+            </div>
             {% endfor %}
         </div>
         <!-- Пагинация комментариев -->
@@ -254,6 +273,20 @@
 
 {% block extra_js %}
 <script>
+// Уведомления (toast)
+function showToast(message, duration = 3000) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
 // Прогресс чтения
 window.addEventListener('scroll', function() {
     const article = document.querySelector('article.post');
@@ -319,40 +352,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const commentForm = document.getElementById('comment-form');
     const commentsList = document.getElementById('comments-list');
 
-    // Закладки
-    const bookmarkBtn = document.getElementById('bookmark-btn');
-    if (bookmarkBtn) {
-        bookmarkBtn.addEventListener('click', function() {
-            const postId = this.dataset.postId;
-            
-            fetch('{% url "bookmark_toggle" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: `post_id=${postId}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    if (data.is_bookmarked) {
-                        bookmarkBtn.className = 'btn btn-primary';
-                        bookmarkBtn.innerHTML = '📑 В закладках';
-                    } else {
-                        bookmarkBtn.className = 'btn btn-outline-primary';
-                        bookmarkBtn.innerHTML = '📑 В закладки';
-                    }
-                    // Показывем уведомление
-                    const message = data.is_bookmarked ? 
-                        '✅ Статья добавлена в закладки' : 
-                        '🗑️ Статья удалена из закладок';
-                    showToast(message);
-                }
-            });
-        });
-    }
-
     commentForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const content = document.getElementById('comment-content').value.trim();
@@ -397,17 +396,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function createCommentElement(commentData) {
         const div = document.createElement('div');
-        div.className = 'comment mb-3 p-2 border rounded';
+        div.className = 'comment';
         div.setAttribute('data-comment-id', commentData.id);
+        
+        const canDelete = commentData.can_delete || false;
+        
         div.innerHTML = `
-            <strong>${commentData.author}</strong>
-            <small class="text-muted">${commentData.created_at}</small>
-            <button class="delete-comment btn btn-sm btn-danger float-end"
-                    data-comment-id="${commentData.id}">Удалить</button>
-            <p>${commentData.content}</p>
+            <div class="comment-header">
+                <strong class="comment-author">${commentData.author}</strong>
+                <small class="comment-time">${commentData.created_at}</small>
+                ${canDelete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}"><i class="fas fa-trash"></i></button>` : ''}
+            </div>
+            <p class="comment-content">${commentData.content}</p>
         `;
-        const deleteBtn = div.querySelector('.delete-comment');
-        deleteBtn.addEventListener('click', handleDeleteComment);
+        
+        const deleteBtn = div.querySelector('.delete-comment-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', handleDeleteComment);
+        }
+        
         return div;
     }
 
@@ -438,43 +445,100 @@ document.addEventListener('DOMContentLoaded', function() {
     // Лайки и избранное
     const likeBtn = document.getElementById('like-btn');
     const favoriteBtn = document.getElementById('favorite-btn');
+    const bookmarkBtn = document.getElementById('bookmark-btn');
 
-    likeBtn.addEventListener('click', function() {
-        const postId = this.getAttribute('data-post-id');
-        fetch('{% url "post_like_ajax" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: `post_id=${postId}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                this.innerHTML = (data.liked ? '🤍' : '❤️') + ` ${data.likes_count}`;
-                this.className = data.liked ? 'btn btn-danger' : 'btn btn-outline-danger';
-            }
+    if (likeBtn) {
+        likeBtn.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            const isLiked = this.getAttribute('data-liked') === 'true';
+            
+            fetch('{% url "post_like_ajax" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `post_id=${postId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const newLiked = data.liked;
+                    this.setAttribute('data-liked', newLiked);
+                    
+                    // Обновляем иконку и текст
+                    this.innerHTML = `<i class="fas fa-heart"></i> ${data.likes_count}`;
+                    
+                    // Обновляем классы для нового дизайна
+                    if (newLiked) {
+                        this.classList.add('liked');
+                    } else {
+                        this.classList.remove('liked');
+                    }
+                }
+            });
         });
-    });
+    }
 
-    favoriteBtn.addEventListener('click', function() {
-        const postId = this.getAttribute('data-post-id');
-        fetch('{% url "post_favorite_ajax" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: `post_id=${postId}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                this.className = data.favorited ? 'btn btn-warning' : 'btn btn-outline-warning';
-            }
+    if (favoriteBtn) {
+        favoriteBtn.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            const isFavorited = this.getAttribute('data-favorited') === 'true';
+            
+            fetch('{% url "post_favorite_ajax" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `post_id=${postId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const newFavorited = data.favorited;
+                    this.setAttribute('data-favorited', newFavorited);
+                    
+                    // Обновляем классы
+                    if (newFavorited) {
+                        this.classList.add('favorited');
+                    } else {
+                        this.classList.remove('favorited');
+                    }
+                }
+            });
         });
-    });
+    }
+
+    if (bookmarkBtn) {
+        bookmarkBtn.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+
+            fetch('{% url "bookmark_toggle" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `post_id=${postId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const isBookmarked = data.is_bookmarked;
+                    
+                    if (isBookmarked) {
+                        this.classList.add('bookmarked');
+                    } else {
+                        this.classList.remove('bookmarked');
+                    }
+                    
+                    // Уведомление
+                    showToast(isBookmarked ? '✅ Добавлено в закладки' : '🗑️ Удалено из закладок');
+                }
+            });
+        });
+    }
 
     // Прогресс чтения
     const progressBar = document.getElementById('reading-progress');
