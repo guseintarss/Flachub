@@ -15,6 +15,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link type="text/css" href="{% static 'main/css/app.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'main/css/footer.css' %}" rel="stylesheet"/>
     <link rel="icon" type="image/png" href="{% static 'images/favicon-96x96.png' %}" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}" />
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" />
@@ -172,38 +173,101 @@
         {% block navigation %}{% endblock %}
     </div>
 </main>
+<!-- Footer -->
 <footer class="site-footer">
-  <div class="pg-container footer-container">
-    <div class="footer-logo">
-      <h3>PageGlow</h3>
+    <div class="footer-main">
+        <!-- Бренд и соцсети -->
+        <div class="footer-brand">
+            <a href="{% url 'home' %}" class="footer-logo">
+                <i class="fas fa-fire"></i>
+                <span>PageGlow</span>
+            </a>
+            <p class="footer-description">
+                Платформа для IT-специалистов: делитесь знаниями, 
+                находите возможности и развивайтесь вместе с нами.
+            </p>
+            <div class="footer-social">
+                <a href="#" class="social-link" title="Telegram">
+                    <i class="fab fa-telegram"></i>
+                </a>
+                <a href="#" class="social-link" title="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="#" class="social-link" title="VK">
+                    <i class="fab fa-vk"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Навигация -->
+        <div class="footer-section">
+            <h4><i class="fas fa-compass"></i> Навигация</h4>
+            <ul class="footer-links">
+                <li><a href="{% url 'home' %}"><i class="fas fa-angle-right"></i> Главная</a></li>
+                <li><a href="{% url 'discussions' %}"><i class="fas fa-angle-right"></i> Обсуждения</a></li>
+                <li><a href="{% url 'search' %}"><i class="fas fa-angle-right"></i> Поиск</a></li>
+                <li><a href="{% url 'popular' %}"><i class="fas fa-angle-right"></i> Популярное</a></li>
+                <li><a href="{% url 'about' %}"><i class="fas fa-angle-right"></i> О платформе</a></li>
+            </ul>
+        </div>
+
+        <!-- Пользователям -->
+        <div class="footer-section">
+            <h4><i class="fas fa-user"></i> Пользователям</h4>
+            <ul class="footer-links">
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'users:profile' %}"><i class="fas fa-angle-right"></i> Профиль</a></li>
+                <li><a href="{% url 'bookmarks' %}"><i class="fas fa-angle-right"></i> Закладки</a></li>
+                <li><a href="{% url 'addpage' %}"><i class="fas fa-angle-right"></i> Создать статью</a></li>
+                <li><a href="{% url 'subscription_feed' %}"><i class="fas fa-angle-right"></i> Подписки</a></li>
+                {% else %}
+                <li><a href="{% url 'users:login' %}"><i class="fas fa-angle-right"></i> Войти</a></li>
+                <li><a href="{% url 'users:register' %}"><i class="fas fa-angle-right"></i> Регистрация</a></li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <!-- Контакты -->
+        <div class="footer-section">
+            <h4><i class="fas fa-envelope"></i> Связь</h4>
+            <div class="footer-contact-item">
+                <i class="fas fa-envelope"></i>
+                <a href="mailto:support@pageglow.com">pageglow3@gmail.com</a>
+            </div>
+            <div class="footer-contact-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Черкесск, Россия</span>
+            </div>
+            <div class="footer-newsletter">
+                <p><i class="fas fa-bell"></i> Рассылка</p>
+                <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Спасибо за подписку!');">
+                    <input type="email" class="newsletter-input" placeholder="Email" required>
+                    <button type="submit" class="newsletter-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 
-
-    <nav class="footer-nav">
-        <p><i class="fas fa-briefcase"></i> Маркетплейс</p>
-      <ul>
-        {% for m in mainmenu %}
-           <li><a href="{% url m.url_name %}">{{ m.title }}</a></li>
-        {% endfor %}
-      </ul>
-    </nav>
-
-    <div class="footer-contacts">
-      <p>Email: <a href="mailto:info@pageglow.com">pageglow3@gmail.com</a></p>
-      <!-- <p>Телефон: <a href="tel:+74951234567">+7 (495) 123‑45‑67</a></p> -->
-    </div>
-
-    <div class="footer-social">
-      <a href="https://t.me/pageglow">Telegram</a>
-      <a href="https://vk.com/pageglow">VK</a>
-      <a href="https://github.com/guseintarss/PageGlow3.0/tree/master">GitHub</a>
-    </div>
-  </div>
-    <hr>
-    <div class="footer-copyright">
-      <p>&copy; 2026 PageGlow. Все права защищены.</p>
+    <!-- Нижняя часть -->
+    <div class="footer-bottom">
+        <div class="footer-bottom-content">
+            <p class="copyright">
+                &copy; 2024-<span id="currentYear"></span> PageGlow. Все права защищены.
+            </p>
+            <div class="footer-bottom-links">
+                <a href="{% url 'privacy_policy' %}">Конфиденциальность</a>
+                <a href="{% url 'terms_of_use' %}">Соглашение</a>
+            </div>
+        </div>
     </div>
 </footer>
+
+<script>
+    // Автоматическое обновление года
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+</script>
 
 <!-- WebSocket уведомления (только для авторизованных) -->
 {% if user.is_authenticated %}
@@ -398,14 +462,17 @@ document.addEventListener('DOMContentLoaded', function() {
             dropdown.style.display = 'none';
         }
     });
-    
+
     // Загружаем счётчик при загрузке страницы
     loadNotifications();
-    
+
     // Обновляем каждые 30 секунд
     setInterval(loadNotifications, 30000);
 });
 </script>
 {% endif %}
+
+
+
 </body>
 </html>
