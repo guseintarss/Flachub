@@ -15,7 +15,7 @@
         <!-- Шапка поста -->
         <div class="post-header">
             <div class="post-author">
-                <a href="{% url 'users:author_profile' p.author.username %}" class="author-link">
+                <a href="{% url 'users:author_profile' p.author.username %}" class="text-decoration-none author-link">
                     {% if p.author.photo %}
                     <img class="author-avatar" src="{{ p.author.photo.url }}" alt="{{ p.author.username }}">
                     {% else %}
@@ -71,7 +71,7 @@
                 {% with p.tags.all as tags %}
                     {% if tags %}
                         {% for t in tags|slice:":5" %}
-                            <a href="{{ t.get_absolute_url }}" class="tag-chip">{{ t.tag }}</a>
+                            <a href="{{ t.get_absolute_url }}" class="text-decoration-none tag-chip">{{ t.tag }}</a>
                         {% endfor %}
                         {% if tags|length > 5 %}
                             <span class="tags-more">+{{ tags|length|add:"-5" }}</span>
@@ -79,6 +79,7 @@
                     {% endif %}
                 {% endwith %}
             </div>
+            <br>
             
             <div class="post-stats">
                 <span class="stat-item" title="Просмотры">
@@ -92,7 +93,7 @@
                 </span>
             </div>
             
-            <a class="read-more-btn" href="{{ p.get_absolute_url }}">
+            <a class="text-decoration-none read-more-btn" href="{{ p.get_absolute_url }}">
                 Читать далее
                 <i class="fas fa-arrow-right"></i>
             </a>
