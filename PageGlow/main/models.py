@@ -174,10 +174,14 @@ class UploadFiles(models.Model):
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
     content = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_edited = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    likes = models.ManyToManyField(User, related_name='comment_likes', blank=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -185,10 +189,19 @@ class Comment(models.Model):
             models.Index(fields=['post', 'created_at']),
             models.Index(fields=['author']),
             models.Index(fields=['is_active']),
+            models.Index(fields=['parent']),
         ]
 
     def __str__(self):
         return f'Comment by {self.author} on {self.post}'
+    
+    def number_of_likes(self):
+        return self.likes.count()
+    
+    def user_has_liked(self, user):
+        if not user or not user.is_authenticated:
+            return False
+        return self.likes.filter(id=user.id).exists()
 
 
 class Subscription(models.Model):

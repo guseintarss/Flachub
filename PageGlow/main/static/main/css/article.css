@@ -792,6 +792,49 @@
     margin-left: auto;
 }
 
+.reply-to {
+    font-size: 0.85rem;
+    color: var(--primary);
+    margin-left: 8px;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-left: auto;
+}
+
+.comment-like-btn,
+.comment-reply-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.comment-like-btn:hover,
+.comment-reply-btn:hover {
+    background: rgba(12, 106, 207, 0.1);
+    color: var(--primary);
+}
+
+.comment-like-btn.liked {
+    color: #ef4444;
+}
+
+.comment-likes-count {
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
 .delete-comment-btn {
     background: transparent;
     border: none;
@@ -816,6 +859,24 @@
     line-height: 1.6;
     color: var(--text);
     font-size: 0.95rem;
+}
+
+/* Ответы на комментарии */
+.comment-replies {
+    margin-top: 16px;
+    margin-left: 20px;
+    padding-left: 16px;
+    border-left: 2px solid var(--border);
+}
+
+.comment.reply {
+    background: rgba(12, 106, 207, 0.02);
+    margin-top: 12px;
+    padding: 16px;
+}
+
+.comment.reply:hover {
+    background: rgba(12, 106, 207, 0.05);
 }
 
 /* Пустое состояние */

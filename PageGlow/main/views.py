@@ -669,6 +669,7 @@ class AddCommentAjaxView(View):
         try:
             post_id = request.POST.get('post_id')
             content = request.POST.get('content')
+            parent_id = request.POST.get('parent_id')
 
             if not content or len(content.strip()) == 0:
                 return JsonResponse({
@@ -677,13 +678,18 @@ class AddCommentAjaxView(View):
                 }, status=400)
 
             post = get_object_or_404(Post, id=post_id)
+            
+            parent = None
+            if parent_id:
+                parent = get_object_or_404(Comment, id=parent_id)
 
             comment = Comment.objects.create(
                 post=post,
                 author=request.user,
-                content=content
+                content=content,
+                parent=parent
             )
-            
+
             # Уведомление автору статьи о комментарии
             if post.author and post.author != request.user:
                 notification = Notification.objects.create(
@@ -694,7 +700,6 @@ class AddCommentAjaxView(View):
                     comment=comment,
                     message=f'{request.user.username} прокомментировал "{post.title[:30]}..."'
                 )
-                # Отправляем уведомление через WebSocket
                 try:
                     from main.consumers import send_notification_to_user
                     send_notification_to_user(post.author.id, {
@@ -707,6 +712,17 @@ class AddCommentAjaxView(View):
                 except Exception as e:
                     logger.error(f'Ошибка отправки WebSocket уведомления: {e}')
 
+            # Уведомление автору родительского комментария (если это ответ)
+            if parent and parent.author != request.user:
+                notification = Notification.objects.create(
+                    recipient=parent.author,
+                    sender=request.user,
+                    notification_type='comment',
+                    post=post,
+                    comment=comment,
+                    message=f'{request.user.username} ответил на ваш комментарий'
+                )
+
             data = {
                 'success': True,
                 'comment': {
@@ -714,7 +730,13 @@ class AddCommentAjaxView(View):
                     'content': comment.content,
                     'author': comment.author.username,
                     'created_at': comment.created_at.strftime('%d.%m.%Y %H:%M'),
-                    'is_active': comment.is_active
+                    'is_active': comment.is_active,
+                    'parent_id': parent.id if parent else None,
+                    'parent_author': parent.author.username if parent else None,
+                    'likes_count': 0,
+                    'is_liked': False,
+                    'can_delete': True,
+                    'replies_count': 0
                 }
             }
             return JsonResponse(data)
@@ -740,6 +762,44 @@ class DeleteCommentAjaxView(View):
 
             comment.delete()
             return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@method_decorator(login_required, name='dispatch')
+class ToggleCommentLikeAjaxView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            comment_id = request.POST.get('comment_id')
+            if not comment_id:
+                return JsonResponse({'success': False, 'error': 'ID комментария не указан'}, status=400)
+
+            comment = get_object_or_404(Comment, id=comment_id)
+            
+            # Переключаем лайк
+            if comment.likes.filter(id=request.user.id).exists():
+                comment.likes.remove(request.user)
+                is_liked = False
+            else:
+                comment.likes.add(request.user)
+                is_liked = True
+                
+                # Уведомление автору комментария о лайке
+                if comment.author != request.user:
+                    Notification.objects.create(
+                        recipient=comment.author,
+                        sender=request.user,
+                        notification_type='like',
+                        post=comment.post,
+                        comment=comment,
+                        message=f'{request.user.username} лайкнул ваш комментарий'
+                    )
+
+            data = {
+                'success': True,
+                'is_liked': is_liked,
+                'likes_count': comment.number_of_likes()
+            }
+            return JsonResponse(data)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
         

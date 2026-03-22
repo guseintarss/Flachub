@@ -238,25 +238,73 @@
         <form id="comment-form">
             {% csrf_token %}
             <input type="hidden" name="post_id" value="{{ object.id }}">
+            <input type="hidden" name="parent_id" id="parent-id" value="">
             <textarea name="content" id="comment-content" rows="3"
                     class="form-control mb-2"
                     placeholder="Напишите комментарий..."></textarea>
+            <div id="reply-cancel" style="display: none; margin-top: 10px;">
+                <button type="button" class="btn btn-sm btn-secondary" onclick="cancelReply()">
+                    <i class="fas fa-times"></i> Отмена ответа
+                </button>
+            </div>
             <button type="submit" class="btn btn-primary">Отправить комментарий</button>
         </form>
         <div id="comments-list">
             {% for comment in comments_page %}
+            {% if not comment.parent %}
             <div class="comment" data-comment-id="{{ comment.id }}">
                 <div class="comment-header">
                     <strong class="comment-author">{{ comment.author.username }}</strong>
                     <small class="comment-time">{{ comment.created_at }}</small>
-                    {% if comment.author == user or user.is_staff %}
-                    <button class="delete-comment-btn" data-comment-id="{{ comment.id }}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    {% endif %}
+                    <div class="comment-actions">
+                        <button class="comment-like-btn" data-comment-id="{{ comment.id }}" data-is-liked="{{ comment.user_has_liked|yesno:'true,false' }}">
+                            <i class="fas fa-heart"></i>
+                            <span class="comment-likes-count">{{ comment.number_of_likes }}</span>
+                        </button>
+                        <button class="comment-reply-btn" data-comment-id="{{ comment.id }}" data-comment-author="{{ comment.author.username }}">
+                            <i class="fas fa-reply"></i> Ответить
+                        </button>
+                        {% if comment.author == user or user.is_staff %}
+                        <button class="delete-comment-btn" data-comment-id="{{ comment.id }}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        {% endif %}
+                    </div>
                 </div>
                 <p class="comment-content">{{ comment.content }}</p>
+                
+                <!-- Ответы на комментарий -->
+                {% if comment.replies.all %}
+                <div class="comment-replies">
+                    {% for reply in comment.replies.all %}
+                    <div class="comment reply" data-comment-id="{{ reply.id }}">
+                        <div class="comment-header">
+                            <strong class="comment-author">{{ reply.author.username }}</strong>
+                            <small class="comment-time">{{ reply.created_at }}</small>
+                            {% if reply.parent %}
+                            <small class="reply-to">
+                                <i class="fas fa-arrow-right"></i> {{ reply.parent.author.username }}
+                            </small>
+                            {% endif %}
+                            <div class="comment-actions">
+                                <button class="comment-like-btn" data-comment-id="{{ reply.id }}" data-is-liked="{{ reply.user_has_liked|yesno:'true,false' }}">
+                                    <i class="fas fa-heart{% if not reply.user_has_liked %}fas fa-heart{% endif %}"></i>
+                                    <span class="comment-likes-count">{{ reply.number_of_likes }}</span>
+                                </button>
+                                {% if reply.author == user or user.is_staff %}
+                                <button class="delete-comment-btn" data-comment-id="{{ reply.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="comment-content">{{ reply.content }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
+            {% endif %}
             {% empty %}
             <div class="no-comments">
                 <i class="fas fa-comments"></i>
@@ -351,11 +399,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Комментарии
     const commentForm = document.getElementById('comment-form');
     const commentsList = document.getElementById('comments-list');
+    const parentInput = document.getElementById('parent-id');
+    const replyCancel = document.getElementById('reply-cancel');
 
     commentForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const content = document.getElementById('comment-content').value.trim();
         const postId = document.querySelector('input[name="post_id"]').value;
+        const parentId = parentInput.value;
 
         if (!content) {
             alert('Текст комментария не может быть пустым');
@@ -364,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const submitBtn = commentForm.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
-        submitBtn.innerHTML = 'Отправка...';
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
 
         fetch('{% url "add_comment_ajax" %}', {
             method: 'POST',
@@ -372,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'X-CSRFToken': '{{ csrf_token }}'
             },
-            body: `post_id=${postId}&content=${encodeURIComponent(content)}`
+            body: `post_id=${postId}&content=${encodeURIComponent(content)}&parent_id=${parentId || ''}`
         })
         .then(response => response.json())
         .then(data => {
@@ -381,8 +432,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (data.success) {
                 document.getElementById('comment-content').value = '';
+                cancelReply();
                 const newComment = createCommentElement(data.comment);
-                commentsList.insertBefore(newComment, commentsList.firstChild);
+                if (parentId) {
+                    // Добавляем ответ к родительскому комментарию
+                    const parentComment = document.querySelector(`[data-comment-id="${parentId}"]`);
+                    if (parentComment) {
+                        let repliesDiv = parentComment.querySelector('.comment-replies');
+                        if (!repliesDiv) {
+                            repliesDiv = document.createElement('div');
+                            repliesDiv.className = 'comment-replies';
+                            parentComment.appendChild(repliesDiv);
+                        }
+                        repliesDiv.appendChild(newComment);
+                    }
+                } else {
+                    commentsList.insertBefore(newComment, commentsList.firstChild);
+                }
+                showToast('✅ Комментарий добавлен');
             } else {
                 alert('Ошибка: ' + data.error);
             }
@@ -396,19 +463,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function createCommentElement(commentData) {
         const div = document.createElement('div');
-        div.className = 'comment';
+        div.className = 'comment' + (commentData.parent_id ? ' reply' : '');
         div.setAttribute('data-comment-id', commentData.id);
         
         const canDelete = commentData.can_delete || false;
+        const isLiked = commentData.is_liked || false;
         
         div.innerHTML = `
             <div class="comment-header">
                 <strong class="comment-author">${commentData.author}</strong>
                 <small class="comment-time">${commentData.created_at}</small>
-                ${canDelete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}"><i class="fas fa-trash"></i></button>` : ''}
+                ${commentData.parent_author ? `<small class="reply-to"><i class="fas fa-arrow-right"></i> ${commentData.parent_author}</small>` : ''}
+                <div class="comment-actions">
+                    <button class="comment-like-btn" data-comment-id="${commentData.id}" data-is-liked="${isLiked}">
+                        <i class="fas fa-heart${isLiked ? '' : '-o'}"></i>
+                        <span class="comment-likes-count">${commentData.likes_count || 0}</span>
+                    </button>
+                    ${!commentData.parent_id ? `<button class="comment-reply-btn" data-comment-id="${commentData.id}" data-comment-author="${commentData.author}">
+                        <i class="fas fa-reply"></i> Ответить
+                    </button>` : ''}
+                    ${canDelete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>` : ''}
+                </div>
             </div>
             <p class="comment-content">${commentData.content}</p>
         `;
+        
+        // Добавляем обработчики событий
+        const likeBtn = div.querySelector('.comment-like-btn');
+        if (likeBtn) {
+            likeBtn.addEventListener('click', handleLikeComment);
+        }
+        
+        const replyBtn = div.querySelector('.comment-reply-btn');
+        if (replyBtn) {
+            replyBtn.addEventListener('click', handleReplyComment);
+        }
         
         const deleteBtn = div.querySelector('.delete-comment-btn');
         if (deleteBtn) {
@@ -434,11 +525,77 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 document.querySelector(`[data-comment-id="${commentId}"]`).remove();
+                showToast('🗑️ Комментарий удалён');
             }
         });
     }
 
-    document.querySelectorAll('.delete-comment').forEach(btn => {
+    // Лайки комментариев
+    function handleLikeComment(e) {
+        const btn = e.currentTarget;
+        const commentId = btn.getAttribute('data-comment-id');
+        const isLiked = btn.getAttribute('data-is-liked') === 'true';
+        const icon = btn.querySelector('i');
+        const countSpan = btn.querySelector('.comment-likes-count');
+
+        fetch('{% url "toggle_comment_like_ajax" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `comment_id=${commentId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const newLiked = data.is_liked;
+                btn.setAttribute('data-is-liked', newLiked);
+                icon.className = newLiked ? 'fas fa-heart' : 'fas fa-heart';
+                countSpan.textContent = data.likes_count;
+                showToast(newLiked ? '❤️ Вам понравился комментарий' : '🤍 Вы убрали лайк');
+            }
+        });
+    }
+
+    // Ответ на комментарий
+    function handleReplyComment(e) {
+        const btn = e.currentTarget;
+        const commentId = btn.getAttribute('data-comment-id');
+        const commentAuthor = btn.getAttribute('data-comment-author');
+        
+        // Устанавливаем parent_id
+        parentInput.value = commentId;
+        
+        // Показываем кнопку отмены
+        replyCancel.style.display = 'block';
+        
+        // Фокус на поле ввода
+        document.getElementById('comment-content').focus();
+        document.getElementById('comment-content').placeholder = `Ответ ${commentAuthor}...`;
+        
+        // Прокрутка к форме
+        document.getElementById('comment-form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Отмена ответа
+    function cancelReply() {
+        parentInput.value = '';
+        replyCancel.style.display = 'none';
+        document.getElementById('comment-content').placeholder = 'Напишите комментарий...';
+        document.getElementById('comment-content').value = '';
+    }
+
+    // Инициализация обработчиков для существующих комментариев
+    document.querySelectorAll('.comment-like-btn').forEach(btn => {
+        btn.addEventListener('click', handleLikeComment);
+    });
+
+    document.querySelectorAll('.comment-reply-btn').forEach(btn => {
+        btn.addEventListener('click', handleReplyComment);
+    });
+
+    document.querySelectorAll('.delete-comment-btn').forEach(btn => {
         btn.addEventListener('click', handleDeleteComment);
     });
 
