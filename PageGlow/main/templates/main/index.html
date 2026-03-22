@@ -74,7 +74,7 @@
                             <a href="{{ t.get_absolute_url }}" class="text-decoration-none tag-chip">{{ t.tag }}</a>
                         {% endfor %}
                         {% if tags|length > 5 %}
-                            <span class="tags-more">+{{ tags|length|add:"-5" }}</span><br>
+                            <span class="tags-more">+{{ tags|length|add:"-5" }}</span>
                         {% endif %}
                     {% endif %}
                 {% endwith %}
