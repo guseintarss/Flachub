@@ -4,6 +4,7 @@
 {% load static %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/article.css' %}">
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="article" />
 <meta property="og:url" content="{{ request.build_absolute_uri }}" />
@@ -70,135 +71,157 @@
 
 {% block content %}
 <!-- Прогресс чтения -->
-<!-- <div class="reading-progress-bar" id="reading-progress"></div> -->
-<div id="reading-progress" style="position: fixed; top: 0; left: 0; height: 3px; background: #007bff; width: 0%;"></div>
+<div class="reading-progress-bar" id="reading-progress"></div>
 
-<article class="post">
-    <div class="post-content">
-        
-        <div class="post-meta-header">
-            <div class="author-info">
-                {% if post.author.photo %}
-                <img class="author-avatar" src="{{ post.author.photo.url }}" alt="{{ post.author.username }}">
-                {% else %}
-                <img class="author-avatar" src="{{ default_image }}" alt="{{ post.author.username }}">
+<div class="article-container">
+    <div class="article-wrapper">
+        <!-- Шапка статьи -->
+        <div class="article-header">
+            <div class="post-meta-header">
+                <div class="author-info">
+                    {% if post.author.photo %}
+                    <img class="author-avatar" src="{{ post.author.photo.url }}" alt="{{ post.author.username }}">
+                    {% else %}
+                    <img class="author-avatar" src="{{ default_image }}" alt="{{ post.author.username }}">
+                    {% endif %}
+                    <div class="author-details">
+                        <a href="{% url 'users:author_profile' post.author.username %}" class="author-name">{{ post.author.username }}</a>
+                        <span class="post-date" title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span>
+                    </div>
+                </div>
+                {% if user.is_authenticated and post.author != user %}
+                <button id="subscribe-btn"
+                        class="btn btn-sm {% if is_subscribed %}btn-secondary{% else %}btn-primary{% endif %}"
+                        data-author-id="{{ post.author.id }}">
+                    {% if is_subscribed %}Отписаться{% else %}Подписаться{% endif %}
+                </button>
                 {% endif %}
-                <div class="author-details">
-                    <a href="{% url 'users:author_profile' post.author.username %}" class="author-name">{{ post.author.username }}</a>
-                    <span class="post-date" title="{{ post.time_update|date:'d.m.Y H:i' }}">{{ post.time_update|time_ago }}</span>
+            </div>
+            
+            <h1 class="article-title">{{ post.title }}</h1>
+            
+            <div class="article-meta">
+                <a href="{{ post.cat.get_absolute_url }}" class="meta-badge">
+                    <i class="fas fa-folder"></i> {{ post.cat.name }}
+                </a>
+                <span class="meta-badge">
+                    <i class="fas fa-clock"></i> {{ reading_time }} мин чтения
+                </span>
+                <span class="meta-badge">
+                    <i class="fas fa-eye"></i> {{ post.views }} просмотров
+                </span>
+                {% if post.post_type %}
+                <span class="meta-badge">
+                    <i class="fas fa-tag"></i> 
+                    {% if post.post_type == 'article' %}Статья
+                    {% elif post.post_type == 'news' %}Новость
+                    {% elif post.post_type == 'idea' %}Идея
+                    {% else %}Пост{% endif %}
+                </span>
+                {% endif %}
+            </div>
+
+            {% if post.photo %}
+            <div class="article-cover">
+                <img src="{{ post.photo.url }}" alt="{{ post.title }}">
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Тело статьи -->
+        <div class="article-body">
+            {% autoescape off %}
+            {{ post.content|safe }}
+            {% endautoescape %}
+        </div>
+
+        <!-- Теги -->
+        {% with post.tags.all as tags %}
+        {% if tags %}
+        <div class="article-tags">
+            <span class="tags-label"><i class="fas fa-tags"></i> Теги:</span>
+            {% for t in tags %}
+            <a href="{{ t.get_absolute_url }}" class="text-decoration-none tag-chip">{{ t.tag }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Действия -->
+        <div class="article-actions">
+            <button id="like-btn"
+                    class="action-btn {% if post_is_liked %}liked{% endif %}"
+                    data-post-id="{{ object.id }}"
+                    data-liked="{{ post_is_liked|yesno:'true,false' }}">
+                <i class="fas fa-heart"></i> {{ number_of_likes }}
+            </button>
+
+            <button id="bookmark-btn"
+                    class="action-btn {% if post_is_bookmarked %}bookmarked{% endif %}"
+                    data-post-id="{{ object.id }}">
+                <i class="fas fa-bookmark"></i>
+            </button>
+
+            <button id="favorite-btn"
+                    class="action-btn {% if post_is_favorited %}favorited{% endif %}"
+                    data-post-id="{{ object.id }}"
+                    data-favorited="{{ post_is_favorited|yesno:'true,false' }}">
+                <i class="fas fa-star"></i>
+            </button>
+
+            <!-- Кнопки "Поделиться" -->
+            <div class="share-buttons">
+                <span class="share-label">Поделиться:</span>
+                <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ post.title|urlencode }}"
+                   target="_blank" class="btn btn-sm btn-outline-primary share-btn" title="Telegram">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                    </svg>
+                </a>
+                <a href="https://vk.com/share.php?url={{ request.build_absolute_uri }}&title={{ post.title|urlencode }}"
+                   target="_blank" class="btn btn-sm btn-outline-primary share-btn" title="VK">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1-1.49-1.135-1.744-1.135-.356 0-.458.102-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.12-5.339-3.202-2.17-3.047-2.763-5.339-2.763-5.805 0-.254.102-.491.593-.491h1.744c.44 0 .61.203.78.678.864 2.508 2.305 4.708 2.897 4.708.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.203.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.17.508.271.508.22 0 .407-.136.814-.542 1.253-1.406 2.15-3.574 2.15-3.574.119-.254.305-.491.745-.491h1.744c.525 0 .644.27.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.779 1.203 1.253.745.847 1.32 1.558 1.473 2.05.17.49-.085.744-.576.744z"/>
+                    </svg>
+                </a>
+                <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ post.title|urlencode }}"
+                   target="_blank" class="btn btn-sm btn-outline-primary share-btn" title="Twitter">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                </a>
+                <button class="btn btn-sm btn-outline-secondary share-btn" onclick="copyLink()" title="Копировать ссылку">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Похожие статьи -->
+    {% if similar_posts %}
+    <div class="similar-articles">
+        <h3><i class="fas fa-newspaper"></i> Похожие статьи</h3>
+        <div class="similar-posts">
+            {% for p in similar_posts %}
+            <div class="similar-post-card">
+                {% if p.photo %}
+                <img src="{{ p.photo.url }}" alt="{{ p.title }}" class="similar-post-img">
+                {% endif %}
+                <div class="similar-post-content">
+                    <a href="{{ p.get_absolute_url }}" class="similar-post-title">{{ p.title }}</a>
+                    <span class="similar-post-meta"><i class="fas fa-eye"></i> {{ p.views }} просмотров</span>
                 </div>
             </div>
-            {% if user.is_authenticated and post.author != user %}
-            <button id="subscribe-btn" 
-                    class="btn btn-sm {% if is_subscribed %}btn-secondary{% else %}btn-primary{% endif %}"
-                    data-author-id="{{ post.author.id }}">
-                {% if is_subscribed %}Отписаться{% else %}Подписаться{% endif %}
-            </button>
-            {% endif %}
+            {% endfor %}
         </div>
-        <h1>{{ post.title }}</h1>
-        <p class="meta">
-            Категория: <a href="{{ post.cat.get_absolute_url }}">{{ post.cat.name }}</a>
-            &bull; {{ reading_time }} мин чтения
-            &bull; {{ post.views }} просмотров
-        </p>
-
-        {% if post.photo %}
-        <p><img class="img-article" src="{{ post.photo.url }}"></p>
-        {% endif %}
-
-        {% autoescape off %}
-        {{ post.content|safe }}
-        {% endautoescape %}
     </div>
-
-    {% with post.tags.all as tags %}
-    {% if tags %}
-    <ul class="tags-list">
-        {% for t in tags %}
-        <li><a href="{{ t.get_absolute_url }}" class="badge bg-light text-dark text-decoration-none me-1">{{ t.tag }}</a></li>
-        {% endfor %}
-    </ul>
     {% endif %}
-    {% endwith %}
-    
-    <hr>
 
-    <!-- Кнопки действий -->
-    <div class="post-actions">
-        <button id="like-btn"
-                class="btn {% if post_is_liked %}btn-danger{% else %}btn-outline-danger{% endif %}"
-                data-post-id="{{ object.id }}"
-                data-liked="{{ post_is_liked|yesno:'true,false' }}">
-            ❤️ {{ number_of_likes }}
-        </button>
-
-        <button id="bookmark-btn"
-                class="btn {% if post_is_bookmarked %}btn-primary{% else %}btn-outline-primary{% endif %}"
-                data-post-id="{{ object.id }}">
-            📑 {% if post_is_bookmarked %}В закладках{% else %}В закладки{% endif %}
-        </button>
-
-        <button id="favorite-btn"
-                class="btn {% if post_is_favorited %}btn-warning{% else %}btn-outline-warning{% endif %}"
-                data-post-id="{{ object.id }}"
-                data-favorited="{{ post_is_favorited|yesno:'true,false' }}">
-            🔖
-        </button>
-
-        <!-- Кнопки "Поделиться" -->
-        <div class="share-buttons">
-            <span class="share-label">Поделиться:</span>
-            <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ post.title|urlencode }}" 
-               target="_blank" class="btn btn-sm btn-outline-primary share-btn" title="Telegram">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                </svg>
-            </a>
-            <a href="https://vk.com/share.php?url={{ request.build_absolute_uri }}&title={{ post.title|urlencode }}" 
-               target="_blank" class="btn btn-sm btn-outline-primary share-btn" title="VK">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1-1.49-1.135-1.744-1.135-.356 0-.458.102-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.12-5.339-3.202-2.17-3.047-2.763-5.339-2.763-5.805 0-.254.102-.491.593-.491h1.744c.44 0 .61.203.78.678.864 2.508 2.305 4.708 2.897 4.708.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.203.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.17.508.271.508.22 0 .407-.136.814-.542 1.253-1.406 2.15-3.574 2.15-3.574.119-.254.305-.491.745-.491h1.744c.525 0 .644.27.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.779 1.203 1.253.745.847 1.32 1.558 1.473 2.05.17.49-.085.744-.576.744z"/>
-                </svg>
-            </a>
-            <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ post.title|urlencode }}" 
-               target="_blank" class="btn btn-sm btn-outline-primary share-btn" title="Twitter">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-            </a>
-            <button class="btn btn-sm btn-outline-secondary share-btn" onclick="copyLink()" title="Копировать ссылку">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-                </svg>
-            </button>
-        </div>
-    </div>
-</article>
-
-<!-- Похожие статьи -->
-{% if similar_posts %}
-<div class="post">
-    <h3>Похожие статьи</h3>
-    <div class="similar-posts">
-        {% for p in similar_posts %}
-        <div class="similar-post-card">
-            {% if p.photo %}
-            <img src="{{ p.photo.url }}" alt="{{ p.title }}" class="similar-post-img">
-            {% endif %}
-            <div class="similar-post-content">
-                <a href="{{ p.get_absolute_url }}" class="similar-post-title">{{ p.title }}</a>
-                <span class="similar-post-meta">{{ p.views }} просмотров</span>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-
-<section id="comments-section">
-    <div class="post">
-        <h3>Комментарии ({{ object.comments.count }})</h3>
+    <!-- Комментарии -->
+    <div class="comments-section">
+        <h3><i class="fas fa-comments"></i> Комментарии ({{ object.comments.count }})</h3>
         <form id="comment-form">
             {% csrf_token %}
             <input type="hidden" name="post_id" value="{{ object.id }}">
@@ -207,26 +230,25 @@
                     placeholder="Напишите комментарий..."></textarea>
             <button type="submit" class="btn btn-primary">Отправить комментарий</button>
         </form>
-    </div>
-    <div id="comments-list">
-        {% for comment in comments_page %}
-        <div class="comment mb-3 p-2 border rounded" data-comment-id="{{ comment.id }}">
-            <strong>{{ comment.author.username }}</strong>
-            <small class="text-muted">{{ comment.created_at }}</small>
-            {% if comment.author == user or user.is_staff %}
-            <button class="delete-comment btn btn-sm btn-danger float-end"
-                    data-comment-id="{{ comment.id }}">Удалить</button>
-            {% endif %}
-            <p>{{ comment.content }}</p>
+        <div id="comments-list">
+            {% for comment in comments_page %}
+            <div class="comment mb-3 p-2 border rounded" data-comment-id="{{ comment.id }}">
+                <strong>{{ comment.author.username }}</strong>
+                <small class="text-muted">{{ comment.created_at }}</small>
+                {% if comment.author == user or user.is_staff %}
+                <button class="delete-comment btn btn-sm btn-danger float-end"
+                        data-comment-id="{{ comment.id }}">Удалить</button>
+                {% endif %}
+                <p>{{ comment.content }}</p>
+            </div>
+            {% empty %}
+            <p class="text-muted">Комментариев пока нет. Будьте первым!</p>
+            {% endfor %}
         </div>
-        {% empty %}
-        <p class="text-muted">Комментариев пока нет. Будьте первым!</p>
-        {% endfor %}
+        <!-- Пагинация комментариев -->
+        {% render_pagination comments_page 'comments' %}
     </div>
-    
-    <!-- Пагинация комментариев -->
-    {% render_pagination comments_page 'comments' %}
-</section>
+</div>
 
 {% endblock %}
 
@@ -453,6 +475,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Прогресс чтения
+    const progressBar = document.getElementById('reading-progress');
+    if (progressBar) {
+        window.addEventListener('scroll', function() {
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight - windowHeight;
+            const scrolled = window.scrollY;
+            const progress = (scrolled / documentHeight) * 100;
+            progressBar.style.width = progress + '%';
+        });
+    }
 });
 </script>
 {% endblock %}

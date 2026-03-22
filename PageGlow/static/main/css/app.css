@@ -1375,12 +1375,6 @@ input:focus, textarea:focus, select:focus{
   color: #dc2626;
 }
 .delete-post:hover{ color: #b91c1c; text-decoration: none; }
-/* Footer */
-.site-footer{
-  background: var(--bg);
-  border-top: 1px solid var(--border);
-  padding: 32px 0;
-}
 
 /* Like button - white heart when liked */
 #like-btn.btn-danger {
@@ -1407,19 +1401,6 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
   background-color: #dc3545;
   color: #fff;
 }
-.footer-container{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px 110px;
-  align-items: flex-start;
-}
-.footer-copyright{
-    text-align:center;
-}
-.footer-nav ul{ list-style: none; padding: 0; margin: 0; }
-.footer-nav a, .footer-contacts a, .footer-social a{ color: var(--primary); }
-.footer-social{ display: flex; gap: 12px; flex-wrap: wrap; }
-
 /* Responsive */
 @media (max-width: 992px){
   .layout {
