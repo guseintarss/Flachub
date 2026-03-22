@@ -27,10 +27,17 @@ class Post(ModelMeta, models.Model):
         DRAFT = 0, 'Черновик'
         PUBLISHED = 1,'Опубликовано'
 
+    class PostType(models.TextChoices):
+        POST = 'post', 'Пост'
+        ARTICLE = 'article', 'Статья'
+        NEWS = 'news', 'Новость'
+        IDEA = 'idea', 'Идея'
+
     title = models.CharField(max_length=255, verbose_name='Заголовок')
     slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name='slug')
     photo = models.ImageField(upload_to='photos/%Y/%m/%d/', default=None, blank=True, null=True, verbose_name='Фото')
     content = CKEditor5Field(blank=True, config_name='default', verbose_name='Контент')
+    post_type = models.CharField(max_length=20, choices=PostType.choices, default=PostType.POST, verbose_name='Тип поста')
     time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
     time_update = models.DateTimeField(auto_now=True, verbose_name='Время изменения')
     is_published = models.BooleanField(choices=tuple(map(lambda x: (bool(x[0]), x[1]), Status.choices)), default=Status.DRAFT, verbose_name='Опубликовать?')

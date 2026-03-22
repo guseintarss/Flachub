@@ -22,16 +22,23 @@ class AddPostForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         required=False
     )
+    post_type = forms.ChoiceField(
+        choices=Post.PostType.choices,
+        initial=Post.PostType.POST,
+        label='Тип публикации',
+        widget=forms.RadioSelect(attrs={'class': 'post-type-selector'})
+    )
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["content"].required = False
 
     class Meta:
         model = Post
-        fields = ['content', 'photo', 'is_published', 'cat', 'tags']
+        fields = ['content', 'photo', 'is_published', 'cat', 'tags', 'post_type']
         widgets = {
             'photo': forms.ClearableFileInput(attrs={'class':'form-control'}),
             'is_published': forms.Select(attrs={'class':'form-control'}),
+            'post_type': forms.RadioSelect(attrs={'class': 'post-type-selector'}),
         }
 
     def clean_content(self):

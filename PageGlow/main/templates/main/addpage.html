@@ -7,16 +7,72 @@
 
 {% block content %}
 <div class="add-article-page">
-    <div class="post page-header">
-        <h1><i class="fas fa-pen-fancy"></i> Создание статьи</h1>
-        <p class="subtitle">Заполните все поля для публикации качественного материала</p>
+    <div class="page-header">
+        <h1><i class="fas fa-pen-fancy"></i> Создание публикации</h1>
+        <p class="subtitle">Выберите тип публикации и заполните все поля</p>
     </div>
 
     <form method="post" enctype="multipart/form-data" id="article-form">
         {% csrf_token %}
-        
+
+        <!-- Выбор типа поста -->
+        <div class="form-section post-type-section">
+            <div class="section-header">
+                <i class="fas fa-shapes"></i>
+                <div>
+                    <h3>Тип публикации</h3>
+                    <small>Выберите формат вашего материала</small>
+                </div>
+            </div>
+
+            <div class="post-type-grid">
+                <label class="post-type-card" data-type="post">
+                    <input type="radio" name="post_type" value="post" checked>
+                    <div class="post-type-icon">
+                        <i class="fas fa-sticky-note"></i>
+                    </div>
+                    <div class="post-type-title">Пост</div>
+                    <div class="post-type-desc">Короткая публикация или заметка</div>
+                </label>
+
+                <label class="post-type-card" data-type="article">
+                    <input type="radio" name="post_type" value="article">
+                    <div class="post-type-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="post-type-title">Статья</div>
+                    <div class="post-type-desc">Подробный материал с анализом</div>
+                </label>
+
+                <label class="post-type-card" data-type="news">
+                    <input type="radio" name="post_type" value="news">
+                    <div class="post-type-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="post-type-title">Новость</div>
+                    <div class="post-type-desc">Актуальная информация о событиях</div>
+                </label>
+
+                <label class="post-type-card" data-type="idea">
+                    <input type="radio" name="post_type" value="idea">
+                    <div class="post-type-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="post-type-title">Идея</div>
+                    <div class="post-type-desc">Креативная мысль или предложение</div>
+                </label>
+            </div>
+        </div>
+
         <!-- Основной контент -->
-        <div>
+        <div class="form-section">
+            <div class="section-header">
+                <i class="fas fa-edit"></i>
+                <div>
+                    <h3>Содержимое</h3>
+                    <small>Напишите ваш материал</small>
+                </div>
+            </div>
             <div class="form-group full-width">
                 {{ form.content }}
             </div>
@@ -78,7 +134,7 @@
             <div class="tag-search-container">
                 <div class="search-wrapper">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="tag-search" class="tag-search-input" 
+                    <input type="text" id="tag-search" class="tag-search-input"
                            placeholder="Поиск тегов (например: Python, Django, JavaScript...)">
                 </div>
                 <div class="search-results" id="tag-search-results"></div>
@@ -105,11 +161,11 @@
                         <button type="button" class="filter-btn" data-filter="popular">Популярные</button>
                     </div>
                 </div>
-                
+
                 <div class="tags-grid" id="tagsGrid">
                     {% for tag in form.tags.field.queryset %}
-                    <div class="tag-wrapper {% if tag.is_popular %}popular{% endif %}" 
-                         data-tag-id="{{ tag.id }}" 
+                    <div class="tag-wrapper {% if tag.is_popular %}popular{% endif %}"
+                         data-tag-id="{{ tag.id }}"
                          data-tag-name="{{ tag.tag }}">
                         <input type="checkbox"
                                name="tags"
@@ -128,10 +184,13 @@
 
         <!-- Кнопки действий -->
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Сохранить
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Опубликовать
             </button>
-            <a href="{% url 'users:profile' %}" class="text-decoration-none btn btn-outline-secondary">
+            <button type="submit" name="is_published" value="0" class="btn btn-secondary btn-lg">
+                <i class="fas fa-file"></i> Сохранить как черновик
+            </button>
+            <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary btn-lg">
                 <i class="fas fa-times"></i> Отмена
             </a>
         </div>
@@ -152,6 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchResults = document.getElementById('tag-search-results');
     const noTagsMsg = document.getElementById('no-tags-msg');
     const filterBtns = document.querySelectorAll('.filter-btn');
+    const postTypeCards = document.querySelectorAll('.post-type-card');
 
     const selectedTagIds = new Set();
     const allTags = Array.from(tagsGrid.querySelectorAll('.tag-wrapper')).map(wrapper => ({
@@ -159,6 +219,16 @@ document.addEventListener('DOMContentLoaded', function() {
         name: wrapper.getAttribute('data-tag-name'),
         isPopular: wrapper.classList.contains('popular')
     }));
+
+    // Обработка выбора типа поста
+    postTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            postTypeCards.forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+        });
+    });
 
     // Обработка кликов по чекбоксам
     checkboxes.forEach(checkbox => {
@@ -175,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 removeSelectedTag(tagId);
                 showOriginalTag(tagId);
             }
-            
+
             updateNoTagsVisibility();
             updateSearchResults();
         });
@@ -188,14 +258,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateSearchResults() {
         const query = tagSearchInput.value.toLowerCase().trim();
-        
+
         if (query.length < 2) {
             searchResults.classList.remove('active');
             return;
         }
 
-        const filtered = allTags.filter(tag => 
-            tag.name.toLowerCase().includes(query) && 
+        const filtered = allTags.filter(tag =>
+            tag.name.toLowerCase().includes(query) &&
             !selectedTagIds.has(tag.id)
         );
 
@@ -219,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
             item.addEventListener('click', function() {
                 const tagId = this.getAttribute('data-tag-id');
                 const tagName = this.getAttribute('data-tag-name');
-                
+
                 if (!selectedTagIds.has(tagId)) {
                     const checkbox = tagsGrid.querySelector(`input[data-tag-id="${tagId}"]`);
                     if (checkbox) {
@@ -241,12 +311,12 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             filterBtns.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            
+
             const filter = this.getAttribute('data-filter');
             const tagWrappers = tagsGrid.querySelectorAll('.tag-wrapper');
-            
+
             tagWrappers.forEach(wrapper => {
-                if (filter === 'all' || 
+                if (filter === 'all' ||
                     (filter === 'popular' && wrapper.classList.contains('popular'))) {
                     wrapper.style.display = 'flex';
                 } else {
@@ -271,20 +341,20 @@ document.addEventListener('DOMContentLoaded', function() {
         tagElement.querySelector('.tag-remove').addEventListener('click', function(e) {
             e.stopPropagation();
             const tagId = this.getAttribute('data-id');
-            
+
             // Удаляем из множества
             selectedTagIds.delete(tagId);
-            
+
             // Снимаем чекбокс
             const checkbox = tagsGrid.querySelector(`input[data-tag-id="${tagId}"]`);
             if (checkbox) checkbox.checked = false;
-            
+
             // Удаляем из выбранных
             removeSelectedTag(tagId);
-            
+
             // Показываем оригинальный тег
             showOriginalTag(tagId);
-            
+
             // Обновляем видимость
             updateNoTagsVisibility();
             updateSearchResults();
@@ -319,7 +389,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Предпросмотр обложки
     const photoInput = document.querySelector('input[name="photo"]');
     const photoPreview = document.getElementById('photo-preview');
-    
+
     if (photoInput) {
         photoInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
