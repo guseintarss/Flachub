@@ -1922,7 +1922,6 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
 .selected-tags {
   min-height: 40px;
   padding: 10px;
-  border: 2px dashed #ccc;
   border-radius: 8px;
   background-color: var(--surface);
 }
