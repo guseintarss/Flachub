@@ -1,48 +1,111 @@
 {% extends 'base.html' %}
 {% load main_extras %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/feed.css' %}">
+{% endblock %}
+
 {% block content %}
 
-{% for p in posts %}
-<article class="post">
-    <div class="post-content">
-        <div class="user-area">
-            {% if p.author.photo %}
-            <img class="user-avatar" src="{{ p.author.photo.url }}">
-            {% else %}
-            <img class="user-avatar" src="{{ default_image }}">
-            {% endif %}
-            <a href="{% url 'users:author_profile' p.author.username %}" class="user-username">{{ p.author.username|default:'Неизвестно' }}</a>
+<div class="feed-container">
+    {% for p in posts %}
+    <article class="feed-post {% if p.post_type == 'article' %}post-type-article{% elif p.post_type == 'news' %}post-type-news{% elif p.post_type == 'idea' %}post-type-idea{% else %}post-type-post{% endif %}">
+        
+        <!-- Шапка поста -->
+        <div class="post-header">
+            <div class="post-author">
+                <a href="{% url 'users:author_profile' p.author.username %}" class="author-link">
+                    {% if p.author.photo %}
+                    <img class="author-avatar" src="{{ p.author.photo.url }}" alt="{{ p.author.username }}">
+                    {% else %}
+                    <img class="author-avatar" src="{{ default_image }}" alt="{{ p.author.username }}">
+                    {% endif %}
+                    <div class="author-info">
+                        <span class="author-name">{{ p.author.username|default:'Неизвестно' }}</span>
+                        <span class="post-time">{{ p.time_create|time_ago }}</span>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="post-meta-badges">
+                <span class="post-type-badge" title="Тип публикации">
+                    {% if p.post_type == 'article' %}
+                        <i class="fas fa-file-alt"></i> Статья
+                    {% elif p.post_type == 'news' %}
+                        <i class="fas fa-newspaper"></i> Новость
+                    {% elif p.post_type == 'idea' %}
+                        <i class="fas fa-lightbulb"></i> Идея
+                    {% else %}
+                        <i class="fas fa-sticky-note"></i> Пост
+                    {% endif %}
+                </span>
+                <span class="category-badge">{{ p.cat.name }}</span>
+            </div>
         </div>
-        <div>
-            <h2>{{ p.title }}</h2>
-            <p class="meta">
-                <span class="badge bg-primary">{{ p.cat.name }} </span>
-                &bull; <span title="{{ p.time_create|date:'d.m.Y H:i' }}">{{ p.time_create|time_ago }}</span>
-                &bull; 👁 {{ p.views }}
-                &bull; ❤️ {{ p.number_of_likes }}
-            </p>
+
+        <!-- Контент поста -->
+        <div class="post-body">
+            <h2 class="post-title">
+                <a href="{{ p.get_absolute_url }}">{{ p.title }}</a>
+            </h2>
+            
             {% if p.photo %}
-                <p><img class="img-article-left thumb" src="{{p.photo.url}}" alt=""></p>
+            <div class="post-cover">
+                <a href="{{ p.get_absolute_url }}">
+                    <img class="cover-image" src="{{ p.photo.url }}" alt="{{ p.title }}">
+                </a>
+            </div>
             {% endif %}
-            {% autoescape off %}
-            <p class="meta">{{ p.meta }}</p>
-            {{ p.content|truncatewords:20|safe }}
-            {% endautoescape %}
+            
+            <div class="post-excerpt">
+                {% autoescape off %}
+                {{ p.content|truncatewords_html:30|safe }}
+                {% endautoescape %}
+            </div>
         </div>
-        <hr>
-            {% with p.tags.all as tags %}
-                {% if tags %}
-                    <ul class="tags-list">
-                        {% for t in tags %}
-                            <li><a href="{{t.get_absolute_url}}" class="badge bg-light text-dark text-decoration-none me-1">{{t.tag}}</a></li>
+
+        <!-- Подвал поста -->
+        <div class="post-footer">
+            <div class="post-tags">
+                {% with p.tags.all as tags %}
+                    {% if tags %}
+                        {% for t in tags|slice:":5" %}
+                            <a href="{{ t.get_absolute_url }}" class="tag-chip">{{ t.tag }}</a>
                         {% endfor %}
-                    </ul>
-                {%endif%}
-            {% endwith %}
-        <a class="read-more" href="{{ p.get_absolute_url }}">Читать далее→</a>
+                        {% if tags|length > 5 %}
+                            <span class="tags-more">+{{ tags|length|add:"-5" }}</span>
+                        {% endif %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+            
+            <div class="post-stats">
+                <span class="stat-item" title="Просмотры">
+                    <i class="fas fa-eye"></i> {{ p.views }}
+                </span>
+                <span class="stat-item" title="Лайки">
+                    <i class="fas fa-heart"></i> {{ p.number_of_likes }}
+                </span>
+                <span class="stat-item" title="Время чтения">
+                    <i class="fas fa-clock"></i> {{ p.reading_time }} мин
+                </span>
+            </div>
+            
+            <a class="read-more-btn" href="{{ p.get_absolute_url }}">
+                Читать далее
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </article>
+    {% empty %}
+    <div class="empty-feed">
+        <i class="fas fa-inbox"></i>
+        <h3>Пока нет публикаций</h3>
+        <p>Будьте первым, кто опубликует материал!</p>
     </div>
-</article>
-{% endfor %}
+    {% endfor %}
+</div>
 
 <!-- Пагинация -->
 {% render_pagination page_obj %}
