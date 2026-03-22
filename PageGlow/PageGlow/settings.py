@@ -63,7 +63,6 @@ if SENTRY_DSN:
 # Application definition
 
 INSTALLED_APPS = [
-    'marketplace.apps.MarketplaceConfig',
     'users.apps.UsersConfig',
     'main.apps.MainConfig',
     'django.contrib.admin',
@@ -81,10 +80,10 @@ INSTALLED_APPS = [
 
     'django.contrib.sites',
     'django.contrib.sitemaps',
-    
+
     # WebSocket / Channels
     'channels',
-    
+
     # Backup
     'dbbackup',
 ]

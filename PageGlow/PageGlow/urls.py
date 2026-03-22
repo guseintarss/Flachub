@@ -29,7 +29,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include("main.urls")),
     path('users/',include("users.urls", namespace='users')),
-    path('marketplace/', include("marketplace.urls", namespace='marketplace')),
     path("__debug__/", include("debug_toolbar.urls")),
     # Наш кастомный upload для CKEditor (должен быть перед django_ckeditor_5.urls)
     path('ckeditor5/image_upload/', CKEditorUploadView.as_view(), name='ckeditor_image_upload'),

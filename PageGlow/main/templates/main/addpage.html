@@ -184,13 +184,10 @@
 
         <!-- Кнопки действий -->
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary btn-lg">
-                <i class="fas fa-save"></i> Опубликовать
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Сохранить
             </button>
-            <button type="submit" name="is_published" value="0" class="btn btn-secondary btn-lg">
-                <i class="fas fa-file"></i> Сохранить как черновик
-            </button>
-            <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary btn-lg">
+            <a href="{% url 'users:profile' %}" class="text-decoration-none btn btn-outline-secondary">
                 <i class="fas fa-times"></i> Отмена
             </a>
         </div>

@@ -4,10 +4,6 @@ import logging
 
 
 menu = [
-    {'title': "Все проекты", 'url_name': 'marketplace:home'},
-    {'title': "Найти фрилансера", 'url_name': 'marketplace:freelancers_list'},
-    {'title': "Как опубликовать проект", 'url_name': 'marketplace:publish_project_guide'},
-    {'title': "Как найти работу", 'url_name': 'marketplace:find_work_guide'},
     {'title': "Обсуждения", 'url_name': 'discussions'},
 ]
 
