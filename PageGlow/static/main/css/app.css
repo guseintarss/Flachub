@@ -2008,7 +2008,37 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
   font-size: 0.8rem;
   color: var(--muted);
 }
+/* Кнопка показа ответов */
+.show-replies-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin: 10px 0 10px 30px;
+}
 
+.show-replies-btn:hover {
+    background: rgba(12, 106, 207, 0.08);
+    border-color: var(--primary);
+    transform: translateX(4px);
+}
+
+.show-replies-btn i {
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.show-replies-btn.active i {
+    transform: rotate(180deg);
+}
 /* Уведомления */
 .notification-bell {
   position: relative;

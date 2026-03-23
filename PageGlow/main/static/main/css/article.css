@@ -864,19 +864,66 @@
 /* Ответы на комментарии */
 .comment-replies {
     margin-top: 16px;
-    margin-left: 20px;
-    padding-left: 16px;
-    border-left: 2px solid var(--border);
+    margin-left: 30px;
+    padding-left: 20px;
+    border-left: 3px solid var(--border);
 }
 
 .comment.reply {
-    background: rgba(12, 106, 207, 0.02);
-    margin-top: 12px;
-    padding: 16px;
+    background: rgba(12, 106, 207, 0.03);
+    margin-top: 15px;
+    padding: 18px;
+    border-radius: 8px;
+    border: 1px solid rgba(12, 106, 207, 0.1);
 }
 
 .comment.reply:hover {
-    background: rgba(12, 106, 207, 0.05);
+    background: rgba(12, 106, 207, 0.06);
+    border-color: rgba(12, 106, 207, 0.2);
+}
+
+/* Кнопка отмены ответа */
+#reply-cancel {
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+}
+
+#reply-cancel .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Кнопка показа ответов */
+.show-replies-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 16px !important;
+    background: transparent !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    color: var(--primary) !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.25s ease !important;
+    margin: 10px 0 10px 30px !important;
+}
+
+.show-replies-btn:hover {
+    background: rgba(12, 106, 207, 0.08) !important;
+    border-color: var(--primary) !important;
+    transform: translateX(4px) !important;
+}
+
+.show-replies-btn i {
+    font-size: 0.9rem !important;
+    transition: transform 0.3s ease !important;
+}
+
+.show-replies-btn.active i {
+    transform: rotate(180deg) !important;
 }
 
 /* Пустое состояние */

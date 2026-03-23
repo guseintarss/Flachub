@@ -4,7 +4,7 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'main/css/article.css' %}">
+<link rel="stylesheet" href="{% static 'main/css/article.css' %}?v={% now 'U' %}">
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="article" />
 <meta property="og:url" content="{{ request.build_absolute_uri }}" />
@@ -272,10 +272,13 @@
                     </div>
                 </div>
                 <p class="comment-content">{{ comment.content }}</p>
-                
+
                 <!-- Ответы на комментарий -->
                 {% if comment.replies.all %}
-                <div class="comment-replies">
+                <button class="show-replies-btn" data-comment-id="{{ comment.id }}">
+                    <i class="fas fa-comment-dots"></i> Все ответы ({{ comment.replies.count }})
+                </button>
+                <div class="comment-replies" style="display: none;">
                     {% for reply in comment.replies.all %}
                     <div class="comment reply" data-comment-id="{{ reply.id }}">
                         <div class="comment-header">
@@ -597,6 +600,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('.delete-comment-btn').forEach(btn => {
         btn.addEventListener('click', handleDeleteComment);
+    });
+
+    // Показ/скрытие ответов на комментарии
+    document.querySelectorAll('.show-replies-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commentId = this.getAttribute('data-comment-id');
+            const repliesDiv = this.nextElementSibling;
+            
+            if (repliesDiv && repliesDiv.classList.contains('comment-replies')) {
+                const isHidden = repliesDiv.style.display === 'none' || !repliesDiv.style.display;
+                
+                if (isHidden) {
+                    repliesDiv.style.display = 'block';
+                    this.innerHTML = '<i class="fas fa-chevron-up"></i> Скрыть ответы';
+                    this.classList.add('active');
+                } else {
+                    repliesDiv.style.display = 'none';
+                    this.innerHTML = '<i class="fas fa-comment-dots"></i> Все ответы (' + repliesDiv.children.length + ')';
+                    this.classList.remove('active');
+                }
+            }
+        });
     });
 
     // Лайки и избранное
