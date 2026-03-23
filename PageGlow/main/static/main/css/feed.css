@@ -36,7 +36,7 @@
 
 /* Цветовые акценты для разных типов постов */
 .feed-post.post-type-article {
-    border-left: 4px solid #0c66cf;
+    border-left: 4px solid var(--primary);
 }
 
 .feed-post.post-type-news {
@@ -464,6 +464,9 @@ html.dark-mode .post-excerpt blockquote {
    ===================================================== */
 
 @media (max-width: 768px) {
+    .feed-container {
+        padding: 16px;
+    }
 
     .feed-post {
         padding: 16px;
@@ -539,6 +542,15 @@ html.dark-mode .post-excerpt blockquote {
         flex: 1;
     }
 
+    .stat-item {
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--muted);
+        white-space: nowrap;
+    }
+
     .read-more-btn {
         display: inline-flex;
         align-items: center;
@@ -595,6 +607,10 @@ html.dark-mode .post-excerpt blockquote {
         padding: 3px 7px;
     }
 
+    .stat-item {
+        font-size: 0.75rem;
+        gap: 4px;
+    }
 
     .read-more-btn {
         padding: 8px 14px;
@@ -608,18 +624,18 @@ html.dark-mode .post-excerpt blockquote {
     .feed-post {
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     }
-    
+
     .feed-post:hover {
         transform: none;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
-    
+
     /* Бейджи в одну строку */
     .post-meta-badges {
         display: flex;
         gap: 6px;
     }
-    
+
     /* Теги в одну строку с ограничением */
     .post-tags {
         max-height: 60px;

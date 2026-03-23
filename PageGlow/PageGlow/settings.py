@@ -283,7 +283,7 @@ DJANGO_CKEDITOR_5_FILE_UPLOAD_PERMISSION = 'authenticated'
 CKEDITOR_5_FILE_UPLOAD_PATH = 'ckeditor/uploads/'
 
 # Типы файлов для загрузки
-CKEDITOR_5_UPLOAD_FILE_TYPES = ['jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'ico', 'svg']
+CKEDITOR_5_UPLOAD_FILE_TYPES = ['jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'ico', 'svg', 'webm', 'mp4']
 
 # Отключаем встроенный upload и используем кастомный
 CKEDITOR_5_CONFIGS = {
@@ -310,7 +310,15 @@ CKEDITOR_5_CONFIGS = {
                 {'language': 'html', 'label': 'HTML'},
                 {'language': 'css', 'label': 'CSS'},
                 {'language': 'javascript', 'label': 'JavaScript'},
-                {'language': 'python', 'label': 'Python'}
+                {'language': 'python', 'label': 'Python'},
+                {'language': 'bash', 'label': 'Bash'},
+                {'language': 'json', 'label': 'JSON'},
+                {'language': 'sql', 'label': 'SQL'},
+                {'language': 'typescript', 'label': 'TypeScript'},
+                {'language': 'java', 'label': 'Java'},
+                {'language': 'cpp', 'label': 'C++'},
+                {'language': 'go', 'label': 'Go'},
+                {'language': 'rust', 'label': 'Rust'},
             ]
         }
     },
@@ -323,30 +331,69 @@ CKEDITOR_5_CONFIGS = {
             'blockQuote',
         ],
         'toolbar': {
-            'items': ['heading', '|', 'outdent', 'indent', '|', 'bold', 'italic', 'link', 'underline', 'strikethrough',
-                      'code','subscript', 'superscript', 'highlight', '|', 'codeBlock', 'sourceEditing', 'insertImage',
-                    'bulletedList', 'numberedList', 'todoList', '|',  'blockQuote', 'imageUpload', '|',
-                    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', 'mediaEmbed', 'removeFormat',
-                    'insertTable',
-                    ],
-            'shouldNotGroupWhenFull': True
+            'items': [
+                'heading', '|',
+                'outdent', 'indent', '|',
+                'bold', 'italic', 'link', 'underline', 'strikethrough',
+                'code','subscript', 'superscript', 'highlight', '|',
+                'codeBlock', 'sourceEditing', '|',
+                'insertImage', 'mediaEmbed', '|',
+                'bulletedList', 'numberedList', 'todoList', '|',
+                'blockQuote', '|',
+                'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
+                'insertTable', 'horizontalLine', '|',
+                'undo', 'redo', '|',
+                'removeFormat'
+            ],
+            'shouldNotGroupWhenFull': True,
+            'shouldStayGrouped': False
         },
         'language': 'ru-RU',
+        # Счетчик слов и символов
+        'wordCount': {
+            'displayWords': True,
+            'displayCharacters': True,
+            'displayPages': False,
+            'countNestedLists': True,
+            'countHTML': False,
+            'updateOnDestroy': True
+        },
+        # Настройки изображений
         'image': {
-            'toolbar': ['imageTextAlternative', '|', 'imageStyle:alignLeft',
-                        'imageStyle:alignRight', 'imageStyle:alignCenter', 'imageStyle:side',  '|'],
+            'toolbar': [
+                'imageTextAlternative', '|',
+                'imageStyle:alignLeft',
+                'imageStyle:alignRight',
+                'imageStyle:alignCenter',
+                'imageStyle:side', '|',
+                'resizeImage:50',
+                'resizeImage:75',
+                'resizeImage:100',
+                'resizeImage:original'
+            ],
             'styles': [
                 'full',
                 'side',
                 'alignLeft',
                 'alignRight',
                 'alignCenter',
-            ]
-
+            ],
+            'insert': {
+                'type': 'auto'
+            },
+            'upload': {
+                'multiple': True
+            }
         },
+        # Настройки таблиц
         'table': {
-            'contentToolbar': [ 'tableColumn', 'tableRow', 'mergeTableCells',
-            'tableProperties', 'tableCellProperties' ],
+            'contentToolbar': [
+                'tableColumn',
+                'tableRow',
+                'mergeTableCells',
+                'tableProperties',
+                'tableCellProperties'
+            ],
             'tableProperties': {
                 'borderColors': customColorPalette,
                 'backgroundColors': customColorPalette
@@ -356,25 +403,89 @@ CKEDITOR_5_CONFIGS = {
                 'backgroundColors': customColorPalette
             }
         },
+        # Настройки заголовков
         'heading' : {
             'options': [
-                { 'model': 'paragraph', 'title': 'Paragraph', 'class': 'ck-heading_paragraph' },
-                { 'model': 'heading1', 'view': 'h1', 'title': 'Heading 1', 'class': 'ck-heading_heading1' },
-                { 'model': 'heading2', 'view': 'h2', 'title': 'Heading 2', 'class': 'ck-heading_heading2' },
-                { 'model': 'heading3', 'view': 'h3', 'title': 'Heading 3', 'class': 'ck-heading_heading3' }
+                { 'model': 'paragraph', 'title': 'Обычный текст', 'class': 'ck-heading_paragraph' },
+                { 'model': 'heading1', 'view': 'h1', 'title': 'Заголовок 1', 'class': 'ck-heading_heading1' },
+                { 'model': 'heading2', 'view': 'h2', 'title': 'Заголовок 2', 'class': 'ck-heading_heading2' },
+                { 'model': 'heading3', 'view': 'h3', 'title': 'Заголовок 3', 'class': 'ck-heading_heading3' },
+                { 'model': 'heading4', 'view': 'h4', 'title': 'Заголовок 4', 'class': 'ck-heading_heading4' }
             ]
-        }
-    },
-    'list': {
-        'properties': {
-            'styles': True,
-            'startIndex': True,
-            'reversed': True,
+        },
+        # Настройки кода
+        'codeBlock': {
+            'languages': [
+                {'language': 'plaintext', 'label': 'Plain text'},
+                {'language': 'html', 'label': 'HTML'},
+                {'language': 'css', 'label': 'CSS'},
+                {'language': 'javascript', 'label': 'JavaScript'},
+                {'language': 'typescript', 'label': 'TypeScript'},
+                {'language': 'python', 'label': 'Python'},
+                {'language': 'bash', 'label': 'Bash/Shell'},
+                {'language': 'sql', 'label': 'SQL'},
+                {'language': 'json', 'label': 'JSON'},
+                {'language': 'java', 'label': 'Java'},
+                {'language': 'cpp', 'label': 'C++'},
+                {'language': 'csharp', 'label': 'C#'},
+                {'language': 'go', 'label': 'Go'},
+                {'language': 'rust', 'label': 'Rust'},
+                {'language': 'php', 'label': 'PHP'},
+                {'language': 'ruby', 'label': 'Ruby'},
+                {'language': 'swift', 'label': 'Swift'},
+                {'language': 'kotlin', 'label': 'Kotlin'},
+            ]
+        },
+        # Подсветка синтаксиса
+        'highlight': {
+            'options': [
+                {
+                    'model': 'default',
+                    'title': 'Default',
+                    'class': 'ck-highlighted-text_default'
+                },
+                {
+                    'model': 'marker',
+                    'title': 'Маркер',
+                    'class': 'ck-highlighted-text_marker'
+                },
+                {
+                    'model': 'pen',
+                    'title': 'Текст',
+                    'class': 'ck-highlighted-text_pen'
+                }
+            ]
+        },
+        # Шрифты
+        'fontSize': {
+            'options': [8, 10, 12, 14, 'default', 18, 20, 22, 24, 26, 28, 36, 48]
+        },
+        'fontFamily': {
+            'options': [
+                'default',
+                'Arial, Helvetica, sans-serif',
+                'Georgia, serif',
+                'Times New Roman, serif',
+                'Courier New, monospace',
+                'Verdana, sans-serif',
+                'Tahoma, sans-serif',
+                'Trebuchet MS, sans-serif'
+            ]
+        },
+        # Плейсхолдер
+        'placeholder': 'Начните писать вашу статью здесь... Используйте Markdown для форматирования кода: ```python код ```',
+        # Список задач
+        'list': {
+            'properties': {
+                'styles': True,
+                'startIndex': True,
+                'reversed': True
+            }
         }
     }
-
 }
 
+# Дополнительные плагины CKEditor 5
 
 DJOSER = {
     'USER_CREATE_PASSWORD_RETYPE': True,

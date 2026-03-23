@@ -166,36 +166,6 @@
 }
 
 /* =====================================================
-   РЕДАКТОР НА ВСЮ ВЫСОТУ
-   ===================================================== */
-
-.editor-container {
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 25px;
-}
-
-.editor-container .form-group {
-    margin: 0;
-}
-
-.ck.ck-editor {
-    min-height: 60vh;
-}
-
-.ck.ck-editor__main {
-    border: none !important;
-}
-
-.ck.ck-editor__editable {
-    min-height: 55vh !important;
-    max-height: 70vh !important;
-    overflow-y: auto;
-}
-
-/* =====================================================
    СЕТКА НАСТРОЕК
    ===================================================== */
 
