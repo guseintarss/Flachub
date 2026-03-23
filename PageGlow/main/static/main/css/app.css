@@ -693,7 +693,7 @@ a:hover{ text-decoration: underline; }
     text-decoration:none;
 }
 .pg-container{
-  width: min(1050px, calc(100% - 32px));
+  width: min(1000px, calc(100% - 32px));
   margin-inline: auto;
 }
 /* Header */
@@ -1450,9 +1450,6 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
     gap: 15px;
   }
   
-  .stat-item {
-    padding: 5px 10px;
-  }
   
   .profile-actions {
     justify-content: center;
@@ -1494,14 +1491,6 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
   .profile-stats {
     flex-direction: column;
     gap: 10px;
-  }
-  
-  .stat-item {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 10px;
   }
   
   .stat-value {

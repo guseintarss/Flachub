@@ -10,7 +10,6 @@
 .feed-container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 20px;
 }
 
 /* =====================================================
@@ -390,6 +389,7 @@
     font-size: 0.95rem;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .read-more-btn:hover {
@@ -464,9 +464,6 @@ html.dark-mode .post-excerpt blockquote {
    ===================================================== */
 
 @media (max-width: 768px) {
-    .feed-container {
-        padding: 16px;
-    }
 
     .feed-post {
         padding: 16px;
@@ -529,7 +526,7 @@ html.dark-mode .post-excerpt blockquote {
 
     /* Статистика и кнопка в одной линии */
     .post-stats-and-btn {
-        display: flex !important;
+        display: flex ;
         align-items: center;
         justify-content: space-between;
         gap: 10px;
@@ -540,15 +537,6 @@ html.dark-mode .post-excerpt blockquote {
         display: flex;
         gap: 12px;
         flex: 1;
-    }
-
-    .stat-item {
-        font-size: 0.75rem;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        color: var(--muted);
-        white-space: nowrap;
     }
 
     .read-more-btn {
@@ -607,10 +595,6 @@ html.dark-mode .post-excerpt blockquote {
         padding: 3px 7px;
     }
 
-    .stat-item {
-        font-size: 0.75rem;
-        gap: 4px;
-    }
 
     .read-more-btn {
         padding: 8px 14px;

@@ -693,7 +693,7 @@ a:hover{ text-decoration: underline; }
     text-decoration:none;
 }
 .pg-container{
-  width: min(1050px, calc(100% - 32px));
+  width: min(1000px, calc(100% - 32px));
   margin-inline: auto;
 }
 /* Header */
