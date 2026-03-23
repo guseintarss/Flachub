@@ -1451,7 +1451,7 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
   }
   
   .stat-item {
-    padding: 10px 20px;
+    padding: 5px 10px;
   }
   
   .profile-actions {
@@ -1501,7 +1501,7 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
+    padding: 5px 10px;
   }
   
   .stat-value {

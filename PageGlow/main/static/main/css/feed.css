@@ -100,7 +100,7 @@
 
 .author-name {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.75rem;
     color: var(--text);
 }
 
@@ -112,7 +112,6 @@
 .post-meta-badges {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap;
 }
 
 /* =====================================================
@@ -303,10 +302,8 @@
 
 .post-footer {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
+    flex-direction: column;
+    gap: 12px;
     padding-top: 16px;
     border-top: 1px solid var(--border);
 }
@@ -345,11 +342,20 @@
     font-weight: 500;
 }
 
-/* Статистика */
+/* Статистика и кнопка в одной линии */
+.post-stats-and-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+}
+
 .post-stats {
     display: flex;
     gap: 16px;
     align-items: center;
+    flex: 1;
 }
 
 .stat-item {
@@ -463,76 +469,176 @@ html.dark-mode .post-excerpt blockquote {
     }
 
     .feed-post {
-        padding: 20px;
+        padding: 16px;
+        margin-bottom: 16px;
     }
 
     .post-header {
-        flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    /* Скрываем обложку на мобильных */
+    .post-cover {
+        display: none !important;
     }
 
-    .post-meta-badges {
-        width: 100%;
+    /* Заголовок компактный */
+    .post-body {
+        margin-bottom: 12px;
     }
 
     .post-title {
-        font-size: 1.3rem;
+        font-size: 1.15rem;
+        line-height: 1.4;
+        margin-bottom: 0 !important;
     }
 
+    /* Скрываем весь контент на мобильных */
+    .post-excerpt {
+        display: none !important;
+    }
+
+    /* Подвал - теги отдельно, статистика с кнопкой в одной линии */
     .post-footer {
+        display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+        gap: 10px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+    }
+
+    .post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .tag-chip {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+
+    .tags-more {
+        font-size: 0.75rem;
+        color: var(--muted);
+        padding: 4px 6px;
+    }
+
+    /* Статистика и кнопка в одной линии */
+    .post-stats-and-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
     }
 
     .post-stats {
-        width: 100%;
-        justify-content: flex-start;
+        display: flex;
+        gap: 12px;
+        flex: 1;
+    }
+
+    .stat-item {
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--muted);
+        white-space: nowrap;
     }
 
     .read-more-btn {
-        width: 100%;
-        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: var(--primary);
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 
-    .cover-image {
-        max-height: 300px;
+    .read-more-btn:hover {
+        background: var(--primary-700);
+        transform: translateX(3px);
     }
 }
 
 @media (max-width: 480px) {
     .feed-post {
-        padding: 16px;
+        padding: 14px;
         border-radius: 10px;
     }
 
     .author-avatar {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
+    }
+
+    .author-name {
+        font-size: 0.9rem;
+    }
+
+    .post-time {
+        font-size: 0.75rem;
     }
 
     .post-title {
-        font-size: 1.2rem;
+        font-size: 1.05rem;
     }
 
     .post-type-badge,
     .category-badge {
-        font-size: 0.8rem;
-        padding: 5px 10px;
+        font-size: 0.75rem;
+        padding: 4px 8px;
     }
 
     .tag-chip {
-        font-size: 0.8rem;
-        padding: 4px 10px;
+        font-size: 0.7rem;
+        padding: 3px 7px;
     }
 
     .stat-item {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
+        gap: 4px;
     }
 
     .read-more-btn {
-        padding: 10px 16px;
-        font-size: 0.9rem;
+        padding: 8px 14px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Компактная лента для мобильных - скрытие лишних элементов */
+@media (max-width: 768px) {
+    /* Убираем лишние отступы */
+    .feed-post {
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .feed-post:hover {
+        transform: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    /* Бейджи в одну строку */
+    .post-meta-badges {
+        display: flex;
+        gap: 6px;
+    }
+    
+    /* Теги в одну строку с ограничением */
+    .post-tags {
+        max-height: 60px;
+        overflow: hidden;
     }
 }

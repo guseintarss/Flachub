@@ -79,24 +79,25 @@
                     {% endif %}
                 {% endwith %}
             </div>
-            
-            
-            <div class="post-stats">
-                <span class="stat-item" title="Просмотры">
-                    <i class="fas fa-eye"></i> {{ p.views }}
-                </span>
-                <span class="stat-item" title="Лайки">
-                    <i class="fas fa-heart"></i> {{ p.number_of_likes }}
-                </span>
-                <span class="stat-item" title="Время чтения">
-                    <i class="fas fa-clock"></i> {{ p.reading_time }} мин
-                </span>
+
+            <div class="post-stats-and-btn">
+                <div class="post-stats">
+                    <span class="stat-item" title="Просмотры">
+                        <i class="fas fa-eye"></i> {{ p.views }}
+                    </span>
+                    <span class="stat-item" title="Лайки">
+                        <i class="fas fa-heart"></i> {{ p.number_of_likes }}
+                    </span>
+                    <span class="stat-item" title="Время чтения">
+                        <i class="fas fa-clock"></i> {{ p.reading_time }} мин
+                    </span>
+                </div>
+
+                <a class="text-decoration-none read-more-btn" href="{{ p.get_absolute_url }}">
+                    Читать далее
+                    <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
-            
-            <a class="text-decoration-none read-more-btn" href="{{ p.get_absolute_url }}">
-                Читать далее
-                <i class="fas fa-arrow-right"></i>
-            </a>
         </div>
     </article>
     {% empty %}
