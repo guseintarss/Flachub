@@ -19,9 +19,8 @@ urlpatterns = [
     path('bookmarks/toggle/', views.BookmarkToggleView.as_view(), name='bookmark_toggle'),
     path('collections/<int:pk>/', views.CollectionDetailView.as_view(), name='collection_detail'),
     path('collections/create/', views.CreateCollectionView.as_view(), name='collection_create'),
-    
+
     path('', views.MainHome.as_view(), name='home'),
-    path('admin/', admin.site.urls, name='admin'),
     path('about/', views.about, name='about'),
     path('contact/', views.contact, name='contact'),
     path('search/', views.Search.as_view(), name='search'),
