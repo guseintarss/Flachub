@@ -6,422 +6,435 @@
 {% endblock %}
 
 {% block content %}
-<div class="add-article-page">
-    <div class="page-header">
-        <h1><i class="fas fa-pen-fancy"></i> Создание публикации</h1>
-        <p class="subtitle">Выберите тип публикации и заполните все поля</p>
+<div class="add-article-wizard">
+    <!-- Индикатор прогресса -->
+    <div class="wizard-progress">
+        <div class="progress-step active" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-text">Тип поста</div>
+        </div>
+        <div class="progress-bar"></div>
+        <div class="progress-step" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-text">Редактор</div>
+        </div>
+        <div class="progress-bar"></div>
+        <div class="progress-step" data-step="3">
+            <div class="step-number">3</div>
+            <div class="step-text">Настройки</div>
+        </div>
     </div>
 
     <form method="post" enctype="multipart/form-data" id="article-form">
         {% csrf_token %}
 
-        <!-- Выбор типа поста -->
-        <div class="form-section post-type-section">
-            <div class="section-header">
-                <i class="fas fa-shapes"></i>
-                <div>
-                    <h3>Тип публикации</h3>
-                    <small>Выберите формат вашего материала</small>
+        <!-- Шаг 1: Выбор типа поста -->
+        <div class="wizard-step active" id="step-1">
+            <div class="step-content">
+                <div class="step-header">
+                    <h1><i class="fas fa-shapes"></i> Тип публикации</h1>
+                    <p>Выберите формат вашего материала</p>
                 </div>
-            </div>
 
-            <div class="post-type-grid">
-                <label class="post-type-card" data-type="post">
-                    <input type="radio" name="post_type" value="post" checked>
-                    <div class="post-type-icon">
-                        <i class="fas fa-sticky-note"></i>
-                    </div>
-                    <div class="post-type-title">Пост</div>
-                    <div class="post-type-desc">Короткая публикация или заметка</div>
-                </label>
-
-                <label class="post-type-card" data-type="article">
-                    <input type="radio" name="post_type" value="article">
-                    <div class="post-type-icon">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                    <div class="post-type-title">Статья</div>
-                    <div class="post-type-desc">Подробный материал с анализом</div>
-                </label>
-
-                <label class="post-type-card" data-type="news">
-                    <input type="radio" name="post_type" value="news">
-                    <div class="post-type-icon">
-                        <i class="fas fa-newspaper"></i>
-                    </div>
-                    <div class="post-type-title">Новость</div>
-                    <div class="post-type-desc">Актуальная информация о событиях</div>
-                </label>
-
-                <label class="post-type-card" data-type="idea">
-                    <input type="radio" name="post_type" value="idea">
-                    <div class="post-type-icon">
-                        <i class="fas fa-lightbulb"></i>
-                    </div>
-                    <div class="post-type-title">Идея</div>
-                    <div class="post-type-desc">Креативная мысль или предложение</div>
-                </label>
-            </div>
-        </div>
-
-        <!-- Основной контент -->
-        <div class="form-section">
-            <div class="section-header">
-                <i class="fas fa-edit"></i>
-                <div>
-                    <h3>Содержимое</h3>
-                    <small>Напишите ваш материал</small>
-                </div>
-            </div>
-            <div class="form-group full-width">
-                {{ form.content }}
-            </div>
-        </div>
-
-        <!-- Основная информация -->
-        <div class="form-section">
-            <div class="section-header">
-                <i class="fas fa-info-circle"></i>
-                <div>
-                    <h3>Основная информация</h3>
-                    <small>Категория, статус и обложка</small>
-                </div>
-            </div>
-
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="{{ form.cat.id_for_label }}">
-                        <i class="fas fa-folder"></i> Категория <span class="required">*</span>
+                <div class="post-type-grid">
+                    <label class="post-type-card active" data-type="post">
+                        <input type="radio" name="post_type" value="post" checked>
+                        <div class="type-icon"><i class="fas fa-sticky-note"></i></div>
+                        <div class="type-title">Пост</div>
+                        <div class="type-desc">Короткая публикация или заметка</div>
                     </label>
-                    {{ form.cat }}
-                    <small class="help-text">Выберите подходящую категорию</small>
+
+                    <label class="post-type-card" data-type="article">
+                        <input type="radio" name="post_type" value="article">
+                        <div class="type-icon"><i class="fas fa-file-alt"></i></div>
+                        <div class="type-title">Статья</div>
+                        <div class="type-desc">Подробный материал с анализом</div>
+                    </label>
+
+                    <label class="post-type-card" data-type="news">
+                        <input type="radio" name="post_type" value="news">
+                        <div class="type-icon"><i class="fas fa-newspaper"></i></div>
+                        <div class="type-title">Новость</div>
+                        <div class="type-desc">Актуальная информация о событиях</div>
+                    </label>
+
+                    <label class="post-type-card" data-type="idea">
+                        <input type="radio" name="post_type" value="idea">
+                        <div class="type-icon"><i class="fas fa-lightbulb"></i></div>
+                        <div class="type-title">Идея</div>
+                        <div class="type-desc">Креативная мысль или предложение</div>
+                    </label>
                 </div>
 
-                <div class="form-group">
-                    <label for="{{ form.is_published.id_for_label }}">
-                        <i class="fas fa-toggle-on"></i> Статус
-                    </label>
-                    {{ form.is_published }}
-                    <small class="help-text">Опубликовано или черновик</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="{{ form.photo.id_for_label }}">
-                        <i class="fas fa-image"></i> Обложка статьи
-                    </label>
-                    <div class="file-upload-wrapper">
-                        {{ form.photo }}
-                        <div class="file-preview" id="photo-preview"></div>
-                    </div>
-                    <small class="help-text">
-                        <i class="fas fa-info-circle"></i> Рекомендуемый размер: 1200×630px
-                    </small>
+                <div class="step-footer">
+                    <button type="button" class="btn btn-primary btn-lg" onclick="nextStep(2)">
+                        Продолжить <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Теги -->
-        <div class="form-section">
-            <div class="section-header">
-                <i class="fas fa-tags"></i>
-                <div>
-                    <h3>Теги</h3>
-                    <small>Добавьте теги для лучшей обнаруживаемости</small>
+        <!-- Шаг 2: Редактор -->
+        <div class="wizard-step" id="step-2">
+            <div class="step-content">
+                <div class="step-header">
+                    <h1><i class="fas fa-edit"></i> Содержимое</h1>
+                    <p>Напишите ваш материал</p>
                 </div>
-            </div>
 
-            <!-- Поиск тегов -->
-            <div class="tag-search-container">
-                <div class="search-wrapper">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="tag-search" class="tag-search-input"
-                           placeholder="Поиск тегов (например: Python, Django, JavaScript...)">
-                </div>
-                <div class="search-results" id="tag-search-results"></div>
-            </div>
-
-            <!-- Выбранные теги -->
-            <div class="selected-tags-container">
-                <label class="selected-label">
-                    <i class="fas fa-check-circle"></i> Выбранные теги:
-                </label>
-                <div class="selected-tags" id="selectedTags">
-                    <span class="no-tags" id="no-tags-msg">
-                        <i class="fas fa-info-circle"></i> Теги не выбраны
-                    </span>
-                </div>
-            </div>
-
-            <!-- Все теги -->
-            <div class="available-skills">
-                <div class="tags-header">
-                    <label><i class="fas fa-th-large"></i> Все доступные теги:</label>
-                    <div class="tags-filter">
-                        <button type="button" class="filter-btn active" data-filter="all">Все</button>
-                        <button type="button" class="filter-btn" data-filter="popular">Популярные</button>
+                <div class="editor-container">
+                    <div class="form-group full-width">
+                        {{ form.content }}
                     </div>
                 </div>
 
-                <div class="tags-grid" id="tagsGrid">
-                    {% for tag in form.tags.field.queryset %}
-                    <div class="tag-wrapper {% if tag.is_popular %}popular{% endif %}"
-                         data-tag-id="{{ tag.id }}"
-                         data-tag-name="{{ tag.tag }}">
-                        <input type="checkbox"
-                               name="tags"
-                               value="{{ tag.id }}"
-                               id="tag-{{ tag.id }}"
-                               data-tag-id="{{ tag.id }}"
-                               data-tag-name="{{ tag.tag }}">
-                        <label for="tag-{{ tag.id }}" class="tag-option">
-                            {{ tag.tag }}
-                        </label>
-                    </div>
-                    {% endfor %}
+                <div class="step-footer">
+                    <button type="button" class="btn btn-outline-secondary" onclick="prevStep(1)">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </button>
+                    <button type="button" class="btn btn-primary btn-lg" onclick="nextStep(3)">
+                        Продолжить <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Кнопки действий -->
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Сохранить
-            </button>
-            <a href="{% url 'users:profile' %}" class="text-decoration-none btn btn-outline-secondary">
-                <i class="fas fa-times"></i> Отмена
-            </a>
+        <!-- Шаг 3: Настройки -->
+        <div class="wizard-step" id="step-3">
+            <div class="step-content">
+                <div class="step-header">
+                    <h1><i class="fas fa-cog"></i> Настройки</h1>
+                    <p>Категория, теги и параметры публикации</p>
+                </div>
+
+                <div class="settings-grid">
+                    <!-- Категория и статус -->
+                    <div class="settings-section">
+                        <h3><i class="fas fa-info-circle"></i> Основная информация</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-folder"></i> Категория</label>
+                                {{ form.cat }}
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-toggle-on"></i> Статус</label>
+                                {{ form.is_published }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-image"></i> Обложка</label>
+                            <div class="file-upload-wrapper">
+                                {{ form.photo }}
+                                <div class="file-preview" id="photo-preview"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Теги -->
+                    <div class="settings-section">
+                        <h3><i class="fas fa-tags"></i> Теги</h3>
+                        <div class="tag-search-container">
+                            <div class="search-wrapper">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="tag-search" class="tag-search-input"
+                                       placeholder="Поиск тегов...">
+                            </div>
+                            <div class="search-results" id="tag-search-results"></div>
+                        </div>
+                        <div class="selected-tags-container">
+                            <div class="selected-tags" id="selectedTags">
+                                <span class="no-tags" id="no-tags-msg">Теги не выбраны</span>
+                            </div>
+                        </div>
+                        <div class="available-skills">
+                            <div class="tags-header">
+                                <label>Все теги:</label>
+                                <div class="tags-filter">
+                                    <button type="button" class="filter-btn active" data-filter="all">Все</button>
+                                    <button type="button" class="filter-btn" data-filter="popular">Популярные</button>
+                                </div>
+                            </div>
+                            <div class="tags-grid" id="tagsGrid">
+                                {% for tag in form.tags.field.queryset %}
+                                <div class="tag-wrapper {% if tag.is_popular %}popular{% endif %}"
+                                     data-tag-id="{{ tag.id }}" data-tag-name="{{ tag.tag }}">
+                                    <input type="checkbox" name="tags" value="{{ tag.id }}"
+                                           id="tag-{{ tag.id }}" data-tag-id="{{ tag.id }}"
+                                           data-tag-name="{{ tag.tag }}">
+                                    <label for="tag-{{ tag.id }}" class="tag-option">{{ tag.tag }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-footer">
+                    <button type="button" class="btn btn-outline-secondary" onclick="prevStep(2)">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Опубликовать
+                    </button>
+                    <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Отмена
+                    </a>
+                </div>
+            </div>
         </div>
     </form>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
 {{ form.media }}
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const selectedTags = document.getElementById('selectedTags');
-    const tagsGrid = document.getElementById('tagsGrid');
-    const checkboxes = tagsGrid.querySelectorAll('input[type="checkbox"]');
-    const tagSearchInput = document.getElementById('tag-search');
-    const searchResults = document.getElementById('tag-search-results');
-    const noTagsMsg = document.getElementById('no-tags-msg');
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const postTypeCards = document.querySelectorAll('.post-type-card');
+let currentStep = 1;
+const totalSteps = 3;
 
-    const selectedTagIds = new Set();
-    const allTags = Array.from(tagsGrid.querySelectorAll('.tag-wrapper')).map(wrapper => ({
-        id: wrapper.getAttribute('data-tag-id'),
-        name: wrapper.getAttribute('data-tag-name'),
-        isPopular: wrapper.classList.contains('popular')
-    }));
+// Переключение шагов
+function nextStep(step) {
+    if (step > totalSteps) return;
+    
+    // Скрываем текущий шаг
+    document.querySelector('.wizard-step.active').classList.remove('active');
+    document.querySelector('.progress-step.active').classList.remove('active');
+    
+    // Показываем новый шаг
+    document.getElementById('step-' + step).classList.add('active');
+    document.querySelector('.progress-step[data-step="' + step + '"]').classList.add('active');
+    
+    currentStep = step;
+    
+    // Прокрутка вверх
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Если перешли к редактору - инициализируем высоту
+    if (step === 2) {
+        setTimeout(initEditorHeight, 100);
+    }
+}
 
-    // Обработка выбора типа поста
-    postTypeCards.forEach(card => {
-        card.addEventListener('click', function() {
-            postTypeCards.forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            const radio = this.querySelector('input[type="radio"]');
-            radio.checked = true;
-        });
+function prevStep(step) {
+    if (step < 1) return;
+    nextStep(step);
+}
+
+// Инициализация высоты редактора
+function initEditorHeight() {
+    const editorContainer = document.querySelector('.editor-container');
+    const windowHeight = window.innerHeight;
+    const headerHeight = document.querySelector('.step-header')?.offsetHeight || 0;
+    const footerHeight = document.querySelector('.step-footer')?.offsetHeight || 0;
+    
+    const editorHeight = windowHeight - headerHeight - footerHeight - 200;
+    
+    const editorElement = document.querySelector('.ck.ck-editor__editable');
+    if (editorElement) {
+        editorElement.style.minHeight = editorHeight + 'px';
+        editorElement.style.height = editorHeight + 'px';
+    }
+}
+
+// Выбор типа поста
+document.querySelectorAll('.post-type-card').forEach(card => {
+    card.addEventListener('click', function() {
+        document.querySelectorAll('.post-type-card').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        this.querySelector('input[type="radio"]').checked = true;
     });
+});
 
-    // Обработка кликов по чекбоксам
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
+// ===== Теги =====
+const selectedTags = document.getElementById('selectedTags');
+const tagsGrid = document.getElementById('tagsGrid');
+const checkboxes = tagsGrid.querySelectorAll('input[type="checkbox"]');
+const tagSearchInput = document.getElementById('tag-search');
+const searchResults = document.getElementById('tag-search-results');
+const noTagsMsg = document.getElementById('no-tags-msg');
+const filterBtns = document.querySelectorAll('.filter-btn');
+
+const selectedTagIds = new Set();
+const allTags = Array.from(tagsGrid.querySelectorAll('.tag-wrapper')).map(wrapper => ({
+    id: wrapper.getAttribute('data-tag-id'),
+    name: wrapper.getAttribute('data-tag-name'),
+    isPopular: wrapper.classList.contains('popular')
+}));
+
+checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const tagId = this.getAttribute('data-tag-id');
+        const tagName = this.getAttribute('data-tag-name');
+
+        if (this.checked) {
+            selectedTagIds.add(tagId);
+            addSelectedTag(tagId, tagName);
+            hideOriginalTag(tagId);
+        } else {
+            selectedTagIds.delete(tagId);
+            removeSelectedTag(tagId);
+            showOriginalTag(tagId);
+        }
+
+        updateNoTagsVisibility();
+        updateSearchResults();
+    });
+});
+
+tagSearchInput.addEventListener('input', updateSearchResults);
+
+function updateSearchResults() {
+    const query = tagSearchInput.value.toLowerCase().trim();
+
+    if (query.length < 2) {
+        searchResults.classList.remove('active');
+        return;
+    }
+
+    const filtered = allTags.filter(tag =>
+        tag.name.toLowerCase().includes(query) && !selectedTagIds.has(tag.id)
+    );
+
+    if (filtered.length === 0) {
+        searchResults.innerHTML = '<div class="search-result-item">Ничего не найдено</div>';
+        searchResults.classList.add('active');
+        return;
+    }
+
+    searchResults.innerHTML = filtered.map(tag => `
+        <div class="search-result-item" data-tag-id="${tag.id}" data-tag-name="${tag.name}">
+            <span>${tag.name}</span>
+            <i class="fas fa-plus-circle"></i>
+        </div>
+    `).join('');
+
+    searchResults.classList.add('active');
+
+    searchResults.querySelectorAll('.search-result-item').forEach(item => {
+        item.addEventListener('click', function() {
             const tagId = this.getAttribute('data-tag-id');
             const tagName = this.getAttribute('data-tag-name');
 
-            if (this.checked) {
-                selectedTagIds.add(tagId);
-                addSelectedTag(tagId, tagName);
-                hideOriginalTag(tagId);
-            } else {
-                selectedTagIds.delete(tagId);
-                removeSelectedTag(tagId);
-                showOriginalTag(tagId);
-            }
-
-            updateNoTagsVisibility();
-            updateSearchResults();
-        });
-    });
-
-    // Поиск тегов
-    tagSearchInput.addEventListener('input', function() {
-        updateSearchResults();
-    });
-
-    function updateSearchResults() {
-        const query = tagSearchInput.value.toLowerCase().trim();
-
-        if (query.length < 2) {
-            searchResults.classList.remove('active');
-            return;
-        }
-
-        const filtered = allTags.filter(tag =>
-            tag.name.toLowerCase().includes(query) &&
-            !selectedTagIds.has(tag.id)
-        );
-
-        if (filtered.length === 0) {
-            searchResults.innerHTML = '<div class="search-result-item">Ничего не найдено</div>';
-            searchResults.classList.add('active');
-            return;
-        }
-
-        searchResults.innerHTML = filtered.map(tag => `
-            <div class="search-result-item" data-tag-id="${tag.id}" data-tag-name="${tag.name}">
-                <span>${tag.name}</span>
-                <i class="fas fa-plus-circle"></i>
-            </div>
-        `).join('');
-
-        searchResults.classList.add('active');
-
-        // Клик по результату поиска
-        searchResults.querySelectorAll('.search-result-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const tagId = this.getAttribute('data-tag-id');
-                const tagName = this.getAttribute('data-tag-name');
-
-                if (!selectedTagIds.has(tagId)) {
-                    const checkbox = tagsGrid.querySelector(`input[data-tag-id="${tagId}"]`);
-                    if (checkbox) {
-                        checkbox.checked = true;
-                        selectedTagIds.add(tagId);
-                        addSelectedTag(tagId, tagName);
-                        hideOriginalTag(tagId);
-                        updateNoTagsVisibility();
-                        tagSearchInput.value = '';
-                        searchResults.classList.remove('active');
-                    }
+            if (!selectedTagIds.has(tagId)) {
+                const checkbox = tagsGrid.querySelector(`input[data-tag-id="${tagId}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    selectedTagIds.add(tagId);
+                    addSelectedTag(tagId, tagName);
+                    hideOriginalTag(tagId);
+                    updateNoTagsVisibility();
+                    tagSearchInput.value = '';
+                    searchResults.classList.remove('active');
                 }
-            });
-        });
-    }
-
-    // Фильтрация тегов
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-
-            const filter = this.getAttribute('data-filter');
-            const tagWrappers = tagsGrid.querySelectorAll('.tag-wrapper');
-
-            tagWrappers.forEach(wrapper => {
-                if (filter === 'all' ||
-                    (filter === 'popular' && wrapper.classList.contains('popular'))) {
-                    wrapper.style.display = 'flex';
-                } else {
-                    wrapper.style.display = 'none';
-                }
-            });
+            }
         });
     });
+}
 
-    function addSelectedTag(id, name) {
-        if (noTagsMsg) noTagsMsg.style.display = 'none';
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
 
-        const tagElement = document.createElement('span');
-        tagElement.className = 'tag-selected';
-        tagElement.setAttribute('data-id', id);
-        tagElement.innerHTML = `
-            ${name}
-            <span class="tag-remove" data-id="${id}"><i class="fas fa-times"></i></span>
-        `;
-        selectedTags.appendChild(tagElement);
-
-        tagElement.querySelector('.tag-remove').addEventListener('click', function(e) {
-            e.stopPropagation();
-            const tagId = this.getAttribute('data-id');
-
-            // Удаляем из множества
-            selectedTagIds.delete(tagId);
-
-            // Снимаем чекбокс
-            const checkbox = tagsGrid.querySelector(`input[data-tag-id="${tagId}"]`);
-            if (checkbox) checkbox.checked = false;
-
-            // Удаляем из выбранных
-            removeSelectedTag(tagId);
-
-            // Показываем оригинальный тег
-            showOriginalTag(tagId);
-
-            // Обновляем видимость
-            updateNoTagsVisibility();
-            updateSearchResults();
-        });
-    }
-
-    function removeSelectedTag(id) {
-        const tagElement = selectedTags.querySelector(`[data-id="${id}"]`);
-        if (tagElement) {
-            tagElement.style.opacity = '0';
-            tagElement.style.transform = 'scale(0.8)';
-            setTimeout(() => tagElement.remove(), 200);
-        }
-    }
-
-    function hideOriginalTag(id) {
-        const wrapper = tagsGrid.querySelector(`.tag-wrapper[data-tag-id="${id}"]`);
-        if (wrapper) wrapper.style.display = 'none';
-    }
-
-    function showOriginalTag(id) {
-        const wrapper = tagsGrid.querySelector(`.tag-wrapper[data-tag-id="${id}"]`);
-        if (wrapper) wrapper.style.display = 'flex';
-    }
-
-    function updateNoTagsVisibility() {
-        if (noTagsMsg) {
-            noTagsMsg.style.display = selectedTagIds.size === 0 ? 'flex' : 'none';
-        }
-    }
-
-    // Предпросмотр обложки
-    const photoInput = document.querySelector('input[name="photo"]');
-    const photoPreview = document.getElementById('photo-preview');
-
-    if (photoInput) {
-        photoInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    photoPreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-                    photoPreview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-
-    // CKEditor темная тема
-    function toggleCKEditorTheme() {
-        const editorElement = document.querySelector('.ck');
-        if (editorElement) {
-            if (document.documentElement.classList.contains('dark-mode')) {
-                editorElement.classList.add('ck-dark-mode');
+        const filter = this.getAttribute('data-filter');
+        tagsGrid.querySelectorAll('.tag-wrapper').forEach(wrapper => {
+            if (filter === 'all' || (filter === 'popular' && wrapper.classList.contains('popular'))) {
+                wrapper.style.display = 'flex';
             } else {
-                editorElement.classList.remove('ck-dark-mode');
+                wrapper.style.display = 'none';
             }
-        }
-    }
-
-    setTimeout(toggleCKEditorTheme, 500);
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', toggleCKEditorTheme);
-
-    // Закрытие поиска при клике вне
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.tag-search-container')) {
-            searchResults.classList.remove('active');
-        }
+        });
     });
 });
+
+function addSelectedTag(id, name) {
+    if (noTagsMsg) noTagsMsg.style.display = 'none';
+
+    const tagElement = document.createElement('span');
+    tagElement.className = 'tag-selected';
+    tagElement.setAttribute('data-id', id);
+    tagElement.innerHTML = `${name}<span class="tag-remove" data-id="${id}"><i class="fas fa-times"></i></span>`;
+    selectedTags.appendChild(tagElement);
+
+    tagElement.querySelector('.tag-remove').addEventListener('click', function(e) {
+        e.stopPropagation();
+        const tagId = this.getAttribute('data-id');
+        selectedTagIds.delete(tagId);
+        const checkbox = tagsGrid.querySelector(`input[data-tag-id="${tagId}"]`);
+        if (checkbox) checkbox.checked = false;
+        removeSelectedTag(tagId);
+        showOriginalTag(tagId);
+        updateNoTagsVisibility();
+        updateSearchResults();
+    });
+}
+
+function removeSelectedTag(id) {
+    const tagElement = selectedTags.querySelector(`[data-id="${id}"]`);
+    if (tagElement) {
+        tagElement.style.opacity = '0';
+        tagElement.style.transform = 'scale(0.8)';
+        setTimeout(() => tagElement.remove(), 200);
+    }
+}
+
+function hideOriginalTag(id) {
+    const wrapper = tagsGrid.querySelector(`.tag-wrapper[data-tag-id="${id}"]`);
+    if (wrapper) wrapper.style.display = 'none';
+}
+
+function showOriginalTag(id) {
+    const wrapper = tagsGrid.querySelector(`.tag-wrapper[data-tag-id="${id}"]`);
+    if (wrapper) wrapper.style.display = 'flex';
+}
+
+function updateNoTagsVisibility() {
+    if (noTagsMsg) {
+        noTagsMsg.style.display = selectedTagIds.size === 0 ? 'flex' : 'none';
+    }
+}
+
+// Предпросмотр обложки
+const photoInput = document.querySelector('input[name="photo"]');
+const photoPreview = document.getElementById('photo-preview');
+
+if (photoInput) {
+    photoInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                photoPreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                photoPreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+// CKEditor темная тема
+function toggleCKEditorTheme() {
+    const editorElement = document.querySelector('.ck');
+    if (editorElement) {
+        if (document.documentElement.classList.contains('dark-mode')) {
+            editorElement.classList.add('ck-dark-mode');
+        } else {
+            editorElement.classList.remove('ck-dark-mode');
+        }
+    }
+}
+
+setTimeout(toggleCKEditorTheme, 500);
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', toggleCKEditorTheme);
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.tag-search-container')) {
+        searchResults.classList.remove('active');
+    }
+});
+
+// Инициализация высоты редактора при загрузке и изменении размера окна
+window.addEventListener('resize', initEditorHeight);
 </script>
 {% endblock %}
