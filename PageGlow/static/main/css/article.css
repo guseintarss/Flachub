@@ -514,17 +514,67 @@
     color: #ffffff;
 }
 
-/* Bookmark button */
+/* =====================================================
+   КНОПКА ЗАКЛАДКИ
+   ===================================================== */
+
 #bookmark-btn {
     background: transparent;
-    border-color: var(--primary);
-    color: var(--primary);
+    border: 2px solid var(--border);
+    color: var(--muted);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
-#bookmark-btn:hover,
+#bookmark-btn:hover {
+    background: rgba(12, 106, 207, 0.1);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(12, 106, 207, 0.2);
+}
+
 #bookmark-btn.bookmarked {
     background: var(--primary);
+    border-color: var(--primary);
     color: #ffffff;
+}
+
+#bookmark-btn.bookmarked:hover {
+    background: var(--primary-700);
+    border-color: var(--primary-700);
+}
+
+#bookmark-btn i {
+    font-size: 1rem;
+}
+
+/* Тёмная тема */
+html.dark-mode #bookmark-btn:hover {
+    background: rgba(41, 156, 245, 0.15);
+    border-color: var(--dark-primary);
+    color: var(--dark-primary);
+}
+
+html.dark-mode #bookmark-btn.bookmarked {
+    background: var(--dark-primary);
+    border-color: var(--dark-primary);
+    color: #ffffff;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    #bookmark-btn {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
 }
 
 /* Favorite button */

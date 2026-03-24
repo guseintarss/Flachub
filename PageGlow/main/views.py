@@ -28,6 +28,7 @@ from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView
 from django.contrib import messages
 from django.core.files.storage import FileSystemStorage
+from django.core.paginator import Paginator
 
 from PageGlow import settings
 from main import serializers
@@ -221,6 +222,7 @@ class CollectionDetailView(LoginRequiredMixin, DataMixin, DetailView):
     model = Collection
     template_name = 'main/collection_detail.html'
     context_object_name = 'collection'
+    paginate_by = 15
 
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -230,9 +232,18 @@ class CollectionDetailView(LoginRequiredMixin, DataMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['bookmarks'] = self.object.bookmarks.select_related(
+        bookmarks_queryset = self.object.bookmarks.select_related(
             'post', 'post__author'
         ).order_by('-created_at')
+        
+        # Пагинация
+        page_number = self.request.GET.get('page')
+        paginator = Paginator(bookmarks_queryset, self.paginate_by)
+        page_obj = paginator.get_page(page_number)
+        
+        context['bookmarks'] = page_obj
+        context['page_obj'] = page_obj
+        context['paginator'] = paginator
         return context
 
 
@@ -354,7 +365,7 @@ class MainHome(DataMixin, ListView):
         context = super().get_context_data(**kwargs)
         # SEO meta tags для главной страницы
         context.update({
-            'meta_title': 'PageGlow - Платформа для IT-специалистов | ФлакХаб',
+            'meta_title': 'Платформа для IT-специалистов | ФлакХаб',
             'meta_description': 'Платформа для IT-специалистов: делитесь знаниями, находите возможности и развивайтесь вместе с нами. Публикация статей, руководств и новостей.',
             'meta_keywords': 'IT, программирование, разработка, технологии, статьи, руководство, Python, Django, веб-разработка',
             'meta_og_type': 'website',

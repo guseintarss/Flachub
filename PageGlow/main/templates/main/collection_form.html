@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/bookmarks.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bookmarks-page">
+    <div class="collection-form-container">
+        <h1 class="form-title">
+            <i class="fas fa-folder-plus"></i> Создать коллекцию
+        </h1>
+        
+        <form method="post" class="collection-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_name" class="form-label">
+                    <i class="fas fa-tag"></i> Название
+                </label>
+                <input type="text" 
+                       class="form-control" 
+                       id="id_name" 
+                       name="name" 
+                       required
+                       placeholder="Например: 'Полезные статьи по Python'">
+            </div>
+            
+            <div class="form-group">
+                <label for="id_description" class="form-label">
+                    <i class="fas fa-align-left"></i> Описание
+                </label>
+                <textarea class="form-control" 
+                          id="id_description" 
+                          name="description" 
+                          rows="4"
+                          placeholder="Краткое описание вашей коллекции..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" 
+                           class="form-check-input" 
+                           id="id_is_public" 
+                           name="is_public">
+                    <label class="form-check-label" for="id_is_public">
+                        <i class="fas fa-globe"></i> Сделать публичной
+                    </label>
+                    <small class="form-text text-muted">
+                        Публичные коллекции видны другим пользователям
+                    </small>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Создать коллекцию
+                </button>
+                <a href="{% url 'bookmarks' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Отмена
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.collection-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.form-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 24px 0;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.form-title i {
+    color: var(--primary);
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.form-label i {
+    color: var(--primary);
+    font-size: 0.9rem;
+}
+
+.form-control {
+    width: 100%;
+    background: var(--surface);
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    font-family: inherit;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(12, 106, 207, 0.15);
+}
+
+.form-control::placeholder {
+    color: var(--muted);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    border: 2px solid var(--border);
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.form-check-label {
+    font-size: 0.95rem;
+    color: var(--text);
+    margin: 0;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.form-text {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background: var(--primary-700);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(12, 106, 207, 0.3);
+}
+
+.btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 2px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* Тёмная тема */
+html.dark-mode .form-title i {
+    color: var(--dark-primary);
+}
+
+html.dark-mode .form-label i {
+    color: var(--dark-primary);
+}
+
+html.dark-mode .form-check {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--obs-border);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .collection-form-container {
+        padding: 24px 20px;
+    }
+
+    .form-title {
+        font-size: 1.5rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

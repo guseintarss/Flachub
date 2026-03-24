@@ -1,64 +1,73 @@
 {% extends 'base.html' %}
 {% load main_extras %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/bookmarks.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="bookmarks-page">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>📑 Мои закладки</h1>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCollectionModal">
-            + Коллекция
+            <i class="fas fa-folder-plus"></i> Коллекция
         </button>
     </div>
 
     {% if bookmarks %}
     <div class="bookmarks-list">
         {% for bookmark in bookmarks %}
-        <article class="post bookmark-item">
-            <div class="bookmark-header d-flex justify-content-between">
+        <article class="bookmark-item">
+            <div class="bookmark-header">
                 <div class="bookmark-meta">
-                    <small class="text-muted">
+                    <small>
                         <i class="fas fa-calendar"></i> {{ bookmark.created_at|date:"d.m.Y" }}
                         {% if bookmark.collection %}
-                        • <a href="{% url 'collection_detail' bookmark.collection.pk %}" class="text-decoration-none">
-                            📁 {{ bookmark.collection.name }}
-                        </a>
+                        <span class="collection-badge">
+                            <i class="fas fa-folder"></i>
+                            <a href="{% url 'collection_detail' bookmark.collection.pk %}">{{ bookmark.collection.name }}</a>
+                        </span>
                         {% endif %}
                     </small>
                 </div>
-                <button class="btn btn-sm btn-outline-danger bookmark-remove" 
+                <button class="btn bookmark-remove"
                         data-post-id="{{ bookmark.post.id }}"
                         title="Удалить из закладок">
-                    <i class="fas fa-bookmark"></i>
+                    <i class="fas fa-trash"></i>
                 </button>
             </div>
 
             <h3><a href="{{ bookmark.post.get_absolute_url }}">{{ bookmark.post.title }}</a></h3>
-            
+
             <p class="meta">
-                <span class="badge bg-primary">{{ bookmark.post.cat.name }}</span>
-                &bull; <span title="{{ bookmark.post.time_update|date:'d.m.Y H:i' }}">{{ bookmark.post.time_update|time_ago }}</span>
-                &bull; 👁 {{ bookmark.post.views }}
-                &bull; ❤️ {{ bookmark.post.number_of_likes }}
+                <span class="badge">{{ bookmark.post.cat.name }}</span>
+                <span><i class="fas fa-clock"></i> {{ bookmark.post.time_update|time_ago }}</span>
+                <span><i class="fas fa-eye"></i> {{ bookmark.post.views }}</span>
+                <span><i class="fas fa-heart"></i> {{ bookmark.post.number_of_likes }}</span>
             </p>
 
             {% if bookmark.post.photo %}
-            <p><img class="img-article-left thumb" src="{{ bookmark.post.photo.url }}" alt=""></p>
+            <p><img class="img-article-left" src="{{ bookmark.post.photo.url }}" alt="{{ bookmark.post.title }}"></p>
             {% endif %}
 
             {% autoescape off %}
+            {% if bookmark.post.meta %}
             <p class="meta">{{ bookmark.post.meta }}</p>
-            {{ bookmark.post.content|truncatewords:20|safe }}
+            {% endif %}
+            {{ bookmark.post.content|truncatewords_html:20|safe }}
             {% endautoescape %}
 
             {% if bookmark.notes %}
-            <div class="bookmark-notes mt-3 p-3 bg-light rounded">
-                <small><strong>📝 Заметка:</strong> {{ bookmark.notes }}</small>
+            <div class="bookmark-notes">
+                <small><i class="fas fa-sticky-note"></i> <strong>Заметка:</strong> {{ bookmark.notes }}</small>
             </div>
             {% endif %}
 
-            <div class="bookmark-footer mt-3">
-                <a class="read-more" href="{{ bookmark.post.get_absolute_url }}">Читать →</a>
-                <a class="read-more ms-3" href="{% url 'bookmark_toggle' %}">Удалить</a>
+            <div class="bookmark-footer">
+                <a class="text-decoration-none read-more" href="{{ bookmark.post.get_absolute_url }}">
+                    Читать <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
         </article>
         {% endfor %}
@@ -69,7 +78,7 @@
 
     {% else %}
     <div class="alert alert-info" role="alert">
-        <h5>У вас пока нет закладок</h5>
+        <h5><i class="fas fa-inbox"></i> У вас пока нет закладок</h5>
         <p>Сохраняйте интересные статьи, чтобы вернуться к ним позже.</p>
         <a href="{% url 'home' %}" class="btn btn-primary">Перейти к статьям</a>
     </div>

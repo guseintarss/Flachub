@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load main_extras %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/bookmarks.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bookmarks-page">
+    <!-- Заголовок коллекции -->
+    <div class="collection-header mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="collection-title mb-2">
+                    <i class="fas fa-folder-open"></i> {{ collection.name }}
+                </h1>
+                {% if collection.description %}
+                <p class="collection-description text-muted mb-2">{{ collection.description }}</p>
+                {% endif %}
+                <div class="collection-meta">
+                    <small class="text-muted">
+                        <i class="fas fa-calendar"></i> Создана: {{ collection.created_at|date:"d.m.Y" }}
+                    </small>
+                    <span class="mx-2">•</span>
+                    <small class="text-muted">
+                        <i class="fas fa-bookmark"></i> {{ collection.bookmarks_count }} статей
+                    </small>
+                    {% if collection.is_public %}
+                    <span class="mx-2">•</span>
+                    <span class="badge bg-success">Публичная</span>
+                    {% else %}
+                    <span class="mx-2">•</span>
+                    <span class="badge bg-secondary">Приватная</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="collection-actions">
+                <a href="{% url 'bookmarks' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if bookmarks %}
+    <div class="bookmarks-list">
+        {% for bookmark in bookmarks %}
+        <article class="bookmark-item">
+            <div class="bookmark-header">
+                <div class="bookmark-meta">
+                    <small>
+                        <i class="fas fa-calendar"></i> {{ bookmark.created_at|date:"d.m.Y" }}
+                    </small>
+                </div>
+                <button class="btn bookmark-remove"
+                        data-post-id="{{ bookmark.post.id }}"
+                        title="Удалить из закладок">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+
+            <h3><a href="{{ bookmark.post.get_absolute_url }}">{{ bookmark.post.title }}</a></h3>
+
+            <p class="meta">
+                <span class="badge">{{ bookmark.post.cat.name }}</span>
+                <span><i class="fas fa-clock"></i> {{ bookmark.post.time_update|time_ago }}</span>
+                <span><i class="fas fa-eye"></i> {{ bookmark.post.views }}</span>
+                <span><i class="fas fa-heart"></i> {{ bookmark.post.number_of_likes }}</span>
+            </p>
+
+            {% if bookmark.post.photo %}
+            <p><img class="img-article-left" src="{{ bookmark.post.photo.url }}" alt="{{ bookmark.post.title }}"></p>
+            {% endif %}
+
+            {% autoescape off %}
+            {% if bookmark.post.meta %}
+            <p class="meta">{{ bookmark.post.meta }}</p>
+            {% endif %}
+            {{ bookmark.post.content|truncatewords_html:20|safe }}
+            {% endautoescape %}
+
+            {% if bookmark.notes %}
+            <div class="bookmark-notes">
+                <small><i class="fas fa-sticky-note"></i> <strong>Заметка:</strong> {{ bookmark.notes }}</small>
+            </div>
+            {% endif %}
+
+            <div class="bookmark-footer">
+                <a class="read-more" href="{{ bookmark.post.get_absolute_url }}">
+                    Читать <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    <!-- Пагинация -->
+    {% render_pagination page_obj %}
+
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        <h5><i class="fas fa-inbox"></i> В этой коллекции пока нет статей</h5>
+        <p>Добавьте статьи в эту коллекцию через страницу закладок.</p>
+        <a href="{% url 'bookmarks' %}" class="btn btn-primary">Перейти к закладкам</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.collection-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    margin-bottom: 24px;
+}
+
+.collection-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 12px 0;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.collection-title i {
+    color: var(--primary);
+}
+
+.collection-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+.collection-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.collection-meta small {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.collection-meta i {
+    font-size: 0.85rem;
+}
+
+.collection-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 2px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-secondary:hover {
+    background: var(--surface);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Тёмная тема */
+html.dark-mode .collection-title i {
+    color: var(--dark-primary);
+}
+
+html.dark-mode .btn-outline-secondary:hover {
+    border-color: var(--dark-primary);
+    color: var(--dark-primary);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .collection-header {
+        padding: 16px;
+    }
+
+    .collection-title {
+        font-size: 1.5rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .collection-description {
+        font-size: 0.95rem;
+    }
+
+    .collection-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .collection-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Удаление закладки
+    document.querySelectorAll('.bookmark-remove').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postId = this.dataset.postId;
+            const bookmarkItem = this.closest('.bookmark-item');
+            
+            if (confirm('Удалить статью из закладок?')) {
+                fetch('{% url "bookmark_toggle" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: `post_id=${postId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        bookmarkItem.remove();
+                        if (document.querySelectorAll('.bookmark-item').length === 0) {
+                            location.reload();
+                        }
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
