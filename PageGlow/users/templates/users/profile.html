@@ -59,10 +59,10 @@ document.body.addEventListener('htmx:configRequest', function (event) {
             </div>
             
             <div class="profile-actions">
-                <a href="{% url 'users:edit_profile' %}" class="btn btn-primary">
+                <a href="{% url 'users:edit_profile' %}" class="text-decoration-none btn btn-primary">
                     <i class="fas fa-cog"></i> 
                 </a>
-                <a href="{% url 'bookmarks' %}" class="btn btn-outline-secondary">
+                <a href="{% url 'bookmarks' %}" class="text-decoration-none btn btn-outline-secondary">
                     <i class="fas fa-bookmark"></i>
                 </a>
             </div>
@@ -380,7 +380,7 @@ document.body.addEventListener('htmx:configRequest', function (event) {
 
 .profile-stats {
     display: flex;
-    gap: 30px;
+    gap: 12px;
     margin-bottom: 25px;
 }
 
