@@ -12,7 +12,7 @@ class StaticViewSitemap(Sitemap):
     changefreq = 'daily'
 
     def items(self):
-        return ['home', 'about', 'contact', 'discussions']
+        return ['home', 'about', 'discussions']
 
     def location(self, item):
         return reverse(item)
@@ -21,9 +21,9 @@ class StaticViewSitemap(Sitemap):
 class PostSitemap(Sitemap):
     """Карта статей"""
     changefreq = "weekly"
-    
+
     def items(self):
-        return Post.published.select_related('cat', 'author')
+        return Post.published.select_related('cat', 'author').prefetch_related('tags')
 
     def lastmod(self, obj):
         return obj.time_update

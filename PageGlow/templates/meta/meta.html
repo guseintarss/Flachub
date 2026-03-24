@@ -1,0 +1,85 @@
+{% load meta %}
+
+<!-- ===== SEO Meta Tags ===== -->
+<!-- Primary Meta Tags -->
+<meta name="title" content="{{ meta_title|default:title|default:'PageGlow - Платформа для IT-специалистов' }}" />
+<meta name="description" content="{{ meta_description|default:'Платформа для IT-специалистов: делитесь знаниями, находите возможности и развивайтесь вместе с нами'}}" />
+<meta name="keywords" content="{{ meta_keywords|default:'IT, программирование, разработка, технологии, статьи'}}" />
+<meta name="author" content="{{ meta_author|default:'PageGlow' }}" />
+<meta name="robots" content="index, follow" />
+<meta name="language" content="ru" />
+<meta name="copyright" content="PageGlow" />
+
+<!-- Canonical URL -->
+<link rel="canonical" href="{{ request.build_absolute_uri }}" />
+
+<!-- ===== Open Graph / Facebook ===== -->
+<meta property="og:type" content="{{ meta_og_type|default:'website' }}" />
+<meta property="og:url" content="{{ request.build_absolute_uri }}" />
+<meta property="og:title" content="{{ meta_title|default:title|default:'PageGlow - Платформа для IT-специалистов' }}" />
+<meta property="og:description" content="{{ meta_description|default:'Платформа для IT-специалистов: делитесь знаниями, находите возможности и развивайтесь вместе с нами'}}" />
+<meta property="og:image" content="{{ meta_image|default:request.scheme }}://{{ request.get_host }}/static/images/og-default.svg" />
+<meta property="og:image:alt" content="{{ meta_title|default:title|default:'PageGlow' }}" />
+<meta property="og:locale" content="ru_RU" />
+<meta property="og:site_name" content="PageGlow" />
+
+<!-- Article Meta Tags (для статей) -->
+{% if meta_og_type == 'article' %}
+<meta property="article:published_time" content="{{ meta_published_time|default:'' }}" />
+<meta property="article:modified_time" content="{{ meta_modified_time|default:'' }}" />
+<meta property="article:author" content="{{ meta_author|default:'' }}" />
+<meta property="article:section" content="{{ meta_section|default:'' }}" />
+{% for tag in meta_tags|default:tags|default:[] %}
+<meta property="article:tag" content="{{ tag }}" />
+{% endfor %}
+{% endif %}
+
+<!-- ===== Twitter Card ===== -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:url" content="{{ request.build_absolute_uri }}" />
+<meta name="twitter:title" content="{{ meta_title|default:title|default:'PageGlow - Платформа для IT-специалистов' }}" />
+<meta name="twitter:description" content="{{ meta_description|default:'Платформа для IT-специалистов'}}" />
+<meta name="twitter:image" content="{{ meta_image|default:request.scheme }}://{{ request.get_host }}/static/images/og-default.svg" />
+<meta name="twitter:creator" content="@pageglow" />
+
+<!-- ===== Favicon ===== -->
+<link rel="icon" type="image/png" sizes="96x96" href="{% static 'images/favicon-96x96.png' %}" />
+<link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}" />
+<link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" />
+<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}" />
+<link rel="manifest" href="{% static 'images/site.webmanifest' %}" />
+<meta name="apple-mobile-web-app-title" content="PageGlow" />
+<meta name="theme-color" content="#1c3e7e" />
+
+<!-- ===== Schema.org JSON-LD ===== -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "PageGlow",
+  "alternateName": "ФлакХаб",
+  "url": "{{ request.scheme }}://{{ request.get_host }}",
+  "description": "Платформа для IT-специалистов: делитесь знаниями, находите возможности и развивайтесь вместе с нами",
+  "inLanguage": "ru",
+  "publisher": {
+    "@type": "Organization",
+    "name": "PageGlow",
+    "url": "{{ request.scheme }}://{{ request.get_host }}",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ request.scheme }}://{{ request.get_host }}/static/images/favicon-96x96.png"
+    }
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "{{ request.scheme }}://{{ request.get_host }}/search/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+<!-- ===== Preconnect для внешних ресурсов ===== -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

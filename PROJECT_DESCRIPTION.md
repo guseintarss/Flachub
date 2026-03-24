@@ -2,6 +2,27 @@
 
 > **Современная платформа для IT-специалистов: делитесь знаниями, находите возможности и развивайтесь вместе с нами.**
 
+---
+
+## 🔍 SEO Оптимизация
+
+**Статус:** ✅ Завершена (Март 2026)
+
+### Реализованные SEO-функции:
+
+- ✅ **Meta-теги:** Title, Description, Keywords, Canonical URL
+- ✅ **Open Graph:** Разметка для социальных сетей (Facebook, VK)
+- ✅ **Twitter Card:** Карточки для Twitter
+- ✅ **Schema.org:** Микроразметка Article, WebSite, ItemList
+- ✅ **Robots.txt:** Настроен для всех поисковых систем
+- ✅ **Sitemap.xml:** Динамическая карта сайта
+- ✅ **Structured Data:** JSON-LD разметка для статей
+- ✅ **Image Optimization:** Alt-тексты, lazy loading, WebP поддержка
+
+📚 **Подробная документация:** [SEO_GUIDE.md](docs/SEO_GUIDE.md) | [SEO_OPTIMIZATION_REPORT.md](docs/SEO_OPTIMIZATION_REPORT.md)
+
+---
+
 [![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/guseintarss/PageGlow3.0)
 [![Django](https://img.shields.io/badge/Django-6.0-green.svg)](https://www.djangoproject.com/)
 [![Python](https://img.shields.io/badge/Python-3.14-blue.svg)](https://www.python.org/)

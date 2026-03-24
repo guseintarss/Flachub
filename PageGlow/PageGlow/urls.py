@@ -1,6 +1,7 @@
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include, re_path
+from django.views.generic import TemplateView
 from PageGlow import settings
 from main.views import page_not_found, CKEditorUploadView
 from .sitemaps import (
@@ -46,6 +47,7 @@ urlpatterns.extend([
     path("ckeditor5/", include('django_ckeditor_5.urls')),
     path('api-auth/', include('rest_framework.urls')),
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="django.contrib.sitemaps.views.sitemap"),
+    path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain"), name="robots"),
 ])
 
 if settings.DEBUG:

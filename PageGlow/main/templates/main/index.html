@@ -6,6 +6,29 @@
 <link rel="stylesheet" href="{% static 'main/css/feed.css' %}">
 {% endblock %}
 
+{% block head %}
+<!-- Schema.org ItemList для ленты постов -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Лента публикаций PageGlow",
+  "description": "Последние публикации на платформе PageGlow - IT-статьи, новости и обсуждения",
+  "numberOfItems": {{ posts|length }},
+  "itemListElement": [
+    {% for p in posts %}
+    {
+      "@type": "ListItem",
+      "position": {{ forloop.counter }},
+      "url": "{{ request.scheme }}://{{ request.get_host }}{{ p.get_absolute_url }}",
+      "name": "{{ p.title|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+
 {% block content %}
 
 <div class="feed-container">

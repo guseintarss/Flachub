@@ -351,6 +351,13 @@ class MainHome(DataMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # SEO meta tags для главной страницы
+        context.update({
+            'meta_title': 'PageGlow - Платформа для IT-специалистов | ФлакХаб',
+            'meta_description': 'Платформа для IT-специалистов: делитесь знаниями, находите возможности и развивайтесь вместе с нами. Публикация статей, руководств и новостей.',
+            'meta_keywords': 'IT, программирование, разработка, технологии, статьи, руководство, Python, Django, веб-разработка',
+            'meta_og_type': 'website',
+        })
         return context
 
 # class CustomSuccessMessageMixin:
@@ -421,11 +428,25 @@ class ShowPost(FormMixin, DataMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         from django.core.paginator import Paginator
-        
+
         context = super().get_context_data(**kwargs)
         post = self.object
         context['similar_posts'] = post.get_similar_posts()
         context['reading_time'] = post.reading_time()
+
+        # SEO meta tags для страницы поста
+        context.update({
+            'meta_title': f'{post.title} | PageGlow',
+            'meta_description': post.get_meta_description(),
+            'meta_keywords': ', '.join(post.get_keywords_list()),
+            'meta_og_type': 'article',
+            'meta_published_time': post.get_published_time(),
+            'meta_modified_time': post.get_modified_time(),
+            'meta_author': post.get_author_name(),
+            'meta_section': post.get_category_name(),
+            'meta_tags': post.get_tags_list(),
+            'meta_image': post.get_image_full_url(),
+        })
 
         # Пагинация комментариев
         comments = post.comments.select_related('author').order_by('-created_at')

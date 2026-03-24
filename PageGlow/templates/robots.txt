@@ -1,0 +1,74 @@
+# robots.txt для PageGlow (ФлакХаб)
+# Платформа для IT-специалистов
+
+User-agent: *
+# Разрешаем индексацию основного контента
+Allow: /
+Allow: /articles/
+Allow: /posts/
+Allow: /categories/
+Allow: /tags/
+Allow: /users/
+Allow: /discussions/
+
+# Запрещаем индексацию служебных страниц
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /accounts/
+Disallow: /bookmarks/
+Disallow: /favorites/
+Disallow: /settings/
+Disallow: /dashboard/
+Disallow: /ckeditor5/
+Disallow: /static/
+Disallow: /media/cache/
+Disallow: /logs/
+Disallow: /cache/
+
+# Запрещаем индексацию поиска и пагинации для избежания дублей
+Disallow: /search/?q=
+Disallow: /*?*page=
+Disallow: /*?*order=
+Disallow: /*?*filter=
+
+# Запрещаем индексацию черновиков и личных страниц
+Disallow: /drafts/
+Disallow: /private/
+
+# Карта сайта
+Sitemap: https://pageglow.ru/sitemap.xml
+
+# Хост (для Яндекс)
+Host: https://pageglow.ru
+
+# Яндекс дополнительно
+User-agent: Yandex
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /bookmarks/
+Disallow: /favorites/
+
+# Googlebot
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /bookmarks/
+Disallow: /favorites/
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+
+# Baidu
+User-agent: Baiduspider
+Allow: /
+Disallow: /admin/
+Disallow: /api/

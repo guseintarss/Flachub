@@ -88,25 +88,64 @@ class Post(ModelMeta, models.Model):
     published = PublishedManager()
 
     _metadata = {
-        'title': 'title',
+        'title': 'get_meta_title',
         'description': 'get_meta_description',
         'keywords': 'get_keywords_list',
         'image': 'get_image_full_url',
+        'og_type': 'article',
+        'published_time': 'get_published_time',
+        'modified_time': 'get_modified_time',
+        'author': 'get_author_name',
+        'section': 'get_category_name',
+        'tags': 'get_tags_list',
     }
 
     def get_meta_title(self):
-        return f'{self.title}'
+        """Оптимизированный meta title"""
+        return f'{self.title} | PageGlow'
 
     def get_meta_description(self):
-        return f'{self.content[:200]}...'
+        """Оптимизированный meta description (150-160 символов)"""
+        if self.content:
+            # Удаляем HTML теги
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(self.content, 'html.parser')
+            text = soup.get_text()[:200]
+            # Очищаем до последнего полного предложения
+            if len(text) >= 150:
+                text = text.rsplit('.', 1)[0] + '.'
+            return text.strip()
+        return f'Читайте статью: {self.title}'
 
     def get_keywords_list(self):
-        return [tag.name for tag in self.tags.all()]
+        """Список ключевых слов из тегов"""
+        return [tag.tag for tag in self.tags.all()]
 
     def get_image_full_url(self):
+        """Полный URL изображения для OG"""
         if self.photo:
             return self.photo.url
-        return None
+        return '/static/images/og-default.jpg'
+
+    def get_published_time(self):
+        """Время публикации в формате ISO 8601"""
+        return self.time_create.isoformat()
+
+    def get_modified_time(self):
+        """Время изменения в формате ISO 8601"""
+        return self.time_update.isoformat()
+
+    def get_author_name(self):
+        """Имя автора"""
+        return self.author.username if self.author else 'PageGlow'
+
+    def get_category_name(self):
+        """Название категории"""
+        return self.cat.name if self.cat else 'Блог'
+
+    def get_tags_list(self):
+        """Список тегов для OG"""
+        return [tag.tag for tag in self.tags.all()]
 
 
     def __str__(self):

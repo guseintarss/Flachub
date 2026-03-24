@@ -1,48 +1,19 @@
 {% extends 'base.html' %}
 {% load main_extras %}
-{% load meta %}
 {% load static %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'main/css/article.css' %}?v={% now 'U' %}">
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content="article" />
-<meta property="og:url" content="{{ request.build_absolute_uri }}" />
-<meta property="og:title" content="{{ post.title }}" />
-<meta property="og:description" content="{{ post.meta|default:post.content|striptags|truncatewords:20 }}" />
-{% if post.photo %}
-<meta property="og:image" content="{{ post.photo.url }}" />
-{% else %}
-<meta property="og:image" content="{% static 'images/og-default.jpg' %}" />
-{% endif %}
-<meta property="og:image:alt" content="{{ post.title }}" />
-{% if post.cat %}
-<meta property="article:section" content="{{ post.cat.name }}" />
-{% endif %}
-{% for tag in post.tags.all %}
-<meta property="article:tag" content="{{ tag.tag }}" />
-{% endfor %}
-<meta property="article:published_time" content="{{ post.time_create|date:'c' }}" />
-<meta property="article:modified_time" content="{{ post.time_update|date:'c' }}" />
-<meta property="article:author" content="{{ post.author.username }}" />
+{% endblock %}
 
-<!-- Twitter -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="{{ post.title }}" />
-<meta name="twitter:description" content="{{ post.meta|default:post.content|striptags|truncatewords:20 }}" />
-{% if post.photo %}
-<meta name="twitter:image" content="{{ post.photo.url }}" />
-{% else %}
-<meta name="twitter:image" content="{% static 'images/og-default.jpg' %}" />
-{% endif %}
-
+{% block head %}
 <!-- Schema.org Article -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Article",
   "headline": "{{ post.title }}",
-  "image": "{% if post.photo %}{{ post.photo.url }}{% else %}{% static 'images/og-default.jpg' %}{% endif %}",
+  "image": "{% if post.photo %}{{ post.photo.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}/static/images/og-default.svg{% endif %}",
   "datePublished": "{{ post.time_create|date:'c' }}",
   "dateModified": "{{ post.time_update|date:'c' }}",
   "author": {
@@ -58,7 +29,7 @@
       "url": "{{ request.scheme }}://{{ request.get_host }}/static/images/favicon-96x96.png"
     }
   },
-  "description": "{{ post.meta|default:post.content|striptags|truncatewords:20 }}",
+  "description": "{{ meta_description|default:post.content|striptags|truncatewords:20 }}",
   "mainEntityOfPage": {
     "@type": "WebPage",
     "@id": "{{ request.build_absolute_uri }}"
