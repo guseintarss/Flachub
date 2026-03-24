@@ -123,12 +123,20 @@ class EditProfileUser(LoginRequiredMixin, UpdateView):
         # Обрабатываем телефон
         if form.cleaned_data.get('phone_namber'):
             phone = form.cleaned_data['phone_namber']
-            # Очищаем от форматирования
-            cleaned = ''.join(filter(lambda x: x.isdigit() or x == '+', phone))
-            if cleaned and not cleaned.startswith('+'):
-                cleaned = '+' + cleaned
-            form.instance.phone_namber = cleaned[:12]
-        
+            # Очищаем от форматирования, оставляем только цифры
+            cleaned = ''.join(filter(lambda x: x.isdigit(), phone))
+            
+            # Если номер начинается с 8, заменяем на 7
+            if cleaned.startswith('8'):
+                cleaned = '7' + cleaned[1:]
+            
+            # Если не начинается с 7, добавляем 7
+            if not cleaned.startswith('7'):
+                cleaned = '7' + cleaned
+            
+            # Ограничиваем 11 цифрами
+            form.instance.phone_namber = cleaned[:11]
+
         return super().form_valid(form)
 
 

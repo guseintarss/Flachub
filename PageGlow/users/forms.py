@@ -58,7 +58,7 @@ class ProfileUserForm(forms.ModelForm):
             'photo': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
             'about_me': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Расскажите немного о себе...', 'maxlength': 255}),
             'data_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'format': '%Y-%m-%d'}),
-            'phone_namber': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+7 (___) ___-__-__', 'type': 'tel', 'id': 'phone-mask'}),
+            'phone_namber': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+7 (___) ___-__-__', 'type': 'tel', 'id': 'phone-input'}),
         }
     
     def clean_data_birth(self):
@@ -77,10 +77,20 @@ class ProfileUserForm(forms.ModelForm):
     def clean_phone_namber(self):
         phone = self.cleaned_data.get('phone_namber')
         if phone:
-            # Удаляем все лишние символы, оставляем только цифры и +
-            cleaned = ''.join(filter(lambda x: x.isdigit() or x == '+', phone))
-            if cleaned and not cleaned.startswith('+'):
-                cleaned = '+' + cleaned
+            # Удаляем все лишние символы, оставляем только цифры
+            cleaned = ''.join(filter(lambda x: x.isdigit(), phone))
+            
+            # Если номер начинается с 8, заменяем на 7
+            if cleaned.startswith('8'):
+                cleaned = '7' + cleaned[1:]
+            
+            # Если не начинается с 7, добавляем 7
+            if not cleaned.startswith('7'):
+                cleaned = '7' + cleaned
+            
+            # Ограничиваем 11 цифрами
+            cleaned = cleaned[:11]
+            
             return cleaned
         return phone
 

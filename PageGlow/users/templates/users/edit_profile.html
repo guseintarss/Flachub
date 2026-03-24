@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
 
+{% block head %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js"></script>
+
+{% endblock %}
+
 {% block content %}
 <div class="post edit-profile-page">
     <h1>🛠 Редактирование профиля</h1>
@@ -106,7 +112,7 @@
                         {{ form.phone_namber }}
                         <div class="form-error">{{ form.phone_namber.errors }}</div>
                         <small class="form-text">
-                            <i class="fas fa-info-circle"></i> Введите номер в формате +7 (___) ___-__-__
+                            <i class="fas fa-info-circle"></i> Например: 9991234567
                         </small>
                     </div>
                 </div>
@@ -373,6 +379,11 @@
     }
 }
 </style>
+<script>
+$(document).ready(function(){
+  $('#phone-input').mask('+7 (999) 999-99-99');
+});
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
