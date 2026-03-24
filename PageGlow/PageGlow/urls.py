@@ -4,7 +4,7 @@ from django.urls import path, include, re_path
 from PageGlow import settings
 from main.views import page_not_found, CKEditorUploadView
 from .sitemaps import (
-    PostSitemap, StaticViewSitemap, CategorySitemap, 
+    PostSitemap, StaticViewSitemap, CategorySitemap,
     TagSitemap, UserSitemap, DiscussionsSitemap
 )
 from django.contrib.sitemaps.views import sitemap
@@ -29,13 +29,24 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include("main.urls")),
     path('users/',include("users.urls", namespace='users')),
-    path("__debug__/", include("debug_toolbar.urls")),
+]
+
+# Отключаем debug_toolbar для ASGI
+import sys
+IS_ASGI = 'daphne' in sys.argv[0] or 'uvicorn' in sys.argv[0]
+
+if not IS_ASGI:
+    urlpatterns.extend([
+        path("__debug__/", include("debug_toolbar.urls")),
+    ])
+
+urlpatterns.extend([
     # Наш кастомный upload для CKEditor (должен быть перед django_ckeditor_5.urls)
     path('ckeditor5/image_upload/', CKEditorUploadView.as_view(), name='ckeditor_image_upload'),
     path("ckeditor5/", include('django_ckeditor_5.urls')),
     path('api-auth/', include('rest_framework.urls')),
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="django.contrib.sitemaps.views.sitemap"),
-]
+])
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
@@ -44,4 +55,3 @@ if settings.DEBUG:
 handler404 = page_not_found
 
 admin.site.site_header = 'Панель администрирования'
-

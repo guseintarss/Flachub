@@ -41,6 +41,10 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,pageglow.ru
 
 INTERNAL_IPS = ["127.0.0.1"]
 
+# Отключаем debug_toolbar для ASGI (daphne)
+import sys
+IS_ASGI = 'daphne' in sys.argv[0] or 'uvicorn' in sys.argv[0]
+
 # CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
 
@@ -72,7 +76,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'debug_toolbar',
     'django_ckeditor_5',
     'rest_framework',
     'djoser',
@@ -88,6 +91,10 @@ INSTALLED_APPS = [
     'dbbackup',
 ]
 
+# Отключаем debug_toolbar для ASGI
+if not IS_ASGI:
+    INSTALLED_APPS.insert(8, 'debug_toolbar')
+
 MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -96,8 +103,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
+
+# Отключаем debug_toolbar middleware для ASGI
+if not IS_ASGI:
+    MIDDLEWARE.insert(7, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 
 SITE_ID = 1

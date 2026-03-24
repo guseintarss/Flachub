@@ -1,0 +1,1369 @@
+/* =====================================================
+   PageGlow - Страница чтения поста
+   Оптимизировано для IT-специалистов
+   ===================================================== */
+
+/* =====================================================
+   ОСНОВНОЙ КОНТЕЙНЕР
+   ===================================================== */
+
+.article-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.article-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: visible;
+    position: relative;
+}
+
+/* =====================================================
+   ПРОГРЕСС ЧТЕНИЯ
+   ===================================================== */
+
+.reading-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-700) 100%);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.1s ease;
+    box-shadow: 0 0 10px rgba(12, 106, 207, 0.4);
+}
+
+/* =====================================================
+   ШАПКА СТАТЬИ
+   ===================================================== */
+
+.article-header {
+    padding: 40px 40px 30px;
+    border-bottom: 1px solid var(--border);
+}
+
+.post-meta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.author-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.author-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--border);
+    background: var(--bg);
+    transition: border-color 0.2s ease;
+}
+
+.author-info:hover .author-avatar {
+    border-color: var(--primary);
+}
+
+.author-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.author-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.author-name:hover {
+    color: var(--primary);
+}
+
+.post-date {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+#subscribe-btn {
+    padding: 8px 18px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.25s ease;
+}
+
+/* Заголовок статьи */
+.article-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--text);
+    margin: 0 0 20px 0;
+    letter-spacing: -0.02em;
+}
+
+/* Мета информация */
+.article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    font-size: 0.95rem;
+    color: var(--muted);
+}
+
+.article-meta a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.article-meta a:hover {
+    color: var(--primary-700);
+}
+
+.meta-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg);
+    border-radius: 16px;
+    font-size: 0.85rem;
+}
+
+.meta-badge i {
+    font-size: 0.9rem;
+}
+
+/* Обложка статьи */
+.article-cover {
+    margin: 30px 0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.article-cover img {
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+    object-fit: cover;
+    display: block;
+}
+
+/* =====================================================
+   КОНТЕНТ СТАТЬИ
+   ===================================================== */
+
+.article-body {
+    padding: 40px;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--text);
+}
+
+.article-body p {
+    margin: 20px 0;
+    text-align: left;
+}
+
+/* Заголовки в контенте */
+.article-body h1 {
+    font-size: 2em;
+    font-weight: 700;
+    color: var(--text);
+    margin: 40px 0 24px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border);
+    letter-spacing: -0.02em;
+}
+
+.article-body h2 {
+    font-size: 1.6em;
+    font-weight: 600;
+    color: var(--text);
+    margin: 36px 0 18px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: -0.01em;
+}
+
+.article-body h3 {
+    font-size: 1.35em;
+    font-weight: 600;
+    color: var(--text);
+    margin: 28px 0 14px 0;
+}
+
+.article-body h4,
+.article-body h5,
+.article-body h6 {
+    font-size: 1.15em;
+    font-weight: 600;
+    color: var(--text);
+    margin: 22px 0 12px 0;
+}
+
+/* Ссылки */
+.article-body a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.article-body a:hover {
+    color: var(--primary-700);
+    text-decoration-thickness: 2px;
+}
+
+/* Списки */
+.article-body ul,
+.article-body ol {
+    margin: 20px 0;
+    padding-left: 28px;
+}
+
+.article-body li {
+    margin: 10px 0;
+    line-height: 1.7;
+}
+
+.article-body ul li::marker {
+    color: var(--primary);
+}
+
+.article-body ol li::marker {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+/* Вложенные списки */
+.article-body ul ul,
+.article-body ol ol {
+    margin: 8px 0;
+}
+
+/* Цитаты */
+.article-body blockquote {
+    border-left: 4px solid var(--primary);
+    background: linear-gradient(135deg, rgba(12, 106, 207, 0.05) 0%, rgba(12, 106, 207, 0.02) 100%);
+    padding: 20px 24px;
+    margin: 24px 0;
+    font-style: italic;
+    border-radius: 0 8px 8px 0;
+}
+
+.article-body blockquote p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 1.05em;
+}
+
+/* =====================================================
+   КОД - ВАЖНО ДЛЯ IT!
+   ===================================================== */
+
+/* Инлайн код */
+.article-body code {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+    font-size: 0.875em;
+    color: #dc2626;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    font-feature-settings: "liga" 1;
+}
+
+/* Блоки кода */
+.article-body pre {
+    background: #1e1e1e !important;
+    border: 1px solid #374151;
+    border-radius: 10px;
+    padding: 24px;
+    margin: 24px 0;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.article-body pre code {
+    background: transparent;
+    padding: 0;
+    border: none;
+    color: #e5e7eb;
+    font-size: inherit;
+}
+
+/* Scrollbar для кода */
+.article-body pre::-webkit-scrollbar {
+    height: 10px;
+}
+
+.article-body pre::-webkit-scrollbar-track {
+    background: #2d2d2d;
+    border-radius: 5px;
+}
+
+.article-body pre::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 5px;
+}
+
+.article-body pre::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+/* =====================================================
+   ТАБЛИЦЫ
+   ===================================================== */
+
+.article-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.article-body table th {
+    background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+    color: var(--text);
+    font-weight: 600;
+    text-align: left;
+    padding: 14px 18px;
+    border-bottom: 2px solid var(--border);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.article-body table td {
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.article-body table tr {
+    transition: background 0.15s ease;
+}
+
+.article-body table tr:hover {
+    background: #f9fafb;
+}
+
+.article-body table tr:nth-child(even) {
+    background: #fafbfc;
+}
+
+.article-body table tr:nth-child(even):hover {
+    background: #f3f4f6;
+}
+
+/* =====================================================
+   ИЗОБРАЖЕНИЯ
+   ===================================================== */
+
+.article-body figure.image {
+    margin: 30px 0;
+    text-align: center;
+}
+
+.article-body figure.image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.article-body figure.image figcaption {
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding: 12px;
+    text-align: center;
+    font-style: italic;
+    background: var(--bg);
+    border-radius: 0 0 10px 10px;
+    margin-top: 0;
+}
+
+.article-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin: 20px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* =====================================================
+   РАЗДЕЛИТЕЛИ
+   ===================================================== */
+
+.article-body hr {
+    border: none;
+    border-top: 2px solid var(--border);
+    margin: 40px 0;
+}
+
+/* =====================================================
+   ТЕГИ
+   ===================================================== */
+
+.article-tags {
+    padding: 0 40px 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.tags-label {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: 500;
+    margin-right: 8px;
+}
+
+.tag-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    border: 1px solid transparent;
+    font-weight: 500;
+}
+
+.tag-chip:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(12, 106, 207, 0.25);
+}
+
+/* =====================================================
+   ДЕЙСТВИЯ СО СТАТЬЁЙ
+   ===================================================== */
+
+.article-actions {
+    padding: 0 40px 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    overflow: visible;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.action-btn i,
+.action-btn svg {
+    font-size: 1.1rem;
+}
+
+/* Like button */
+#like-btn {
+    background: transparent;
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+#like-btn:hover,
+#like-btn.liked {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+/* Bookmark button */
+#bookmark-btn {
+    background: transparent;
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+#bookmark-btn:hover,
+#bookmark-btn.bookmarked {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+/* Favorite button */
+#favorite-btn {
+    background: transparent;
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+#favorite-btn:hover,
+#favorite-btn.favorited {
+    background: #f59e0b;
+    color: #ffffff;
+}
+
+/* =====================================================
+   КНОПКА "ПОДЕЛИТЬСЯ" С ВЫПАДАЮЩИМ МЕНЮ
+   ===================================================== */
+
+.share-dropdown {
+    position: relative;
+    margin-left: auto;
+}
+
+.share-dropdown.show {
+    z-index: 9999;
+}
+
+.share-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.share-toggle:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(12, 106, 207, 0.05);
+}
+
+.share-toggle i {
+    font-size: 1rem;
+}
+
+.share-count {
+    background: var(--primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Выпадающее меню */
+.share-menu {
+    position: fixed;
+    top: 100px;
+    right: 100px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    min-width: 220px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 99999;
+    overflow: visible;
+}
+
+.share-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.share-menu::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 20px;
+    width: 12px;
+    height: 12px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+    transform: rotate(45deg);
+    z-index: 1;
+}
+
+.share-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text);
+    z-index: 1001;
+}
+
+.share-menu-close {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.share-menu-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text);
+}
+
+.share-menu-body {
+    padding: 8px;
+}
+
+.share-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+}
+
+.share-menu-item:hover {
+    background: var(--bg);
+    transform: translateX(4px);
+}
+
+.share-menu-item i {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* Цвета для разных соцсетей */
+.share-telegram i {
+    color: #229ED9;
+}
+
+.share-vk i {
+    color: #0077FF;
+}
+
+.share-twitter i {
+    color: #1DA1F2;
+}
+
+.share-copy i {
+    color: var(--muted);
+}
+
+/* Темная тема */
+html.dark-mode .share-toggle {
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+html.dark-mode .share-toggle:hover {
+    border-color: var(--dark-primary);
+    color: var(--dark-primary);
+    background: rgba(41, 156, 245, 0.1);
+}
+
+html.dark-mode .share-menu {
+    background: var(--dark-surface);
+    border-color: var(--dark-border);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+html.dark-mode .share-menu::before {
+    background: var(--dark-surface);
+    border-left-color: var(--dark-border);
+    border-top-color: var(--dark-border);
+}
+
+html.dark-mode .share-menu-header {
+    background: var(--dark-bg);
+    border-bottom-color: var(--dark-border);
+}
+
+html.dark-mode .share-menu-item:hover {
+    background: var(--dark-bg);
+}
+
+html.dark-mode .share-menu-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Старые стили share-buttons удалены */
+
+/* =====================================================
+   ПОХОЖИЕ СТАТЬИ - НОВЫЙ ДИЗАЙН
+   ===================================================== */
+
+.similar-articles {
+    margin-top: 50px;
+    padding: 40px;
+    background: linear-gradient(135deg, rgba(12, 106, 207, 0.03) 0%, rgba(12, 106, 207, 0.01) 100%);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+}
+
+.similar-articles h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 30px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.similar-articles h3 i {
+    color: var(--primary);
+    font-size: 1.6rem;
+}
+
+.similar-posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.similar-article-card {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    color: inherit;
+}
+
+.similar-article-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    border-color: rgba(12, 106, 207, 0.3);
+}
+
+.similar-article-image {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    background: var(--bg);
+}
+
+.similar-article-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.similar-article-card:hover .similar-article-image img {
+    transform: scale(1.08);
+}
+
+.similar-article-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
+    color: var(--muted);
+    font-size: 3rem;
+}
+
+.similar-article-content {
+    padding: 20px;
+}
+
+.similar-article-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 12px 0;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 0.2s ease;
+}
+
+.similar-article-card:hover .similar-article-title {
+    color: var(--primary);
+}
+
+.similar-article-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.similar-article-category,
+.similar-article-views {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.similar-article-category i,
+.similar-article-views i {
+    font-size: 0.8rem;
+}
+
+/* =====================================================
+   КОММЕНТАРИИ - НОВЫЙ ДИЗАЙН
+   ===================================================== */
+
+.comments-section {
+    margin-top: 50px;
+    padding: 40px;
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+}
+
+.comments-section h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 30px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.comments-section h3 i {
+    color: var(--primary);
+    font-size: 1.6rem;
+}
+
+#comment-form {
+    margin-bottom: 35px;
+}
+
+#comment-form textarea {
+    width: 100%;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    line-height: 1.6;
+    transition: all 0.25s ease;
+    resize: vertical;
+    min-height: 100px;
+}
+
+#comment-form textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(12, 106, 207, 0.1);
+}
+
+#comment-form textarea::placeholder {
+    color: var(--muted);
+}
+
+#comment-form button {
+    margin-top: 12px;
+    padding: 12px 28px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.25s ease;
+}
+
+#comment-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(12, 106, 207, 0.3);
+}
+
+/* Список комментариев */
+#comments-list {
+    margin-top: 30px;
+}
+
+.comment {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: all 0.25s ease;
+    border: 1px solid var(--border);
+}
+
+.comment:hover {
+    background: rgba(12, 106, 207, 0.03);
+    border-color: rgba(12, 106, 207, 0.2);
+    transform: translateX(4px);
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.comment-author {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.comment-time {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-left: auto;
+}
+
+.reply-to {
+    font-size: 0.85rem;
+    color: var(--primary);
+    margin-left: 8px;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-left: auto;
+}
+
+.comment-like-btn,
+.comment-reply-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.comment-like-btn:hover,
+.comment-reply-btn:hover {
+    background: rgba(12, 106, 207, 0.1);
+    color: var(--primary);
+}
+
+.comment-like-btn.liked {
+    color: #ef4444;
+}
+
+.comment-likes-count {
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.delete-comment-btn {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-comment-btn:hover {
+    background: #ef4444;
+    color: #ffffff;
+    transform: scale(1.1);
+}
+
+.comment-content {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+/* Ответы на комментарии */
+.comment-replies {
+    margin-top: 16px;
+    margin-left: 30px;
+    padding-left: 20px;
+    border-left: 3px solid var(--border);
+}
+
+.comment.reply {
+    background: rgba(12, 106, 207, 0.03);
+    margin-top: 15px;
+    padding: 18px;
+    border-radius: 8px;
+    border: 1px solid rgba(12, 106, 207, 0.1);
+}
+
+.comment.reply:hover {
+    background: rgba(12, 106, 207, 0.06);
+    border-color: rgba(12, 106, 207, 0.2);
+}
+
+/* Кнопка отмены ответа */
+#reply-cancel {
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+}
+
+#reply-cancel .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Кнопка показа ответов */
+.show-replies-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 16px !important;
+    background: transparent !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    color: var(--primary) !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.25s ease !important;
+    margin: 10px 0 10px 30px !important;
+}
+
+.show-replies-btn:hover {
+    background: rgba(12, 106, 207, 0.08) !important;
+    border-color: var(--primary) !important;
+    transform: translateX(4px) !important;
+}
+
+.show-replies-btn i {
+    font-size: 0.9rem !important;
+    transition: transform 0.3s ease !important;
+}
+
+.show-replies-btn.active i {
+    transform: rotate(180deg) !important;
+}
+
+/* Пустое состояние */
+.no-comments {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--muted);
+}
+
+.no-comments i {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.no-comments p {
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* =====================================================
+   ТЁМНАЯ ТЕМА
+   ===================================================== */
+
+html.dark-mode .article-body code {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f87171;
+}
+
+html.dark-mode .article-body pre {
+    background: #0d0d0d !important;
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .article-body table th {
+    background: linear-gradient(180deg, #2d2f33 0%, #25272c 100%);
+    color: var(--dark-text);
+    border-bottom-color: var(--dark-border);
+}
+
+html.dark-mode .article-body table td {
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+html.dark-mode .article-body table tr:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+html.dark-mode .article-body table tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+html.dark-mode .article-body blockquote {
+    background: rgba(41, 156, 245, 0.08);
+    border-left-color: var(--dark-primary);
+}
+
+html.dark-mode .article-body blockquote p {
+    color: var(--dark-muted);
+}
+
+html.dark-mode .article-body figure.image figcaption {
+    background: var(--dark-bg);
+    color: var(--dark-muted);
+}
+
+html.dark-mode .similar-articles {
+    background: linear-gradient(135deg, rgba(41, 156, 245, 0.05) 0%, rgba(41, 156, 245, 0.02) 100%);
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .similar-article-card {
+    background: var(--dark-surface);
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .similar-article-card:hover {
+    border-color: var(--dark-primary);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+}
+
+html.dark-mode .similar-article-placeholder {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, var(--dark-bg2) 100%);
+}
+
+html.dark-mode .comments-section {
+    background: var(--dark-surface);
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .comment {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .comment:hover {
+    background: rgba(41, 156, 245, 0.05);
+    border-color: var(--dark-primary);
+}
+
+html.dark-mode .delete-comment-btn:hover {
+    background: #dc2626;
+}
+
+html.dark-mode .no-comments {
+    color: var(--dark-muted);
+}
+
+/* =====================================================
+   TOAST УВЕДОМЛЕНИЯ
+   ===================================================== */
+
+.toast-notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--surface);
+    color: var(--text);
+    padding: 14px 24px;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid var(--primary);
+    font-weight: 500;
+    font-size: 0.95rem;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateX(100px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 400px;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* =====================================================
+   АДАПТИВНОСТЬ
+   ===================================================== */
+
+@media (max-width: 768px) {
+    .article-container {
+        padding: 20px 16px;
+    }
+
+    .article-header,
+    .article-body,
+    .article-tags,
+    .article-actions,
+    .similar-articles,
+    .comments-section {
+        padding: 24px 20px;
+    }
+
+    .article-title {
+        font-size: 1.75rem;
+    }
+
+    .post-meta-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .author-info {
+        width: 100%;
+    }
+
+    #subscribe-btn {
+        width: 100%;
+    }
+
+    .article-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .article-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .share-dropdown {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .share-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .share-menu {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        min-width: auto;
+        border-radius: 16px 16px 0 0;
+        transform: translateY(100%);
+        z-index: 9999;
+    }
+
+    .share-menu.show {
+        transform: translateY(0);
+    }
+
+    .share-menu::before {
+        display: none;
+    }
+
+    .similar-posts {
+        grid-template-columns: 1fr;
+    }
+
+    .article-body h1 {
+        font-size: 1.75em;
+    }
+
+    .article-body h2 {
+        font-size: 1.4em;
+    }
+}
+
+@media (max-width: 480px) {
+    .article-header,
+    .article-body,
+    .article-tags,
+    .article-actions,
+    .similar-articles,
+    .comments-section {
+        padding: 20px 16px;
+    }
+
+    .article-title {
+        font-size: 1.5rem;
+    }
+
+    .author-avatar {
+        width: 44px;
+        height: 44px;
+    }
+
+    .article-body pre {
+        padding: 16px;
+        font-size: 13px;
+    }
+
+    .article-body code {
+        font-size: 0.85em;
+    }
+}

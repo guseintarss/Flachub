@@ -8,13 +8,14 @@ import os
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
-from channels.security.websocket import AllowedHostsValidator
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'PageGlow.settings')
 
-django_asgi_app = get_asgi_application()
-
+# Импортируем websocket_urlpatterns ПЕРЕД get_asgi_application()
 from PageGlow.routing import websocket_urlpatterns
+
+# Инициализируем Django ASGI приложение
+django_asgi_app = get_asgi_application()
 
 application = ProtocolTypeRouter({
     'http': django_asgi_app,

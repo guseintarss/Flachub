@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const badge = document.getElementById('notification-badge');
     const list = document.getElementById('notification-list');
     const markAllBtn = document.getElementById('mark-all-read');
-    
+
     function loadNotifications() {
         fetch('{% url "notifications" %}')
             .then(response => response.json())
@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     badge.style.display = 'none';
                 }
-                
+
                 list.innerHTML = '';
                 if (data.notifications.length === 0) {
                     list.innerHTML = '<div class="notification-empty">Нет уведомлений</div>';
@@ -433,40 +433,50 @@ document.addEventListener('DOMContentLoaded', function() {
                         list.appendChild(item);
                     });
                 }
-            });
+            })
+            .catch(error => console.error('Ошибка загрузки уведомлений:', error));
     }
-    
-    bell.addEventListener('click', function(e) {
-        e.stopPropagation();
-        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-        if (dropdown.style.display === 'block') {
-            loadNotifications();
-        }
-    });
-    
-    markAllBtn.addEventListener('click', function() {
-        fetch('{% url "mark_notifications_read" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
+
+    // Обработчик клика на колокольчик
+    if (bell) {
+        bell.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isHidden = dropdown.style.display === 'none' || dropdown.style.display === '';
+            dropdown.style.display = isHidden ? 'block' : 'none';
+            // Загружаем уведомления при открытии
+            if (isHidden) {
+                loadNotifications();
             }
-        }).then(() => {
-            badge.style.display = 'none';
-            loadNotifications();
         });
-    });
-    
+    }
+
+    // Отметить все как прочитанные
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function() {
+            fetch('{% url "mark_notifications_read" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(() => {
+                badge.style.display = 'none';
+                loadNotifications();
+            })
+            .catch(error => console.error('Ошибка отметки прочитанных:', error));
+        });
+    }
+
+    // Закрытие при клике вне
     document.addEventListener('click', function(e) {
-        if (!dropdown.contains(e.target) && !bell.contains(e.target)) {
+        if (dropdown && !dropdown.contains(e.target) && !bell.contains(e.target)) {
             dropdown.style.display = 'none';
         }
     });
 
     // Загружаем счётчик при загрузке страницы
     loadNotifications();
-
-    // Обновляем каждые 30 секунд
-    setInterval(loadNotifications, 30000);
 });
 </script>
 {% endif %}

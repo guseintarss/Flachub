@@ -8,20 +8,19 @@ from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
-User = get_user_model()
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     """
     WebSocket consumer для realtime уведомлений
-    
+
     Подключение:
         ws://localhost:8000/ws/notifications/
-    
+
     Сообщения от клиента:
         - {"type": "mark_read", "notification_id": 123}
         - {"type": "mark_all_read"}
-    
+
     Сообщения клиенту:
         - {"type": "notification", "data": {...}}
         - {"type": "count", "count": 5}
