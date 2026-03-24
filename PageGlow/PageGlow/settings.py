@@ -37,7 +37,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-temp-dev-key-do-not-u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default='True') == 'True'
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,pageglow.ru,www.pageglow.ru').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,flakhub.ru,www.flakhub.ru').split(',')
 
 INTERNAL_IPS = ["127.0.0.1"]
 
@@ -232,7 +232,7 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
-EMAIL_HOST_USER = 'pageglow3@gmail.com'
+EMAIL_HOST_USER = 'support@flakhub.com'
 EMAIL_HOST_PASSWORD = 'ntgy ehwi netg ehdu'
 EMAIL_USE_SSL = True
 EMAIL_USE_TLS = False
@@ -519,7 +519,7 @@ if CACHE_BACKEND == 'redis':
                 'PARSER_KWARGS': {'encoding': 'utf8'},
                 'CONNECTION_POOL_KWARGS': {'max_connections': 50, 'retry_on_timeout': True}
             },
-            'KEY_PREFIX': 'pageglow',
+            'KEY_PREFIX': 'flakhub',
             'TIMEOUT': 300,
         }
     }
@@ -566,9 +566,9 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 META_SITE_PROTOCOL = 'https' if not DEBUG else 'http'
-META_SITE_DOMAIN = config('META_SITE_DOMAIN', default='pageglow.ru')
+META_SITE_DOMAIN = config('META_SITE_DOMAIN', default='flakhub.ru')
 META_SITE_TYPE = 'website'
-META_SITE_NAME = 'PageGlow'
+META_SITE_NAME = 'ФлакХаб'
 META_INCLUDE_KEYWORDS = ['статьи', 'информация', 'рекомендации', 'руководства']
 META_USE_OG_PROPERTIES = True
 META_USE_TWITTER_PROPERTIES = True

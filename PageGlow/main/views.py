@@ -342,7 +342,7 @@ def get_user_recommendations(request, limit=10):
 class MainHome(DataMixin, ListView):
     template_name = 'main/index.html'
     context_object_name = 'posts'
-    title_page = 'Главная страница | PageGlow'
+    title_page = 'Главная страница | ФлакХаб'
     cat_selected = 0
     paginate_by = 10
 
@@ -1031,7 +1031,7 @@ class DiscussionsView(DataMixin, ListView):
     """Список всех обсуждений"""
     template_name = 'main/discussions.html'
     context_object_name = 'discussions'
-    title_page = 'Обсуждения | PageGlow'
+    title_page = 'Обсуждения | ФлакХаб'
     paginate_by = 20
 
     def get_queryset(self):
@@ -1129,7 +1129,7 @@ class CreateDiscussionView(LoginRequiredMixin, DataMixin, CreateView):
     """Создание нового обсуждения"""
     form_class = AddQuestionForm
     template_name = 'main/create_discussion.html'
-    title_page = 'Начать обсуждение | PageGlow'
+    title_page = 'Начать обсуждение | ФлакХаб'
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -1349,7 +1349,7 @@ class MarkNotificationsReadView(View):
 def about_us(request):
     """О нас"""
     context = {
-        'title': 'О платформе PageGlow',
+        'title': 'О платформе ФлакХаб',
     }
     return render(request, 'main/about_us.html', context)
 
