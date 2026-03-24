@@ -1022,6 +1022,35 @@ html.dark-mode .header__burger-menu span{
   z-index: 2;
   color: var(--bg);
   transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+/* Logo image in header */
+.brand-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.brand-logo:hover {
+  transform: scale(1.05);
+}
+
+/* Brand text */
+.brand-text {
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.2px;
+  color: var(--bg);
+  transition: color 0.3s ease;
+}
+
+html.dark-mode .brand-text {
+  color: #fff;
 }
 
 /* Dark mode brand */
