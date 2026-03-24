@@ -518,14 +518,71 @@ class AddPage(LoginRequiredMixin, DataMixin, CreateView):
 
 class UpdatePage(LoginRequiredMixin, DataMixin, UpdateView):
     model = Post
-    form_class = PostUpdateForm
+    form_class = AddPostForm  # Используем AddPostForm вместо PostUpdateForm
     template_name = 'main/addpage.html'
-    success_url = reverse_lazy('home')
     title_page = 'Редактирование статьи'
-    
 
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('post', kwargs={'post_slug': self.get_object().slug})
+    def get_queryset(self):
+        # Пользователь может редактировать только свои статьи
+        return Post.objects.filter(author=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = self.title_page
+        return context
+
+    def form_valid(self, form):
+        # Получаем HTML контент из формы
+        html_content = form.cleaned_data['content']
+        
+        # Сохраняем текущий заголовок (на случай если не найдём новый)
+        current_title = self.object.title
+        
+        # Пытаемся извлечь заголовок из контента если он есть
+        try:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(html_content, 'html.parser')
+            heading = soup.find(['h1', 'h2', 'h3'])
+
+            if heading:
+                heading_text = heading.get_text(strip=True)
+                # Проверяем на стандартные placeholder'ы
+                placeholder_list = [
+                    'заголовок', 'заголовок статьи', 'title', 'heading',
+                    'заголовок...', 'ваш заголовок', 'введите заголовок'
+                ]
+                
+                if heading_text.lower() not in placeholder_list:
+                    form.instance.title = heading_text
+                    heading.decompose()
+                    form.instance.content = str(soup)
+                else:
+                    # Если placeholder - оставляем существующий title
+                    form.instance.title = current_title
+                    heading.decompose()
+                    form.instance.content = str(soup)
+            else:
+                # Если заголовка нет в контенте - оставляем старый
+                form.instance.title = current_title
+        except Exception as e:
+            logger.error(f'Ошибка обработки контента: {e}')
+            form.instance.title = current_title
+
+        # Сохраняем объект
+        self.object = form.save()
+        
+        # Выводим сообщение об успехе
+        from django.contrib import messages
+        messages.success(self.request, 'Статья успешно обновлена!')
+        
+        # Перенаправляем на страницу статьи
+        return redirect('post', post_slug=self.object.slug)
+
+    def form_invalid(self, form):
+        # Выводим сообщение об ошибке
+        from django.contrib import messages
+        messages.error(self.request, f'Ошибка сохранения: {form.errors}')
+        return super().form_invalid(form)
 
 def login(request):
     return render(request, 'main/login.html')
