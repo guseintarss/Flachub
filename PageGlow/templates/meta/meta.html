@@ -1,4 +1,5 @@
 {% load meta %}
+{% load static %}
 
 <!-- ===== SEO Meta Tags ===== -->
 <!-- Primary Meta Tags -->
@@ -29,9 +30,11 @@
 <meta property="article:modified_time" content="{{ meta_modified_time|default:'' }}" />
 <meta property="article:author" content="{{ meta_author|default:'' }}" />
 <meta property="article:section" content="{{ meta_section|default:'' }}" />
-{% for tag in meta_tags|default:tags|default:[] %}
+{% if meta_tags|default:tags %}
+{% for tag in meta_tags|default:tags %}
 <meta property="article:tag" content="{{ tag }}" />
 {% endfor %}
+{% endif %}
 {% endif %}
 
 <!-- ===== Twitter Card ===== -->
