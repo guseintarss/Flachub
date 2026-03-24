@@ -81,13 +81,22 @@
   font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 }
 
+.ck.ck-editor,
+.ck.ck-editor *,
+.ck.ck-editor *::before,
+.ck.ck-editor *::after {
+  box-sizing: border-box;
+}
+
 .ck.ck-editor__main {
   background: var(--ck-light-surface);
   border: 2px solid var(--ck-light-border);
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow: visible !important;
   box-shadow: var(--shadow);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .ck.ck-editor__main:hover {
@@ -99,6 +108,18 @@
   box-shadow: 0 0 0 4px rgba(12, 106, 207, 0.15);
 }
 
+/* Принудительно убираем прокрутку у всех элементов редактора */
+.ck.ck-editor__main .ck-editor__editable,
+.ck.ck-editor__main .ck-content,
+.ck.ck-editor__editable {
+  min-height: 500px !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+  overflow: visible !important;
+}
+
 /* --- Область редактирования --- */
 .ck.ck-editor__editable {
   background-color: var(--ck-light-surface);
@@ -106,10 +127,13 @@
   font-size: 15px;
   line-height: 1.7;
   padding: 28px 32px;
-  min-height: 400px;
-  max-height: 70vh;
-  overflow-y: auto;
+  min-height: 500px !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  resize: vertical;
 }
 
 .ck.ck-editor__editable:focus {
@@ -121,25 +145,6 @@
   color: var(--muted);
   opacity: 0.5;
   font-style: italic;
-}
-
-/* Кастомный скроллбар для редактора */
-.ck.ck-editor__editable::-webkit-scrollbar {
-  width: 10px;
-}
-
-.ck.ck-editor__editable::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 5px;
-}
-
-.ck.ck-editor__editable::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-}
-
-.ck.ck-editor__editable::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
 }
 
 /* --- Панель инструментов --- */
@@ -520,6 +525,7 @@ body.dark-mode .ck.ck-editor__main,
 .ck.ck-dark-mode .ck-editor__main {
   background: #1e1e1e;
   border-color: #3c3c3c;
+  overflow: visible !important;
 }
 
 html.dark-mode .ck.ck-editor__main:hover,
@@ -533,12 +539,36 @@ body.dark-mode .ck.ck-editor__main:focus-within {
   box-shadow: 0 0 0 4px rgba(41, 156, 245, 0.2);
 }
 
+/* Принудительно убираем прокрутку в темной теме */
+html.dark-mode .ck.ck-editor__main .ck-editor__editable,
+html.dark-mode .ck.ck-editor__main .ck-content,
+html.dark-mode .ck.ck-editor__editable,
+body.dark-mode .ck.ck-editor__main .ck-editor__editable,
+body.dark-mode .ck.ck-editor__main .ck-content,
+body.dark-mode .ck.ck-editor__editable,
+.ck.ck-dark-mode .ck.ck-editor__main .ck-editor__editable,
+.ck.ck-dark-mode .ck.ck-editor__main .ck-content,
+.ck.ck-dark-mode .ck.ck-editor__editable {
+  min-height: 500px !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+  overflow: visible !important;
+}
+
 html.dark-mode .ck.ck-editor__editable,
 body.dark-mode .ck.ck-editor__editable,
 .ck.ck-dark-mode .ck-editor__editable {
   background-color: #1e1e1e;
   color: #d4d4d4;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  min-height: 500px !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+  resize: vertical;
 }
 
 html.dark-mode .ck.ck-editor__editable:focus,
@@ -550,22 +580,6 @@ body.dark-mode .ck.ck-editor__editable:focus,
 html.dark-mode .ck.ck-editor__editable[contenteditable="true"]:empty::before,
 body.dark-mode .ck.ck-editor__editable[contenteditable="true"]:empty::before {
   color: #808080;
-}
-
-/* Скроллбар в темной теме */
-html.dark-mode .ck.ck-editor__editable::-webkit-scrollbar-track,
-body.dark-mode .ck.ck-editor__editable::-webkit-scrollbar-track {
-  background: #2d2d2d;
-}
-
-html.dark-mode .ck.ck-editor__editable::-webkit-scrollbar-thumb,
-body.dark-mode .ck.ck-editor__editable::-webkit-scrollbar-thumb {
-  background: #424242;
-}
-
-html.dark-mode .ck.ck-editor__editable::-webkit-scrollbar-thumb:hover,
-body.dark-mode .ck.ck-editor__editable::-webkit-scrollbar-thumb:hover {
-  background: #555;
 }
 
 html.dark-mode .ck.ck-toolbar,

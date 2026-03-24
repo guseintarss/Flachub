@@ -189,45 +189,31 @@ const totalSteps = 3;
 // Переключение шагов
 function nextStep(step) {
     if (step > totalSteps) return;
-    
+
     // Скрываем текущий шаг
     document.querySelector('.wizard-step.active').classList.remove('active');
     document.querySelector('.progress-step.active').classList.remove('active');
-    
+
     // Показываем новый шаг
     document.getElementById('step-' + step).classList.add('active');
     document.querySelector('.progress-step[data-step="' + step + '"]').classList.add('active');
-    
+
     currentStep = step;
-    
+
     // Прокрутка вверх
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    
+
     // Если перешли к редактору - инициализируем высоту
     if (step === 2) {
-        setTimeout(initEditorHeight, 100);
+        setTimeout(autoResizeEditor, 100);
+        // Отправляем событие для пересчета высоты
+        window.dispatchEvent(new CustomEvent('stepChanged'));
     }
 }
 
 function prevStep(step) {
     if (step < 1) return;
     nextStep(step);
-}
-
-// Инициализация высоты редактора
-function initEditorHeight() {
-    const editorContainer = document.querySelector('.editor-container');
-    const windowHeight = window.innerHeight;
-    const headerHeight = document.querySelector('.step-header')?.offsetHeight || 0;
-    const footerHeight = document.querySelector('.step-footer')?.offsetHeight || 0;
-    
-    const editorHeight = windowHeight - headerHeight - footerHeight - 200;
-    
-    const editorElement = document.querySelector('.ck.ck-editor__editable');
-    if (editorElement) {
-        editorElement.style.minHeight = editorHeight + 'px';
-        editorElement.style.height = editorHeight + 'px';
-    }
 }
 
 // Выбор типа поста
@@ -427,7 +413,100 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Инициализация высоты редактора при загрузке и изменении размера окна
-window.addEventListener('resize', initEditorHeight);
+// =====================================================
+// АВТОМАТИЧЕСКОЕ РАСШИРЕНИЕ ВЫСОТЫ CKEDITOR
+// Без прокрутки - редактор растет под контент
+// =====================================================
+
+function applyEditorStyles(editor) {
+    // Принудительно применяем стили для удаления прокрутки
+    editor.style.setProperty('min-height', '500px', 'important');
+    editor.style.setProperty('height', 'auto', 'important');
+    editor.style.setProperty('max-height', 'none', 'important');
+    editor.style.setProperty('overflow-y', 'visible', 'important');
+    editor.style.setProperty('overflow-x', 'hidden', 'important');
+    editor.style.setProperty('overflow', 'visible', 'important');
+    
+    // Также применяем к родительским элементам
+    const main = editor.closest('.ck-editor__main');
+    if (main) {
+        main.style.setProperty('overflow', 'visible', 'important');
+    }
+}
+
+function autoResizeEditor() {
+    const editor = document.querySelector('.ck-editor__editable');
+    if (!editor) return;
+    
+    // Применяем стили
+    applyEditorStyles(editor);
+    
+    // Сбрасываем высоту в auto для правильного вычисления scrollHeight
+    editor.style.height = 'auto';
+    
+    // Вычисляем необходимую высоту
+    const newHeight = editor.scrollHeight;
+    
+    // Устанавливаем новую высоту
+    editor.style.height = newHeight + 'px';
+}
+
+// Запускаем при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Ждем инициализации CKEditor
+    setTimeout(function initEditor() {
+        const editor = document.querySelector('.ck-editor__editable');
+        if (!editor) {
+            setTimeout(initEditor, 100);
+            return;
+        }
+        
+        // Принудительно устанавливаем стили
+        applyEditorStyles(editor);
+        
+        // Инициализируем высоту
+        autoResizeEditor();
+        
+        // Наблюдаем за изменениями в редакторе
+        const observer = new MutationObserver(() => {
+            autoResizeEditor();
+        });
+        
+        observer.observe(editor, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+        
+        // Слушаем события ввода
+        editor.addEventListener('input', () => {
+            setTimeout(autoResizeEditor, 0);
+        });
+        
+        // Слушаем событие вставки
+        editor.addEventListener('paste', () => {
+            setTimeout(autoResizeEditor, 50);
+            setTimeout(autoResizeEditor, 300);
+        });
+        
+        // Слушаем нажатия клавиш
+        editor.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter' || e.key === 'Backspace' || e.key === 'Delete') {
+                setTimeout(autoResizeEditor, 0);
+            }
+        });
+    }, 800);
+});
+
+// Пересчитываем при изменении размера окна
+window.addEventListener('resize', () => {
+    setTimeout(autoResizeEditor, 100);
+});
+
+// Пересчитываем при переключении шагов
+window.addEventListener('stepChanged', () => {
+    setTimeout(autoResizeEditor, 200);
+});
+
 </script>
 {% endblock %}
