@@ -23,6 +23,7 @@
     <meta name="apple-mobile-web-app-title" content="MyWebSite" />
     <link rel="manifest" href="{% static 'images/site.webmanifest' %}" />
     <meta name="apple-mobile-web-app-title" content="PageGlow" />
+    <meta name="csrf-token" content="{{ csrf_token }}">
     {% block head %}{% endblock %}
     {% block extra_css %}{% endblock %}
     <script>
@@ -268,9 +269,9 @@
     document.getElementById('currentYear').textContent = new Date().getFullYear();
 </script>
 
-<!-- WebSocket уведомления (только для авторизованных) -->
+<!-- Уведомления (AJAX Polling, без WebSocket) -->
 {% if user.is_authenticated %}
-<script src="{% static 'main/js/notifications-ws.js' %}"></script>
+<script src="{% static 'main/js/notifications.js' %}?v={% now 'U' %}"></script>
 {% endif %}
 
 {% block extra_js %}{% endblock %}
