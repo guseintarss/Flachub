@@ -347,7 +347,8 @@ class MainHome(DataMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Post.published.all().select_related('cat', 'author')
+        # Оптимизация: select_related для ForeignKey, prefetch_related для ManyToMany
+        return Post.published.select_related('cat', 'author').prefetch_related('tags').all()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -428,11 +429,26 @@ class ShowPost(FormMixin, DataMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         from django.core.paginator import Paginator
+        from django.core.cache import cache
 
         context = super().get_context_data(**kwargs)
         post = self.object
-        context['similar_posts'] = post.get_similar_posts()
-        context['reading_time'] = post.reading_time()
+        
+        # Кэширование похожих постов
+        cache_key = f'similar_posts_{post.id}'
+        similar = cache.get(cache_key)
+        if similar is None:
+            similar = post.get_similar_posts()
+            cache.set(cache_key, similar, 3600)  # 1 час
+        context['similar_posts'] = similar
+        
+        # Кэширование времени чтения
+        reading_cache_key = f'reading_time_{post.id}'
+        reading_time = cache.get(reading_cache_key)
+        if reading_time is None:
+            reading_time = post.reading_time()
+            cache.set(reading_cache_key, reading_time, 86400)  # 24 часа
+        context['reading_time'] = reading_time
 
         # SEO meta tags для страницы поста
         context.update({
@@ -448,7 +464,7 @@ class ShowPost(FormMixin, DataMixin, DetailView):
             'meta_image': post.get_image_full_url(),
         })
 
-        # Пагинация комментариев
+        # Оптимизация: select_related для комментариев
         comments = post.comments.select_related('author').order_by('-created_at')
         comment_paginator = Paginator(comments, 20)  # 20 комментариев на страницу
         page_number = self.request.GET.get('comments-page')
@@ -626,7 +642,10 @@ class MainCategory(DataMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Post.published.filter(cat__slug=self.kwargs['cat_slug']).select_related('cat')
+        # Оптимизация: select_related для cat, prefetch_related для tags и author
+        return Post.published.select_related('cat', 'author').prefetch_related('tags').filter(
+            cat__slug=self.kwargs['cat_slug']
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -648,7 +667,10 @@ class TagPostList(DataMixin, ListView):
         return self.get_mixin_context(context, title='Тег: ' + tag.tag)
 
     def get_queryset(self):
-        return Post.published.filter(tags__slug=self.kwargs['tag_slug']).select_related('cat')
+        # Оптимизация: select_related для cat и author, prefetch_related для tags
+        return Post.published.select_related('cat', 'author').prefetch_related('tags').filter(
+            tags__slug=self.kwargs['tag_slug']
+        )
 
 
 class Search(DataMixin, ListView):
@@ -661,13 +683,23 @@ class Search(DataMixin, ListView):
 
         if query:
             # Ищем совпадение в title ИЛИ в content (без учёта регистра)
-            search = Post.published.filter(
+            # Оптимизация: добавляем select_related и prefetch_related
+            search = Post.published.select_related(
+                'cat', 'author'
+            ).prefetch_related(
+                'tags'
+            ).filter(
                 Q(title__icontains=query) |
                 Q(content__icontains=query)
             )
         else:
             # Если запроса нет — возвращаем все опубликованные посты
-            search = Post.published.all()
+            # Оптимизация: select_related для ForeignKey, prefetch_related для ManyToMany
+            search = Post.published.select_related(
+                'cat', 'author'
+            ).prefetch_related(
+                'tags'
+            ).all()
 
         return search
 

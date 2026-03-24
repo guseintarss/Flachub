@@ -77,8 +77,9 @@ class Post(ModelMeta, models.Model):
 
     def get_similar_posts(self, limit=4):
         """Получить похожие статьи по тегам и категории"""
-        post_tags_ids = self.tags.values_list('id', flat=True)
-        similar_posts = Post.published.filter(
+        # Оптимизация: prefetch_related для уменьшения количества запросов
+        post_tags_ids = list(self.tags.values_list('id', flat=True))
+        similar_posts = Post.published.select_related('cat', 'author').prefetch_related('tags').filter(
             models.Q(tags__in=post_tags_ids) | models.Q(cat=self.cat)
         ).exclude(id=self.id).distinct()
         return similar_posts.order_by('-views', '-time_create')[:limit]
