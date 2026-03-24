@@ -18,7 +18,8 @@
     border: 1px solid var(--border);
     border-radius: 16px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
+    overflow: visible;
+    position: relative;
 }
 
 /* =====================================================
@@ -480,6 +481,7 @@
     align-items: center;
     border-top: 1px solid var(--border);
     padding-top: 24px;
+    overflow: visible;
 }
 
 .action-btn {
@@ -539,30 +541,212 @@
     color: #ffffff;
 }
 
-/* Share buttons */
-.share-buttons {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+/* =====================================================
+   КНОПКА "ПОДЕЛИТЬСЯ" С ВЫПАДАЮЩИМ МЕНЮ
+   ===================================================== */
+
+.share-dropdown {
+    position: relative;
     margin-left: auto;
 }
 
-.share-label {
+.share-dropdown.show {
+    z-index: 9999;
+}
+
+.share-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-weight: 600;
     font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.share-toggle:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(12, 106, 207, 0.05);
+}
+
+.share-toggle i {
+    font-size: 1rem;
+}
+
+.share-count {
+    background: var(--primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Выпадающее меню */
+.share-menu {
+    position: fixed;
+    top: 100px;
+    right: 100px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    min-width: 220px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 99999;
+    overflow: visible;
+}
+
+.share-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.share-menu::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 20px;
+    width: 12px;
+    height: 12px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+    transform: rotate(45deg);
+    z-index: 1;
+}
+
+.share-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text);
+    z-index: 1001;
+}
+
+.share-menu-close {
+    background: transparent;
+    border: none;
     color: var(--muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.share-menu-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text);
+}
+
+.share-menu-body {
+    padding: 8px;
+}
+
+.share-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text);
     font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
 }
 
-.share-btn {
-    padding: 8px 12px !important;
-    border-radius: 8px !important;
-    transition: all 0.25s ease !important;
+.share-menu-item:hover {
+    background: var(--bg);
+    transform: translateX(4px);
 }
 
-.share-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.share-menu-item i {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
 }
+
+/* Цвета для разных соцсетей */
+.share-telegram i {
+    color: #229ED9;
+}
+
+.share-vk i {
+    color: #0077FF;
+}
+
+.share-twitter i {
+    color: #1DA1F2;
+}
+
+.share-copy i {
+    color: var(--muted);
+}
+
+/* Темная тема */
+html.dark-mode .share-toggle {
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+html.dark-mode .share-toggle:hover {
+    border-color: var(--dark-primary);
+    color: var(--dark-primary);
+    background: rgba(41, 156, 245, 0.1);
+}
+
+html.dark-mode .share-menu {
+    background: var(--dark-surface);
+    border-color: var(--dark-border);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+html.dark-mode .share-menu::before {
+    background: var(--dark-surface);
+    border-left-color: var(--dark-border);
+    border-top-color: var(--dark-border);
+}
+
+html.dark-mode .share-menu-header {
+    background: var(--dark-bg);
+    border-bottom-color: var(--dark-border);
+}
+
+html.dark-mode .share-menu-item:hover {
+    background: var(--dark-bg);
+}
+
+html.dark-mode .share-menu-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Старые стили share-buttons удалены */
 
 /* =====================================================
    ПОХОЖИЕ СТАТЬИ - НОВЫЙ ДИЗАЙН
@@ -1113,10 +1297,34 @@ html.dark-mode .no-comments {
         justify-content: center;
     }
 
-    .share-buttons {
+    .share-dropdown {
+        width: 100%;
         margin-left: 0;
+    }
+
+    .share-toggle {
+        width: 100%;
         justify-content: center;
-        flex-wrap: wrap;
+    }
+
+    .share-menu {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        min-width: auto;
+        border-radius: 16px 16px 0 0;
+        transform: translateY(100%);
+        z-index: 9999;
+    }
+
+    .share-menu.show {
+        transform: translateY(0);
+    }
+
+    .share-menu::before {
+        display: none;
     }
 
     .similar-posts {
