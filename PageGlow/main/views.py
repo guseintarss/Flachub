@@ -1246,11 +1246,15 @@ class NotificationsView(View):
     """Получение уведомлений"""
     def get(self, request, *args, **kwargs):
         try:
-            notifications = Notification.objects.filter(
+            base_qs = Notification.objects.filter(
                 recipient=request.user
-            ).select_related('sender', 'post', 'comment').order_by('-created_at')[:20]
+            ).select_related('sender', 'post', 'comment').order_by('-created_at')
 
-            unread_count = notifications.filter(is_read=False).count()
+            # Сначала считаем непрочитанные (до слайса)
+            unread_count = base_qs.filter(is_read=False).count()
+
+            # Затем применяем слайс
+            notifications = base_qs[:20]
 
             data = {
                 'unread_count': unread_count,
