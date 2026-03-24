@@ -106,8 +106,12 @@ db-reset: ## Сбросить базу данных (ОПАСНО!)
 
 # ===== DJANGO КОМАНДЫ =====
 
-runserver: ## Запустить сервер разработки
+runserver: ## Запустить сервер разработки (обычный Django)
 	python PageGlow/manage.py runserver
+
+runserver-ws: ## Запустить ASGI сервер с поддержкой WebSocket (Daphne)
+	@echo "$${BLUE}Запуск ASGI сервера с поддержкой WebSocket...$${NC}"
+	daphne -b 127.0.0.1 -p 8000 PageGlow.asgi:application
 
 collectstatic: ## Собрать статику
 	python PageGlow/manage.py collectstatic --noinput

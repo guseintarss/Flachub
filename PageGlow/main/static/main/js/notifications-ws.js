@@ -227,7 +227,7 @@
         }
 
         loadNotifications() {
-            fetch('/api/notifications/')
+            fetch('/ajax/notifications/')
                 .then(response => response.json())
                 .then(data => {
                     this.renderNotificationsList(data.notifications || data);
