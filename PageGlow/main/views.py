@@ -737,99 +737,40 @@ class TagPostList(DataMixin, ListView):
 
 
 class Search(DataMixin, ListView):
-    """
-    Поиск по сайту с поддержкой AJAX и фильтров
-    """
-    template_name = 'main/search.html'
+    template_name = 'main/index.html'
     context_object_name = 'posts'
     paginate_by = 10
 
     def get_queryset(self):
-        query = self.request.GET.get('q', '').strip()
-        content_type = self.request.GET.get('type', 'all')
-        sort = self.request.GET.get('sort', 'relevance')
-        category_slug = self.request.GET.get('category')
-        tag_slug = self.request.GET.get('tag')
+        query = self.request.GET.get('q', '')  # Получаем поисковый запрос (пустая строка, если нет)
 
-        # Базовый queryset
-        if content_type == 'posts':
-            queryset = Post.published.select_related('cat', 'author').prefetch_related('tags')
-        elif content_type == 'discussions':
-            # Можно добавить поиск по обсуждениям
-            queryset = Post.published.select_related('cat', 'author').prefetch_related('tags')
-        else:
-            queryset = Post.published.select_related('cat', 'author').prefetch_related('tags')
-
-        # Поиск по запросу
         if query:
-            queryset = queryset.filter(
+            # Ищем совпадение в title ИЛИ в content (без учёта регистра)
+            # Оптимизация: добавляем select_related и prefetch_related
+            search = Post.published.select_related(
+                'cat', 'author'
+            ).prefetch_related(
+                'tags'
+            ).filter(
                 Q(title__icontains=query) |
-                Q(content__icontains=query) |
-                Q(tags__tag__icontains=query)
-            ).distinct()
+                Q(content__icontains=query)
+            )
+        else:
+            # Если запроса нет — возвращаем все опубликованные посты
+            # Оптимизация: select_related для ForeignKey, prefetch_related для ManyToMany
+            search = Post.published.select_related(
+                'cat', 'author'
+            ).prefetch_related(
+                'tags'
+            ).all()
 
-        # Фильтр по категории
-        if category_slug:
-            queryset = queryset.filter(cat__slug=category_slug)
+        return search
 
-        # Фильтр по тегу
-        if tag_slug:
-            queryset = queryset.filter(tags__slug=tag_slug).distinct()
 
-        # Сортировка
-        if sort == 'date':
-            queryset = queryset.order_by('-time_create')
-        elif sort == 'views':
-            queryset = queryset.order_by('-views')
-        else:  # relevance
-            # Для релевантности можно использовать полнотекстовый поиск
-            # Пока сортируем по дате и просмотрам
-            queryset = queryset.order_by('-time_create', '-views')
-
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['q'] = self.request.GET.get('q', '')
-        context['type'] = self.request.GET.get('type', 'all')
-        context['sort'] = self.request.GET.get('sort', 'relevance')
-        context['category'] = self.request.GET.get('category')
-        context['tag'] = self.request.GET.get('tag')
-        context['title'] = f'Поиск: {self.request.GET.get("q", "")}' if self.request.GET.get('q') else 'Поиск по сайту'
-        
-        # Категории для фильтра
-        from main.models import Category
-        context['categories'] = Category.objects.all()
-        
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['q'] = self.request.GET.get('q')
         return context
-
-    def render_to_response(self, context, **response_kwargs):
-        # Проверка на AJAX запрос
-        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
-           self.request.GET.get('ajax') == '1':
-            from django.http import JsonResponse
-            
-            posts = list(context['posts'])
-            data = {
-                'posts': [
-                    {
-                        'id': post.id,
-                        'title': post.title,
-                        'excerpt': post.content[:150] + '...' if len(post.content) > 150 else post.content,
-                        'url': post.get_absolute_url(),
-                        'category': post.cat.name if post.cat else 'Без категории',
-                        'date': post.time_create.strftime('%d.%m.%Y'),
-                        'views': post.views,
-                        'author': post.author.username if post.author else 'Аноним',
-                    }
-                    for post in posts[:5]  # Возвращаем только топ-5 для AJAX
-                ],
-                'total': context['page_obj'].paginator.count,
-                'query': context['q']
-            }
-            return JsonResponse(data)
-        
-        return super().render_to_response(context, **response_kwargs)
 
 
 @method_decorator(login_required, name='dispatch')

@@ -34,11 +34,10 @@
 <div class="feed-container">
     {% for p in posts %}
     <article class="feed-post {% if p.post_type == 'article' %}post-type-article{% elif p.post_type == 'news' %}post-type-news{% elif p.post_type == 'idea' %}post-type-idea{% else %}post-type-post{% endif %}">
-
+        
         <!-- Шапка поста -->
         <div class="post-header">
             <div class="post-author">
-                {% if p.author %}
                 <a href="{% url 'users:author_profile' p.author.username %}" class="text-decoration-none author-link">
                     {% if p.author.photo %}
                     <img class="author-avatar" src="{{ p.author.photo.url }}" alt="{{ p.author.username }}">
@@ -50,15 +49,6 @@
                         <span class="post-time">{{ p.time_create|time_ago }}</span>
                     </div>
                 </a>
-                {% else %}
-                <div class="author-link">
-                    <img class="author-avatar" src="{{ default_image }}" alt="Аноним">
-                    <div class="author-info">
-                        <span class="author-name">Аноним</span>
-                        <span class="post-time">{{ p.time_create|time_ago }}</span>
-                    </div>
-                </div>
-                {% endif %}
             </div>
             
             <div class="post-meta-badges">

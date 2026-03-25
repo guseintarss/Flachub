@@ -1022,6 +1022,35 @@ html.dark-mode .header__burger-menu span{
   z-index: 2;
   color: var(--bg);
   transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+/* Logo image in header */
+.brand-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.brand-logo:hover {
+  transform: scale(1.05);
+}
+
+/* Brand text */
+.brand-text {
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.2px;
+  color: var(--bg);
+  transition: color 0.3s ease;
+}
+
+html.dark-mode .brand-text {
+  color: #fff;
 }
 
 /* Dark mode brand */
@@ -1064,33 +1093,6 @@ html.dark-mode .header-icon {
   align-items: center;
   gap: 10px;
   margin-left: auto;
-}
-
-/* Кнопка поиска в хедере */
-.search-toggle-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  transition: all 0.2s;
-  color: inherit;
-}
-
-.search-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.search-toggle-btn .header-icon {
-  width: 24px;
-  height: 24px;
-}
-
-.dark-mode .search-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
 }
 .nav-item a{
   text-decoration: none;
@@ -1323,6 +1325,7 @@ html.dark-mode .header-icon {
 .content{
   min-width: 0;
 }
+<<<<<<< HEAD
 
 /* ===== Модальное окно поиска ===== */
 .search-modal {
@@ -1633,124 +1636,13 @@ html.dark-mode .header-icon {
 }
 
 /* Старая поисковая форма - скрываем */
+=======
+>>>>>>> parent of a2714707 (search)
 .search-form{
-    display:none !important;
+    display:none;
 }
-
-/* Тёмная тема для модального окна поиска */
-[data-bs-theme="dark"] .search-modal-container,
-.dark-mode .search-modal-container {
-    background: var(--dark-surface, #222325);
-    color: var(--dark-text, #ffffff);
-}
-
-[data-bs-theme="dark"] .search-modal-input,
-.dark-mode .search-modal-input {
-    background: var(--dark-bg, #191a1b);
-    color: var(--dark-text, #ffffff);
-    border-color: var(--dark-border, #2a2f33);
-}
-
-[data-bs-theme="dark"] .search-modal-input:focus,
-.dark-mode .search-modal-input:focus {
-    background: var(--dark-surface, #222325);
-    border-color: var(--dark-primary, #299cf5);
-}
-
-[data-bs-theme="dark"] .search-modal-header,
-.dark-mode .search-modal-header {
-    border-bottom-color: var(--dark-border, #2a2f33);
-}
-
-[data-bs-theme="dark"] .search-modal-footer,
-.dark-mode .search-modal-footer {
-    background: var(--dark-bg2, #2a2b2d);
-    border-top-color: var(--dark-border, #2a2f33);
-}
-
-[data-bs-theme="dark"] .search-result-item,
-.dark-mode .search-result-item {
-    border-bottom-color: var(--dark-border, #2a2f33);
-    color: var(--dark-text, #ffffff);
-}
-
-[data-bs-theme="dark"] .search-result-item:hover,
-.dark-mode .search-result-item:hover {
-    background: var(--dark-bg2, #2a2b2d);
-}
-
-[data-bs-theme="dark"] .search-result-title,
-.dark-mode .search-result-title {
-    color: var(--dark-text, #ffffff);
-}
-
-[data-bs-theme="dark"] .search-result-excerpt,
-.dark-mode .search-result-excerpt {
-    color: var(--dark-muted, #8892b0);
-}
-
-[data-bs-theme="dark"] .search-result-meta,
-.dark-mode .search-result-meta {
-    color: var(--dark-muted, #8892b0);
-}
-
-[data-bs-theme="dark"] .shortcut-badge,
-.dark-mode .shortcut-badge {
-    background: var(--dark-bg2, #2a2b2d);
-    color: var(--dark-text, #ffffff);
-    border-color: var(--dark-border, #2a2f33);
-}
-
-[data-bs-theme="dark"] .search-modal-close,
-.dark-mode .search-modal-close {
-    color: var(--dark-muted, #8892b0);
-}
-
-[data-bs-theme="dark"] .search-modal-close:hover,
-.dark-mode .search-modal-close:hover {
-    background: var(--dark-bg2, #2a2b2d);
-    color: var(--dark-text, #ffffff);
-}
-
-[data-bs-theme="dark"] .search-clear-btn,
-.dark-mode .search-clear-btn {
-    color: var(--dark-muted, #8892b0);
-}
-
-[data-bs-theme="dark"] .search-clear-btn:hover,
-.dark-mode .search-clear-btn:hover {
-    background: var(--dark-bg2, #2a2b2d);
-}
-
-[data-bs-theme="dark"] .search-icon,
-.dark-mode .search-icon {
-    color: var(--dark-muted, #8892b0);
-}
-
-[data-bs-theme="dark"] .search-all-link,
-.dark-mode .search-all-link {
-    color: var(--dark-primary, #299cf5);
-}
-
-[data-bs-theme="dark"] .search-all-link:hover,
-.dark-mode .search-all-link:hover {
-    color: var(--dark-primary-700, #0e62a7);
-}
-
-[data-bs-theme="dark"] .search-no-results,
-.dark-mode .search-no-results {
-    color: var(--dark-muted, #8892b0);
-}
-
-[data-bs-theme="dark"] .search-loading,
-.dark-mode .search-loading {
-    color: var(--dark-muted, #8892b0);
-}
-
-[data-bs-theme="dark"] .spinner,
-.dark-mode .spinner {
-    border-color: var(--dark-border, #2a2f33);
-    border-top-color: var(--dark-primary, #299cf5);
+.search-form.open{
+    display:block;
 }
 .post-content blockquote {
     margin: 15px;
