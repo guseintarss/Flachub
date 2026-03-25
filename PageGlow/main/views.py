@@ -29,6 +29,7 @@ from django.views.generic import TemplateView, ListView, DetailView, FormView, C
 from django.contrib import messages
 from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
+from django.core.cache import cache
 
 from PageGlow import settings
 from main import serializers
@@ -581,7 +582,10 @@ class AddPage(LoginRequiredMixin, DataMixin, CreateView):
 
         # Сохраняем пост
         response = super().form_valid(form)
-        
+
+        # Очищаем кэш сайдбара
+        cache.delete('side_cache')
+
         # Создаём уведомления для подписчиков
         post = self.object
         if post.author:
@@ -670,7 +674,10 @@ class UpdatePage(LoginRequiredMixin, DataMixin, UpdateView):
 
         # Сохраняем объект
         self.object = form.save()
-        
+
+        # Очищаем кэш сайдбара
+        cache.delete('side_cache')
+
         # Выводим сообщение об успехе
         from django.contrib import messages
         messages.success(self.request, 'Статья успешно обновлена!')
@@ -693,6 +700,10 @@ class PostDeleteView(LoginRequiredMixin, DataMixin, DeleteView):
 
     def form_valid(self, form):
         print(f"Удален объект: {self.object}")
+        
+        # Очищаем кэш сайдбара
+        cache.delete('side_cache')
+        
         return super().form_valid(form)
 
     def get_queryset(self):
