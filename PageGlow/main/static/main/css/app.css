@@ -1333,9 +1333,8 @@ html.dark-mode .header-icon {
     bottom: 0;
     z-index: 9999;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
-    padding-top: 80px;
 }
 
 .search-modal-overlay {
