@@ -584,7 +584,7 @@ class AddPage(LoginRequiredMixin, DataMixin, CreateView):
         response = super().form_valid(form)
 
         # Очищаем кэш сайдбара
-        cache.delete('side_cache')
+        cache.clear()
 
         # Создаём уведомления для подписчиков
         post = self.object
@@ -676,7 +676,7 @@ class UpdatePage(LoginRequiredMixin, DataMixin, UpdateView):
         self.object = form.save()
 
         # Очищаем кэш сайдбара
-        cache.delete('side_cache')
+        cache.clear()
 
         # Выводим сообщение об успехе
         from django.contrib import messages
@@ -702,7 +702,7 @@ class PostDeleteView(LoginRequiredMixin, DataMixin, DeleteView):
         print(f"Удален объект: {self.object}")
         
         # Очищаем кэш сайдбара
-        cache.delete('side_cache')
+        cache.clear()
         
         return super().form_valid(form)
 
