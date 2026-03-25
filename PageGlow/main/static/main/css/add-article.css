@@ -573,9 +573,6 @@
    ===================================================== */
 
 @media (max-width: 768px) {
-    .add-article-wizard {
-        padding: 15px;
-    }
 
     .wizard-progress {
         padding: 20px 15px;
