@@ -341,16 +341,33 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Данные для графика активности
-    const dailyStats = {{ daily_stats|safe|default:"[]" }};
-    
+    const dailyStats = {{ daily_stats|safe }} || [];
+
+    // Если нет данных, показываем заглушку
+    if (dailyStats.length === 0) {
+        const emptyLabels = Array.from({length: 7}, (_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - (6 - i));
+            return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+        });
+        dailyStats.push(...emptyLabels.map(l => ({ date: l, views: 0, posts: 0 })));
+    }
+
     const labels = dailyStats.map(item => {
         const date = new Date(item.date);
         return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
     });
-    
+
     const viewsData = dailyStats.map(item => item.views || 0);
     const postsData = dailyStats.map(item => item.posts || 0);
+
+    // Опции для темной темы
+    const isDarkMode = document.body.classList.contains('dark-mode') || 
+                       getComputedStyle(document.body).getPropertyValue('--bg').trim() === '#1a1a1a';
     
+    const textColor = isDarkMode ? '#a0aec0' : '#6b7280';
+    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+
     // График активности
     const activityCtx = document.getElementById('activityChart').getContext('2d');
     new Chart(activityCtx, {
@@ -362,52 +379,99 @@ document.addEventListener('DOMContentLoaded', function() {
                     label: 'Просмотры',
                     data: viewsData,
                     borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    backgroundColor: 'rgba(102, 126, 234, 0.15)',
                     fill: true,
-                    tension: 0.4
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
                 },
                 {
                     label: 'Статьи',
                     data: postsData,
                     borderColor: '#38ef7d',
-                    backgroundColor: 'rgba(56, 239, 125, 0.1)',
+                    backgroundColor: 'rgba(56, 239, 125, 0.15)',
                     fill: true,
-                    tension: 0.4
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: '#38ef7d',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
             plugins: {
                 legend: {
                     display: true,
-                    position: 'top'
+                    position: 'top',
+                    labels: {
+                        color: textColor,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                    titleColor: isDarkMode ? '#fff' : '#1f2937',
+                    bodyColor: isDarkMode ? '#a0aec0' : '#6b7280',
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y;
+                        }
+                    }
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
                     grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
+                        color: gridColor
+                    },
+                    ticks: {
+                        color: textColor,
+                        precision: 0
                     }
                 },
                 x: {
                     grid: {
                         display: false
+                    },
+                    ticks: {
+                        color: textColor
                     }
                 }
             }
         }
     });
-    
+
     // График категорий
     const categoryStats = [
         {% for cat in category_stats %}
         { label: '{{ cat.name }}', count: {{ cat.posts_count }} },
         {% endfor %}
     ];
-    
+
+    // Если нет категорий, показываем заглушку
+    if (categoryStats.length === 0) {
+        categoryStats.push(
+            { label: 'Нет данных', count: 1 }
+        );
+    }
+
     const categoryCtx = document.getElementById('categoryChart').getContext('2d');
     new Chart(categoryCtx, {
         type: 'doughnut',
@@ -418,20 +482,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 backgroundColor: [
                     '#667eea', '#764ba2', '#11998e', '#38ef7d',
                     '#00c6ff', '#0072ff', '#f093fb', '#f5576c',
-                    '#f6d365', '#fda085'
+                    '#f6d365', '#fda085', '#ff9a9e', '#fecfef'
                 ],
-                borderWidth: 0
+                borderWidth: 2,
+                borderColor: isDarkMode ? '#2d3748' : '#fff'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            cutout: '65%',
             plugins: {
                 legend: {
                     position: 'bottom',
                     labels: {
+                        color: textColor,
                         boxWidth: 12,
-                        padding: 10
+                        padding: 12,
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                    titleColor: isDarkMode ? '#fff' : '#1f2937',
+                    bodyColor: isDarkMode ? '#a0aec0' : '#6b7280',
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                    borderWidth: 1,
+                    padding: 12,
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        }
                     }
                 }
             }

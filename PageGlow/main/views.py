@@ -136,7 +136,7 @@ class AdminDashboardView(LoginRequiredMixin, DataMixin, TemplateView):
         # Статистика просмотров по дням (последние 30 дней)
         from django.db.models import Func, F, CharField
         from django.db.models.functions import TruncDate
-        
+
         daily_views = Post.objects.filter(
             time_create__gte=month_ago
         ).annotate(
@@ -145,15 +145,19 @@ class AdminDashboardView(LoginRequiredMixin, DataMixin, TemplateView):
             views=Sum('views'),
             posts=Count('id')
         ).order_by('date')
-        
-        context['daily_stats'] = list(daily_views)
-        
+
+        # Конвертируем дату в строку для JSON
+        context['daily_stats'] = [
+            {'date': item['date'].strftime('%Y-%m-%d'), 'views': item['views'] or 0, 'posts': item['posts'] or 0}
+            for item in daily_views
+        ]
+
         # Уведомления (непрочитанные)
         from main.models import Notification
         context['unread_notifications'] = Notification.objects.filter(
             is_read=False
         ).count()
-        
+
         return context
 
 
