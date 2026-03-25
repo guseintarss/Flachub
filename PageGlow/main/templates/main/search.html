@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load main_extras %}
 {% load static %}
 
 {% block meta_title %}Поиск{% if q %}: {{ q }}{% endif %} | ФлакХаб{% endblock %}
@@ -23,7 +24,7 @@
                     autofocus
                 >
                 {% if q %}
-                <a href="{% url 'search' %}" class="search-clear-btn" title="Очистить">
+                <a href="{% url 'search' %}" class="text-decoration-none search-clear-btn" title="Очистить">
                     <i class="fas fa-times"></i>
                 </a>
                 {% endif %}
@@ -43,11 +44,11 @@
             <div class="search-filters">
                 <span class="filter-label"><i class="fas fa-filter"></i> Тип:</span>
                 <a href="?q={{ q }}&type=all&sort={{ sort }}" 
-                   class="filter-btn {% if post_type == 'all' %}active{% endif %}">
+                   class="text-decoration-none filter-btn {% if post_type == 'all' %}active{% endif %}">
                     Все
                 </a>
                 <a href="?q={{ q }}&type=articles&sort={{ sort }}" 
-                   class="filter-btn {% if post_type == 'articles' %}active{% endif %}">
+                   class="text-decoration-none filter-btn {% if post_type == 'articles' %}active{% endif %}">
                     <i class="fas fa-file-alt"></i> Статьи
                 </a>
             </div>
@@ -56,15 +57,15 @@
                 <span class="sort-label"><i class="fas fa-sort"></i> Сортировка:</span>
                 <div class="sort-buttons">
                     <a href="?q={{ q }}&type={{ post_type }}&sort=relevance" 
-                       class="sort-btn {% if sort == 'relevance' %}active{% endif %}">
+                       class="text-decoration-none sort-btn {% if sort == 'relevance' %}active{% endif %}">
                         По релевантности
                     </a>
                     <a href="?q={{ q }}&type={{ post_type }}&sort=date" 
-                       class="sort-btn {% if sort == 'date' %}active{% endif %}">
+                       class="text-decoration-none sort-btn {% if sort == 'date' %}active{% endif %}">
                         <i class="fas fa-calendar"></i> По дате
                     </a>
                     <a href="?q={{ q }}&type={{ post_type }}&sort=views" 
-                       class="sort-btn {% if sort == 'views' %}active{% endif %}">
+                       class="text-decoration-none sort-btn {% if sort == 'views' %}active{% endif %}">
                         <i class="fas fa-eye"></i> По просмотрам
                     </a>
                 </div>
@@ -85,55 +86,104 @@
         <!-- Список результатов -->
         {% if posts %}
         <div class="search-results-grid">
-            {% for post in posts %}
-            <article class="search-result-card">
-                <a href="{{ post.get_absolute_url }}" class="search-result-link"></a>
-                <div class="search-result-card-body">
-                    <div class="search-result-header">
-                        <h2 class="search-result-title">{{ post.title }}</h2>
-                        {% if post.cat %}
-                        <a href="{{ post.cat.get_absolute_url }}" class="result-category">
-                            <i class="fas fa-folder"></i> {{ post.cat.name }}
-                        </a>
-                        {% endif %}
+            {% for p in posts %}
+    <article class="feed-post {% if p.post_type == 'article' %}post-type-article{% elif p.post_type == 'news' %}post-type-news{% elif p.post_type == 'idea' %}post-type-idea{% else %}post-type-post{% endif %}">
+        
+        <!-- Шапка поста -->
+        <div class="post-header">
+            <div class="post-author">
+                <a href="{% url 'users:author_profile' p.author.username %}" class="text-decoration-none author-link">
+                    {% if p.author.photo %}
+                    <img class="author-avatar" src="{{ p.author.photo.url }}" alt="{{ p.author.username }}">
+                    {% else %}
+                    <img class="author-avatar" src="{{ default_image }}" alt="{{ p.author.username }}">
+                    {% endif %}
+                    <div class="author-info">
+                        <span class="author-name">{{ p.author.username|default:'Неизвестно' }}</span>
+                        <span class="post-time">{{ p.time_create|time_ago }}</span>
                     </div>
-                    
-                    <div class="search-result-excerpt">
-                        {{ post.content|striptags|truncatewords:20 }}
-                    </div>
-                    
-                    <div class="search-result-footer">
-                        <div class="result-meta">
-                            {% if post.author %}
-                            <span class="result-author">
-                                {% if post.author.photo %}
-                                <img src="{{ post.author.photo.url }}" alt="{{ post.author.username }}">
-                                {% else %}
-                                <img src="/static/images/logo.jpg" alt="{{ post.author.username }}">
-                                {% endif %}
-                                <span>{{ post.author.username }}</span>
-                            </span>
-                            {% endif %}
-                            <span class="result-date">
-                                <i class="far fa-calendar"></i> {{ post.time_create|date:"d.m.Y" }}
-                            </span>
-                            <span class="result-views">
-                                <i class="far fa-eye"></i> {{ post.views }}
-                            </span>
-                        </div>
-                        {% with tags=post.tags.all %}
-                        {% if tags %}
-                        <div class="result-tags">
-                            {% for tag in tags|slice:":3" %}
-                            <a href="{{ tag.get_absolute_url }}" class="result-tag">#{{ tag.name }}</a>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                        {% endwith %}
-                    </div>
+                </a>
+            </div>
+            
+            <div class="post-meta-badges">
+                <span class="post-type-badge" title="Тип публикации">
+                    {% if p.post_type == 'article' %}
+                        <i class="fas fa-file-alt"></i> Статья
+                    {% elif p.post_type == 'news' %}
+                        <i class="fas fa-newspaper"></i> Новость
+                    {% elif p.post_type == 'idea' %}
+                        <i class="fas fa-lightbulb"></i> Идея
+                    {% else %}
+                        <i class="fas fa-sticky-note"></i> Пост
+                    {% endif %}
+                </span>
+                <span class="category-badge">{{ p.cat.name }}</span>
+            </div>
+        </div>
+
+        <!-- Контент поста -->
+        <div class="post-body">
+            <h2 class="post-title">
+                <a href="{{ p.get_absolute_url }}">{{ p.title }}</a>
+            </h2>
+            
+            {% if p.photo %}
+                <div class="post-cover">
+                    <a href="{{ p.get_absolute_url }}">
+                        <img class="cover-image" src="{{ p.photo.url }}" alt="{{ p.title }}">
+                    </a>
                 </div>
-            </article>
-            {% endfor %}
+                {% endif %}
+                
+                <div class="post-excerpt">
+                    {% autoescape off %}
+                    {{ p.content|truncatewords_html:30|safe }}
+                    {% endautoescape %}
+                </div>
+            </div>
+
+            <!-- Подвал поста -->
+            <div class="post-footer">
+                <div class="post-tags">
+                    {% with p.tags.all as tags %}
+                        {% if tags %}
+                            {% for t in tags|slice:":5" %}
+                                <a href="{{ t.get_absolute_url }}" class="text-decoration-none tag-chip">{{ t.tag }}</a>
+                            {% endfor %}
+                            {% if tags|length > 5 %}
+                                <span class="tags-more">+{{ tags|length|add:"-5" }}</span>
+                            {% endif %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+
+                <div class="post-stats-and-btn">
+                    <div class="post-stats">
+                        <span class="stat-item" title="Просмотры">
+                            <i class="fas fa-eye"></i> {{ p.views }}
+                        </span>
+                        <span class="stat-item" title="Лайки">
+                            <i class="fas fa-heart"></i> {{ p.number_of_likes }}
+                        </span>
+                        <span class="stat-item" title="Время чтения">
+                            <i class="fas fa-clock"></i> {{ p.reading_time }} мин
+                        </span>
+                    </div>
+
+                    <a class="text-decoration-none read-more-btn" href="{{ p.get_absolute_url }}">
+                        Читать далее
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </article>
+        {% empty %}
+        <div class="empty-feed">
+            <i class="fas fa-inbox"></i>
+            <h3>Пока нет публикаций</h3>
+            <p>Будьте первым, кто опубликует материал!</p>
+        </div>
+        {% endfor %}
         </div>
 
         <!-- Пагинация -->
@@ -172,7 +222,7 @@
             <h3><i class="fas fa-folder"></i> Категории</h3>
             <div class="category-grid">
                 {% for cat in categories|slice:":6" %}
-                <a href="?q=&type=articles" class="search-category-card">
+                <a href="{{cat.get_absolute_url}}" class="text-decoration-none search-category-card">
                     <i class="fas fa-folder"></i>
                     <span>{{ cat.name }}</span>
                 </a>
@@ -185,10 +235,11 @@
 {% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/feed.css' %}">
 <style>
 /* ===== Search Page - Clean IT Style ===== */
 .search-page-container {
-    padding: 2rem 0;
+    padding: 0;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -196,14 +247,14 @@
 /* Hero секция с поиском */
 .search-hero {
     text-align: center;
-    margin-bottom: 2rem;
-    padding: 2rem 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem 0.5rem;
     background: var(--bg-secondary);
     border-radius: 16px;
 }
 
 .search-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
     margin-bottom: 1.5rem;
     color: var(--text-primary);
     display: flex;
@@ -240,8 +291,8 @@
 
 .search-hero-input {
     width: 100%;
-    padding: 1rem 3.5rem 1rem 3rem;
-    border: 2px solid var(--border);
+    padding: 0.3rem 2.5rem 0.5rem 3rem;
+    border: 1px solid var(--border);
     border-radius: 12px;
     font-size: 1rem;
     background: var(--surface);
@@ -252,7 +303,7 @@
 .search-hero-input:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(12, 106, 207, 0.12);
+    box-shadow: 0 0 0 2px rgba(12, 106, 207, 0.12);
 }
 
 .search-clear-btn {
@@ -274,7 +325,7 @@
 }
 
 .search-submit-btn {
-    padding: 1rem 1.5rem;
+    padding: 0.3rem 1.5rem;
     background: var(--primary);
     color: white;
     border: none;
