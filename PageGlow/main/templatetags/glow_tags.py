@@ -18,3 +18,13 @@ def show_categories(cat_selected=0):
 @register.inclusion_tag('main/list_tags.html')
 def show_all_tags():
     return {'tags': TagPost.objects.all()}
+
+@register.simple_tag
+def get_tags():
+    """Возвращает все теги для использования в шаблонах"""
+    return TagPost.objects.all()
+
+@register.simple_tag
+def get_categories():
+    """Возвращает все категории для использования в шаблонах"""
+    return Category.objects.all()
