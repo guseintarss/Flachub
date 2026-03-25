@@ -73,25 +73,36 @@ class AdminDashboardView(LoginRequiredMixin, DataMixin, TemplateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        from django.db.models import Count, Sum, Q
+        from django.db.models import Count, Sum, Q, Avg
         from django.utils import timezone
         from datetime import timedelta
         from django.contrib.auth import get_user_model
-        
+        from main.models import TagPost, Notification
+
         User = get_user_model()
         context = super().get_context_data(**kwargs)
-        
+
         now = timezone.now()
         week_ago = now - timedelta(days=7)
         month_ago = now - timedelta(days=30)
-        
+        today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
         # Общая статистика
         context['total_posts'] = Post.objects.count()
         context['published_posts'] = Post.published.count()
+        context['draft_posts'] = Post.objects.filter(is_published=False).count()
         context['total_users'] = User.objects.filter(is_active=True).count()
+        context['active_users_count'] = User.objects.filter(
+            is_active=True,
+            last_login__gte=month_ago
+        ).count()
         context['total_comments'] = Comment.objects.count()
         context['total_discussions'] = Discussion.objects.filter(is_published=True).count()
-        
+        context['discussions_open'] = Discussion.objects.filter(
+            is_published=True,
+            is_closed=False
+        ).count()
+
         # Статистика за неделю
         context['posts_week'] = Post.objects.filter(
             time_create__gte=week_ago
@@ -102,7 +113,10 @@ class AdminDashboardView(LoginRequiredMixin, DataMixin, TemplateView):
         context['comments_week'] = Comment.objects.filter(
             created_at__gte=week_ago
         ).count()
-        
+        context['comments_today'] = Comment.objects.filter(
+            created_at__gte=today
+        ).count()
+
         # Статистика за месяц
         context['posts_month'] = Post.objects.filter(
             time_create__gte=month_ago
@@ -110,31 +124,71 @@ class AdminDashboardView(LoginRequiredMixin, DataMixin, TemplateView):
         context['users_month'] = User.objects.filter(
             date_joined__gte=month_ago
         ).count()
+
+        # Просмотры и тренды
+        total_views = Post.objects.aggregate(total=Sum('views'))['total'] or 0
+        context['total_views'] = total_views
         
+        views_this_week = Post.objects.filter(time_create__gte=week_ago).aggregate(
+            total=Sum('views')
+        )['total'] or 0
+        views_last_week = Post.objects.filter(
+            time_create__gte=week_ago - timedelta(days=7),
+            time_create__lt=week_ago
+        ).aggregate(total=Sum('views'))['total'] or 0
+        context['views_trend'] = int(((views_this_week - max(views_last_week, 1)) / max(views_last_week, 1)) * 100) if views_last_week else 0
+
+        # Процент опубликованных
+        context['published_percentage'] = round((context['published_posts'] / max(context['total_posts'], 1)) * 100)
+
+        # Средние значения
+        context['avg_comments_per_post'] = Comment.objects.count() / max(Post.objects.count(), 1)
+        context['avg_views_per_post'] = total_views / max(Post.objects.count(), 1)
+        context['avg_comments_per_discussion'] = Discussion.objects.annotate(
+            comment_count=Count('comments')
+        ).aggregate(Avg('comment_count'))['comment_count__avg'] or 0
+
         # Популярные статьи (топ 10)
         context['popular_posts'] = Post.published.select_related(
             'author', 'cat'
         ).annotate(
             likes_count=Count('likes')
         ).order_by('-views', '-likes_count')[:10]
-        
+
         # Активные пользователи (топ 10 по постам)
         context['active_users'] = User.objects.annotate(
             posts_count=Count('posts', filter=Q(posts__is_published=True))
         ).filter(posts_count__gt=0).order_by('-posts_count')[:10]
-        
+
         # Последние комментарии
         context['recent_comments'] = Comment.objects.select_related(
             'author', 'post'
         ).order_by('-created_at')[:10]
-        
-        # Статистика по категориям
-        context['category_stats'] = Category.objects.annotate(
+
+        # Статистика по категориям с цветами
+        colors = ['#667eea', '#764ba2', '#11998e', '#38ef7d', '#00c6ff', '#0072ff', 
+                  '#f093fb', '#f5576c', '#f6d365', '#fda085', '#ff9a9e', '#fecfef']
+        category_stats = Category.objects.annotate(
             posts_count=Count('posts', filter=Q(posts__is_published=True))
         ).filter(posts_count__gt=0).order_by('-posts_count')
         
+        # Добавляем цвета к категориям
+        for i, cat in enumerate(category_stats):
+            cat.color = colors[i % len(colors)]
+        context['category_stats'] = category_stats
+
+        # Теги
+        context['tags_count'] = TagPost.objects.count()
+
+        # Уведомления
+        context['unread_notifications'] = Notification.objects.filter(
+            is_read=False
+        ).count()
+        context['read_notifications'] = Notification.objects.filter(
+            is_read=True
+        ).count()
+
         # Статистика просмотров по дням (последние 30 дней)
-        from django.db.models import Func, F, CharField
         from django.db.models.functions import TruncDate
 
         daily_views = Post.objects.filter(
@@ -151,12 +205,6 @@ class AdminDashboardView(LoginRequiredMixin, DataMixin, TemplateView):
             {'date': item['date'].strftime('%Y-%m-%d'), 'views': item['views'] or 0, 'posts': item['posts'] or 0}
             for item in daily_views
         ]
-
-        # Уведомления (непрочитанные)
-        from main.models import Notification
-        context['unread_notifications'] = Notification.objects.filter(
-            is_read=False
-        ).count()
 
         return context
 

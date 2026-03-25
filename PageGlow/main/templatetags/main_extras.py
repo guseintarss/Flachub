@@ -85,7 +85,7 @@ def has_user_liked(comment, user):
 def render_pagination(page_obj, page_type='posts'):
     """
     Отображает навигацию пагинации
-    
+
     Args:
         page_obj: объект страницы Django Paginator
         page_type: тип пагинации ('posts', 'comments', 'discussions')
@@ -94,3 +94,21 @@ def render_pagination(page_obj, page_type='posts'):
         'page_obj': page_obj,
         'page_type': page_type,
     }
+
+
+@register.filter
+def absolute(value):
+    """Возвращает абсолютное значение числа"""
+    try:
+        return abs(float(value))
+    except (ValueError, TypeError):
+        return 0
+
+
+@register.filter
+def intcomma(value):
+    """Добавляет разделители тысяч (1 000 000)"""
+    try:
+        return f"{int(value):,}".replace(',', ' ')
+    except (ValueError, TypeError):
+        return value
