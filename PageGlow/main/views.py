@@ -737,39 +737,45 @@ class TagPostList(DataMixin, ListView):
 
 
 class Search(DataMixin, ListView):
-    template_name = 'main/index.html'
+    template_name = 'main/search.html'
     context_object_name = 'posts'
-    paginate_by = 10
+    paginate_by = 12
 
     def get_queryset(self):
-        query = self.request.GET.get('q', '')  # Получаем поисковый запрос (пустая строка, если нет)
+        query = self.request.GET.get('q', '').strip()
+        post_type = self.request.GET.get('type', 'all')
+        sort = self.request.GET.get('sort', 'relevance')
 
         if query:
-            # Ищем совпадение в title ИЛИ в content (без учёта регистра)
-            # Оптимизация: добавляем select_related и prefetch_related
-            search = Post.published.select_related(
-                'cat', 'author'
-            ).prefetch_related(
-                'tags'
-            ).filter(
-                Q(title__icontains=query) |
-                Q(content__icontains=query)
+            search = Post.published.select_related('cat', 'author').prefetch_related('tags')
+            
+            # Фильтр по типу контента
+            if post_type == 'articles':
+                search = search.filter(cat__isnull=False)
+            
+            # Поиск по title и content
+            search = search.filter(
+                Q(title__icontains=query) | Q(content__icontains=query)
             )
+            
+            # Сортировка
+            if sort == 'date':
+                search = search.order_by('-time_create')
+            elif sort == 'views':
+                search = search.order_by('-views')
         else:
-            # Если запроса нет — возвращаем все опубликованные посты
-            # Оптимизация: select_related для ForeignKey, prefetch_related для ManyToMany
-            search = Post.published.select_related(
-                'cat', 'author'
-            ).prefetch_related(
-                'tags'
-            ).all()
+            search = Post.published.select_related('cat', 'author').prefetch_related('tags').order_by('-time_create')
 
         return search
 
-
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data(*args, **kwargs)
-        context['q'] = self.request.GET.get('q')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        request = self.request
+        context['q'] = request.GET.get('q', '')
+        context['post_type'] = request.GET.get('type', 'all')
+        context['sort'] = request.GET.get('sort', 'relevance')
+        context['categories'] = Category.objects.all()
+        context['title'] = 'Поиск'
         return context
 
 

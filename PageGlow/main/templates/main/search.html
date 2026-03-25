@@ -1,0 +1,783 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta_title %}Поиск{% if q %}: {{ q }}{% endif %} | ФлакХаб{% endblock %}
+
+{% block content %}
+<div class="search-page-container">
+    <!-- Заголовок с поиском -->
+    <div class="search-hero">
+        <h1 class="search-title">
+            <i class="fas fa-search"></i>
+            Поиск
+        </h1>
+        <form action="{% url 'search' %}" method="get" class="search-hero-form">
+            <div class="search-input-group">
+                <i class="fas fa-search"></i>
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ q }}"
+                    placeholder="Что вы хотите найти?"
+                    class="search-hero-input"
+                    autofocus
+                >
+                {% if q %}
+                <a href="{% url 'search' %}" class="search-clear-btn" title="Очистить">
+                    <i class="fas fa-times"></i>
+                </a>
+                {% endif %}
+            </div>
+            <button type="submit" class="search-submit-btn">
+                <i class="fas fa-search"></i>
+                <span>Найти</span>
+            </button>
+        </form>
+    </div>
+
+    {% if q %}
+    <!-- Результаты поиска -->
+    <div class="search-results-section">
+        <!-- Фильтры и сортировка -->
+        <div class="search-toolbar">
+            <div class="search-filters">
+                <span class="filter-label"><i class="fas fa-filter"></i> Тип:</span>
+                <a href="?q={{ q }}&type=all&sort={{ sort }}" 
+                   class="filter-btn {% if post_type == 'all' %}active{% endif %}">
+                    Все
+                </a>
+                <a href="?q={{ q }}&type=articles&sort={{ sort }}" 
+                   class="filter-btn {% if post_type == 'articles' %}active{% endif %}">
+                    <i class="fas fa-file-alt"></i> Статьи
+                </a>
+            </div>
+            
+            <div class="search-sort">
+                <span class="sort-label"><i class="fas fa-sort"></i> Сортировка:</span>
+                <div class="sort-buttons">
+                    <a href="?q={{ q }}&type={{ post_type }}&sort=relevance" 
+                       class="sort-btn {% if sort == 'relevance' %}active{% endif %}">
+                        По релевантности
+                    </a>
+                    <a href="?q={{ q }}&type={{ post_type }}&sort=date" 
+                       class="sort-btn {% if sort == 'date' %}active{% endif %}">
+                        <i class="fas fa-calendar"></i> По дате
+                    </a>
+                    <a href="?q={{ q }}&type={{ post_type }}&sort=views" 
+                       class="sort-btn {% if sort == 'views' %}active{% endif %}">
+                        <i class="fas fa-eye"></i> По просмотрам
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Счетчик результатов -->
+        <div class="search-results-info">
+            <span class="results-count">
+                {% if page_obj.paginator.count > 0 %}
+                    Найдено: {{ page_obj.paginator.count }}
+                {% else %}
+                    Ничего не найдено
+                {% endif %}
+            </span>
+        </div>
+
+        <!-- Список результатов -->
+        {% if posts %}
+        <div class="search-results-grid">
+            {% for post in posts %}
+            <article class="search-result-card">
+                <a href="{{ post.get_absolute_url }}" class="search-result-link"></a>
+                <div class="search-result-card-body">
+                    <div class="search-result-header">
+                        <h2 class="search-result-title">{{ post.title }}</h2>
+                        {% if post.cat %}
+                        <a href="{{ post.cat.get_absolute_url }}" class="result-category">
+                            <i class="fas fa-folder"></i> {{ post.cat.name }}
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="search-result-excerpt">
+                        {{ post.content|striptags|truncatewords:20 }}
+                    </div>
+                    
+                    <div class="search-result-footer">
+                        <div class="result-meta">
+                            {% if post.author %}
+                            <span class="result-author">
+                                {% if post.author.photo %}
+                                <img src="{{ post.author.photo.url }}" alt="{{ post.author.username }}">
+                                {% else %}
+                                <img src="/static/images/logo.jpg" alt="{{ post.author.username }}">
+                                {% endif %}
+                                <span>{{ post.author.username }}</span>
+                            </span>
+                            {% endif %}
+                            <span class="result-date">
+                                <i class="far fa-calendar"></i> {{ post.time_create|date:"d.m.Y" }}
+                            </span>
+                            <span class="result-views">
+                                <i class="far fa-eye"></i> {{ post.views }}
+                            </span>
+                        </div>
+                        {% with tags=post.tags.all %}
+                        {% if tags %}
+                        <div class="result-tags">
+                            {% for tag in tags|slice:":3" %}
+                            <a href="{{ tag.get_absolute_url }}" class="result-tag">#{{ tag.name }}</a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if page_obj.has_other_pages %}
+        {% include 'main/includes/pagination.html' %}
+        {% endif %}
+
+        {% else %}
+        <!-- Нет результатов -->
+        <div class="search-no-results">
+            <div class="no-results-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <h3>Ничего не найдено</h3>
+            <p>По запросу "<strong>{{ q }}</strong>" ничего не найдено</p>
+            <div class="no-results-tips">
+                <h4>Советы:</h4>
+                <ul>
+                    <li>Проверьте правильность написания</li>
+                    <li>Попробуйте более общие ключевые слова</li>
+                    <li>Используйте другие фильтры</li>
+                    <li>Посмотрите <a href="{% url 'discussions' %}">обсуждения</a></li>
+                </ul>
+            </div>
+            <a href="{% url 'home' %}" class="btn btn-primary">
+                <i class="fas fa-home"></i> На главную
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <!-- Стартовая страница поиска -->
+    <div class="search-start-section">
+        <div class="search-categories">
+            <h3><i class="fas fa-folder"></i> Категории</h3>
+            <div class="category-grid">
+                {% for cat in categories|slice:":6" %}
+                <a href="?q=&type=articles" class="search-category-card">
+                    <i class="fas fa-folder"></i>
+                    <span>{{ cat.name }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== Search Page - Clean IT Style ===== */
+.search-page-container {
+    padding: 2rem 0;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Hero секция с поиском */
+.search-hero {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 2rem 1rem;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+}
+
+.search-title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.search-title i {
+    color: var(--primary);
+}
+
+.search-hero-form {
+    display: flex;
+    gap: 1rem;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.search-input-group {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input-group i {
+    position: absolute;
+    left: 1.25rem;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
+.search-hero-input {
+    width: 100%;
+    padding: 1rem 3.5rem 1rem 3rem;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 1rem;
+    background: var(--surface);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.search-hero-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(12, 106, 207, 0.12);
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 1rem;
+    color: var(--text-muted);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.search-clear-btn:hover {
+    background: var(--danger);
+    color: white;
+}
+
+.search-submit-btn {
+    padding: 1rem 1.5rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.search-submit-btn:hover {
+    background: var(--primary-700);
+    transform: translateY(-1px);
+}
+
+/* Toolbar с фильтрами */
+.search-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.search-filters, .search-sort {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filter-label, .sort-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-btn, .sort-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-btn:hover, .sort-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.filter-btn.active, .sort-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.sort-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Информация о результатах */
+.search-results-info {
+    margin-bottom: 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.results-count {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* Сетка результатов */
+.search-results-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.search-result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.search-result-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.search-result-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+.search-result-card-body {
+    position: relative;
+    z-index: 2;
+}
+
+.search-result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.search-result-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.result-category {
+    padding: 0.25rem 0.75rem;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.search-result-excerpt {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.search-result-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.result-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.result-author {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.result-author img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.result-date, .result-views {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.result-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.result-tag {
+    padding: 0.25rem 0.625rem;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.result-tag:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Нет результатов */
+.search-no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.no-results-icon {
+    font-size: 4rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+}
+
+.search-no-results h3 {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.search-no-results p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.no-results-tips {
+    background: var(--bg-secondary);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin: 2rem auto;
+    max-width: 500px;
+    text-align: left;
+}
+
+.no-results-tips h4 {
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.no-results-tips ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.no-results-tips li {
+    margin-bottom: 0.5rem;
+}
+
+.no-results-tips a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.no-results-tips a:hover {
+    text-decoration: underline;
+}
+
+/* Стартовая секция */
+.search-start-section {
+    display: grid;
+    gap: 3rem;
+}
+
+.search-categories h3, .search-popular h3 {
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.search-categories h3 i, .search-popular h3 i {
+    color: var(--primary);
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.search-category-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.search-category-card:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(12, 106, 207, 0.2);
+}
+
+.search-category-card i {
+    font-size: 2rem;
+}
+
+.search-category-card span {
+    font-weight: 500;
+    text-align: center;
+}
+
+.popular-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.popular-card {
+    padding: 1.25rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.popular-card:hover {
+    background: var(--surface);
+    border: 1px solid var(--primary);
+    transform: translateY(-2px);
+}
+
+.popular-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.popular-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .search-page-container {
+        padding: 1rem;
+    }
+
+    .search-hero {
+        padding: 1.5rem 1rem;
+    }
+
+    .search-title {
+        font-size: 1.5rem;
+    }
+
+    .search-hero-form {
+        flex-direction: column;
+    }
+
+    .search-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .search-filters, .search-sort {
+        width: 100%;
+    }
+
+    .sort-buttons {
+        flex-wrap: wrap;
+    }
+
+    .search-result-header {
+        flex-direction: column;
+    }
+
+    .search-result-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .category-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+
+    .popular-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Темная тема */
+[data-bs-theme="dark"] .search-hero,
+.dark-mode .search-hero {
+    background: var(--dark-bg2);
+}
+
+[data-bs-theme="dark"] .search-toolbar,
+.dark-mode .search-toolbar {
+    background: var(--dark-bg2);
+}
+
+[data-bs-theme="dark"] .filter-btn,
+.dark-mode .filter-btn,
+[data-bs-theme="dark"] .sort-btn,
+.dark-mode .sort-btn {
+    background: var(--dark-surface);
+    border-color: var(--dark-border);
+    color: var(--dark-muted);
+}
+
+[data-bs-theme="dark"] .filter-btn:hover,
+.dark-mode .filter-btn:hover,
+[data-bs-theme="dark"] .sort-btn:hover,
+.dark-mode .sort-btn:hover {
+    border-color: var(--dark-primary);
+    color: var(--dark-primary);
+}
+
+[data-bs-theme="dark"] .filter-btn.active,
+.dark-mode .filter-btn.active,
+[data-bs-theme="dark"] .sort-btn.active,
+.dark-mode .sort-btn.active {
+    background: var(--dark-primary);
+    color: white;
+    border-color: var(--dark-primary);
+}
+
+[data-bs-theme="dark"] .search-result-card,
+.dark-mode .search-result-card {
+    background: var(--dark-surface);
+    border-color: var(--dark-border);
+}
+
+[data-bs-theme="dark"] .search-result-card:hover,
+.dark-mode .search-result-card:hover {
+    border-color: var(--dark-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .result-category,
+.dark-mode .result-category {
+    background: rgba(41, 156, 245, 0.15);
+    color: var(--dark-primary);
+}
+
+[data-bs-theme="dark"] .result-tag,
+.dark-mode .result-tag {
+    background: var(--dark-bg2);
+    color: var(--dark-muted);
+}
+
+[data-bs-theme="dark"] .result-tag:hover,
+.dark-mode .result-tag:hover {
+    background: var(--dark-primary);
+    color: white;
+}
+
+[data-bs-theme="dark"] .search-category-card,
+.dark-mode .search-category-card {
+    background: var(--dark-bg2);
+}
+
+[data-bs-theme="dark"] .search-category-card:hover,
+.dark-mode .search-category-card:hover {
+    background: var(--dark-primary);
+    box-shadow: 0 8px 20px rgba(41, 156, 245, 0.3);
+}
+
+[data-bs-theme="dark"] .popular-card,
+.dark-mode .popular-card {
+    background: var(--dark-bg2);
+}
+
+[data-bs-theme="dark"] .popular-card:hover,
+.dark-mode .popular-card:hover {
+    background: var(--dark-surface);
+    border-color: var(--dark-primary);
+}
+
+[data-bs-theme="dark"] .no-results-tips,
+.dark-mode .no-results-tips {
+    background: var(--dark-bg2);
+}
+</style>
+{% endblock %}
