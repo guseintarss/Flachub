@@ -31,10 +31,14 @@
     left: 0;
     height: 4px;
     background: linear-gradient(90deg, var(--primary) 0%, var(--primary-700) 100%);
-    width: 0%;
     z-index: 1000;
-    transition: width 0.1s ease;
     box-shadow: 0 0 10px rgba(12, 106, 207, 0.4);
+}
+
+/* Dark mode */
+html.dark-mode .reading-progress-bar {
+    background: linear-gradient(90deg, var(--dark-primary) 0%, var(--dark-primary-700) 100%);
+    box-shadow: 0 0 10px rgba(41, 156, 245, 0.4);
 }
 
 /* =====================================================

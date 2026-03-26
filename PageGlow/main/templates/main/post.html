@@ -318,28 +318,51 @@ function showToast(message, duration = 3000) {
     }, duration);
 }
 
-// Прогресс чтения
-window.addEventListener('scroll', function() {
-    const article = document.querySelector('article.post');
+// Прогресс чтения и кнопка наверх
+function updateProgress() {
+    const article = document.querySelector('.article-wrapper');
     const progressBar = document.getElementById('reading-progress');
+    const scrollToTopBtn = document.getElementById('scrollToTop');
     
+    // Получаем скролл из body (так как скроллится именно он)
+    const scrolled = document.body.scrollTop || document.documentElement.scrollTop || window.scrollY || 0;
+    const windowHeight = window.innerHeight;
+
+    // Прогресс чтения статьи
     if (article && progressBar) {
         const articleTop = article.offsetTop;
         const articleHeight = article.offsetHeight;
-        const articleBottom = articleTop + articleHeight;
-        const scrolled = window.scrollY;
-        const windowHeight = window.innerHeight;
         
-        // Расчет прогресса: сколько статьи прокручено от начала до конца
-        let progress = 0;
-        if (scrolled + windowHeight >= articleTop) {
-            progress = ((scrolled + windowHeight - articleTop) / (articleHeight + windowHeight)) * 100;
-        }
+        // 0% когда верх статьи на уровне верха экрана
+        // 100% когда низ статьи на уровне низа экрана
+        const start = articleTop;  // Начало отсчёта
+        const end = articleTop + articleHeight - windowHeight;  // Конец отсчёта
+        const total = end - start;
+        const current = scrolled - start;
+        
+        let progress = (current / total) * 100;
         progress = Math.min(100, Math.max(0, progress));
         
         progressBar.style.width = progress + '%';
     }
-});
+    
+    // Кнопка наверх
+    if (scrollToTopBtn) {
+        if (scrolled > 300) {
+            scrollToTopBtn.classList.add('visible');
+        } else {
+            scrollToTopBtn.classList.remove('visible');
+        }
+    }
+}
+
+// Отслеживаем скролл на body (так как он скроллится)
+document.body.addEventListener('scroll', updateProgress, { passive: true });
+// И на всякий случай на window
+window.addEventListener('scroll', updateProgress, { passive: true });
+
+// Вызываем при загрузке
+updateProgress();
 
 // Копирование ссылки
 function copyLink() {
