@@ -16,7 +16,7 @@ from django.contrib import messages
 from rest_framework import viewsets, permissions
 
 from PageGlow import settings
-from main.models import Discussion, Post
+from main.models import Discussion, Post, UserAchievement
 from main.utils import DataMixin
 from users.forms import LoginUserForm, RegisterUserForm, ProfileUserForm, UserPasswordChangeForm
 from users.models import User, Rule
@@ -169,6 +169,11 @@ def profile_user(request):
         author = user,
     ).prefetch_related('tags').select_related('author', 'cat')
 
+    # Достижения пользователя
+    user_achievements = UserAchievement.objects.filter(
+        user=user
+    ).select_related('badge').order_by('-earned_at')
+
     extra_context = {
         'title': 'Профиль пользователя',
         'default_image': settings.DEFAULT_USER_IMAGE,
@@ -178,6 +183,7 @@ def profile_user(request):
         'favorites': favorites,
         'discussion_dis': discussions_data,
         'user': user,
+        'user_achievements': user_achievements,
     }
     return render(request, 'users/profile.html', extra_context)
 

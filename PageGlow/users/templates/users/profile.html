@@ -69,6 +69,36 @@ document.body.addEventListener('htmx:configRequest', function (event) {
         </div>
     </div>
 
+    <!-- Достижения -->
+    {% if user_achievements %}
+    <div class="achievements-section">
+        <h3 class="achievements-title">
+            <i class="fas fa-trophy"></i> Достижения
+        </h3>
+        <div class="badges-grid">
+            {% for achievement in user_achievements %}
+            <div class="badge-card" style="border-left-color: {{ achievement.badge.color }}">
+                <div class="badge-icon" style="background: {{ achievement.badge.color }}20">
+                    <span>{{ achievement.badge.icon }}</span>
+                </div>
+                <div class="badge-info">
+                    <h4>{{ achievement.badge.name }}</h4>
+                    <p>{{ achievement.badge.description }}</p>
+                    <div class="badge-meta">
+                        <span class="badge-date">
+                            <i class="fas fa-calendar"></i> {{ achievement.earned_at|date:"d.m.Y" }}
+                        </span>
+                        {% if achievement.reason %}
+                        <span class="badge-reason">{{ achievement.reason }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Табы -->
     <div class="profile-tabs">
         <ul class="nav-tabs">
@@ -719,6 +749,128 @@ document.body.addEventListener('htmx:configRequest', function (event) {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+}
+
+/* ===== Достижения (Бейджи) ===== */
+.achievements-section {
+    margin: 30px 0;
+    padding: 25px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.achievements-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.achievements-title i {
+    color: #ffd700;
+    font-size: 1.5rem;
+}
+
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+.badge-card {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: var(--bg);
+    border-radius: 12px;
+    border-left: 4px solid var(--primary);
+    transition: all 0.2s;
+}
+
+.badge-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.badge-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.badge-icon span {
+    font-size: 1.8rem;
+}
+
+.badge-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.badge-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.badge-info p {
+    margin: 0 0 8px 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+.badge-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.badge-date {
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-reason {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+/* Темная тема для бейджей */
+.dark-mode .achievements-section {
+    background: var(--dark-surface);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.dark-mode .badge-card {
+    background: var(--dark-bg);
+}
+
+.dark-mode .badge-info h4 {
+    color: var(--dark-text);
+}
+
+/* Адаптивность для бейджей */
+@media (max-width: 768px) {
+    .badges-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .achievements-section {
+        padding: 20px 15px;
+    }
 }
 
 .draft-badge, .favorite-badge {

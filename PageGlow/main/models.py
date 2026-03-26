@@ -271,6 +271,7 @@ class Notification(models.Model):
         COMMENT = 'comment', 'Комментарий'
         FOLLOW = 'follow', 'Подписка'
         NEW_POST = 'new_post', 'Новая статья'
+        ACHIEVEMENT = 'achievement', 'Достижение'
 
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications', null=True)
