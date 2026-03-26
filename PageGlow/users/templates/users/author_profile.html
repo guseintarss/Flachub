@@ -32,13 +32,30 @@
                 {% if is_own_profile %}
                 <a class="btn btn-primary" href="{% url 'users:edit_profile' %}">Редактировать профиль</a>
                 {% elif user.is_authenticated %}
-                <button id="subscribe-btn" 
+                <button id="subscribe-btn"
                         class="btn {% if is_subscribed %}btn-secondary{% else %}btn-primary{% endif %}"
                         data-author-id="{{ author.id }}">
                     {% if is_subscribed %}Отписаться{% else %}Подписаться{% endif %}
                 </button>
                 {% endif %}
             </div>
+
+            <!-- Достижения автора -->
+            {% if author_achievements %}
+            <div class="author-achievements">
+                <h4 class="achievements-title-small">
+                    <i class="fas fa-trophy"></i> Достижения
+                </h4>
+                <div class="achievements-badges-row">
+                    {% for achievement in author_achievements %}
+                    <div class="achievement-badge-small" style="border-color: {{ achievement.badge.color }}" title="{{ achievement.badge.description }}">
+                        <span class="badge-icon-small">{{ achievement.badge.icon }}</span>
+                        <div class="badge-name-small">{{ achievement.badge.name }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -110,4 +127,95 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Достижения автора */
+.author-achievements {
+    margin-top: 20px;
+    padding: 15px;
+    background: var(--surface, #fff);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.achievements-title-small {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text, #1f2937);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.achievements-title-small i {
+    color: #ffd700;
+}
+
+.achievements-badges-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.achievement-badge-small {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    background: var(--bg, #f7f8fb);
+    border-radius: 8px;
+    border-bottom: 3px solid var(--primary);
+    transition: all 0.2s;
+    min-width: 70px;
+}
+
+.achievement-badge-small:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.badge-icon-small {
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+}
+
+.badge-name-small {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text, #1f2937);
+    text-align: center;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Темная тема */
+.dark-mode .author-achievements {
+    background: var(--dark-surface, #222325);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.dark-mode .achievements-title-small {
+    color: var(--dark-text, #ffffff);
+}
+
+.dark-mode .achievement-badge-small {
+    background: var(--dark-bg, #191a1b);
+}
+
+.dark-mode .badge-name-small {
+    color: var(--dark-text, #ffffff);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .achievements-badges-row {
+        justify-content: center;
+    }
+}
+</style>
 {% endblock %}

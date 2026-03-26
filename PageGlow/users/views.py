@@ -195,7 +195,7 @@ class UserPasswordChange(PasswordChangeView):
 
 def author_profile(request, username):
     """Публичный профиль автора - только просмотр статей"""
-    from main.models import Subscription
+    from main.models import Subscription, UserAchievement
     from django.db.models import Count
 
     author = get_object_or_404(User, username=username, is_active=True)
@@ -206,7 +206,7 @@ def author_profile(request, username):
     ).select_related('cat', 'author').prefetch_related('tags').annotate(
         likes_count=Count('likes', distinct=True)
     ).order_by('-time_create')
-    
+
     # Подсчитываем подписки в одном запросе с использованием Count
     subscription_stats = Subscription.objects.filter(
         author=author
@@ -214,7 +214,7 @@ def author_profile(request, username):
         subscribers_count=Count('id')
     )
     subscribers_count = subscription_stats['subscribers_count']
-    
+
     # Подсчитываем подписки пользователя в одном запросе
     subscriptions = Subscription.objects.filter(
         subscriber=author
@@ -222,11 +222,16 @@ def author_profile(request, username):
         subscriptions_count=Count('id')
     )
     subscriptions_count = subscriptions['subscriptions_count']
-    
+
+    # Достижения автора
+    author_achievements = UserAchievement.objects.filter(
+        user=author
+    ).select_related('badge').order_by('-earned_at')[:6]  # Показываем топ 6
+
     is_subscribed = False
     if request.user.is_authenticated and request.user != author:
         is_subscribed = Subscription.objects.filter(subscriber=request.user, author=author).exists()
-    
+
     extra_context = {
         'title': f'Профиль {author.username}',
         'author': author,
@@ -236,6 +241,7 @@ def author_profile(request, username):
         'subscribers_count': subscribers_count,
         'subscriptions_count': subscriptions_count,
         'is_subscribed': is_subscribed,
+        'author_achievements': author_achievements,
     }
     return render(request, 'users/author_profile.html', extra_context)
 
