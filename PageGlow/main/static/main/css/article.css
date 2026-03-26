@@ -42,6 +42,41 @@ html.dark-mode .reading-progress-bar {
 }
 
 /* =====================================================
+   LAZY LOADING ДЛЯ ИЗОБРАЖЕНИЙ
+   ===================================================== */
+
+.article-body img.lazyload,
+.article-body img[loading="lazy"] {
+    background: linear-gradient(90deg, var(--bg) 25%, var(--bg2) 50%, var(--bg) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 8px;
+    min-height: 200px;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.article-body img.lazyload:not([src]),
+.article-body img[loading="lazy"]:not([src]) {
+    opacity: 0.5;
+}
+
+.article-body img.lazyload.loaded,
+.article-body img[loading="lazy"].loaded {
+    background: none;
+    animation: none;
+    opacity: 1;
+    min-height: auto;
+}
+
+/* =====================================================
    ШАПКА СТАТЬИ
    ===================================================== */
 
