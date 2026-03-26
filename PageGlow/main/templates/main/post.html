@@ -740,24 +740,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Переключение меню "Поделиться"
     window.toggleShareMenu = function() {
         const menu = document.getElementById('shareMenu');
-        const toggle = document.querySelector('.share-toggle');
-        
-        if (menu && toggle) {
-            const isShown = menu.classList.contains('show');
-            
-            if (!isShown) {
-                // Получаем позицию кнопки
-                const rect = toggle.getBoundingClientRect();
-                
-                // Позиционируем меню под кнопкой
-                menu.style.top = (rect.bottom + 10) + 'px';
-                menu.style.right = (window.innerWidth - rect.right) + 'px';
-            }
-            
+        if (menu) {
             menu.classList.toggle('show');
         }
     }
-    
+
     // Закрытие меню при клике вне его
     document.addEventListener('click', function(e) {
         const shareDropdown = document.querySelector('.share-dropdown');
@@ -767,6 +754,18 @@ document.addEventListener('DOMContentLoaded', function() {
             shareMenu.classList.remove('show');
         }
     });
+    
+    // Закрытие меню при прокрутке
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        const shareMenu = document.getElementById('shareMenu');
+        if (shareMenu && shareMenu.classList.contains('show')) {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(function() {
+                shareMenu.classList.remove('show');
+            }, 100);
+        }
+    }, { passive: true });
 
     // Lazy loading для изображений
     if ('loading' in HTMLImageElement.prototype) {

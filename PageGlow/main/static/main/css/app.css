@@ -2849,4 +2849,146 @@ body.dark-mode .comment-date {
   .delete-comment {
     margin-top: 0.5rem;
   }
+  
+  /* Компактное user-menu */
+  .user-area {
+    gap: 8px;
+  }
+  
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .dropdown-menu {
+    min-width: 200px;
+    right: -10px;
+  }
+  
+  .dropdown-header {
+    padding: 10px 12px;
+  }
+  
+  .dropdown-list a {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Компактные уведомления */
+  .notification-bell {
+    padding: 3px;
+  }
+  
+  .notification-badge {
+    min-width: 16px;
+    height: 16px;
+    font-size: 10px;
+  }
+  
+  .notification-dropdown {
+    width: 280px;
+    right: -10px;
+    max-height: 350px;
+  }
+  
+  .notification-header {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+  }
+  
+  .notification-item {
+    padding: 10px 12px;
+  }
+  
+  .notification-message {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  
+  .notification-time {
+    font-size: 0.75rem;
+  }
+  
+  /* Кнопка добавить */
+  .addbutton {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .addbutton svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  /* Поиск */
+  #search {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Бургер меню */
+  .header__burger-menu {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 480px) {
+  .user-area {
+    gap: 6px;
+  }
+  
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .dropdown-menu {
+    min-width: 180px;
+    right: -20px;
+  }
+  
+  .notification-dropdown {
+    width: 260px;
+    right: -20px;
+  }
+  
+  .notification-header {
+    padding: 8px 10px;
+  }
+  
+  .notification-header button {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+  
+  .notification-item {
+    padding: 8px 10px;
+  }
+  
+  .notification-message {
+    font-size: 0.8rem;
+  }
+  
+  .notification-time {
+    font-size: 0.7rem;
+  }
+  
+  /* Компактная кнопка добавить */
+  .addbutton {
+    width: 32px;
+    height: 32px;
+  }
+  
+  /* Скрываем текст в шапке */
+  .brand-text {
+    font-size: 18px;
+  }
 }
