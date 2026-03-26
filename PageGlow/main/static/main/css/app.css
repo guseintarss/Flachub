@@ -941,6 +941,80 @@ body{
   background: var(--bg);
 }
 
+/* Кнопка "Наверх" */
+.scroll-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  background-color: var(--primary) !important;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 9999;
+  box-shadow: 0 4px 15px rgba(12, 106, 207, 0.3);
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scroll-to-top.visible {
+  display: flex;
+}
+
+.scroll-to-top i {
+  color: #fff !important;
+  font-size: 20px;
+}
+
+.scroll-to-top:hover {
+  background-color: var(--primary-700) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(12, 106, 207, 0.4);
+}
+
+.scroll-to-top:hover i {
+  color: #fff !important;
+}
+
+.scroll-to-top:active {
+  transform: translateY(-1px);
+}
+
+.scroll-to-top:focus {
+  outline: none;
+}
+
+/* Dark mode */
+html.dark-mode .scroll-to-top {
+  background-color: var(--dark-primary) !important;
+  box-shadow: 0 4px 15px rgba(41, 156, 245, 0.3);
+}
+
+html.dark-mode .scroll-to-top:hover {
+  background-color: var(--dark-primary-700) !important;
+  box-shadow: 0 6px 20px rgba(41, 156, 245, 0.4);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .scroll-to-top {
+    bottom: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+  }
+
+  .scroll-to-top i {
+    font-size: 18px;
+  }
+}
+
 img{ max-width: 100%; height: auto; display: block; }
 a{ color: inherit; text-decoration: none; }
 a:hover{ text-decoration: underline; }
@@ -1481,7 +1555,6 @@ display:flex;
 .comment:hover .delete-comment {
     opacity: 1;
 }
-
 
 .user-menu {
   position: relative;

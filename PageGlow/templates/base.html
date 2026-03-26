@@ -24,11 +24,11 @@
     <meta name="apple-mobile-web-app-title" content="PageGlow" />
     <meta name="application-name" content="PageGlow" />
     <meta name="theme-color" content="#1c3e7e" />
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link type="text/css" href="{% static 'main/css/app.css' %}" rel="stylesheet"/>
-    <link type="text/css" href="{% static 'main/css/footer.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'main/css/app.css' %}?v={% now 'U' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'main/css/footer.css' %}?v={% now 'U' %}" rel="stylesheet"/>
     <meta name="csrf-token" content="{{ csrf_token }}">
     {% block head %}{% endblock %}
     {% block extra_css %}{% endblock %}
@@ -176,6 +176,7 @@
         {% block navigation %}{% endblock %}
     </div>
 </main>
+
 <!-- Footer -->
 <footer class="site-footer">
     <div class="footer-main">
@@ -270,6 +271,11 @@
     // Автоматическое обновление года
     document.getElementById('currentYear').textContent = new Date().getFullYear();
 </script>
+
+<!-- Кнопка "Наверх" -->
+<button class="scroll-to-top" id="scrollToTop" title="Наверх" aria-label="Прокрутить наверх">
+  <i class="fas fa-arrow-up"></i>
+</button>
 
 <!-- Уведомления (AJAX Polling, без WebSocket) -->
 {% if user.is_authenticated %}
@@ -484,7 +490,63 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 {% endif %}
 
-
+<!-- Кнопка "Наверх" -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const scrollToTopBtn = document.getElementById('scrollToTop');
+    
+    console.log('Кнопка найдена:', scrollToTopBtn);
+    
+    if (!scrollToTopBtn) return;
+    
+    // Находим элемент который скроллится
+    function getScrollElement() {
+        if (document.documentElement.scrollHeight > document.documentElement.clientHeight && 
+            document.documentElement.scrollTop > 0) {
+            return document.documentElement;
+        }
+        return document.body;
+    }
+    
+    // Показываем/скрываем кнопку при прокрутке
+    function toggleScrollToTop() {
+        const scrollElement = getScrollElement();
+        const scrollY = scrollElement.scrollTop || window.pageYOffset || 0;
+        console.log('Scroll Y:', scrollY, 'Элемент:', scrollElement === document.documentElement ? 'html' : 'body');
+        if (scrollY > 300) {
+            scrollToTopBtn.classList.add('visible');
+            console.log('Кнопка показана');
+        } else {
+            scrollToTopBtn.classList.remove('visible');
+            console.log('Кнопка скрыта');
+        }
+    }
+    
+    // Плавная прокрутка наверх
+    function scrollToTop() {
+        const scrollElement = getScrollElement();
+        scrollElement.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+        console.log('Прокрутка наверх', scrollElement);
+    }
+    
+    // Обработчик клика
+    scrollToTopBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        scrollToTop();
+    });
+    
+    // Отслеживаем прокрутку на разных элементах
+    window.addEventListener('scroll', toggleScrollToTop, { passive: true });
+    document.documentElement.addEventListener('scroll', toggleScrollToTop, { passive: true });
+    document.body.addEventListener('scroll', toggleScrollToTop, { passive: true });
+    
+    // Проверяем при загрузке
+    toggleScrollToTop();
+});
+</script>
 
 </body>
 </html>

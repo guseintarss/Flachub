@@ -1249,9 +1249,6 @@ html.dark-mode .no-comments {
    ===================================================== */
 
 @media (max-width: 768px) {
-    .article-container {
-        padding: 20px 16px;
-    }
 
     .article-header,
     .article-body,
