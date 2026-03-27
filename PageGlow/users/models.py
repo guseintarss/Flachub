@@ -208,18 +208,33 @@ class User(AbstractUser):
         """
         Текущий уровень пользователя
         """
-        return UserLevel.objects.filter(
-            min_reputation__lte=self.reputation
-        ).order_by('min_reputation').last()
+        # Кэшируем уровни чтобы избежать повторных запросов
+        if not hasattr(self, '_levels_cache'):
+            self._levels_cache = list(UserLevel.objects.all().order_by('min_reputation'))
+        
+        # Находим последний уровень где min_reputation <= reputation
+        current = None
+        for level in self._levels_cache:
+            if level.min_reputation <= self.reputation:
+                current = level
+            else:
+                break
+        return current
 
     @property
     def next_level(self):
         """
         Следующий уровень пользователя
         """
-        return UserLevel.objects.filter(
-            min_reputation__gt=self.reputation
-        ).order_by('min_reputation').first()
+        # Кэшируем уровни если ещё не закэшировано
+        if not hasattr(self, '_levels_cache'):
+            self._levels_cache = list(UserLevel.objects.all().order_by('min_reputation'))
+        
+        # Находим первый уровень где min_reputation > reputation
+        for level in self._levels_cache:
+            if level.min_reputation > self.reputation:
+                return level
+        return None
 
     @property
     def level_progress(self):
