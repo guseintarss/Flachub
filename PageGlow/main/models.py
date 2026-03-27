@@ -176,6 +176,7 @@ class Post(ModelMeta, models.Model):
     def save(self, *args, **kwargs):
         key = make_template_fragment_key("side_cache")
         cache.delete(key)
+        cache.delete('sidebar_context_data')  # Очищаем кэш sidebar при сохранении поста
         self.slug = slugify(translist_to_eng(self.title))
         super().save(*args, **kwargs)
 
