@@ -1,14 +1,14 @@
 {% load static %}
-<div class="reputation-summary" 
+<div class="reputation-summary"
      style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.05) 100%); border: 1px solid rgba(102, 126, 234, 0.2); border-radius: 12px; padding: 20px; margin: 20px 0;">
-    
+
     <div class="reputation-header" style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
         {% if level %}
             <span class="level-icon" style="font-size: 2.5rem; filter: drop-shadow(0 0 8px {{ level.color }}60);">{{ level.icon }}</span>
         {% else %}
             <span class="level-icon" style="font-size: 2.5rem; filter: drop-shadow(0 0 8px rgba(153,153,153,0.3));">🌱</span>
         {% endif %}
-        
+
         <div class="level-info" style="flex: 1;">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
                 {% if level %}
@@ -16,6 +16,19 @@
                 {% else %}
                     <span class="level-name" style="font-size: 1.1rem; font-weight: 600; color: #999;">Новичок</span>
                 {% endif %}
+                
+                <!-- Подсказка о репутации -->
+                <div class="reputation-tooltip" style="position: relative; display: inline-block;">
+                    <i class="fas fa-question-circle" style="color: #667eea; cursor: help; font-size: 1rem;"
+                       title="Репутация начисляется за:
+• +5 — публикация статьи
+• +3 — публикация обсуждения
+• +2 — комментарий к статье
+• +1 — лайк статьи/обсуждения
+• +1 — подписка на автора
+
+Лимит: 100 очков в день от одного пользователя"></i>
+                </div>
             </div>
             <div class="reputation-value" style="font-size: 0.9rem; color: #888;">
                 Репутация: <strong style="color: #007bff; font-size: 1.1rem;">{{ reputation }}</strong>

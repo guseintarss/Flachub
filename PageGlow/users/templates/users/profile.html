@@ -205,12 +205,6 @@ document.body.addEventListener('htmx:configRequest', function (event) {
                         <i class="fas fa-user-plus"></i> <span>подписок</span>
                     </div>
                 </div>
-                <div class="stat-item stat-reputation">
-                    <div class="stat-value">{% get_user_reputation user %}</div>
-                    <div class="stat-label">
-                        <i class="fas fa-gem"></i> <span>репутации</span>
-                    </div>
-                </div>
             </div>
             
             {% reputation_summary user %}
@@ -219,14 +213,8 @@ document.body.addEventListener('htmx:configRequest', function (event) {
                 <a href="{% url 'users:edit_profile' %}" class="btn btn-sm btn-primary" title="Редактировать">
                     <i class="fas fa-cog"></i>
                 </a>
-                <a href="{% url 'bookmarks' %}" class="btn btn-sm btn-outline-secondary" title="Закладки">
-                    <i class="fas fa-bookmark"></i>
-                </a>
                 <a href="{% url 'users:reputation_history' %}" class="btn btn-sm btn-outline-primary" title="История репутации">
                     <i class="fas fa-history"></i>
-                </a>
-                <a href="{% url 'users:reputation_leaderboard' %}" class="btn btn-sm btn-outline-warning" title="Лидеры">
-                    <i class="fas fa-trophy"></i>
                 </a>
             </div>
         </div>
