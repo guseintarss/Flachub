@@ -450,6 +450,15 @@ class ShowPost(FormMixin, DataMixin, DetailView):
     form_class = CommentForm
     success_msg = 'Комментарий оставлен'
 
+    def get_queryset(self):
+        # Оптимизация: select_related для ForeignKey, prefetch_related для ManyToMany
+        # annotate для Count чтобы избежать N+1 запросов
+        return Post.published.select_related('author', 'cat').prefetch_related('tags').annotate(
+            likes_count=Count('likes', distinct=True),
+            favorites_count=Count('favorites', distinct=True),
+            comments_count=Count('comments', distinct=True)
+        )
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('post', kwargs={'post_slug': self.get_object().slug})
 
@@ -477,19 +486,21 @@ class ShowPost(FormMixin, DataMixin, DetailView):
         return super().form_valid(form)
 
     def get_object(self, queryset=None):
-        post = get_object_or_404(Post.published, slug=self.kwargs[self.slug_url_kwarg])
-        
+        if queryset is None:
+            queryset = self.get_queryset()
+        post = get_object_or_404(queryset, slug=self.kwargs[self.slug_url_kwarg])
+
         # Увеличиваем счётчик просмотров
         session_key = f'viewed_post_{post.id}'
         if not self.request.session.get(session_key, False):
             post.views += 1
             post.save(update_fields=['views'])
             self.request.session[session_key] = True
-        
+
         allowed_tags = [
             'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
             'ul', 'ol', 'li', 'strong', 'em', 'a', 'img',
-            'blockquote', 'code', 'pre', 'i', 'span', 'u', 'br', 
+            'blockquote', 'code', 'pre', 'i', 'span', 'u', 'br',
             'figure', 'figcaption', 'picture', 'source',
             'table', 'thead', 'tbody', 'tr', 'th', 'td',
         ]
@@ -543,11 +554,23 @@ class ShowPost(FormMixin, DataMixin, DetailView):
             'meta_image': post.get_image_full_url(),
         })
 
-        # Оптимизация: select_related для комментариев
-        comments = post.comments.select_related('author').order_by('-created_at')
-        comment_paginator = Paginator(comments, 20)  # 20 комментариев на страницу
+        # Оптимизация: prefetch_related для комментариев
+        comments_qs = post.comments.select_related('author').prefetch_related('likes').order_by('-created_at')
+        
+        # Используем аннотированное значение comments_count для пагинации
+        comments_count = getattr(post, 'comments_count', 0)
+        
+        # Создаем кастомный Paginator с закэшированным count
+        class CachedPaginator(Paginator):
+            @property
+            def count(self):
+                return comments_count
+        
+        comment_paginator = CachedPaginator(comments_qs, 20)  # 20 комментариев на страницу
+        
         page_number = self.request.GET.get('comments-page')
         context['comments_page'] = comment_paginator.get_page(page_number)
+        context['comments_count'] = comments_count
 
         # Проверяем подписку на автора
         if self.request.user.is_authenticated and post.author:
