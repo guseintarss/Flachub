@@ -62,9 +62,15 @@ class Post(ModelMeta, models.Model):
     views = models.PositiveIntegerField(default=0, verbose_name='Просмотры')
 
     def number_of_likes(self):
+        """Возвращает количество лайков. Использует кэш если доступен."""
+        if hasattr(self, 'likes_count'):
+            return self.likes_count
         return self.likes.count()
 
     def number_of_favorites(self):
+        """Возвращает количество избранных. Использует кэш если доступен."""
+        if hasattr(self, 'favorites_count'):
+            return self.favorites_count
         return self.favorites.count()
 
     def reading_time(self):

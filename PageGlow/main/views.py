@@ -1,9 +1,10 @@
 
 import logging
 import os
+import math
 from bleach import clean
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Q
+from django.db.models import Count, Q, Sum
 from django.views.generic.edit import FormMixin, DeleteView
 from requests import Response
 from bs4 import BeautifulSoup, FeatureNotFound
@@ -14,7 +15,6 @@ from rest_framework.generics import ListAPIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions
-import math
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -262,7 +262,9 @@ class BookmarksView(LoginRequiredMixin, DataMixin, ListView):
     def get_queryset(self):
         return Bookmark.objects.filter(
             user=self.request.user
-        ).select_related('post', 'post__author', 'post__cat').order_by('-created_at')
+        ).select_related('post', 'post__author', 'post__cat').annotate(
+            post_likes_count=Count('post__likes', distinct=True)
+        ).order_by('-created_at')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -412,7 +414,11 @@ class MainHome(DataMixin, ListView):
 
     def get_queryset(self):
         # Оптимизация: select_related для ForeignKey, prefetch_related для ManyToMany
-        return Post.published.select_related('cat', 'author').prefetch_related('tags').all()
+        # annotate для Count чтобы избежать N+1 запросов
+        return Post.published.select_related('cat', 'author').prefetch_related('tags').annotate(
+            likes_count=Count('likes', distinct=True),
+            favorites_count=Count('favorites', distinct=True)
+        ).order_by('-time_create')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -735,7 +741,11 @@ class MainCategory(DataMixin, ListView):
 
     def get_queryset(self):
         # Оптимизация: select_related для cat, prefetch_related для tags и author
-        return Post.published.select_related('cat', 'author').prefetch_related('tags').filter(
+        # annotate для Count чтобы избежать N+1 запросов
+        return Post.published.select_related('cat', 'author').prefetch_related('tags').annotate(
+            likes_count=Count('likes', distinct=True),
+            favorites_count=Count('favorites', distinct=True)
+        ).filter(
             cat__slug=self.kwargs['cat_slug']
         )
 
@@ -760,7 +770,11 @@ class TagPostList(DataMixin, ListView):
 
     def get_queryset(self):
         # Оптимизация: select_related для cat и author, prefetch_related для tags
-        return Post.published.select_related('cat', 'author').prefetch_related('tags').filter(
+        # annotate для Count чтобы избежать N+1 запросов
+        return Post.published.select_related('cat', 'author').prefetch_related('tags').annotate(
+            likes_count=Count('likes', distinct=True),
+            favorites_count=Count('favorites', distinct=True)
+        ).filter(
             tags__slug=self.kwargs['tag_slug']
         )
 
@@ -776,24 +790,30 @@ class Search(DataMixin, ListView):
         sort = self.request.GET.get('sort', 'relevance')
 
         if query:
-            search = Post.published.select_related('cat', 'author').prefetch_related('tags')
-            
+            search = Post.published.select_related('cat', 'author').prefetch_related('tags').annotate(
+                likes_count=Count('likes', distinct=True),
+                favorites_count=Count('favorites', distinct=True)
+            )
+
             # Фильтр по типу контента
             if post_type == 'articles':
                 search = search.filter(cat__isnull=False)
-            
+
             # Поиск по title и content
             search = search.filter(
                 Q(title__icontains=query) | Q(content__icontains=query)
             )
-            
+
             # Сортировка
             if sort == 'date':
                 search = search.order_by('-time_create')
             elif sort == 'views':
                 search = search.order_by('-views')
         else:
-            search = Post.published.select_related('cat', 'author').prefetch_related('tags').order_by('-time_create')
+            search = Post.published.select_related('cat', 'author').prefetch_related('tags').annotate(
+                likes_count=Count('likes', distinct=True),
+                favorites_count=Count('favorites', distinct=True)
+            ).order_by('-time_create')
 
         return search
 
@@ -1143,7 +1163,10 @@ class PopularPostsView(DataMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Post.published.all().order_by('-views')
+        return Post.published.annotate(
+            likes_count=Count('likes', distinct=True),
+            favorites_count=Count('favorites', distinct=True)
+        ).all().order_by('-views')
 
 
 @method_decorator(login_required, name='dispatch')
@@ -1214,7 +1237,10 @@ class SubscriptionFeedView(LoginRequiredMixin, DataMixin, ListView):
         subscribed_authors = Subscription.objects.filter(
             subscriber=self.request.user
         ).values_list('author_id', flat=True)
-        return Post.published.filter(author_id__in=subscribed_authors).order_by('-time_create')
+        return Post.published.filter(author_id__in=subscribed_authors).annotate(
+            likes_count=Count('likes', distinct=True),
+            favorites_count=Count('favorites', distinct=True)
+        ).order_by('-time_create')
 
 
 # ===== ОБСУЖДЕНИЯ =====

@@ -163,7 +163,7 @@
                             <i class="fas fa-eye"></i> {{ p.views }}
                         </span>
                         <span class="stat-item" title="Лайки">
-                            <i class="fas fa-heart"></i> {{ p.number_of_likes }}
+                            <i class="fas fa-heart"></i> {{ p.likes_count|default:p.number_of_likes }}
                         </span>
                         <span class="stat-item" title="Время чтения">
                             <i class="fas fa-clock"></i> {{ p.reading_time }} мин

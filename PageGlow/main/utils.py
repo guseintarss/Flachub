@@ -69,8 +69,17 @@ class DataMixin:
                 context['post_is_liked'] = self.object.likes.filter(id=self.request.user.id).exists()
                 context['post_is_favorited'] = self.object.favorites.filter(id=self.request.user.id).exists()
 
-            context['number_of_likes'] = self.object.number_of_likes()
-            context['number_of_favorites'] = self.object.number_of_favorites()
+            # Используем аннотированные значения если доступны (для оптимизации)
+            if hasattr(self.object, 'likes_count'):
+                context['number_of_likes'] = self.object.likes_count
+            else:
+                context['number_of_likes'] = self.object.number_of_likes()
+            
+            if hasattr(self.object, 'favorites_count'):
+                context['number_of_favorites'] = self.object.favorites_count
+            else:
+                context['number_of_favorites'] = self.object.number_of_favorites()
+            
             context['comments'] = self.object.comments.filter(is_active=True)
 
         return self.get_mixin_context(context, **kwargs)

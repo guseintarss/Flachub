@@ -29,7 +29,7 @@
                                 <i class="fas fa-eye"></i> {{ post.views }}
                             </span>
                             <span class="stat" title="Лайки">
-                                <i class="fas fa-heart"></i> {{ post.number_of_likes }}
+                                <i class="fas fa-heart"></i> {{ post.likes_count|default:post.number_of_likes }}
                             </span>
                         </div>
                     </div>
