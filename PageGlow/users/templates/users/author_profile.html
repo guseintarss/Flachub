@@ -1,5 +1,99 @@
 {% extends 'base.html' %}
 {% load main_extras %}
+{% load reputation_tags %}
+
+{% block head %}
+<style>
+    /* Профиль автора - компактный стиль */
+    .author-profile-header {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .user-photo {
+        flex-shrink: 0;
+    }
+    
+    .user-photo .user-img-article {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(102, 126, 234, 0.3);
+    }
+    
+    .author-profile-info {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .author-header-top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .author-fullname {
+        color: #888;
+        font-size: 0.95rem;
+        margin: 0 0 8px 0;
+    }
+    
+    .author-bio {
+        color: #666;
+        font-size: 0.9rem;
+        margin: 0 0 15px 0;
+    }
+    
+    /* Статистика - компактная */
+    .author-stats {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+    }
+    
+    .author-stats .stat-item {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 10px 16px;
+        text-align: center;
+        min-width: 90px;
+        transition: all 0.2s ease;
+    }
+    
+    .author-stats .stat-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .author-stats .stat-item.stat-reputation {
+        background: linear-gradient(135deg, rgba(0, 123, 255, 0.12) 0%, rgba(102, 126, 234, 0.08) 100%);
+        border-color: rgba(0, 123, 255, 0.25);
+    }
+    
+    /* Кнопки */
+    .author-actions .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.875rem;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .author-actions .btn-sm:hover {
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="post">
@@ -11,29 +105,53 @@
             <img class="user-img-article" src="{{ default_image }}">
             {% endif %}
         </div>
-        
+
         <div class="author-profile-info">
-            <h1>{{ author.username }}</h1>
-            {% if author.first_name or author.last_name %}
-            <p class="author-fullname">{{ author.last_name }} {{ author.first_name }}</p>
-            {% endif %}
-            
-            <div class="author-stats">
-                <span><strong>{{ published_posts.count }}</strong> 📄 статей</span>
-                <span><strong>{{ subscribers_count }}</strong> 👥 подписчиков</span>
-                <span><strong>{{ subscriptions_count }}</strong> ➕ подписок</span>
+            <div class="author-header-top">
+                <h1 style="margin: 0; font-size: 1.5rem;">{{ author.username }}</h1>
+                {% user_level_badge author %}
             </div>
             
+            {% if author.first_name or author.last_name %}
+            <p class="author-fullname" style="color: #888; font-size: 0.95rem; margin: 5px 0;">{{ author.last_name }} {{ author.first_name }}</p>
+            {% endif %}
+
+            <div class="author-stats">
+                <span class="stat-item">
+                    <strong style="font-size: 1.4rem; color: #fff;">{{ published_posts.count }}</strong>
+                    <span style="font-size: 0.75rem; color: #888; display: block; margin-top: 2px;">📄 статей</span>
+                </span>
+                <span class="stat-item">
+                    <strong style="font-size: 1.4rem; color: #fff;">{{ subscribers_count }}</strong>
+                    <span style="font-size: 0.75rem; color: #888; display: block; margin-top: 2px;">👥 подписчиков</span>
+                </span>
+                <span class="stat-item">
+                    <strong style="font-size: 1.4rem; color: #fff;">{{ subscriptions_count }}</strong>
+                    <span style="font-size: 0.75rem; color: #888; display: block; margin-top: 2px;">➕ подписок</span>
+                </span>
+                <span class="stat-item stat-reputation">
+                    <strong style="font-size: 1.4rem; color: #007bff;">{% get_user_reputation author %}</strong>
+                    <span style="font-size: 0.75rem; color: #888; display: block; margin-top: 2px;">💎 репутации</span>
+                </span>
+            </div>
+
             {% if author.about_me %}
-            <p class="author-bio">{{ author.about_me }}</p>
+            <p class="author-bio" style="color: #666; font-size: 0.9rem; margin: 10px 0;">{{ author.about_me }}</p>
             {% endif %}
             
-            <div class="author-actions">
+            {% reputation_summary author %}
+
+            <div class="author-actions" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
                 {% if is_own_profile %}
-                <a class="btn btn-primary" href="{% url 'users:edit_profile' %}">Редактировать профиль</a>
+                <a class="btn btn-sm btn-primary" href="{% url 'users:edit_profile' %}">
+                    <i class="fas fa-cog"></i> Редактировать
+                </a>
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'users:reputation_history' %}">
+                    <i class="fas fa-history"></i> История
+                </a>
                 {% elif user.is_authenticated %}
                 <button id="subscribe-btn"
-                        class="btn {% if is_subscribed %}btn-secondary{% else %}btn-primary{% endif %}"
+                        class="btn btn-sm {% if is_subscribed %}btn-secondary{% else %}btn-primary{% endif %}"
                         data-author-id="{{ author.id }}">
                     {% if is_subscribed %}Отписаться{% else %}Подписаться{% endif %}
                 </button>

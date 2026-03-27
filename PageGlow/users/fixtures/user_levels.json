@@ -1,0 +1,82 @@
+[
+  {
+    "model": "users.userlevel",
+    "pk": 1,
+    "fields": {
+      "name": "Новичок",
+      "slug": "novice",
+      "min_reputation": 0,
+      "icon": "🌱",
+      "color": "#999999",
+      "description": "Новый пользователь на платформе",
+      "can_create_tags": false,
+      "can_edit_own_posts_longer": false,
+      "can_moderate_comments": false,
+      "daily_upload_limit": 5
+    }
+  },
+  {
+    "model": "users.userlevel",
+    "pk": 2,
+    "fields": {
+      "name": "Любитель",
+      "slug": "enthusiast",
+      "min_reputation": 100,
+      "icon": "🌿",
+      "color": "#4CAF50",
+      "description": "Активный участник сообщества",
+      "can_create_tags": false,
+      "can_edit_own_posts_longer": false,
+      "can_moderate_comments": false,
+      "daily_upload_limit": 10
+    }
+  },
+  {
+    "model": "users.userlevel",
+    "pk": 3,
+    "fields": {
+      "name": "Эксперт",
+      "slug": "expert",
+      "min_reputation": 500,
+      "icon": "🌳",
+      "color": "#2196F3",
+      "description": "Опытный пользователь с глубокими знаниями",
+      "can_create_tags": true,
+      "can_edit_own_posts_longer": true,
+      "can_moderate_comments": false,
+      "daily_upload_limit": 20
+    }
+  },
+  {
+    "model": "users.userlevel",
+    "pk": 4,
+    "fields": {
+      "name": "Мастер",
+      "slug": "master",
+      "min_reputation": 1500,
+      "icon": "⭐",
+      "color": "#FF9800",
+      "description": "Признанный эксперт сообщества",
+      "can_create_tags": true,
+      "can_edit_own_posts_longer": true,
+      "can_moderate_comments": true,
+      "daily_upload_limit": 50
+    }
+  },
+  {
+    "model": "users.userlevel",
+    "pk": 5,
+    "fields": {
+      "name": "Гуру",
+      "slug": "guru",
+      "min_reputation": 5000,
+      "icon": "🔥",
+      "color": "#F44336",
+      "description": "Легенда платформы",
+      "can_create_tags": true,
+      "can_edit_own_posts_longer": true,
+      "can_moderate_comments": true,
+      "daily_upload_limit": 100
+    }
+  }
+]

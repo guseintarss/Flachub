@@ -1,0 +1,106 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load reputation_tags %}
+
+{% block content %}
+<div class="reputation-leaderboard-page">
+    <h1 class="page-title">🏆 {{ title_page }}</h1>
+    
+    <p class="lead" style="color: #666; margin-bottom: 30px;">
+        Топ пользователей платформы по набранной репутации
+    </p>
+    
+    {% if top_users %}
+        <div class="leaderboard" style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
+            <table class="table table-hover mb-0">
+                <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <tr>
+                        <th style="color: white; border: none;">#</th>
+                        <th style="color: white; border: none;">Пользователь</th>
+                        <th style="color: white; border: none;">Уровень</th>
+                        <th style="color: white; border: none; text-align: right;">Репутация</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in top_users %}
+                        <tr style="{% if forloop.counter <= 3 %}background: linear-gradient(90deg, rgba(255,215,0,0.1) 0%, transparent 100%);{% endif %}">
+                            <td style="font-weight: bold; font-size: 1.2rem; 
+                                {% if forloop.counter == 1 %}color: #ffd700;
+                                {% elif forloop.counter == 2 %}color: #c0c0c0;
+                                {% elif forloop.counter == 3 %}color: #cd7f32;
+                                {% else %}color: #999;{% endif %}">
+                                {% if forloop.counter <= 3 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    {% if user.photo %}
+                                        <img src="{{ user.photo.url }}" alt="{{ user.username }}" 
+                                             style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                            {{ user.username|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <a href="{% url 'users:author_profile' user.username %}" 
+                                       style="text-decoration: none; color: #333; font-weight: 500;">
+                                        {{ user.username }}
+                                        {% if user.is_staff %}
+                                            <span class="badge bg-primary" style="font-size: 0.7rem; margin-left: 5px;">ADMIN</span>
+                                        {% endif %}
+                                    </a>
+                                </div>
+                            </td>
+                            <td>
+                                {% if user._level %}
+                                    <span style="color: {{ user._level.color }};">
+                                        {{ user._level.icon }} {{ user._level.name }}
+                                    </span>
+                                {% else %}
+                                    <span style="color: #999;">🌱 Новичок</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right; font-weight: bold; font-size: 1.1rem; color: #007bff;">
+                                {{ user.total_reputation|default:0 }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if is_paginated %}
+            <nav aria-label="Page navigation" style="margin-top: 20px;">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">« Первая</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">← Пред.</a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">След. →</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последняя »</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info" style="text-align: center; padding: 40px;">
+            <p style="font-size: 1.1rem; color: #666;">Пока нет пользователей с репутацией</p>
+            <p style="color: #999;">Будьте первым! Публикуйте контент и получайте лайки</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

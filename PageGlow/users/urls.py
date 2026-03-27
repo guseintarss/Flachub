@@ -24,6 +24,11 @@ urlpatterns = [
     path('articles/<slug:slug>/delete/', PostDeleteView.as_view(), name='article-delete'),
     path('edit_profile/', views.EditProfileUser.as_view(), name='edit_profile'),
 
+    # Система репутации
+    path('reputation/history/', views.ReputationHistoryView.as_view(), name='reputation_history'),
+    path('reputation/leaderboard/', views.ReputationLeaderboardView.as_view(), name='reputation_leaderboard'),
+    path('reputation/user/<int:user_id>/add/', views.add_manual_reputation, name='add_reputation'),
+
     path('password_reset/', PasswordResetView.as_view(template_name='users/password_reset_form.html',
                                                             email_template_name='users/password_reset_email.html',
                                                       success_url=reverse_lazy("users:password_reset_done")

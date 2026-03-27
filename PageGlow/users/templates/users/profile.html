@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load main_extras %}
+{% load reputation_tags %}
 
 {% block head %}
 <!-- Подключение HTMX -->
@@ -14,6 +15,150 @@ document.body.addEventListener('htmx:configRequest', function (event) {
     event.detail.headers['X-CSRFToken'] = document.querySelector('meta[name="csrf-token"]').content;
 });
 </script>
+
+<style>
+    /* Профиль пользователя - компактный стиль */
+    .profile-header {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .profile-avatar {
+        flex-shrink: 0;
+    }
+    
+    .profile-avatar .avatar-img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(102, 126, 234, 0.3);
+    }
+    
+    .profile-info {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .profile-header-top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .profile-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+        color: #fff;
+    }
+    
+    .profile-fullname {
+        color: #888;
+        font-size: 0.95rem;
+        margin: 0 0 8px 0;
+    }
+    
+    .profile-bio {
+        color: #666;
+        font-size: 0.9rem;
+        margin: 0 0 15px 0;
+    }
+    
+    /* Статистика - компактная */
+    .profile-stats {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+    }
+    
+    .stat-item {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 10px 16px;
+        text-align: center;
+        min-width: 90px;
+        transition: all 0.2s ease;
+    }
+    
+    .stat-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .stat-item.stat-reputation {
+        background: linear-gradient(135deg, rgba(0, 123, 255, 0.12) 0%, rgba(102, 126, 234, 0.08) 100%);
+        border-color: rgba(0, 123, 255, 0.25);
+    }
+    
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1.2;
+    }
+    
+    .stat-item.stat-reputation .stat-value {
+        color: #007bff;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: #888;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 2px;
+    }
+    
+    .stat-label i {
+        font-size: 0.7rem;
+    }
+    
+    .stat-item.stat-reputation .stat-label i {
+        color: #007bff;
+    }
+    
+    /* Кнопки - компактные */
+    .profile-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .profile-actions .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.875rem;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .profile-actions .btn-sm i {
+        font-size: 0.85rem;
+    }
+    
+    /* Hover эффекты */
+    .stat-item:hover {
+        transform: translateY(-2px);
+    }
+    
+    .profile-actions .btn-sm:hover {
+        transform: translateY(-1px);
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -27,43 +172,61 @@ document.body.addEventListener('htmx:configRequest', function (event) {
             <img src="{{ default_image }}" alt="{{ user.username }}" class="avatar-img">
             {% endif %}
         </div>
-        
+
         <div class="profile-info">
-            <h1 class="profile-name">{{ user.username }}</h1>
+            <div class="profile-header-top">
+                <h1 class="profile-name">{{ user.username }}</h1>
+                {% user_level_badge user %}
+            </div>
+            
             {% if user.first_name or user.last_name %}
             <p class="profile-fullname">{{ user.last_name }} {{ user.first_name }}</p>
             {% endif %}
             {% if user.about_me %}
             <p class="profile-bio">{{ user.about_me }}</p>
             {% endif %}
-            
+
             <div class="profile-stats">
                 <div class="stat-item">
                     <div class="stat-value">{{ published_posts.count }}</div>
                     <div class="stat-label">
-                        <i class="fas fa-file-alt"></i> статей
+                        <i class="fas fa-file-alt"></i> <span>статей</span>
                     </div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">{{ user.subscribers.count }}</div>
                     <div class="stat-label">
-                        <i class="fas fa-users"></i> подписчиков
+                        <i class="fas fa-users"></i> <span>подписчиков</span>
                     </div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">{{ user.subscriptions.count }}</div>
                     <div class="stat-label">
-                        <i class="fas fa-user-plus"></i> подписок
+                        <i class="fas fa-user-plus"></i> <span>подписок</span>
+                    </div>
+                </div>
+                <div class="stat-item stat-reputation">
+                    <div class="stat-value">{% get_user_reputation user %}</div>
+                    <div class="stat-label">
+                        <i class="fas fa-gem"></i> <span>репутации</span>
                     </div>
                 </div>
             </div>
             
+            {% reputation_summary user %}
+
             <div class="profile-actions">
-                <a href="{% url 'users:edit_profile' %}" class="text-decoration-none btn btn-primary">
-                    <i class="fas fa-cog"></i> 
+                <a href="{% url 'users:edit_profile' %}" class="btn btn-sm btn-primary" title="Редактировать">
+                    <i class="fas fa-cog"></i>
                 </a>
-                <a href="{% url 'bookmarks' %}" class="text-decoration-none btn btn-outline-secondary">
+                <a href="{% url 'bookmarks' %}" class="btn btn-sm btn-outline-secondary" title="Закладки">
                     <i class="fas fa-bookmark"></i>
+                </a>
+                <a href="{% url 'users:reputation_history' %}" class="btn btn-sm btn-outline-primary" title="История репутации">
+                    <i class="fas fa-history"></i>
+                </a>
+                <a href="{% url 'users:reputation_leaderboard' %}" class="btn btn-sm btn-outline-warning" title="Лидеры">
+                    <i class="fas fa-trophy"></i>
                 </a>
             </div>
         </div>

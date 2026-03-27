@@ -1,0 +1,44 @@
+{% load static %}
+{% if next_level %}
+    <div class="next-level-info" 
+         style="background: linear-gradient(135deg, {{ level.color|default:'#667eea' }}15 0%, {{ next_level.color|default:'#764ba2' }}08 100%); border-left: 3px solid {{ next_level.color }}; padding: 15px; margin-top: 15px; border-radius: 8px; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div>
+                <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px;">Следующий уровень</span>
+                <div style="font-size: 1.1rem; font-weight: 600; color: {{ next_level.color }}; margin-top: 3px;">
+                    {{ next_level.icon }} {{ next_level.name }}
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.85rem; color: #888;">Нужно ещё</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: {{ next_level.color }}; text-shadow: 0 0 10px {{ next_level.color }}40;">
+                    {{ reputation_needed }}
+                </div>
+                <div style="font-size: 0.75rem; color: #666;">репутации</div>
+            </div>
+        </div>
+        
+        <div class="progress-bar" 
+             style="height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; overflow: hidden;">
+            <div class="progress-fill" 
+                 style="width: {{ progress }}%; background: linear-gradient(90deg, {{ level.color|default:'#667eea' }}, {{ next_level.color }}); height: 100%; transition: width 0.3s ease; box-shadow: 0 0 8px {{ next_level.color }}60;">
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="max-level-achieved" 
+         style="background: linear-gradient(135deg, rgba(40, 167, 69, 0.15) 0%, rgba(40, 167, 69, 0.05) 100%); border-left: 3px solid #28a745; padding: 15px; margin-top: 15px; border-radius: 8px; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 2rem; filter: drop-shadow(0 0 8px rgba(40, 167, 69, 0.5));">🏆</span>
+            <div>
+                <div style="color: #28a745; font-weight: 700; font-size: 1rem; text-shadow: 0 0 10px rgba(40, 167, 69, 0.3);">
+                    Максимальный уровень достигнут!
+                </div>
+                <div style="color: #888; font-size: 0.85rem; margin-top: 2px;">
+                    Вы достигли вершины репутации
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}

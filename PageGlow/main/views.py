@@ -459,6 +459,15 @@ class ShowPost(FormMixin, DataMixin, DetailView):
         self.object.post = self.get_object()
         self.object.author = self.request.user
         self.object.save()
+        
+        # Начисляем репутацию за создание комментария
+        from users.reputation_utils import award_reputation
+        award_reputation(
+            user=self.object.author,
+            reason='comment_created',
+            comment=self.object
+        )
+        
         return super().form_valid(form)
 
     def get_object(self, queryset=None):
@@ -583,11 +592,20 @@ class AddPage(LoginRequiredMixin, DataMixin, CreateView):
         # Сохраняем пост
         response = super().form_valid(form)
 
+        # Начисляем репутацию за создание поста
+        post = self.object
+        if post.author:
+            from users.reputation_utils import award_reputation
+            award_reputation(
+                user=post.author,
+                reason='post_created',
+                post=post
+            )
+
         # Очищаем кэш сайдбара
         cache.clear()
 
         # Создаём уведомления для подписчиков
-        post = self.object
         if post.author:
             # Получаем всех подписчиков автора
             subscribers = Subscription.objects.filter(author=post.author).select_related('subscriber')
@@ -612,7 +630,7 @@ class AddPage(LoginRequiredMixin, DataMixin, CreateView):
                         })
                     except Exception as e:
                         logger.error(f'Ошибка отправки WebSocket уведомления: {e}')
-        
+
         return response
 
     def get_success_url(self):
@@ -799,9 +817,26 @@ class PostLikeAjaxView(View):
         if post.likes.filter(id=request.user.id).exists():
             post.likes.remove(request.user)
             liked = False
+            # Отменяем репутацию при удалении лайка
+            if post.author and post.author != request.user:
+                from users.reputation_utils import undo_reputation
+                undo_reputation(
+                    user=post.author,
+                    reason='post_liked',
+                    post=post
+                )
         else:
             post.likes.add(request.user)
             liked = True
+            # Начисляем репутацию автору за лайк
+            if post.author and post.author != request.user:
+                from users.reputation_utils import award_reputation
+                award_reputation(
+                    user=post.author,
+                    reason='post_liked',
+                    post=post
+                )
+            
             # Уведомление автору о лайке
             if post.author and post.author != request.user:
                 notification = Notification.objects.create(
@@ -964,15 +999,31 @@ class ToggleCommentLikeAjaxView(View):
                 return JsonResponse({'success': False, 'error': 'ID комментария не указан'}, status=400)
 
             comment = get_object_or_404(Comment, id=comment_id)
-            
+
             # Переключаем лайк
             if comment.likes.filter(id=request.user.id).exists():
                 comment.likes.remove(request.user)
                 is_liked = False
+                # Отменяем репутацию при удалении лайка
+                if comment.author != request.user:
+                    from users.reputation_utils import undo_reputation
+                    undo_reputation(
+                        user=comment.author,
+                        reason='comment_liked',
+                        comment=comment
+                    )
             else:
                 comment.likes.add(request.user)
                 is_liked = True
-                
+                # Начисляем репутацию автору за лайк
+                if comment.author != request.user:
+                    from users.reputation_utils import award_reputation
+                    award_reputation(
+                        user=comment.author,
+                        reason='comment_liked',
+                        comment=comment
+                    )
+
                 # Уведомление автору комментария о лайке
                 if comment.author != request.user:
                     Notification.objects.create(
@@ -1102,20 +1153,28 @@ class SubscribeAuthorView(View):
         from users.models import User
         author_id = request.POST.get('author_id')
         author = get_object_or_404(User, id=author_id, is_active=True)
-        
+
         if author == request.user:
             return JsonResponse({'success': False, 'error': 'Нельзя подписаться на себя'}, status=400)
-        
+
         subscription, created = Subscription.objects.get_or_create(
             subscriber=request.user,
             author=author
         )
-        
+
         if not created:
             subscription.delete()
             subscribed = False
         else:
             subscribed = True
+            # Начисляем репутацию автору за подписку
+            from users.reputation_utils import award_reputation
+            award_reputation(
+                user=author,
+                reason='subscription_received',
+                skip_limit=True
+            )
+            
             # Создаём уведомление для автора
             notification = Notification.objects.create(
                 recipient=author,
@@ -1134,9 +1193,9 @@ class SubscribeAuthorView(View):
                 })
             except Exception as e:
                 logger.error(f'Ошибка отправки WebSocket уведомления: {e}')
-        
+
         subscribers_count = Subscription.objects.filter(author=author).count()
-        
+
         return JsonResponse({
             'success': True,
             'subscribed': subscribed,
@@ -1266,7 +1325,19 @@ class CreateDiscussionView(LoginRequiredMixin, DataMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        
+        # Начисляем репутацию за создание обсуждения
+        discussion = self.object
+        if discussion.author:
+            from users.reputation_utils import award_reputation
+            award_reputation(
+                user=discussion.author,
+                reason='discussion_created',
+                discussion=discussion
+            )
+        
+        return response
 
     def get_success_url(self):
         return reverse_lazy('discussions')
@@ -1305,6 +1376,14 @@ class AddDiscussionCommentAjaxView(View):
                 content=content,
                 parent=parent
             )
+            
+            # Начисляем репутацию за создание комментария
+            from users.reputation_utils import award_reputation
+            award_reputation(
+                user=comment.author,
+                reason='comment_created',
+                comment=comment
+            )
 
             data = {
                 'success': True,
@@ -1340,9 +1419,25 @@ class ToggleDiscussionCommentLikeView(View):
             if comment.likes.filter(id=request.user.id).exists():
                 comment.likes.remove(request.user)
                 liked = False
+                # Отменяем репутацию при удалении лайка
+                if comment.author != request.user:
+                    from users.reputation_utils import undo_reputation
+                    undo_reputation(
+                        user=comment.author,
+                        reason='comment_liked',
+                        comment=comment
+                    )
             else:
                 comment.likes.add(request.user)
                 liked = True
+                # Начисляем репутацию автору за лайк
+                if comment.author != request.user:
+                    from users.reputation_utils import award_reputation
+                    award_reputation(
+                        user=comment.author,
+                        reason='comment_liked',
+                        comment=comment
+                    )
 
             return JsonResponse({
                 'success': True,
@@ -1371,6 +1466,14 @@ class ToggleDiscussionLikeView(View):
             else:
                 discussion.likes.add(request.user)
                 liked = True
+                # Начисляем репутацию автору за лайк обсуждения
+                if discussion.author and discussion.author != request.user:
+                    from users.reputation_utils import award_reputation
+                    award_reputation(
+                        user=discussion.author,
+                        reason='post_liked',  # Используем ту же причину
+                        discussion=discussion
+                    )
 
             return JsonResponse({
                 'success': True,

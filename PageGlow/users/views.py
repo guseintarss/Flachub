@@ -262,3 +262,98 @@ class RuleViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save()
+
+
+# ===== Views системы репутации =====
+
+class ReputationHistoryView(LoginRequiredMixin, DataMixin, ListView):
+    """История репутации пользователя"""
+    template_name = 'users/reputation_history.html'
+    context_object_name = 'reputation_logs'
+    paginate_by = 20
+    title_page = 'История репутации'
+
+    def get_queryset(self):
+        user = self.request.user
+        # Если пользователь не суперпользователь, показываем только его логи
+        if not user.is_staff:
+            return self.request.user.reputation_logs.select_related(
+                'post', 'comment', 'discussion'
+            ).order_by('-created_at')
+        
+        # Для администраторов — возможность просмотра логов других пользователей
+        user_id = self.request.GET.get('user_id')
+        if user_id:
+            return User.objects.get(id=user_id).reputation_logs.select_related(
+                'post', 'comment', 'discussion'
+            ).order_by('-created_at')
+        
+        return user.reputation_logs.select_related(
+            'post', 'comment', 'discussion'
+        ).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['reputation'] = self.request.user.reputation
+        context['current_level'] = self.request.user.current_level
+        context['next_level'] = self.request.user.next_level
+        context['level_progress'] = self.request.user.level_progress
+        return context
+
+
+class ReputationLeaderboardView(DataMixin, ListView):
+    """Топ пользователей по репутации"""
+    template_name = 'users/reputation_leaderboard.html'
+    context_object_name = 'top_users'
+    paginate_by = 50
+    title_page = 'Лидеры репутации'
+
+    def get_queryset(self):
+        from django.db.models import Sum
+        return User.objects.annotate(
+            total_reputation=Sum('reputation_logs__amount')
+        ).filter(
+            is_active=True,
+            total_reputation__isnull=False
+        ).order_by('-total_reputation').select_related('photo')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Добавляем уровни к пользователям
+        for user in context['top_users']:
+            user._level = user.current_level
+        return context
+
+
+@login_required
+def add_manual_reputation(request, user_id):
+    """
+    Ручное изменение репутации (только для администраторов)
+    """
+    if not request.user.is_staff:
+        raise PermissionDenied("Только администраторы могут изменять репутацию")
+    
+    target_user = get_object_or_404(User, id=user_id)
+    
+    if request.method == 'POST':
+        amount = int(request.POST.get('amount', 0))
+        reason = request.POST.get('reason', 'manual')
+        comment = request.POST.get('comment', '')
+        
+        if amount == 0:
+            messages.error(request, 'Сумма не может быть равна 0')
+        else:
+            target_user.add_reputation(
+                amount=amount,
+                reason=reason,
+            )
+            
+            sign = '+' if amount > 0 else ''
+            messages.success(request, f'Репутация пользователя {target_user.username} изменена на {sign}{amount}')
+        
+        return redirect('users:reputation_history')
+    
+    return render(request, 'users/add_reputation_form.html', {
+        'target_user': target_user,
+        'title': 'Изменить репутацию',
+    })
