@@ -310,13 +310,154 @@ function showToast(message, duration = 3000) {
     toast.className = 'toast-notification';
     toast.textContent = message;
     document.body.appendChild(toast);
-    
+
     setTimeout(() => toast.classList.add('show'), 10);
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
     }, duration);
 }
+
+// ===== МГНОВЕННЫЕ ЛАЙКИ =====
+function getCookie(name) {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) return meta.getAttribute('content');
+    return null;
+}
+
+// Лайк поста
+document.addEventListener('DOMContentLoaded', function() {
+    const likeBtn = document.getElementById('like-btn');
+    if (likeBtn) {
+        likeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postId = this.getAttribute('data-post-id');
+            const isLiked = this.getAttribute('data-liked') === 'true';
+            const newLiked = !isLiked;
+            const newCount = newLiked ? 
+                (parseInt(this.textContent.trim()) || 0) + 1 : 
+                Math.max(0, (parseInt(this.textContent.trim()) || 0) - 1);
+            
+            // Мгновенно меняем визуально
+            this.innerHTML = `<i class="fas fa-heart"></i>${newCount}`;
+            this.setAttribute('data-liked', newLiked);
+            if (newLiked) this.classList.add('liked');
+            else this.classList.remove('liked');
+            
+            // Показываем уведомление
+            if (newLiked) {
+                showToast('❤️ Понравилось');
+            }
+            
+            // Отправляем на сервер без ожидания
+            fetch('/ajax/like/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `post_id=${postId}`
+            }).catch(err => {});
+        });
+    }
+    
+    // Закладки
+    const bookmarkBtn = document.getElementById('bookmark-btn');
+    if (bookmarkBtn) {
+        bookmarkBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postId = this.dataset.postId;
+            const icon = this.querySelector('i');
+            const newBookmarked = !this.classList.contains('bookmarked');
+            
+            if (newBookmarked) {
+                this.classList.add('bookmarked');
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid');
+                showToast('📑 В закладки');
+            } else {
+                this.classList.remove('bookmarked');
+                icon.classList.remove('fa-solid');
+                icon.classList.add('fa-regular');
+                showToast('🗑️ Удалено из закладок');
+            }
+            
+            fetch('/bookmarks/toggle/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `post_id=${postId}`
+            }).catch(err => {});
+        });
+    }
+    
+    // Избранное
+    const favoriteBtn = document.getElementById('favorite-btn');
+    if (favoriteBtn) {
+        favoriteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postId = this.getAttribute('data-post-id');
+            const icon = this.querySelector('i');
+            const newFavorited = !this.classList.contains('favorited');
+            
+            if (newFavorited) {
+                this.classList.add('favorited');
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid');
+                showToast('⭐ В избранное');
+            } else {
+                this.classList.remove('favorited');
+                icon.classList.remove('fa-solid');
+                icon.classList.add('fa-regular');
+                showToast('🗑️ Удалено из избранного');
+            }
+            
+            this.setAttribute('data-favorited', newFavorited);
+            
+            fetch('/ajax/favorite/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `post_id=${postId}`
+            }).catch(err => {});
+        });
+    }
+    
+    // Подписка на автора
+    const subscribeBtn = document.getElementById('subscribe-btn');
+    if (subscribeBtn) {
+        subscribeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const authorId = this.getAttribute('data-author-id');
+            const isSubscribed = this.classList.contains('btn-secondary');
+            
+            if (!isSubscribed) {
+                this.textContent = 'Отписаться';
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-secondary');
+                showToast('📬 Вы подписаны');
+            } else {
+                this.textContent = 'Подписаться';
+                this.classList.remove('btn-secondary');
+                this.classList.add('btn-primary');
+                showToast('📭 Вы отписались');
+            }
+            
+            fetch('/ajax/subscribe/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `author_id=${authorId}`
+            }).catch(err => {});
+        });
+    }
+});
 
 // Прогресс чтения и кнопка наверх
 function updateProgress() {
@@ -536,32 +677,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Лайки комментариев
+    // Лайки комментариев - мгновенные
     function handleLikeComment(e) {
         const btn = e.currentTarget;
         const commentId = btn.getAttribute('data-comment-id');
         const isLiked = btn.getAttribute('data-is-liked') === 'true';
         const icon = btn.querySelector('i');
         const countSpan = btn.querySelector('.comment-likes-count');
-
-        fetch('{% url "toggle_comment_like_ajax" %}', {
+        const currentCount = parseInt(countSpan.textContent);
+        
+        // Мгновенно меняем
+        const newLiked = !isLiked;
+        const newCount = newLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+        
+        countSpan.textContent = newCount;
+        btn.setAttribute('data-is-liked', newLiked);
+        
+        if (newLiked) {
+            btn.classList.add('liked');
+            icon.classList.remove('text-muted');
+            icon.classList.add('text-danger');
+            showToast('❤️ Понравилось');
+        } else {
+            btn.classList.remove('liked');
+            icon.classList.remove('text-danger');
+            icon.classList.add('text-muted');
+        }
+        
+        // Отправляем без ожидания
+        fetch('/ajax/toggle-comment-like/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': '{{ csrf_token }}'
+                'X-CSRFToken': getCookie('csrftoken')
             },
             body: `comment_id=${commentId}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const newLiked = data.is_liked;
-                btn.setAttribute('data-is-liked', newLiked);
-                icon.className = newLiked ? 'fas fa-heart' : 'fas fa-heart';
-                countSpan.textContent = data.likes_count;
-                showToast(newLiked ? '❤️ Вам понравился комментарий' : '🤍 Вы убрали лайк');
-            }
-        });
+        }).catch(err => {});
     }
 
     // Ответ на комментарий

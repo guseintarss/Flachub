@@ -172,7 +172,7 @@
 
 .bookmark-item {
     position: relative;
-    transition: transform 0.2s;
+    transition: transform 0.2s, opacity 0.3s;
 }
 
 .bookmark-item:hover {
@@ -214,6 +214,20 @@
 </style>
 
 <script>
+// Уведомления (toast)
+function showToast(message, duration = 2000) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Модальное окно коллекции
     const modal = document.getElementById('createCollectionModal');
@@ -268,32 +282,36 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Удаление закладки
+    // Удаление закладки - мгновенное
     document.querySelectorAll('.bookmark-remove').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             const postId = this.dataset.postId;
             const bookmarkItem = this.closest('.bookmark-item');
-
-            if (confirm('Удалить статью из закладок?')) {
-                fetch('{% url "bookmark_toggle" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: `post_id=${postId}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        bookmarkItem.remove();
-                        if (document.querySelectorAll('.bookmark-item').length === 0) {
-                            location.reload();
-                        }
-                    }
-                });
-            }
+            
+            // Мгновенно скрываем
+            bookmarkItem.style.opacity = '0';
+            bookmarkItem.style.transform = 'translateX(-20px)';
+            bookmarkItem.style.transition = 'all 0.3s ease';
+            
+            showToast('🗑️ Удалено из закладок');
+            
+            setTimeout(() => {
+                bookmarkItem.remove();
+                if (document.querySelectorAll('.bookmark-item').length === 0) {
+                    setTimeout(() => location.reload(), 500);
+                }
+            }, 300);
+            
+            // Отправляем без ожидания
+            fetch('/bookmarks/toggle/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: `post_id=${postId}`
+            }).catch(err => {});
         });
     });
 });

@@ -3683,3 +3683,47 @@ html.dark-mode .btn-primary:hover {
 html.dark-mode .form-select {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238892b0' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
 }
+
+/* Toast уведомления */
+.toast-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--surface);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    z-index: 10000;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    font-weight: 500;
+    border: 1px solid var(--border);
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+html.dark-mode .toast-notification {
+    background: var(--dark-surface);
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+/* Утилиты */
+.text-danger { color: #dc3545 !important; }
+.text-muted { color: #6c757d !important; }
+
+html.dark-mode .text-danger { color: #ef4444 !important; }
+html.dark-mode .text-muted { color: #8892b0 !important; }
+
+.comment-like-btn.liked i {
+    color: #dc3545 !important;
+}
+
+html.dark-mode .comment-like-btn.liked i {
+    color: #ef4444 !important;
+}

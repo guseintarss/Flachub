@@ -112,6 +112,24 @@
 </style>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+// Уведомления (toast)
+function showToast(message, duration = 2000) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="discussion-detail-page">
 
@@ -476,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return div;
     }
 
-    // Обработка лайков комментариев
+    // Обработка лайков комментариев - мгновенная
     document.addEventListener('click', function(e) {
         const likeBtn = e.target.closest('.like-comment-btn');
         if (likeBtn) {
@@ -485,31 +503,34 @@ document.addEventListener('DOMContentLoaded', function() {
             const icon = likeBtn.querySelector('i');
             const countSpan = likeBtn.querySelector('.likes-count');
             const currentCount = parseInt(countSpan.textContent);
-
-            fetch('{% url "toggle_discussion_comment_like" %}', {
+            const isLiked = likeBtn.classList.contains('liked');
+            
+            // Мгновенно меняем
+            const newLiked = !isLiked;
+            const newCount = newLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+            
+            countSpan.textContent = newCount;
+            
+            if (newLiked) {
+                likeBtn.classList.add('liked');
+                icon.classList.remove('text-muted');
+                icon.classList.add('text-danger');
+                showToast('❤️ Понравилось');
+            } else {
+                likeBtn.classList.remove('liked');
+                icon.classList.remove('text-danger');
+                icon.classList.add('text-muted');
+            }
+            
+            // Отправляем без ожидания
+            fetch('/ajax/discussions/toggle-comment-like/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': '{{ csrf_token }}'
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
                 },
                 body: `comment_id=${commentId}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    countSpan.textContent = data.likes_count;
-                    if (data.liked) {
-                        icon.classList.remove('text-muted');
-                        icon.classList.add('text-danger', 'liked');
-                    } else {
-                        icon.classList.remove('text-danger', 'liked');
-                        icon.classList.add('text-muted');
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error toggling like:', error);
-            });
+            }).catch(err => {});
         }
     });
 
@@ -626,7 +647,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Лайки обсуждения
+    // Лайки обсуждения - мгновенные
     document.addEventListener('click', function(e) {
         const likeBtn = e.target.closest('.like-discussion-btn');
         if (likeBtn) {
@@ -634,31 +655,33 @@ document.addEventListener('DOMContentLoaded', function() {
             const discussionId = likeBtn.getAttribute('data-discussion-id');
             const icon = likeBtn.querySelector('i');
             const countSpan = likeBtn.querySelector('.likes-count');
-
-            fetch('{% url "toggle_discussion_like" %}', {
+            const currentCount = parseInt(countSpan.textContent);
+            const isLiked = icon.classList.contains('text-danger');
+            
+            // Мгновенно меняем
+            const newLiked = !isLiked;
+            const newCount = newLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+            
+            countSpan.textContent = newCount;
+            
+            if (newLiked) {
+                icon.classList.remove('text-muted');
+                icon.classList.add('text-danger');
+                showToast('❤️ Понравилось');
+            } else {
+                icon.classList.remove('text-danger');
+                icon.classList.add('text-muted');
+            }
+            
+            // Отправляем без ожидания
+            fetch('/ajax/discussions/toggle-like/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': '{{ csrf_token }}'
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
                 },
                 body: `discussion_id=${discussionId}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    countSpan.textContent = data.likes_count;
-                    if (data.liked) {
-                        icon.classList.remove('text-muted');
-                        icon.classList.add('text-danger');
-                    } else {
-                        icon.classList.remove('text-danger');
-                        icon.classList.add('text-muted');
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error toggling like:', error);
-            });
+            }).catch(err => {});
         }
     });
     
