@@ -727,6 +727,7 @@ html.dark-mode .reading-progress-bar {
 .share-menu-item:hover {
     background: var(--bg);
     transform: translateX(4px);
+    text-decoration: none;
 }
 
 .share-menu-item i {
@@ -839,6 +840,7 @@ html.dark-mode .share-menu-close:hover {
     transform: translateY(-6px);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
     border-color: rgba(12, 106, 207, 0.3);
+    text-decoration: none;
 }
 
 .similar-article-image {

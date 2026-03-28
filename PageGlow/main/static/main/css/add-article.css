@@ -157,11 +157,39 @@
     font-weight: 600;
     font-size: 1rem;
     transition: all 0.25s ease;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    text-decoration: none;
 }
 
 .step-footer .btn-lg {
     font-size: 1.05rem;
     padding: 16px 40px;
+}
+
+.step-footer .btn-primary {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.step-footer .btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(12, 106, 207, 0.3);
+}
+
+.step-footer .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.step-footer .btn-secondary:hover {
+    background: var(--bg);
+    border-color: var(--muted);
+    transform: translateY(-2px);
 }
 
 /* =====================================================

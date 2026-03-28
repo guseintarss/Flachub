@@ -102,7 +102,6 @@
 |------------|------------|
 | **HTML5/CSS3** | Базовая разметка и стили |
 | **JavaScript (Vanilla)** | Интерактивность |
-| **Bootstrap 5.3** | Адаптивный дизайн |
 | **Font Awesome 6.4** | Иконки |
 | **CKEditor 5** | WYSIWYG редактор |
 
@@ -327,7 +326,6 @@ PageGlow следует лучшим практикам безопасности
 
 - [Django Team](https://www.djangoproject.com/) - за превосходный фреймворк
 - [CKEditor](https://ckeditor.com/) - за отличный редактор
-- [Bootstrap](https://getbootstrap.com/) - за UI фреймворк
 - [Font Awesome](https://fontawesome.com/) - за иконки
 - Всем контрибьюторам и пользователям проекта
 
