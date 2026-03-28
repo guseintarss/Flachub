@@ -1,76 +1,85 @@
 #!/bin/bash
-# Automated Backup Script for PageGlow 3.0
-# Usage: ./backup.sh [backup_dir]
+# ===========================================
+# PageGlow 3.0 - Скрипт резервного копирования
+# ===========================================
 
 set -e
 
-# Configuration
-BACKUP_DIR="${1:-/home/$USER/backups/pageglow}"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-KEEP_DAYS=30
-
-# Colors
+# Цвета
 GREEN='\033[0;32m'
+BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-echo -e "${GREEN}🔄 PageGlow Backup Script${NC}"
-echo "================================"
+# Настройки
+BACKUP_DIR="${BACKUP_DIR:-./backups}"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+DB_NAME="${DATABASE_NAME:-pageglow_db}"
+DB_USER="${DATABASE_USERNAME:-postgres}"
 
-# Create backup directory
+echo -e "${BLUE}🔄 PageGlow Backup${NC}"
+echo "Дата: $(date '+%Y-%m-%d %H:%M:%S')"
+echo ""
+
+# Создание директории
 mkdir -p "$BACKUP_DIR"
 
-# Check if using Docker
-if command -v docker-compose &> /dev/null && [ -f "docker-compose.yml" ]; then
-    echo -e "${YELLOW}Docker mode detected${NC}"
-    MODE="docker"
+# Бэкап базы данных
+echo -e "${YELLOW}📦 Бэкап базы данных...${NC}"
+DB_BACKUP_FILE="$BACKUP_DIR/db_$TIMESTAMP.sql.gz"
+
+if docker compose ps postgres | grep -q "Up"; then
+    docker compose exec -T postgres pg_dump -U "$DB_USER" "$DB_NAME" | gzip > "$DB_BACKUP_FILE"
+    DB_SIZE=$(du -h "$DB_BACKUP_FILE" | cut -f1)
+    echo -e "${GREEN}✅ БД сохранена: $DB_BACKUP_FILE ($DB_SIZE)${NC}"
 else
-    echo -e "${YELLOW}VPS mode detected${NC}"
-    MODE="vps"
+    echo -e "${RED}❌ PostgreSQL не запущен${NC}"
 fi
 
-# Backup database
-echo -e "${YELLOW}[1/3] Backing up database...${NC}"
-if [ "$MODE" = "docker" ]; then
-    docker-compose exec -T postgres pg_dump -U postgres pageglow_db > "$BACKUP_DIR/db_$TIMESTAMP.sql"
+# Бэкап медиа файлов
+echo -e "${YELLOW}📸 Бэкап медиа файлов...${NC}"
+MEDIA_BACKUP_FILE="$BACKUP_DIR/media_$TIMESTAMP.tar.gz"
+
+if [ -d "./PageGlow/media" ]; then
+    tar -czf "$MEDIA_BACKUP_FILE" ./PageGlow/media 2>/dev/null
+    MEDIA_SIZE=$(du -h "$MEDIA_BACKUP_FILE" | cut -f1)
+    echo -e "${GREEN}✅ Медиа сохранены: $MEDIA_BACKUP_FILE ($MEDIA_SIZE)${NC}"
 else
-    # Get DB credentials from .env
-    if [ -f ".env" ]; then
-        source .env
-        PGPASSWORD=$DATABASE_PASSWORD pg_dump -h $DATABASE_HOST -U $DATABASE_USERNAME -d $DATABASE_NAME > "$BACKUP_DIR/db_$TIMESTAMP.sql"
-    else
-        echo -e "${RED}.env file not found!${NC}"
-        exit 1
-    fi
+    echo -e "${YELLOW}⚠️  Директория media не найдена${NC}"
 fi
 
-# Compress backup
-echo -e "${YELLOW}[2/3] Compressing backup...${NC}"
-gzip "$BACKUP_DIR/db_$TIMESTAMP.sql"
-echo -e "${GREEN}✓ Database backup: db_$TIMESTAMP.sql.gz${NC}"
+# Бэкап статики (опционально)
+# echo -e "${YELLOW}🎨 Бэкап статики...${NC}"
+# STATIC_BACKUP_FILE="$BACKUP_DIR/static_$TIMESTAMP.tar.gz"
+# tar -czf "$STATIC_BACKUP_FILE" ./PageGlow/staticfiles 2>/dev/null
 
-# Backup media files (optional)
-echo -e "${YELLOW}[3/3] Backing up media files...${NC}"
-if [ -d "PageGlow/media" ]; then
-    tar -czf "$BACKUP_DIR/media_$TIMESTAMP.tar.gz" PageGlow/media/
-    echo -e "${GREEN}✓ Media backup: media_$TIMESTAMP.tar.gz${NC}"
+# Удаление старых бэкапов (старше 30 дней)
+echo -e "${YELLOW}🧹 Очистка старых бэкапов...${NC}"
+OLD_BACKUPS=$(find "$BACKUP_DIR" -name "*.gz" -mtime +30 -type f | wc -l)
+
+if [ "$OLD_BACKUPS" -gt 0 ]; then
+    find "$BACKUP_DIR" -name "*.gz" -mtime +30 -delete
+    echo -e "${GREEN}✅ Удалено $OLD_BACKUPS старых файлов${NC}"
+else
+    echo "Старых бэкапов не найдено"
 fi
 
-# Remove old backups
-echo -e "${YELLOW}Cleaning up old backups...${NC}"
-find "$BACKUP_DIR" -name "*.sql.gz" -mtime +$KEEP_DAYS -delete
-find "$BACKUP_DIR" -name "*.tar.gz" -mtime +$KEEP_DAYS -delete
+# Список последних бэкапов
+echo ""
+echo -e "${BLUE}📋 Последние бэкапы:${NC}"
+ls -lh "$BACKUP_DIR"/*.gz 2>/dev/null | tail -5 || echo "Бэкапы не найдены"
 
-# Show backup size
-echo
-echo -e "${GREEN}================================${NC}"
-echo -e "${GREEN}✅ Backup completed!${NC}"
-echo -e "${GREEN}================================${NC}"
-echo
-du -sh "$BACKUP_DIR"
-echo
-ls -lh "$BACKUP_DIR"/*_$TIMESTAMP.*
-echo
-echo -e "${YELLOW}Backup location: $BACKUP_DIR${NC}"
-echo -e "${YELLOW}Retention period: $KEEP_DAYS days${NC}"
+# Итог
+echo ""
+echo -e "${GREEN}============================================${NC}"
+echo -e "${GREEN}✅ Резервное копирование завершено${NC}"
+echo -e "${GREEN}============================================${NC}"
+echo ""
+echo "Бэкап БД: $DB_BACKUP_FILE"
+echo "Бэкап медиа: $MEDIA_BACKUP_FILE"
+echo ""
+echo "Для восстановления:"
+echo "  gunzip < $DB_BACKUP_FILE | docker compose exec -T postgres psql -U $DB_USER $DB_NAME"
+echo "  tar -xzf $MEDIA_BACKUP_FILE -C ./PageGlow/"
+echo ""
