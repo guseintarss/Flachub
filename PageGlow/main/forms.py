@@ -36,8 +36,8 @@ class AddPostForm(forms.ModelForm):
         model = Post
         fields = ['content', 'photo', 'is_published', 'cat', 'tags', 'post_type']
         widgets = {
-            'photo': forms.ClearableFileInput(attrs={'class':'form-control'}),
-            'is_published': forms.Select(attrs={'class':'form-control'}),
+            'photo': forms.ClearableFileInput(attrs={'class': 'cover-file-input', 'accept': 'image/*'}),
+            'is_published': forms.Select(attrs={'class': 'form-control'}),
             'post_type': forms.RadioSelect(attrs={'class': 'post-type-selector'}),
         }
 

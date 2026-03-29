@@ -273,6 +273,63 @@
     margin-top: 10px;
 }
 
+.cover-upload-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* Скрываем стандартный file input */
+.cover-file-input,
+.cover-file-input::-webkit-file-upload-button {
+    display: none;
+}
+
+/* Кастомная кнопка для выбора файла */
+.cover-file-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: var(--surface);
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.cover-file-label:hover {
+    border-color: var(--primary);
+    background: var(--bg);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.cover-file-label:active {
+    transform: translateY(0);
+}
+
+.cover-file-label i {
+    color: var(--primary);
+    font-size: 18px;
+}
+
+/* Текст имени файла */
+.file-name {
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Предпросмотр */
 .file-preview {
     margin-top: 15px;
     display: none;
@@ -282,6 +339,12 @@
     max-width: 300px;
     border-radius: 10px;
     box-shadow: var(--shadow);
+}
+
+/* Темная тема */
+html.dark-mode .cover-file-label:hover {
+    border-color: var(--dark-primary);
+    box-shadow: 0 4px 15px rgba(41, 156, 245, 0.2);
 }
 
 /* =====================================================
@@ -555,7 +618,7 @@
 .tags-grid {
     /* display: grid; */
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 10px;
+    gap: 16px;
     max-height: 300px;
     overflow-y: auto;
     padding: 10px;

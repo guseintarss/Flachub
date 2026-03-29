@@ -157,11 +157,39 @@
     font-weight: 600;
     font-size: 1rem;
     transition: all 0.25s ease;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    text-decoration: none;
 }
 
 .step-footer .btn-lg {
     font-size: 1.05rem;
     padding: 16px 40px;
+}
+
+.step-footer .btn-primary {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.step-footer .btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(12, 106, 207, 0.3);
+}
+
+.step-footer .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.step-footer .btn-secondary:hover {
+    background: var(--bg);
+    border-color: var(--muted);
+    transform: translateY(-2px);
 }
 
 /* =====================================================
@@ -245,6 +273,63 @@
     margin-top: 10px;
 }
 
+.cover-upload-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* Скрываем стандартный file input */
+.cover-file-input,
+.cover-file-input::-webkit-file-upload-button {
+    display: none;
+}
+
+/* Кастомная кнопка для выбора файла */
+.cover-file-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: var(--surface);
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.cover-file-label:hover {
+    border-color: var(--primary);
+    background: var(--bg);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.cover-file-label:active {
+    transform: translateY(0);
+}
+
+.cover-file-label i {
+    color: var(--primary);
+    font-size: 18px;
+}
+
+/* Текст имени файла */
+.file-name {
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Предпросмотр */
 .file-preview {
     margin-top: 15px;
     display: none;
@@ -254,6 +339,12 @@
     max-width: 300px;
     border-radius: 10px;
     box-shadow: var(--shadow);
+}
+
+/* Темная тема */
+html.dark-mode .cover-file-label:hover {
+    border-color: var(--dark-primary);
+    box-shadow: 0 4px 15px rgba(41, 156, 245, 0.2);
 }
 
 /* =====================================================
@@ -525,7 +616,7 @@
 }
 
 .tags-grid {
-    display: grid;
+    /* display: grid; */
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 10px;
     max-height: 300px;
@@ -537,7 +628,6 @@
 }
 
 .tag-wrapper {
-    display: flex;
     align-items: center;
     gap: 8px;
 }
@@ -573,9 +663,6 @@
    ===================================================== */
 
 @media (max-width: 768px) {
-    .add-article-wizard {
-        padding: 15px;
-    }
 
     .wizard-progress {
         padding: 20px 15px;

@@ -117,7 +117,14 @@
                         <div class="form-group">
                             <label><i class="fas fa-image"></i> Обложка</label>
                             <div class="file-upload-wrapper">
-                                {{ form.photo }}
+                                <div class="cover-upload-container">
+                                    {{ form.photo }}
+                                    <label for="{{ form.photo.id_for_label }}" class="cover-file-label">
+                                        <i class="fas fa-upload"></i>
+                                        <span>Выбрать обложку...</span>
+                                    </label>
+                                    <span class="file-name" id="file-name">Файл не выбран</span>
+                                </div>
                                 <div class="file-preview" id="photo-preview"></div>
                             </div>
                         </div>
@@ -377,17 +384,24 @@ function updateNoTagsVisibility() {
 // Предпросмотр обложки
 const photoInput = document.querySelector('input[name="photo"]');
 const photoPreview = document.getElementById('photo-preview');
+const fileName = document.getElementById('file-name');
 
 if (photoInput) {
     photoInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
+            // Отображаем имя файла
+            fileName.textContent = file.name;
+            
             const reader = new FileReader();
             reader.onload = function(e) {
                 photoPreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
                 photoPreview.style.display = 'block';
             };
             reader.readAsDataURL(file);
+        } else {
+            fileName.textContent = 'Файл не выбран';
+            photoPreview.style.display = 'none';
         }
     });
 }
