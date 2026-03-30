@@ -66,7 +66,7 @@ services:
       sh -c "
       python manage.py migrate --noinput &&
       python manage.py collectstatic --noinput &&
-      gunicorn --config gunicorn_config.py PageGlow.wsgi:application
+      exec gunicorn --config gunicorn_config.py PageGlow.wsgi:application
       "
     environment:
       - DEBUG=${DEBUG:-False}
@@ -91,8 +91,8 @@ services:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
       - logs_volume:/app/logs
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -134,7 +134,7 @@ services:
     networks:
       - pageglow-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health/"]
       interval: 30s
       timeout: 10s
       retries: 3
