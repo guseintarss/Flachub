@@ -465,7 +465,7 @@ html.dark-mode .post-excerpt blockquote {
 
 @media (max-width: 768px) {
     .feed-container {
-        padding: 16px;
+        padding: 0;
     }
 
     .feed-post {
@@ -538,7 +538,7 @@ html.dark-mode .post-excerpt blockquote {
 
     .post-stats {
         display: flex;
-        gap: 12px;
+        gap: 1;
         flex: 1;
     }
 
@@ -613,7 +613,7 @@ html.dark-mode .post-excerpt blockquote {
     }
 
     .read-more-btn {
-        padding: 8px 14px;
+        padding: 5px 10px;
         font-size: 0.8rem;
     }
 }

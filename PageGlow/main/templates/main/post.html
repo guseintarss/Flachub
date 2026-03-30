@@ -255,36 +255,31 @@
 
                 <!-- Ответы на комментарий -->
                 {% if comment.replies.all %}
-                <button class="show-replies-btn" data-comment-id="{{ comment.id }}">
-                    <i class="fas fa-comment-dots"></i> Все ответы ({{ comment.replies.count }})
-                </button>
-                <div class="comment-replies" style="display: none;">
-                    {% for reply in comment.replies.all %}
-                    <div class="comment reply" data-comment-id="{{ reply.id }}">
-                        <div class="comment-header">
-                            <strong class="comment-author">{{ reply.author.username }}</strong>
-                            <small class="comment-time">{{ reply.created_at }}</small>
-                            {% if reply.parent %}
-                            <small class="reply-to">
-                                <i class="fas fa-arrow-right"></i> {{ reply.parent.author.username }}
-                            </small>
+                {% for reply in comment.replies.all %}
+                <div class="comment-reply-item" data-comment-id="{{ reply.id }}">
+                    <div class="comment-header">
+                        <strong class="comment-author">{{ reply.author.username }}</strong>
+                        <small class="comment-time">{{ reply.created_at }}</small>
+                        {% if reply.parent %}
+                        <small class="reply-to">
+                            <i class="fas fa-arrow-right"></i> {{ reply.parent.author.username }}
+                        </small>
+                        {% endif %}
+                        <div class="comment-actions">
+                            <button class="comment-like-btn" data-comment-id="{{ reply.id }}" data-is-liked="{{ reply.user_has_liked|yesno:'true,false' }}">
+                                <i class="fas fa-heart{% if not reply.user_has_liked %}fas fa-heart{% endif %}"></i>
+                                <span class="comment-likes-count">{{ reply.number_of_likes }}</span>
+                            </button>
+                            {% if reply.author == user or user.is_staff %}
+                            <button class="delete-comment-btn" data-comment-id="{{ reply.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
                             {% endif %}
-                            <div class="comment-actions">
-                                <button class="comment-like-btn" data-comment-id="{{ reply.id }}" data-is-liked="{{ reply.user_has_liked|yesno:'true,false' }}">
-                                    <i class="fas fa-heart{% if not reply.user_has_liked %}fas fa-heart{% endif %}"></i>
-                                    <span class="comment-likes-count">{{ reply.number_of_likes }}</span>
-                                </button>
-                                {% if reply.author == user or user.is_staff %}
-                                <button class="delete-comment-btn" data-comment-id="{{ reply.id }}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                                {% endif %}
-                            </div>
                         </div>
-                        <p class="comment-content">{{ reply.content }}</p>
                     </div>
-                    {% endfor %}
+                    <p class="comment-content">{{ reply.content }}</p>
                 </div>
+                {% endfor %}
                 {% endif %}
             </div>
             {% endif %}
@@ -585,13 +580,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Добавляем ответ к родительскому комментарию
                     const parentComment = document.querySelector(`[data-comment-id="${parentId}"]`);
                     if (parentComment) {
-                        let repliesDiv = parentComment.querySelector('.comment-replies');
-                        if (!repliesDiv) {
-                            repliesDiv = document.createElement('div');
-                            repliesDiv.className = 'comment-replies';
-                            parentComment.appendChild(repliesDiv);
-                        }
-                        repliesDiv.appendChild(newComment);
+                        // Вставляем ответ после родительского комментария
+                        parentComment.insertAdjacentElement('afterend', newComment);
                     }
                 } else {
                     commentsList.insertBefore(newComment, commentsList.firstChild);
@@ -610,26 +600,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function createCommentElement(commentData) {
         const div = document.createElement('div');
-        div.className = 'comment' + (commentData.parent_id ? ' reply' : '');
+        div.className = commentData.parent_id ? 'comment-reply-item' : 'comment';
         div.setAttribute('data-comment-id', commentData.id);
-        
-        const canDelete = commentData.can_delete || false;
-        const isLiked = commentData.is_liked || false;
-        
+
+        const can_delete = commentData.can_delete || false;
+        const is_liked = commentData.is_liked || false;
+
         div.innerHTML = `
             <div class="comment-header">
                 <strong class="comment-author">${commentData.author}</strong>
                 <small class="comment-time">${commentData.created_at}</small>
                 ${commentData.parent_author ? `<small class="reply-to"><i class="fas fa-arrow-right"></i> ${commentData.parent_author}</small>` : ''}
                 <div class="comment-actions">
-                    <button class="comment-like-btn" data-comment-id="${commentData.id}" data-is-liked="${isLiked}">
-                        <i class="fas fa-heart${isLiked ? '' : '-o'}"></i>
+                    <button class="comment-like-btn" data-comment-id="${commentData.id}" data-is-liked="${is_liked}">
+                        <i class="fas fa-heart${is_liked ? '' : '-o'}"></i>
                         <span class="comment-likes-count">${commentData.likes_count || 0}</span>
                     </button>
                     ${!commentData.parent_id ? `<button class="comment-reply-btn" data-comment-id="${commentData.id}" data-comment-author="${commentData.author}">
                         <i class="fas fa-reply"></i> Ответить
                     </button>` : ''}
-                    ${canDelete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}">
+                    ${can_delete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}">
                         <i class="fas fa-trash"></i>
                     </button>` : ''}
                 </div>
@@ -754,28 +744,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('.delete-comment-btn').forEach(btn => {
         btn.addEventListener('click', handleDeleteComment);
-    });
-
-    // Показ/скрытие ответов на комментарии
-    document.querySelectorAll('.show-replies-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const commentId = this.getAttribute('data-comment-id');
-            const repliesDiv = this.nextElementSibling;
-            
-            if (repliesDiv && repliesDiv.classList.contains('comment-replies')) {
-                const isHidden = repliesDiv.style.display === 'none' || !repliesDiv.style.display;
-                
-                if (isHidden) {
-                    repliesDiv.style.display = 'block';
-                    this.innerHTML = '<i class="fas fa-chevron-up"></i> Скрыть ответы';
-                    this.classList.add('active');
-                } else {
-                    repliesDiv.style.display = 'none';
-                    this.innerHTML = '<i class="fas fa-comment-dots"></i> Все ответы (' + repliesDiv.children.length + ')';
-                    this.classList.remove('active');
-                }
-            }
-        });
     });
 
     // Лайки и избранное

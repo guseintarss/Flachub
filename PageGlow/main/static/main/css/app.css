@@ -1552,10 +1552,6 @@ display:flex;
     transition: opacity 0.3s;
 }
 
-.comment:hover .delete-comment {
-    opacity: 1;
-}
-
 .user-menu {
   position: relative;
   display: inline-block;
@@ -2617,11 +2613,6 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: box-shadow 0.2s ease;
-}
-
-.comment-card:hover {
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
 
 .comment-author-avatar {
@@ -2639,10 +2630,6 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
 .comment-author-name {
   color: var(--text);
   font-size: 0.95rem;
-}
-
-.comment-author-name:hover {
-  color: var(--primary);
 }
 
 .comment-date {

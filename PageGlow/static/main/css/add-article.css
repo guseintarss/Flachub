@@ -618,7 +618,7 @@ html.dark-mode .cover-file-label:hover {
 .tags-grid {
     /* display: grid; */
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 10px;
+    gap: 16px;
     max-height: 300px;
     overflow-y: auto;
     padding: 10px;

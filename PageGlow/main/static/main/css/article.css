@@ -988,48 +988,41 @@ html.dark-mode .share-menu-close:hover {
 
 .comment {
     background: var(--bg);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-    transition: all 0.25s ease;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 12px;
     border: 1px solid var(--border);
-}
-
-.comment:hover {
-    background: rgba(12, 106, 207, 0.03);
-    border-color: rgba(12, 106, 207, 0.2);
-    transform: translateX(4px);
 }
 
 .comment-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 10px;
+    margin-bottom: 10px;
     flex-wrap: wrap;
 }
 
 .comment-author {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--text);
 }
 
 .comment-time {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--muted);
     margin-left: auto;
 }
 
 .reply-to {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--primary);
     margin-left: 8px;
 }
 
 .comment-actions {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
     margin-left: auto;
 }
@@ -1039,20 +1032,13 @@ html.dark-mode .share-menu-close:hover {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 6px 10px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
+    padding: 4px 8px;
+    border-radius: 4px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     font-size: 0.85rem;
     color: var(--muted);
-}
-
-.comment-like-btn:hover,
-.comment-reply-btn:hover {
-    background: rgba(12, 106, 207, 0.1);
-    color: var(--primary);
 }
 
 .comment-like-btn.liked {
@@ -1069,46 +1055,32 @@ html.dark-mode .share-menu-close:hover {
     border: none;
     color: #ef4444;
     cursor: pointer;
-    padding: 6px 10px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
+    padding: 4px 8px;
+    border-radius: 4px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
 
-.delete-comment-btn:hover {
-    background: #ef4444;
-    color: #ffffff;
-    transform: scale(1.1);
-}
-
 .comment-content {
     margin: 0;
-    line-height: 1.6;
+    line-height: 1.5;
     color: var(--text);
     font-size: 0.95rem;
 }
 
-/* Ответы на комментарии */
+/* Ответы на комментарии - отдельные блоки с отступом */
 .comment-replies {
-    margin-top: 16px;
-    margin-left: 30px;
-    padding-left: 20px;
-    border-left: 3px solid var(--border);
+    margin-top: 10px;
 }
 
-.comment.reply {
-    background: rgba(12, 106, 207, 0.03);
-    margin-top: 15px;
-    padding: 18px;
+.comment-reply-item {
+    background: var(--bg);
+    margin-top: 10px;
+    margin-left: 40px;
+    padding: 15px;
     border-radius: 8px;
-    border: 1px solid rgba(12, 106, 207, 0.1);
-}
-
-.comment.reply:hover {
-    background: rgba(12, 106, 207, 0.06);
-    border-color: rgba(12, 106, 207, 0.2);
+    border: 1px solid var(--border);
 }
 
 /* Кнопка отмены ответа */
@@ -1249,9 +1221,9 @@ html.dark-mode .comment {
     border-color: var(--dark-border);
 }
 
-html.dark-mode .comment:hover {
-    background: rgba(41, 156, 245, 0.05);
-    border-color: var(--dark-primary);
+html.dark-mode .comment-reply-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
 }
 
 html.dark-mode .delete-comment-btn:hover {
