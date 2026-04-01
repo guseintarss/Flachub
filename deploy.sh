@@ -44,10 +44,10 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Проверка Docker Compose (V2 плагин или V1 standalone)
-if docker compose version &> /dev/null; then
-    COMPOSE_CMD="docker compose"
-elif command -v docker-compose &> /dev/null; then
+if command -v docker-compose &> /dev/null; then
     COMPOSE_CMD="docker-compose"
+elif docker compose help &> /dev/null; then
+    COMPOSE_CMD="docker compose"
 else
     log_error "Docker Compose не найден!"
     log_info "Установите: sudo apt install docker-compose-plugin"
