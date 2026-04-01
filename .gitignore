@@ -1,4 +1,50 @@
+# Environment
 .env
+.env.local
+.env.*.local
+
+# Python
 venv/
-*.log
+.venv/
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Database
+*.sqlite3
+*.sqlite3-journal
+
+# Media & Static (generated)
+PageGlow/media/
+PageGlow/staticfiles/
+PageGlow/cache/
+
+# Docker
+backups/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Null junk file
+$null

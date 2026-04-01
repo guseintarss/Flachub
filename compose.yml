@@ -65,8 +65,8 @@ services:
     command: >
       sh -c "
       python manage.py migrate --noinput &&
-      python manage.py collectstatic --noinput &&
-      exec gunicorn --config gunicorn_config.py PageGlow.wsgi:application
+      python manage.py collectstatic --noinput --clear &&
+      gunicorn --config gunicorn_config.py PageGlow.wsgi:application
       "
     environment:
       - DEBUG=${DEBUG:-False}
@@ -81,13 +81,14 @@ services:
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
       - EMAIL_HOST=${EMAIL_HOST:-smtp.gmail.com}
       - EMAIL_PORT=${EMAIL_PORT:-465}
+      - CACHE_BACKEND=${CACHE_BACKEND:-redis}
       - REDIS_URL=redis://redis:6379/0
       - GUNICORN_WORKERS=${GUNICORN_WORKERS:-4}
       - GUNICORN_WORKER_CLASS=${GUNICORN_WORKER_CLASS:-gevent}
       - GUNICORN_BIND=${GUNICORN_BIND:-0.0.0.0:8000}
       - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
+      - META_SITE_DOMAIN=${META_SITE_DOMAIN:-localhost}
     volumes:
-      - ./PageGlow:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
       - logs_volume:/app/logs
@@ -142,6 +143,21 @@ services:
       resources:
         limits:
           memory: 256M
+
+  # ===========================================
+  # Certbot (SSL Certificates)
+  # ===========================================
+  certbot:
+    image: certbot/certbot
+    container_name: pageglow-certbot
+    volumes:
+      - ./nginx/certbot:/var/www/certbot
+      - ./nginx/ssl:/etc/letsencrypt
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - pageglow-network
+    profiles:
+      - tools
 
   # ===========================================
   # Adminer (Database Admin - Optional)

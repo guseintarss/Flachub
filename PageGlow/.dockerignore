@@ -1,0 +1,76 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Distribution / packaging
+*.egg-info/
+*.egg
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+.tox/
+
+# Database
+*.sqlite3
+*.sqlite3-journal
+
+# Logs
+*.log
+logs/
+
+# Cache
+cache/
+
+# Media (will be mounted as volume)
+media/
+
+# Static (will be collected during build)
+staticfiles/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Null file
+$null
+
+# Backup
+backups/
+
+# Docs (not needed in container)
+docs/

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/temir/Работа/VScode/PageGlow3.0/PageGlow/**)"
+    ]
+  },
+  "$version": 3
+}

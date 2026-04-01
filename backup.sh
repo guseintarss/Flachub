@@ -3,7 +3,7 @@
 # PageGlow 3.0 - Скрипт резервного копирования
 # ===========================================
 
-set -e
+set -euo pipefail
 
 # Цвета
 GREEN='\033[0;32m'
@@ -17,58 +17,61 @@ BACKUP_DIR="${BACKUP_DIR:-./backups}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 DB_NAME="${DATABASE_NAME:-pageglow_db}"
 DB_USER="${DATABASE_USERNAME:-postgres}"
+RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-30}"
+
+log_info()  { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_ok()    { echo -e "${GREEN}[OK]${NC} $1"; }
+log_warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 echo -e "${BLUE}🔄 PageGlow Backup${NC}"
 echo "Дата: $(date '+%Y-%m-%d %H:%M:%S')"
+echo "Хранение: ${RETENTION_DAYS} дней"
 echo ""
 
 # Создание директории
 mkdir -p "$BACKUP_DIR"
 
 # Бэкап базы данных
-echo -e "${YELLOW}📦 Бэкап базы данных...${NC}"
-DB_BACKUP_FILE="$BACKUP_DIR/db_$TIMESTAMP.sql.gz"
+log_info "Бэкап базы данных..."
+DB_BACKUP_FILE="$BACKUP_DIR/db_${TIMESTAMP}.sql.gz"
 
-if docker compose ps postgres | grep -q "Up"; then
+if docker compose ps postgres 2>/dev/null | grep -q "Up"; then
     docker compose exec -T postgres pg_dump -U "$DB_USER" "$DB_NAME" | gzip > "$DB_BACKUP_FILE"
     DB_SIZE=$(du -h "$DB_BACKUP_FILE" | cut -f1)
-    echo -e "${GREEN}✅ БД сохранена: $DB_BACKUP_FILE ($DB_SIZE)${NC}"
+    log_ok "БД сохранена: $DB_BACKUP_FILE ($DB_SIZE)"
 else
-    echo -e "${RED}❌ PostgreSQL не запущен${NC}"
+    log_warn "PostgreSQL не запущен, пропускаем бэкап БД"
 fi
 
 # Бэкап медиа файлов
-echo -e "${YELLOW}📸 Бэкап медиа файлов...${NC}"
-MEDIA_BACKUP_FILE="$BACKUP_DIR/media_$TIMESTAMP.tar.gz"
+log_info "Бэкап медиа файлов..."
+MEDIA_BACKUP_FILE="$BACKUP_DIR/media_${TIMESTAMP}.tar.gz"
 
-if [ -d "./PageGlow/media" ]; then
-    tar -czf "$MEDIA_BACKUP_FILE" ./PageGlow/media 2>/dev/null
+if [ -d "./PageGlow/media" ] && [ "$(ls -A ./PageGlow/media 2>/dev/null)" ]; then
+    tar -czf "$MEDIA_BACKUP_FILE" -C ./PageGlow media
     MEDIA_SIZE=$(du -h "$MEDIA_BACKUP_FILE" | cut -f1)
-    echo -e "${GREEN}✅ Медиа сохранены: $MEDIA_BACKUP_FILE ($MEDIA_SIZE)${NC}"
+    log_ok "Медиа сохранены: $MEDIA_BACKUP_FILE ($MEDIA_SIZE)"
 else
-    echo -e "${YELLOW}⚠️  Директория media не найдена${NC}"
+    log_warn "Директория media пуста или не найдена"
+    rm -f "$MEDIA_BACKUP_FILE"
 fi
 
-# Бэкап статики (опционально)
-# echo -e "${YELLOW}🎨 Бэкап статики...${NC}"
-# STATIC_BACKUP_FILE="$BACKUP_DIR/static_$TIMESTAMP.tar.gz"
-# tar -czf "$STATIC_BACKUP_FILE" ./PageGlow/staticfiles 2>/dev/null
+# Удаление старых бэкапов
+log_info "Очистка старых бэкапов (старше ${RETENTION_DAYS} дней)..."
+OLD_COUNT=$(find "$BACKUP_DIR" -name "*.gz" -mtime +${RETENTION_DAYS} -type f 2>/dev/null | wc -l)
 
-# Удаление старых бэкапов (старше 30 дней)
-echo -e "${YELLOW}🧹 Очистка старых бэкапов...${NC}"
-OLD_BACKUPS=$(find "$BACKUP_DIR" -name "*.gz" -mtime +30 -type f | wc -l)
-
-if [ "$OLD_BACKUPS" -gt 0 ]; then
-    find "$BACKUP_DIR" -name "*.gz" -mtime +30 -delete
-    echo -e "${GREEN}✅ Удалено $OLD_BACKUPS старых файлов${NC}"
+if [ "$OLD_COUNT" -gt 0 ]; then
+    find "$BACKUP_DIR" -name "*.gz" -mtime +${RETENTION_DAYS} -delete
+    log_ok "Удалено $OLD_COUNT старых файлов"
 else
-    echo "Старых бэкапов не найдено"
+    log_info "Старых бэкапов нет"
 fi
 
-# Список последних бэкапов
+# Сводка
 echo ""
 echo -e "${BLUE}📋 Последние бэкапы:${NC}"
-ls -lh "$BACKUP_DIR"/*.gz 2>/dev/null | tail -5 || echo "Бэкапы не найдены"
+ls -lh "$BACKUP_DIR"/*.gz 2>/dev/null | tail -5 || echo "  Бэкапы не найдены"
 
 # Итог
 echo ""
@@ -76,10 +79,7 @@ echo -e "${GREEN}============================================${NC}"
 echo -e "${GREEN}✅ Резервное копирование завершено${NC}"
 echo -e "${GREEN}============================================${NC}"
 echo ""
-echo "Бэкап БД: $DB_BACKUP_FILE"
-echo "Бэкап медиа: $MEDIA_BACKUP_FILE"
-echo ""
 echo "Для восстановления:"
-echo "  gunzip < $DB_BACKUP_FILE | docker compose exec -T postgres psql -U $DB_USER $DB_NAME"
+echo "  make restore BACKUP_FILE=$DB_BACKUP_FILE"
 echo "  tar -xzf $MEDIA_BACKUP_FILE -C ./PageGlow/"
 echo ""

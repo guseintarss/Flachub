@@ -1,6 +1,6 @@
 # PageGlow 3.0 - Makefile для управления проектом
 
-.PHONY: help dev prod backup restore logs shell restart clean
+.PHONY: help up down restart ps logs logs-app logs-nginx logs-db migrate makemigrations dbshell backup restore createsuperuser collectstatic clearstatic shell bash test test-coverage clean clean-static update health ssl-cert ssl-renew ssl-enable ssl-disable
 
 # ===========================================
 # Основные команды
@@ -9,13 +9,12 @@
 help: ## Показать эту справку
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-# ===========================================
-# Разработка
-# ===========================================
+up: ## Запуск всех сервисов (первый раз или после down)
+	./deploy.sh
 
-dev: ## Запуск в режиме разработки
+dev: ## Запуск в режиме разработки (с adminer)
 	docker compose --profile tools up -d
-	@echo "✅ Приложение запущено: http://localhost:8000"
+	@echo "✅ Приложение: http://localhost"
 	@echo "📊 Adminer: http://localhost:8080"
 
 prod: ## Запуск в production режиме
@@ -113,7 +112,7 @@ test-coverage: ## Запустить тесты с покрытием
 # Очистка
 # ===========================================
 
-clean: ## Очистка временных файлов
+clean: ## Очистка временных файлов и контейнеров
 	docker compose down -v
 	docker system prune -f
 	@echo "✅ Очистка завершена"
@@ -123,15 +122,26 @@ clean-static: ## Пересобрать статику
 	docker compose exec pageglow python manage.py collectstatic --noinput
 	docker compose restart nginx
 
+clean-build: ## Очистка Docker образов и пересборка
+	docker compose down
+	docker rmi pageglow:latest 2>/dev/null || true
+	docker compose build --no-cache
+	@echo "✅ Пересборка завершена"
+
 # ===========================================
 # Обновление
 # ===========================================
 
-update: ## Обновить приложение
+update: ## Обновить приложение (pull + rebuild + restart)
+	./deploy.sh
+
+update-force: ## Полное обновление с пересборкой
 	git pull
 	docker compose build --no-cache
 	docker compose down
 	docker compose up -d
+	docker compose exec pageglow python manage.py migrate --noinput
+	docker compose exec pageglow python manage.py collectstatic --noinput
 	@echo "✅ Обновление завершено"
 
 # ===========================================
@@ -140,7 +150,7 @@ update: ## Обновить приложение
 
 health: ## Проверка здоровья приложения
 	@echo "Проверка health endpoint..."
-	@curl -s http://localhost:8000/health/ | python3 -m json.tool || echo "❌ Не удалось получить статус"
+	@curl -sf http://localhost/health/ | python3 -m json.tool 2>/dev/null || echo "❌ Не удалось получить статус"
 
 # ===========================================
 # SSL
@@ -151,20 +161,36 @@ ssl-cert: ## Получить SSL сертификат (укажите DOMAIN)
 		echo "❌ Укажите DOMAIN=ваш-домен.com"; \
 		exit 1; \
 	fi
+	docker compose up -d nginx
 	docker run --rm -it \
-		-v $(PWD)/nginx/certbot:/etc/letsencrypt \
-		-v $(PWD)/nginx/ssl:/var/www/certbot \
+		-v $(PWD)/nginx/certbot:/var/www/certbot \
+		-v $(PWD)/nginx/ssl:/etc/letsencrypt \
 		certbot/certbot certonly --webroot \
 		--webroot-path=/var/www/certbot \
 		--email admin@$(DOMAIN) \
 		--agree-tos --no-eff-email \
 		-d $(DOMAIN) -d www.$(DOMAIN)
 	@echo "✅ Сертификат получен"
+	@echo "Теперь выполните: make ssl-enable"
+
+ssl-enable: ## Включить HTTPS (после получения сертификатов)
+	@if [ ! -f nginx/ssl/live/$(DOMAIN)/fullchain.pem ] && [ ! -f nginx/ssl/fullchain.pem ]; then \
+		echo "❌ SSL сертификаты не найдены!"; \
+		echo "Сначала получите сертификат: make ssl-cert DOMAIN=ваш-домен.com"; \
+		exit 1; \
+	fi
+	cp nginx/ssl-enabled.conf nginx/pageglow.conf
+	docker compose restart nginx
+	@echo "✅ HTTPS включён"
+
+ssl-disable: ## Отключить HTTPS (вернуться на HTTP)
+	cp nginx/pageglow.conf nginx/pageglow-https-backup.conf 2>/dev/null || true
+	@grep -q "ssl_certificate" nginx/pageglow.conf && \
+		(echo "⚠️  backup сохранён как nginx/pageglow-https-backup.conf"; \
+		 echo "Скопируйте базовый nginx конфиг вручную или используйте git checkout") || \
+		echo "ℹ️  HTTPS уже отключён"
 
 ssl-renew: ## Обновить SSL сертификаты
-	docker run --rm -it \
-		-v $(PWD)/nginx/certbot:/etc/letsencrypt \
-		-v $(PWD)/nginx/ssl:/var/www/certbot \
-		certbot/certbot renew
+	docker compose run --rm certbot renew
 	docker compose restart nginx
 	@echo "✅ Сертификаты обновлены"

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/temir/Работа/VScode/PageGlow3.0/PageGlow/**)"
+    ]
+  }
+}

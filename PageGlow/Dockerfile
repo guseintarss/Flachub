@@ -1,40 +1,56 @@
-FROM python:3.11-slim
+# ===========================================
+# Stage 1: Build dependencies
+# ===========================================
+FROM python:3.12-slim AS builder
 
-# Установка системных зависимостей
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    postgresql-client \
-    curl \
-    wget \
-    && rm -rf /var/lib/apt/lists/*
-
-# Создание пользователя для безопасности
-RUN groupadd -r django && useradd -r -g django django
-
-# Переменные окружения
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 
-# Установка рабочей директории
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies first (Docker cache layer)
+COPY requirements.txt .
+RUN pip install --prefix=/install -r requirements.txt
+
+# ===========================================
+# Stage 2: Production image
+# ===========================================
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r django && useradd -r -g django django
+
 WORKDIR /app
 
-# Копирование и установка зависимостей
-COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+# Copy installed dependencies from builder
+COPY --from=builder /install /usr/local
 
-# Копирование проекта
-COPY . .
+# Copy application code
+COPY --chown=django:django . .
 
-# Создание директорий для статики и медиа
-RUN mkdir -p /app/staticfiles /app/media /app/logs && \
+# Create directories with proper permissions
+RUN mkdir -p /app/staticfiles /app/static /app/media /app/logs && \
     chown -R django:django /app
 
-# Переключение на непривилегированного пользователя
+# Switch to non-root user
 USER django
 
-# Expose порт
 EXPOSE 8000
 
-# Команда запуска (будет переопределена в compose.yml)
 CMD ["gunicorn", "--config", "gunicorn_config.py", "PageGlow.wsgi:application"]
