@@ -43,12 +43,18 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-if ! docker compose version &> /dev/null; then
-    log_error "Docker Compose не найден! Установите Docker Compose V2."
+# Проверка Docker Compose (V2 плагин или V1 standalone)
+if docker compose version &> /dev/null; then
+    COMPOSE_CMD="docker compose"
+elif command -v docker-compose &> /dev/null; then
+    COMPOSE_CMD="docker-compose"
+else
+    log_error "Docker Compose не найден!"
+    log_info "Установите: sudo apt install docker-compose-plugin"
     exit 1
 fi
 
-log_ok "Docker и Docker Compose найдены"
+log_ok "Docker и Compose найдены ($COMPOSE_CMD)"
 
 # Проверка .env файла
 if [ ! -f .env ]; then
@@ -108,32 +114,32 @@ graceful_restart() {
     log_step "Graceful restart..."
     
     # Проверяем, запущены ли контейнеры
-    if docker compose ps --format json 2>/dev/null | grep -q '"Running"'; then
+    if $COMPOSE_CMD ps --format json 2>/dev/null | grep -q '"Running"'; then
         log_info "Контейнеры запущены, выполняем graceful restart..."
         
         # Пересобираем только если есть изменения
         log_info "Пересборка образа..."
-        docker compose build --quiet pageglow
+        $COMPOSE_CMD build --quiet pageglow
         
         # Запускаем новый контейнер параллельно
         log_info "Запуск нового контейнера..."
-        docker compose up -d --no-deps --scale pageglow=2 --no-recreate pageglow 2>/dev/null || true
+        $COMPOSE_CMD up -d --no-deps --scale pageglow=2 --no-recreate pageglow 2>/dev/null || true
         
         # Ждём пока новый контейнер будет готов
         if wait_for_health "новый контейнер" "$HEALTH_URL"; then
             # Останавливаем старый контейнер
             log_info "Остановка старого контейнера..."
-            docker compose up -d --no-deps --scale pageglow=1 pageglow
+            $COMPOSE_CMD up -d --no-deps --scale pageglow=1 pageglow
             log_ok "Graceful restart завершён"
         else
             log_warn "Новый контейнер не запустился, откат..."
-            docker compose up -d --no-deps --scale pageglow=1 pageglow
+            $COMPOSE_CMD up -d --no-deps --scale pageglow=1 pageglow
             return 1
         fi
     else
         # Первый запуск
         log_info "Первый запуск..."
-        docker compose up -d --build
+        $COMPOSE_CMD up -d --build
     fi
 }
 
@@ -145,10 +151,10 @@ echo ""
 
 # Ожидание PostgreSQL и Redis
 log_step "Проверка зависимостей..."
-docker compose exec -T postgres pg_isready -U "${DATABASE_USERNAME:-postgres}" 2>/dev/null && \
+$COMPOSE_CMD exec -T postgres pg_isready -U "${DATABASE_USERNAME:-postgres}" 2>/dev/null && \
     log_ok "PostgreSQL готов" || log_warn "PostgreSQL ещё инициализируется"
 
-docker compose exec -T redis redis-cli ping 2>/dev/null | grep -q PONG && \
+$COMPOSE_CMD exec -T redis redis-cli ping 2>/dev/null | grep -q PONG && \
     log_ok "Redis готов" || log_warn "Redis ещё инициализируется"
 
 # Ожидание Django приложения
@@ -157,18 +163,18 @@ if wait_for_health "Django" "$HEALTH_URL"; then
     log_ok "Приложение работает"
 else
     log_error "Приложение не ответило"
-    log_info "Проверьте логи: docker compose logs pageglow"
+    log_info "Проверьте логи: $COMPOSE_CMD logs pageglow"
     exit 1
 fi
 
 # Проверка миграций
 log_step "Проверка миграций..."
-if docker compose exec -T pageglow python manage.py showmigrations --plan 2>/dev/null | grep -q "\[ \]"; then
+if $COMPOSE_CMD exec -T pageglow python manage.py showmigrations --plan 2>/dev/null | grep -q "\[ \]"; then
     log_warn "Есть неприменённые миграции"
     read -p "Применить миграции сейчас? (y/n): " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        docker compose exec pageglow python manage.py migrate
+        $COMPOSE_CMD exec pageglow python manage.py migrate
         log_ok "Миграции применены"
     fi
 else
@@ -178,7 +184,7 @@ fi
 # Статус сервисов
 echo ""
 log_step "Статус сервисов:"
-docker compose ps
+$COMPOSE_CMD ps
 
 # Итог
 echo ""
