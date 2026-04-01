@@ -87,7 +87,7 @@ docker-compose logs -f pageglow
 ### Шаг 5: Проверка
 
 ```bash
-# Проверить здоровье приложения
+# Проверить здоровье приложениязфсьф
 curl http://localhost/health/
 
 # Ожидаемый ответ:

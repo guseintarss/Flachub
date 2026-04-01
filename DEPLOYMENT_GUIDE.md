@@ -1,545 +1,535 @@
-# 🚀 PageGlow 3.0 - Полное руководство по деплою
+# 🚀 PageGlow 3.0 — Полное руководство по деплою
 
 ## Содержание
 
-1. [Требования](#требования)
-2. [Быстрый старт с Docker Compose](#быстрый-старт)
-3. [Настройка окружения](#настройка-окружения)
-4. [SSL/HTTPS настройка](#sslhttps)
-5. [Резервное копирование](#резервное-копирование)
-6. [Мониторинг и логи](#мониторинг)
-7. [Troubleshooting](#troubleshooting)
+1. [Требования](#1-требования)
+2. [Быстрый старт (3 команды)](#2-быстрый-старт)
+3. [Пошаговый деплой](#3-пошаговый-деплой)
+4. [Настройка .env](#4-настройка-env)
+5. [SSL / HTTPS](#5-ssl--https)
+6. [Управление через Makefile](#6-управление-через-makefile)
+7. [Резервное копирование](#7-резервное-копирование)
+8. [Обновление приложения](#8-обновление-приложения)
+9. [Мониторинг и логи](#9-мониторинг-и-логи)
+10. [Troubleshooting](#10-troubleshooting)
+11. [Безопасность](#11-безопасность)
 
 ---
 
-## Требования
+## 1. Требования
 
 ### Минимальные
-- **CPU:** 2 ядра
-- **RAM:** 2 GB
-- **Disk:** 20 GB SSD
-- **OS:** Ubuntu 20.04+ / Debian 11+
+| Ресурс | Значение |
+|--------|----------|
+| CPU | 2 ядра |
+| RAM | 2 GB |
+| Disk | 20 GB SSD |
+| OS | Ubuntu 20.04+ / Debian 11+ |
 
 ### Рекомендуемые
-- **CPU:** 4 ядра
-- **RAM:** 4 GB
-- **Disk:** 40 GB SSD
-- **OS:** Ubuntu 22.04 LTS
+| Ресурс | Значение |
+|--------|----------|
+| CPU | 4 ядра |
+| RAM | 4 GB |
+| Disk | 40 GB SSD |
+| OS | Ubuntu 22.04 LTS |
 
-### Необходимое ПО
+### Установка Docker
+
 ```bash
-# Docker и Docker Compose
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
+curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
+newgrp docker
+```
 
-# Проверка версий
+Проверка:
+```bash
 docker --version        # 20.10+
 docker compose version  # 2.0+
 ```
 
 ---
 
-## Быстрый старт
+## 2. Быстрый старт
+
+```bash
+git clone https://github.com/guseintarss/PageGlow3.0.git
+cd PageGlow3.0
+make up
+```
+
+`make up` автоматически:
+- создаст `.env` с уникальным `SECRET_KEY`
+- создаст все директории
+- запустит все сервисы
+- проверит health endpoint
+- предложит применить миграции
+
+Приложение будет доступно на `http://localhost`
+
+---
+
+## 3. Пошаговый деплой
 
 ### Шаг 1: Подготовка сервера
 
 ```bash
-# Обновление системы
 sudo apt update && sudo apt upgrade -y
-
-# Установка необходимых пакетов
 sudo apt install -y git curl wget nano htop
-
-# Создание директории для проекта
 sudo mkdir -p /opt/pageglow
 sudo chown $USER:$USER /opt/pageglow
 cd /opt/pageglow
 ```
 
-### Шаг 2: Клонирование проекта
+### Шаг 2: Клонирование
 
 ```bash
 git clone https://github.com/guseintarss/PageGlow3.0.git .
-# или скопируйте файлы проекта в эту директорию
 ```
 
-### Шаг 3: Настройка .env файла
+### Шаг 3: Настройка .env
 
 ```bash
-# Копирование примера
 cp .env.example .env
-
-# Генерация секретного ключа
-python3 -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-
-# Редактирование .env
 nano .env
 ```
 
-### Шаг 4: Первый запуск
+Обязательно укажите:
+- `SECRET_KEY` — генерируется автоматически при `make up`
+- `DATABASE_PASSWORD` — надёжный пароль для БД
+- `ALLOWED_HOSTS` — ваш домен
+- `CSRF_TRUSTED_ORIGINS` — `https://ваш-домен.com`
+
+### Шаг 4: Запуск
 
 ```bash
-# Запуск всех сервисов
-docker compose up -d
-
-# Проверка статуса
-docker compose ps
-
-# Ожидание инициализации (30-60 секунд)
-sleep 45
-
-# Создание суперпользователя
-docker compose exec pageglow python manage.py createsuperuser
-
-# Проверка логов
-docker compose logs -f pageglow
+make up
 ```
 
-### Шаг 5: Проверка работы
+### Шаг 5: Создание администратора
 
 ```bash
-# Health check
-curl http://localhost/health/
+make createsuperuser
+```
 
-# Проверка nginx
-curl -I http://localhost/
+### Шаг 6: Проверка
 
-# Проверка приложения
-curl http://localhost:8000/admin/
+```bash
+make health
+```
+
+Ожидаемый ответ:
+```json
+{
+    "status": "ok",
+    "version": "3.0",
+    "database": "ok"
+}
 ```
 
 ---
 
-## Настройка окружения
+## 4. Настройка .env
 
-### .env файл - обязательные параметры
+### Критически важные параметры
 
 ```bash
-# ===== DJANGO SETTINGS =====
+# Django
 DEBUG=False
-SECRET_KEY=ваш-секретный-ключ-минимум-50-символов
+SECRET_KEY=<сгенерированный-ключ>
 ALLOWED_HOSTS=ваш-домен.com,www.ваш-домен.com
 
-# ===== DATABASE =====
-DATABASE_NAME=pageglow_db
-DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=очень-сложный-пароль-от-бд
+# База данных
+DATABASE_PASSWORD=<надёжный-пароль-мин-16-символов>
 
-# ===== EMAIL (для уведомлений) =====
+# Email (для регистрации и уведомлений)
 EMAIL_HOST_USER=ваш-email@gmail.com
-EMAIL_HOST_PASSWORD=пароль-приложения
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=465
+EMAIL_HOST_PASSWORD=<app-password-не-обычный-пароль>
 
-# ===== GUNICORN =====
-GUNICORN_WORKERS=4
-GUNICORN_WORKER_CLASS=gevent
-GUNICORN_BIND=0.0.0.0:8000
+# CSRF (обязательно с https://)
+CSRF_TRUSTED_ORIGINS=https://ваш-домен.com,https://www.ваш-домен.com
 
-# ===== SECURITY =====
-CSRF_TRUSTED_ORIGINS=https://ваш-домен.com
+# Домен для SEO мета-тегов
+META_SITE_DOMAIN=ваш-домен.com
 ```
 
 ### Генерация SECRET_KEY
 
 ```bash
-# Python
 python3 -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
 
-# OpenSSL
-openssl rand -base64 64
+### Параметры Gunicorn
 
-# /dev/urandom
-head -c 50 /dev/urandom | base64
+```bash
+# Формула воркеров: (CPU * 2) + 1
+# Для 2 CPU: 5 воркеров
+GUNICORN_WORKERS=4
+GUNICORN_WORKER_CLASS=gevent
+GUNICORN_MAX_REQUESTS=1000
 ```
 
 ---
 
-## SSL/HTTPS
+## 5. SSL / HTTPS
 
-### Вариант 1: Certbot (Let's Encrypt)
+> **Важно:** По умолчанию приложение работает на HTTP (порт 80). HTTPS включается после получения сертификатов.
 
-```bash
-# Создание директории для сертификатов
-mkdir -p nginx/certbot
-
-# Запуск certbot
-docker run --rm -it \
-  -v $(pwd)/nginx/certbot:/etc/letsencrypt \
-  -v $(pwd)/nginx/ssl:/var/www/certbot \
-  certbot/certbot certonly --webroot \
-  --webroot-path=/var/www/certbot \
-  --email ваш-email@example.com \
-  --agree-tos --no-eff-email \
-  -d ваш-домен.com -d www.ваш-домен.com
-```
-
-### Настройка nginx для HTTPS
-
-1. Откройте `nginx/pageglow.conf`
-2. Раскомментируйте HTTPS блок
-3. Включите редирект на HTTPS
-
-```nginx
-# В HTTP блоке:
-return 301 https://$server_name$request_uri;
-
-# В HTTPS блоке раскомментируйте:
-ssl_certificate /etc/nginx/ssl/fullchain.pem;
-ssl_certificate_key /etc/nginx/ssl/privkey.pem;
-```
-
-### Автоматическое обновление сертификатов
+### Шаг 1: Получение сертификата
 
 ```bash
-# Скрипт обновления
-cat > renew-cert.sh << 'EOF'
-#!/bin/bash
-docker run --rm -it \
-  -v $(pwd)/nginx/certbot:/etc/letsencrypt \
-  -v $(pwd)/nginx/ssl:/var/www/certbot \
-  certbot/certbot renew
+# Укажите ваш домен
+make ssl-cert DOMAIN=ваш-домен.com
+```
+
+Certbot создаст файлы в `nginx/ssl/`.
+
+### Шаг 2: Включение HTTPS
+
+```bash
+make ssl-enable DOMAIN=ваш-домен.com
+```
+
+Это заменит `nginx/pageglow.conf` на SSL-версию и перезапустит nginx.
+
+### Шаг 3: Проверка
+
+```bash
+curl -I https://ваш-домен.com
+```
+
+### Автообновление сертификатов
+
+Certbot работает как фоновый сервис в Docker и автоматически обновляет сертификаты каждые 12 часов.
+
+Проверка:
+```bash
+docker compose logs certbot
+```
+
+### Откат на HTTP
+
+Если что-то пошло не так:
+```bash
+git checkout nginx/pageglow.conf
 docker compose restart nginx
-EOF
-
-chmod +x renew-cert.sh
-
-# Добавить в cron (ежемесячно)
-crontab -e
-0 0 1 * * /opt/pageglow/renew-cert.sh
 ```
 
 ---
 
-## Резервное копирование
+## 6. Управление через Makefile
 
-### Автоматический бэкап БД
+Все команды: `make help`
+
+### Основные
+
+| Команда | Описание |
+|---------|----------|
+| `make up` | Первый запуск / деплой |
+| `make down` | Остановка всех сервисов |
+| `make restart` | Перезапуск |
+| `make ps` | Статус контейнеров |
+
+### База данных
+
+| Команда | Описание |
+|---------|----------|
+| `make migrate` | Применить миграции |
+| `make makemigrations` | Создать миграции |
+| `make dbshell` | Подключение к PostgreSQL |
+| `make backup` | Бэкап БД + медиа |
+| `make restore BACKUP_FILE=path` | Восстановление |
+
+### Логи
+
+| Команда | Описание |
+|---------|----------|
+| `make logs` | Все логи |
+| `make logs-app` | Логи Django |
+| `make logs-nginx` | Логи nginx |
+| `make logs-db` | Логи PostgreSQL |
+
+### Консоль
+
+| Команда | Описание |
+|---------|----------|
+| `make shell` | Django shell |
+| `make bash` | Bash в контейнере |
+| `make createsuperuser` | Создать админа |
+
+### Обновление
+
+| Команда | Описание |
+|---------|----------|
+| `make update` | Pull + rebuild + restart |
+| `make update-force` | Полная пересборка с нуля |
+| `make clean-build` | Очистка образов и пересборка |
+
+### SSL
+
+| Команда | Описание |
+|---------|----------|
+| `make ssl-cert DOMAIN=x.com` | Получить сертификат |
+| `make ssl-enable DOMAIN=x.com` | Включить HTTPS |
+| `make ssl-renew` | Обновить сертификаты |
+
+---
+
+## 7. Резервное копирование
+
+### Ручной бэкап
 
 ```bash
-# Скрипт бэкапа
-cat > backup.sh << 'EOF'
-#!/bin/bash
-BACKUP_DIR="/opt/pageglow/backups"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="$BACKUP_DIR/pageglow_$TIMESTAMP.sql.gz"
-
-mkdir -p $BACKUP_DIR
-
-# Бэкап базы данных
-docker compose exec -T postgres pg_dump -U postgres $DATABASE_NAME | gzip > $BACKUP_FILE
-
-# Бэкап медиа файлов
-tar -czf $BACKUP_DIR/media_$TIMESTAMP.tar.gz ./PageGlow/media/
-
-# Удаление старых бэкапов (старше 30 дней)
-find $BACKUP_DIR -name "*.sql.gz" -mtime +30 -delete
-find $BACKUP_DIR -name "*.tar.gz" -mtime +30 -delete
-
-echo "Backup created: $BACKUP_FILE"
-EOF
-
-chmod +x backup.sh
-
-# Добавить в cron (ежедневно в 3:00)
-crontab -e
-0 3 * * * /opt/pageglow/backup.sh
+make backup
 ```
 
-### Восстановление из бэкапа
+Создаёт:
+- `backups/db_YYYYMMDD_HHMMSS.sql.gz` — дамп БД
+- `backups/media_YYYYMMDD_HHMMSS.tar.gz` — медиа файлы
+
+### Автоматический бэкап (cron)
 
 ```bash
-# Восстановление БД
-gunzip < backups/pageglow_20240328_030000.sql.gz | \
-  docker compose exec -T postgres psql -U postgres pageglow_db
+# Ежедневно в 3:00
+(crontab -l 2>/dev/null; echo "0 3 * * * cd /opt/pageglow && ./backup.sh") | crontab -
+```
 
-# Восстановление медиа
-tar -xzf backups/media_20240328_030000.tar.gz -C ./PageGlow/
+### Настройка хранения
+
+```bash
+# Хранить 30 дней (по умолчанию)
+BACKUP_RETENTION_DAYS=30 ./backup.sh
+
+# Хранить 7 дней
+BACKUP_RETENTION_DAYS=7 ./backup.sh
+```
+
+### Восстановление
+
+```bash
+# БД
+make restore BACKUP_FILE=backups/db_20260402_030000.sql.gz
+
+# Медиа
+tar -xzf backups/media_20260402_030000.tar.gz -C ./PageGlow/
 ```
 
 ---
 
-## Мониторинг
+## 8. Обновление приложения
 
-### Просмотр логов
+### Штатное обновление
 
 ```bash
-# Все логи
-docker compose logs -f
-
-# Логи приложения
-docker compose logs -f pageglow
-
-# Логи nginx
-docker compose logs -f nginx
-tail -f nginx_logs/error.log
-
-# Логи базы данных
-docker compose logs -f postgres
+make update
 ```
+
+Это выполнит:
+1. `git pull` — обновление кода
+2. `docker compose build` — пересборка образа
+3. `docker compose up -d` — перезапуск
+4. Проверка health endpoint
+
+### Принудительное обновление
+
+```bash
+make update-force
+```
+
+Полная пересборка с миграциями и сборкой статики.
+
+### Откат
+
+```bash
+# Вернуться к предыдущему коммиту
+git reset --hard HEAD~1
+make update-force
+```
+
+---
+
+## 9. Мониторинг и логи
 
 ### Health check
 
 ```bash
-# Проверка статуса
-curl http://localhost/health/
-
-# Ожидаемый ответ:
-# {"status":"healthy","database":"ok","cache":"ok"}
+make health
 ```
 
-### Мониторинг ресурсов
+### Ресурсы контейнеров
 
 ```bash
-# Использование ресурсов контейнерами
 docker stats
-
-# Проверка дискового пространства
-df -h
-du -sh /opt/pageglow/*
-
-# Проверка размера БД
-docker compose exec postgres du -sh /var/lib/postgresql/data
 ```
 
-### Логирование ошибок
+### Логи ошибок
 
 ```bash
-# Ошибки Django
-docker compose logs pageglow | grep ERROR
-
-# Ошибки nginx
-docker compose logs nginx | grep error
-
-# Ошибки БД
-docker compose logs postgres | grep ERROR
-```
-
----
-
-## Обновление приложения
-
-### Плановое обновление
-
-```bash
-# Остановка сервисов
-docker compose down
-
-# Обновление кода
-git pull
-
-# Пересборка образов
-docker compose build --no-cache
-
-# Запуск
-docker compose up -d
-
-# Проверка
-docker compose ps
-docker compose logs -f pageglow
-```
-
-### Миграции
-
-```bash
-# Применение миграций
-docker compose exec pageglow python manage.py migrate
-
-# Сбор статики
-docker compose exec pageglow python manage.py collectstatic --noinput
-
-# Перезапуск приложения
-docker compose restart pageglow
-```
-
----
-
-## Troubleshooting
-
-### Приложение не запускается
-
-```bash
-# Проверка логов
-docker compose logs pageglow | tail -100
-
-# Проверка подключения к БД
-docker compose exec pageglow python manage.py dbshell
-
-# Пересоздание контейнера
-docker compose rm -f pageglow
-docker compose up -d pageglow
-```
-
-### Ошибка 502 Bad Gateway
-
-```bash
-# Проверка nginx
-docker compose logs nginx | grep error
-
-# Проверка gunicorn
+# Django ошибки
 docker compose logs pageglow | grep -i error
 
-# Перезапуск сервисов
-docker compose restart nginx pageglow
+# Nginx ошибки
+docker compose logs nginx | grep -i error
 
-# Проверка сокетов
-docker compose exec pageglow ls -la /run/
+# 500-е ошибки
+docker compose logs nginx | grep " 500 "
+```
+
+### Размер БД
+
+```bash
+docker compose exec postgres psql -U postgres -d pageglow_db -c \
+  "SELECT pg_size_pretty(pg_database_size('pageglow_db'));"
+```
+
+---
+
+## 10. Troubleshooting
+
+### Контейнер не запускается
+
+```bash
+# Логи
+docker compose logs pageglow | tail -50
+
+# Проверка .env
+docker compose config
+
+# Пересборка
+make clean-build
+```
+
+### 502 Bad Gateway
+
+```bash
+# Проверка что Django запущен
+docker compose ps pageglow
+
+# Проверка health
+curl http://localhost/health/
+
+# Перезапуск
+docker compose restart nginx pageglow
+```
+
+### Ошибка подключения к БД
+
+```bash
+# Проверка PostgreSQL
+docker compose exec postgres pg_isready
+
+# Логи БД
+docker compose logs postgres
+
+# Проверка .env
+grep DATABASE .env
 ```
 
 ### Проблемы со статикой
 
 ```bash
-# Пересбор статики
-docker compose exec pageglow python manage.py collectstatic --noinput --clear
-
-# Проверка прав доступа
-docker compose exec pageglow ls -la /app/staticfiles/
-
-# Перезапуск nginx
+make clean-static
 docker compose restart nginx
 ```
 
-### Проблемы с БД
+### Полный сброс
 
 ```bash
-# Проверка здоровья БД
-docker compose exec postgres pg_isready
-
-# Проверка подключений
-docker compose exec postgres psql -U postgres -c "SELECT count(*) FROM pg_stat_activity;"
-
-# Ваккуумирование
-docker compose exec postgres psql -U postgres -c "VACUUM ANALYZE;"
+# ВНИМАНИЕ: удалит все данные!
+make clean
+make up
 ```
 
-### Сброс и чистый запуск
+### Порты заняты
 
 ```bash
-# Полная остановка
-docker compose down
+# Проверка
+sudo lsof -i :80
+sudo lsof -i :443
+sudo lsof -i :5432
 
-# Удаление volumes (ВНИМАНИЕ: удалит все данные!)
-docker compose down -v
-
-# Чистый запуск
-docker compose up -d
-docker compose exec pageglow python manage.py migrate
-docker compose exec pageglow python manage.py createsuperuser
+# Остановка conflicting сервисов
+sudo systemctl stop apache2  # если есть
+sudo systemctl stop nginx    # если есть
 ```
 
 ---
 
-## Производительность
-
-### Оптимизация Gunicorn
-
-```bash
-# Количество воркеров (формула: CPU * 2 + 1)
-# Для 4 CPU: 4 * 2 + 1 = 9 воркеров
-
-# В .env:
-GUNICORN_WORKERS=9
-GUNICORN_WORKER_CLASS=gevent
-GUNICORN_MAX_REQUESTS=1000
-```
-
-### Оптимизация nginx
-
-```nginx
-# В nginx/pageglow.conf добавить:
-worker_processes auto;
-worker_rlimit_nofile 65535;
-
-events {
-    worker_connections 4096;
-    use epoll;
-    multi_accept on;
-}
-
-http {
-    sendfile on;
-    tcp_nopush on;
-    tcp_nodelay on;
-    keepalive_timeout 65;
-    keepalive_requests 100;
-}
-```
-
-### Оптимизация PostgreSQL
-
-```bash
-# В postgresql.conf (создать volume mount)
-shared_buffers = 256MB
-effective_cache_size = 1GB
-maintenance_work_mem = 64MB
-max_connections = 100
-```
-
----
-
-## Безопасность
+## 11. Безопасность
 
 ### Firewall (UFW)
 
 ```bash
-# Установка
-sudo apt install ufw
-
-# Настройка правил
+sudo apt install -y ufw
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow https
 sudo ufw enable
-
-# Проверка
 sudo ufw status
 ```
 
 ### Fail2Ban
 
 ```bash
-# Установка
-sudo apt install fail2ban
-
-# Создание конфига
-cat > /etc/fail2ban/jail.local << EOF
-[DEFAULT]
-bantime = 3600
-findtime = 600
-maxretry = 5
-
-[nginx-http-auth]
-enabled = true
-port = http,https
-filter = nginx-http-auth
-logpath = /var/log/nginx/error.log
-
-[nginx-limit-req]
-enabled = true
-port = http,https
-filter = nginx-limit-req
-logpath = /var/log/nginx/error.log
-EOF
-
-sudo systemctl restart fail2ban
+sudo apt install -y fail2ban
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
 ```
 
-### Docker Security
+### Проверка .env
 
 ```bash
-# Запуск от непривилегированного пользователя
-# Уже настроено в Dockerfile
+# .env НЕ должен быть в git
+git ls-files .env  # должно быть пусто
 
-# Сканирование уязвимостей
-docker scout cve pageglow:latest
-
-# Проверка конфигураций
-docker compose config --quiet
+# Права на .env
+chmod 600 .env
 ```
+
+### Docker security
+
+- Приложение работает от пользователя `django` (не root)
+- Multi-stage build — минимальный образ
+- `.dockerignore` исключает `.env`, `venv`, `.git`
 
 ---
 
-**Последнее обновление:** 28 марта 2026  
+## Архитектура сервисов
+
+```
+┌─────────────┐
+│   Internet   │
+└──────┬───────┘
+       │
+┌──────▼───────┐
+│    Nginx     │  :80, :443
+│  (reverse    │
+│   proxy)     │
+└──────┬───────┘
+       │
+┌──────▼───────┐
+│   Gunicorn   │  :8000
+│   (Django)   │
+└──┬───────┬───┘
+   │       │
+┌──▼──┐ ┌──▼────┐
+│ PG  │ │ Redis │
+│ :5432│ │ :6379 │
+└─────┘ └───────┘
+```
+
+| Сервис | Контейнер | Порт | Назначение |
+|--------|-----------|------|------------|
+| Nginx | `pageglow-nginx` | 80, 443 | Reverse proxy, SSL, статика |
+| Django | `pageglow-app` | 8000 | Приложение |
+| PostgreSQL | `pageglow-db` | 5432 | База данных |
+| Redis | `pageglow-redis` | 6379 | Кэш, WebSocket |
+| Certbot | `pageglow-certbot` | — | SSL автообновление |
+| Adminer | `pageglow-adminer` | 8080 | UI для БД (dev only) |
+
+---
+
+**Последнее обновление:** Апрель 2026
 **Версия:** 3.0
