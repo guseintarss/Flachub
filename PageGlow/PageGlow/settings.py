@@ -22,7 +22,7 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Создать директории если их нет
-for directory in ['logs', 'cache', 'static', 'media']:
+for directory in ['logs', 'cache', 'media']:
     dir_path = os.path.join(BASE_DIR, directory)
     os.makedirs(dir_path, exist_ok=True)
 
@@ -138,7 +138,7 @@ TEMPLATES = [
 ]
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'main', 'static'),
+    os.path.join(BASE_DIR, 'main', 'staticfiles'),
 ]
 
 
