@@ -37,7 +37,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG') 
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS')
+ALLOWED_HOSTS = ["localhost","127.0.0.1","flachub.ru","www.flachub.ru" ]
 
 INTERNAL_IPS = ["127.0.0.1"]
 
@@ -146,14 +146,14 @@ WSGI_APPLICATION = 'PageGlow.wsgi.application'
 ASGI_APPLICATION = 'PageGlow.asgi.application'
 
 # Channels / WebSocket
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [config('REDIS_URL', default='redis://localhost:6379/0')],
-        },
-    },
-}
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             'hosts': [config('REDIS_URL', default='redis://localhost:6379/0')],
+#         },
+#     },
+# }
 
 
 # Database
@@ -509,30 +509,30 @@ DJOSER = {
 }
 
 # Кэширование - используем Redis если доступен, иначе файловое
-CACHE_BACKEND = config('CACHE_BACKEND', default='filebased')
+# CACHE_BACKEND = config('CACHE_BACKEND', default='filebased')
 
-if CACHE_BACKEND == 'redis':
-    CACHES = {
-        'default': {
-            'BACKEND': 'django_redis.cache.RedisCache',
-            'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/0'),
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-                'PARSER_KWARGS': {'encoding': 'utf8'},
-                'CONNECTION_POOL_KWARGS': {'max_connections': 50, 'retry_on_timeout': True}
-            },
-            'KEY_PREFIX': 'flakhub',
-            'TIMEOUT': 300,
-        }
-    }
-else:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-            'LOCATION': os.path.join(BASE_DIR, 'cache'),
-            'TIMEOUT': 300,
-        }
-    }
+# if CACHE_BACKEND == 'redis':
+#     CACHES = {
+#         'default': {
+#             'BACKEND': 'django_redis.cache.RedisCache',
+#             'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/0'),
+#             'OPTIONS': {
+#                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#                 'PARSER_KWARGS': {'encoding': 'utf8'},
+#                 'CONNECTION_POOL_KWARGS': {'max_connections': 50, 'retry_on_timeout': True}
+#             },
+#             'KEY_PREFIX': 'flakhub',
+#             'TIMEOUT': 300,
+#         }
+#     }
+# else:
+#     CACHES = {
+#         'default': {
+#             'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+#             'LOCATION': os.path.join(BASE_DIR, 'cache'),
+#             'TIMEOUT': 300,
+#         }
+#     }
 
 # Session configuration
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
