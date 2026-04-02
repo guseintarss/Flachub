@@ -15,7 +15,7 @@ up: ## Запуск всех сервисов (первый раз или пос
 dev: ## Запуск в режиме разработки (с adminer)
 	docker compose --profile tools up -d
 	@echo "✅ Приложение: http://localhost"
-	@echo "📊 Adminer: http://localhost:8080"
+	@echo " Adminer: http://localhost:8080"
 
 prod: ## Запуск в production режиме
 	docker compose up -d
