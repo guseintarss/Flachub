@@ -32,12 +32,12 @@ for directory in ['logs', 'cache', 'static', 'media']:
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-temp-dev-key-do-not-use-in-production')
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default='True') == 'True'
+DEBUG = config('DEBUG') 
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,flakhub.ru,www.flakhub.ru').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS')
 
 INTERNAL_IPS = ["127.0.0.1"]
 
@@ -48,21 +48,21 @@ IS_ASGI = 'daphne' in sys.argv[0] or 'uvicorn' in sys.argv[0]
 # CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
 
-# ===== SENTRY =====
-SENTRY_DSN = config('SENTRY_DSN', default='')
+# # ===== SENTRY =====
+# SENTRY_DSN = config('SENTRY_DSN', default='')
 
-if SENTRY_DSN:
-    import sentry_sdk
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        integrations=[
-            # Django integration
-        ],
-        traces_sample_rate=0.1,  # 10% транзакций
-        profiles_sample_rate=0.1,  # 10% профилей
-        environment=config('SENTRY_ENVIRONMENT', default='development'),
-        release=config('SENTRY_RELEASE', default='unknown'),
-    )
+# if SENTRY_DSN:
+#     import sentry_sdk
+#     sentry_sdk.init(
+#         dsn=SENTRY_DSN,
+#         integrations=[
+#             # Django integration
+#         ],
+#         traces_sample_rate=0.1,  # 10% транзакций
+#         profiles_sample_rate=0.1,  # 10% профилей
+#         environment=config('SENTRY_ENVIRONMENT', default='development'),
+#         release=config('SENTRY_RELEASE', default='unknown'),
+#     )
 
 # Application definition
 
