@@ -239,6 +239,7 @@ html.dark-mode .badge-card { background: var(--dark-bg); }
             {% endif %}
 
             <!-- Stats -->
+            {% get_user_reputation user as user_reputation %}
             <div class="author-stats-row">
                 <div class="author-stat-card">
                     <div class="author-stat-icon"><i class="fas fa-users"></i></div>
@@ -252,7 +253,7 @@ html.dark-mode .badge-card { background: var(--dark-bg); }
                 </div>
                 <div class="author-stat-card">
                     <div class="author-stat-icon"><i class="fas fa-star"></i></div>
-                    <div class="author-stat-value">{{ user.reputation_score|default:0 }}</div>
+                    <div class="author-stat-value">{{ user_reputation|default:0 }}</div>
                     <div class="author-stat-label">Репутация</div>
                 </div>
             </div>

@@ -773,11 +773,12 @@
             {% endif %}
 
             <!-- Stats -->
+            {% get_user_reputation author as author_reputation %}
             <div class="author-stats-row">
                 <div class="author-stat-card">
-                    <div class="author-stat-icon"><i class="fas fa-file-alt"></i></div>
-                    <div class="author-stat-value">{{ published_posts.count }}</div>
-                    <div class="author-stat-label">Статей</div>
+                    <div class="author-stat-icon"><i class="fas fa-star"></i></div>
+                    <div class="author-stat-value">{{ author_reputation|default:0 }}</div>
+                    <div class="author-stat-label">Репутация</div>
                 </div>
                 <div class="author-stat-card">
                     <div class="author-stat-icon"><i class="fas fa-users"></i></div>
