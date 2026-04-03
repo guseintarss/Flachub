@@ -2196,7 +2196,6 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
 }
 .author-info {
   display: flex;
-  align-items: center;
   gap: 12px;
 }
 .author-avatar {
