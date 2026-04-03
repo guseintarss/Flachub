@@ -668,9 +668,9 @@
   }
 
   .tag-chip {
-    font-size: 0.6rem;
-    padding: 3px 6px;
-    min-height: 26px;
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    min-height: 36px;
   }
 
   .meta-badge {
@@ -811,7 +811,7 @@
   }
 
   .post-type-grid {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
   }
 
@@ -893,8 +893,8 @@
   }
 
   .tag-selected {
-    padding: 3px 6px;
-    font-size: 0.6rem;
+    padding: 6px 10px;
+    font-size: 0.8rem;
   }
 
   .tag-search-input {
@@ -944,14 +944,14 @@
   }
 
   .post-type-grid {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr;
     gap: 10px;
   }
 
   .post-type-card {
-    padding: 16px 42px;
-    flex-direction: column;
-    text-align: center;
+    padding: 16px 12px;
+    flex-direction: row;
+    text-align: left;
     gap: 12px;
   }
 
@@ -1131,9 +1131,11 @@
   .profile-stats {
     justify-content: center;
     gap: 12px;
-    flex-wrap: wrap;
   }
 
+  .stat-item {
+    padding: 8px 14px;
+  }
 
   .profile-actions {
     justify-content: center;

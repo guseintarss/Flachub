@@ -45,7 +45,6 @@ document.body.addEventListener('htmx:configRequest', function (event) {
     }
     
     .profile-header-top {
-        display: flex;
         align-items: center;
         gap: 10px;
         margin-bottom: 8px;
@@ -75,7 +74,6 @@ document.body.addEventListener('htmx:configRequest', function (event) {
     .profile-stats {
         display: flex;
         gap: 15px;
-        flex-wrap: wrap;
         margin-bottom: 15px;
     }
     
@@ -186,12 +184,7 @@ document.body.addEventListener('htmx:configRequest', function (event) {
             {% endif %}
 
             <div class="profile-stats">
-                <div class="stat-item">
-                    <div class="stat-value">{{ published_posts.count }}</div>
-                    <div class="stat-label">
-                        <i class="fas fa-file-alt"></i> <span>статей</span>
-                    </div>
-                </div>
+                
                 <div class="stat-item">
                     <div class="stat-value">{{ user.subscribers.count }}</div>
                     <div class="stat-label">
@@ -493,7 +486,6 @@ document.body.addEventListener('htmx:configRequest', function (event) {
     gap: 30px;
     background: var(--surface);
     border-radius: var(--radius);
-    padding: 30px;
     box-shadow: 0 2px 15px rgba(0,0,0,0.08);
     margin-bottom: 30px;
 }
@@ -565,7 +557,7 @@ document.body.addEventListener('htmx:configRequest', function (event) {
 
 .stat-item {
     text-align: center;
-    padding: 15px 25px;
+    padding: 10px 15px;
     background: var(--bg);
     border-radius: 12px;
     transition: transform 0.2s;
@@ -576,6 +568,7 @@ document.body.addEventListener('htmx:configRequest', function (event) {
     font-size: 2rem;
     font-weight: 700;
     margin-bottom: 5px;
+    margin-right: 2px;
 }
 
 .stat-label {

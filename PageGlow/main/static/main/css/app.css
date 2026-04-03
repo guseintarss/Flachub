@@ -1817,12 +1817,10 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
   }
   
   .profile-stats {
-    flex-direction: column;
     gap: 10px;
   }
   
   .stat-item {
-    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
