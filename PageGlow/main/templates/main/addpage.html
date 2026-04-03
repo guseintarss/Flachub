@@ -207,8 +207,10 @@ function nextStep(step) {
 
     currentStep = step;
 
-    // Прокрутка вверх
+    // Прокрутка на самый верх страницы
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
 
     // Если перешли к редактору - инициализируем высоту
     if (step === 2) {

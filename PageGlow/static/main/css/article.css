@@ -1426,7 +1426,7 @@ html.dark-mode .no-comments {
     
     .article-cover img {
         width: calc(100% + 40px);
-        margin-left: -20px;
+        margin-left: 0;
         border-radius: 0;
     }
 }
@@ -1508,7 +1508,7 @@ html.dark-mode .no-comments {
     
     .article-cover img {
         width: calc(100% + 32px);
-        margin-left: -16px;
+        margin-left: 0px;
     }
     
     /* Кнопка подписки */

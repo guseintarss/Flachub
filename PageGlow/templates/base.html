@@ -31,6 +31,7 @@
     <meta name="csrf-token" content="{{ csrf_token }}">
     {% block head %}{% endblock %}
     {% block extra_css %}{% endblock %}
+    <link type="text/css" href="{% static 'main/css/mobile.css' %}?v={% now 'U' %}" rel="stylesheet"/>
     <script>
         // Автоматическое применение системной темы
         (function() {

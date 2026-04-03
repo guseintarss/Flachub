@@ -1426,7 +1426,7 @@ html.dark-mode .no-comments {
     
     .article-cover img {
         width: calc(100% + 40px);
-        margin-left: -20px;
+        margin-left: 0;
         border-radius: 0;
     }
 }
@@ -1490,8 +1490,8 @@ html.dark-mode .no-comments {
 
     /* Теги компактные */
     .tag-chip {
-        font-size: 0.8rem;
-        padding: 4px 10px;
+        font-size: 0.6rem;
+        padding: 3px 6px;
         min-height: 36px;
     }
 
@@ -1508,7 +1508,7 @@ html.dark-mode .no-comments {
     
     .article-cover img {
         width: calc(100% + 32px);
-        margin-left: -16px;
+        margin-left: 0;
     }
     
     /* Кнопка подписки */
