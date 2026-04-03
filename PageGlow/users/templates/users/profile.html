@@ -1115,6 +1115,22 @@ html.dark-mode .badge-card { background: var(--dark-bg); }
     font-size: 1.1rem;
 }
 
+/* Кнопка в пустом состоянии */
+.empty-state .btn {
+    padding: 10px 24px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.empty-state .btn i {
+    font-size: 1rem;
+    margin: 0;
+    color: inherit;
+}
+
 /* Обсуждения */
 .discussions-list {
     display: flex;
@@ -1282,6 +1298,27 @@ html.dark-mode .badge-card { background: var(--dark-bg); }
 
     .posts-grid {
         grid-template-columns: 1fr;
+    }
+
+    /* Кнопка в пустом состоянии на мобильном */
+    .empty-state {
+        padding: 40px 16px;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 16px;
+    }
+
+    .empty-state p {
+        font-size: 1rem;
+        margin-bottom: 16px;
+    }
+
+    .empty-state .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+        width: auto;
     }
 }
 </style>
