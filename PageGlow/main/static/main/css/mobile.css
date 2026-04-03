@@ -31,6 +31,11 @@
   .layout > .sidebar {
     order: 2 !important;
   }
+
+  /* Исключение: страница автора — профиль идёт первым */
+  body.author-profile-page-body .layout > .content {
+    order: -1 !important;
+  }
 }
 
 /* =====================================================
@@ -271,7 +276,6 @@
     justify-content: flex-start;
     padding: 12px 16px;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border);
   }
 }
@@ -452,7 +456,6 @@
     justify-content: flex-start;
     padding: 10px 14px;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border);
     font-size: 0.85rem;
   }
@@ -2189,9 +2192,8 @@
   .dropdown-logout-btn {
     width: 100%;
     justify-content: flex-start;
-    padding: 12px 16px;
+    padding: 12px 20px;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border);
   }
 }
