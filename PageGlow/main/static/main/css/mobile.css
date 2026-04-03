@@ -60,7 +60,7 @@
   .layout {
     gap: 16px;
     display: flex !important;
-    flex-direction: column-reverse !important;
+    flex-direction: column !important;
   }
 
   .layout > .content {
