@@ -1301,7 +1301,7 @@ html.dark-mode .header-icon {
     text-decoration:none;
 }
 .site-header.open .top-nav{
-    transform: translateX(133%)
+    transform: translateX(100%)
 }
 
 /* Avatars used in profile/comments */
@@ -1807,7 +1807,7 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
 
   .top-nav {
     width: 100%;
-    left: -100%;
+    left: -75%;
     border-radius: 0 0 var(--radius) var(--radius);
   }
 
