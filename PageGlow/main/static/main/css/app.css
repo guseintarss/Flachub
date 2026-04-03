@@ -1729,17 +1729,17 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
 /* Responsive */
 @media (max-width: 992px){
   .layout {
-    grid-template-columns: 1fr;
+    display: flex !important;
     gap: 15px;
   }
-  
-  .sidebar {
-    position: static;
-    order: 2; /* Сайдбар вторым */
+
+  .layout > .content {
+    order: 1 !important;
   }
-  
-  .content {
-    order: 1; /* Контент первым */
+
+  .layout > .sidebar {
+    position: static !important;
+    order: 2 !important;
   }
   
   .user-area {

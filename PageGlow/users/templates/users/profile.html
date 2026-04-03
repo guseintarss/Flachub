@@ -165,6 +165,10 @@ html.dark-mode .author-stat-card { background: var(--dark-bg); border-color: var
 html.dark-mode .badge-card { background: var(--dark-bg); }
 
 @media (max-width: 768px) {
+    .author-profile-page {
+        order: -1 !important; /* Профиль идет первым */
+    }
+
     .author-hero { border-radius: 0; margin-bottom: 0; }
     .author-hero-bg { height: 140px; }
     .author-hero-content { padding: 0 16px 20px; }
@@ -177,6 +181,20 @@ html.dark-mode .badge-card { background: var(--dark-bg); }
     .author-stat-value { font-size: 1.2rem; }
     .author-stat-label { font-size: 0.65rem; }
     .badges-grid { grid-template-columns: 1fr; }
+
+    /* Сайдбар после профиля */
+    .layout {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .content {
+        order: 1;
+    }
+
+    .sidebar {
+        order: 2;
+    }
 }
 
 @media (max-width: 480px) {
