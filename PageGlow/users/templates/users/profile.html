@@ -17,232 +17,271 @@ document.body.addEventListener('htmx:configRequest', function (event) {
 </script>
 
 <style>
-    /* Профиль пользователя - компактный стиль */
-    .profile-header {
-        display: flex;
-        gap: 20px;
-        padding: 20px;
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 12px;
-        margin-bottom: 20px;
-    }
-    
-    .profile-avatar {
-        flex-shrink: 0;
-    }
-    
-    .profile-avatar .avatar-img {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid rgba(102, 126, 234, 0.3);
-    }
-    
-    .profile-info {
-        flex: 1;
-        min-width: 0;
-    }
-    
-    .profile-header-top {
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 8px;
-        flex-wrap: wrap;
-    }
-    
-    .profile-name {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 0;
-        color: #fff;
-    }
-    
-    .profile-fullname {
-        color: #888;
-        font-size: 0.95rem;
-        margin: 0 0 8px 0;
-    }
-    
-    .profile-bio {
-        color: #666;
-        font-size: 0.9rem;
-        margin: 0 0 15px 0;
-    }
-    
-    /* Статистика - компактная */
-    .profile-stats {
-        display: flex;
-        gap: 15px;
-        margin-bottom: 15px;
-    }
-    
-    .stat-item {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 8px;
-        padding: 10px 16px;
-        text-align: center;
-        min-width: 90px;
-        transition: all 0.2s ease;
-    }
-    
-    .stat-item:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(255, 255, 255, 0.1);
-    }
-    
-    .stat-item.stat-reputation {
-        background: linear-gradient(135deg, rgba(0, 123, 255, 0.12) 0%, rgba(102, 126, 234, 0.08) 100%);
-        border-color: rgba(0, 123, 255, 0.25);
-    }
-    
-    .stat-value {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #fff;
-        line-height: 1.2;
-    }
-    
-    .stat-item.stat-reputation .stat-value {
-        color: #007bff;
-    }
-    
-    .stat-label {
-        font-size: 0.75rem;
-        color: #888;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-        margin-top: 2px;
-    }
-    
-    .stat-label i {
-        font-size: 0.7rem;
-    }
-    
-    .stat-item.stat-reputation .stat-label i {
-        color: #007bff;
-    }
-    
-    /* Кнопки - компактные */
-    .profile-actions {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-    
-    .profile-actions .btn-sm {
-        padding: 6px 12px;
-        font-size: 0.875rem;
-        border-radius: 6px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.2s ease;
-    }
-    
-    .profile-actions .btn-sm i {
-        font-size: 0.85rem;
-    }
-    
-    /* Hover эффекты */
-    .stat-item:hover {
-        transform: translateY(-2px);
-    }
-    
-    .profile-actions .btn-sm:hover {
-        transform: translateY(-1px);
-    }
+/* Hero Banner стили как у автора */
+:root {
+    --profile-gradient: linear-gradient(135deg, #0c6acf 0%, #667eea 50%, #764ba2 100%);
+    --profile-gradient-soft: linear-gradient(135deg, rgba(12, 106, 207, 0.08) 0%, rgba(118, 75, 162, 0.06) 100%);
+}
+
+.author-profile-page { max-width: 960px; margin: 0 auto; }
+
+.author-hero {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.author-hero-bg {
+    height: 200px;
+    background: var(--profile-gradient);
+    position: relative;
+}
+
+.author-hero-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+}
+
+.author-hero-content {
+    position: relative;
+    padding: 0 32px 32px;
+    background: var(--surface);
+}
+
+.author-hero-top {
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+    margin-top: -55px;
+    margin-bottom: 18px;
+}
+
+.author-avatar-lg {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--surface);
+    background: var(--bg);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+}
+
+.author-hero-info { flex: 1; min-width: 0; padding-bottom: 6px; }
+
+.author-hero-name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+.author-hero-username {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0;
+}
+
+.author-hero-fullname { color: var(--muted); font-size: 1rem; margin: 0; }
+.author-hero-bio { color: var(--text); font-size: 0.95rem; line-height: 1.65; margin: 0 0 24px 0; max-width: 600px; }
+
+.author-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.author-stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 18px 12px;
+    background: var(--profile-gradient-soft);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    transition: all 0.25s ease;
+}
+
+.author-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+}
+
+.author-stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #fff;
+}
+
+.author-stat-card:nth-child(1) .author-stat-icon { background: linear-gradient(135deg, #0c6acf, #667eea); }
+.author-stat-card:nth-child(2) .author-stat-icon { background: linear-gradient(135deg, #10b981, #34d399); }
+.author-stat-card:nth-child(3) .author-stat-icon { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+
+.author-stat-value { font-size: 1.6rem; font-weight: 800; color: var(--text); }
+.author-stat-label { font-size: 0.75rem; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.author-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.author-actions .btn {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.author-actions .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(12, 106, 207, 0.25); }
+
+.author-achievements { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border); }
+.achievements-title { font-size: 1.15rem; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.achievements-title i { color: #f59e0b; font-size: 1.3rem; }
+
+.badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.badge-card { display: flex; gap: 14px; padding: 14px; background: var(--bg); border-radius: 12px; border-left: 3px solid var(--primary); }
+.badge-icon { width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 1.6rem; flex-shrink: 0; }
+.badge-info h4 { font-size: 0.95rem; font-weight: 600; color: var(--text); margin: 0 0 4px 0; }
+.badge-info p { font-size: 0.8rem; color: var(--muted); margin: 0 0 6px 0; }
+.badge-meta { display: flex; gap: 10px; font-size: 0.75rem; color: var(--muted); flex-wrap: wrap; }
+
+html.dark-mode .author-hero-content { background: var(--dark-surface); }
+html.dark-mode .author-avatar-lg { border-color: var(--dark-surface); background: var(--dark-bg); }
+html.dark-mode .author-stat-card { background: var(--dark-bg); border-color: var(--dark-border); }
+html.dark-mode .badge-card { background: var(--dark-bg); }
+
+@media (max-width: 768px) {
+    .author-hero { border-radius: 0; margin-bottom: 0; }
+    .author-hero-bg { height: 140px; }
+    .author-hero-content { padding: 0 16px 20px; }
+    .author-hero-top { margin-top: -44px; gap: 14px; }
+    .author-avatar-lg { width: 80px; height: 80px; }
+    .author-hero-username { font-size: 1.3rem; }
+    .author-stats-row { gap: 8px; }
+    .author-stat-card { padding: 12px 6px; }
+    .author-stat-icon { width: 30px; height: 30px; }
+    .author-stat-value { font-size: 1.2rem; }
+    .author-stat-label { font-size: 0.65rem; }
+    .badges-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+    .author-hero-bg { height: 120px; }
+    .author-hero-top { margin-top: -38px; }
+    .author-avatar-lg { width: 68px; height: 68px; }
+    .author-hero-username { font-size: 1.15rem; }
+    .author-stat-icon { width: 26px; height: 26px; }
+    .author-stat-value { font-size: 1.05rem; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="profile-page">
-    <!-- Шапка профиля -->
-    <div class="profile-header">
-        <div class="profile-avatar">
-            {% if user.photo %}
-            <img src="{{ user.photo.url }}" alt="{{ user.username }}" class="avatar-img">
-            {% else %}
-            <img src="{{ default_image }}" alt="{{ user.username }}" class="avatar-img">
-            {% endif %}
-        </div>
+<div class="author-profile-page">
+    <!-- Hero Banner -->
+    <div class="author-hero">
+        <div class="author-hero-bg"></div>
+        <div class="author-hero-content">
+            <div class="author-hero-top">
+                <div>
+                    {% if user.photo %}
+                    <img class="author-avatar-lg" src="{{ user.photo.url }}" alt="{{ user.username }}">
+                    {% else %}
+                    <img class="author-avatar-lg" src="{{ default_image }}" alt="{{ user.username }}">
+                    {% endif %}
+                </div>
 
-        <div class="profile-info">
-            <div class="profile-header-top">
-                <h1 class="profile-name">{{ user.username }}</h1>
-                {% user_level_badge user %}
+                <div class="author-hero-info">
+                    <div class="author-hero-name-row">
+                        <h1 class="author-hero-username">{{ user.username }}</h1>
+                        {% user_level_badge user %}
+                    </div>
+                    {% if user.first_name or user.last_name %}
+                    <p class="author-hero-fullname">{{ user.last_name }} {{ user.first_name }}</p>
+                    {% endif %}
+                </div>
             </div>
-            
-            {% if user.first_name or user.last_name %}
-            <p class="profile-fullname">{{ user.last_name }} {{ user.first_name }}</p>
-            {% endif %}
+
             {% if user.about_me %}
-            <p class="profile-bio">{{ user.about_me }}</p>
+            <p class="author-hero-bio">{{ user.about_me }}</p>
             {% endif %}
 
-            <div class="profile-stats">
-                
-                <div class="stat-item">
-                    <div class="stat-value">{{ user.subscribers.count }}</div>
-                    <div class="stat-label">
-                        <i class="fas fa-users"></i> <span>подписчиков</span>
-                    </div>
+            <!-- Stats -->
+            <div class="author-stats-row">
+                <div class="author-stat-card">
+                    <div class="author-stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="author-stat-value">{{ user.subscribers.count }}</div>
+                    <div class="author-stat-label">Подписчиков</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value">{{ user.subscriptions.count }}</div>
-                    <div class="stat-label">
-                        <i class="fas fa-user-plus"></i> <span>подписок</span>
-                    </div>
+                <div class="author-stat-card">
+                    <div class="author-stat-icon"><i class="fas fa-user-plus"></i></div>
+                    <div class="author-stat-value">{{ user.subscriptions.count }}</div>
+                    <div class="author-stat-label">Подписок</div>
+                </div>
+                <div class="author-stat-card">
+                    <div class="author-stat-icon"><i class="fas fa-star"></i></div>
+                    <div class="author-stat-value">{{ user.reputation_score|default:0 }}</div>
+                    <div class="author-stat-label">Репутация</div>
                 </div>
             </div>
-            
-            {% reputation_summary user %}
 
-            <div class="profile-actions">
-                <a href="{% url 'users:edit_profile' %}" class="btn btn-sm btn-primary" title="Редактировать">
-                    <i class="fas fa-cog"></i>
+            <!-- Actions -->
+            <div class="author-actions">
+                <a class="btn btn-primary" href="{% url 'users:edit_profile' %}">
+                    <i class="fas fa-cog"></i> Редактировать
                 </a>
-                <a href="{% url 'users:reputation_history' %}" class="btn btn-sm btn-outline-primary" title="История репутации">
-                    <i class="fas fa-history"></i>
+                <a class="btn btn-outline-primary" href="{% url 'users:reputation_history' %}">
+                    <i class="fas fa-history"></i> История репутации
                 </a>
             </div>
+
+            <!-- Achievements -->
+            {% if user_achievements %}
+            <div class="author-achievements">
+                <h4 class="achievements-title">
+                    <i class="fas fa-trophy"></i> Достижения
+                </h4>
+                <div class="badges-grid">
+                    {% for achievement in user_achievements %}
+                    <div class="badge-card" style="border-left-color: {{ achievement.badge.color }}">
+                        <div class="badge-icon" style="background: {{ achievement.badge.color }}20">
+                            <span>{{ achievement.badge.icon }}</span>
+                        </div>
+                        <div class="badge-info">
+                            <h4>{{ achievement.badge.name }}</h4>
+                            <p>{{ achievement.badge.description }}</p>
+                            <div class="badge-meta">
+                                <span class="badge-date">
+                                    <i class="fas fa-calendar"></i> {{ achievement.earned_at|date:"d.m.Y" }}
+                                </span>
+                                {% if achievement.reason %}
+                                <span class="badge-reason">{{ achievement.reason }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Достижения -->
-    {% if user_achievements %}
-    <div class="achievements-section">
-        <h3 class="achievements-title">
-            <i class="fas fa-trophy"></i> Достижения
-        </h3>
-        <div class="badges-grid">
-            {% for achievement in user_achievements %}
-            <div class="badge-card" style="border-left-color: {{ achievement.badge.color }}">
-                <div class="badge-icon" style="background: {{ achievement.badge.color }}20">
-                    <span>{{ achievement.badge.icon }}</span>
-                </div>
-                <div class="badge-info">
-                    <h4>{{ achievement.badge.name }}</h4>
-                    <p>{{ achievement.badge.description }}</p>
-                    <div class="badge-meta">
-                        <span class="badge-date">
-                            <i class="fas fa-calendar"></i> {{ achievement.earned_at|date:"d.m.Y" }}
-                        </span>
-                        {% if achievement.reason %}
-                        <span class="badge-reason">{{ achievement.reason }}</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Табы -->
+    <!-- Табы (сохраняем) -->
     <div class="profile-tabs">
         <ul class="nav-tabs">
             <li class="nav-item">
