@@ -1301,7 +1301,7 @@ html.dark-mode .header-icon {
     text-decoration:none;
 }
 .site-header.open .top-nav{
-    transform: translateX(100%)
+    transform: translateX(133%)
 }
 
 /* Avatars used in profile/comments */
