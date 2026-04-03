@@ -112,6 +112,27 @@ class User(AbstractUser):
     data_birth = models.DateTimeField(null=True, blank=True, verbose_name='Дата рождения')
     phone_namber = models.CharField(max_length=18, null=True, blank=True, verbose_name='Номер телефона' )
     about_me = models.TextField(max_length=255, null=True, blank=True, verbose_name='О себе')
+
+    # Кастомизация баннера профиля
+    banner_gradient_start = models.CharField(
+        max_length=20,
+        default='#0c6acf',
+        verbose_name='Начальный цвет градиента баннера',
+        help_text='HEX цвет (например #0c6acf)'
+    )
+    banner_gradient_end = models.CharField(
+        max_length=20,
+        default='#764ba2',
+        verbose_name='Конечный цвет градиента баннера',
+        help_text='HEX цвет (например #764ba2)'
+    )
+    banner_image = models.ImageField(
+        upload_to='users/banners/%Y/%m/%d/',
+        null=True,
+        blank=True,
+        verbose_name='Изображение баннера',
+        help_text='Фоновое изображение баннера (приоритет над градиентом)'
+    )
     
     # Подписки на пользователей (друзья/фолловеры)
     following = models.ManyToManyField(

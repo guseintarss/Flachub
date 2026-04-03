@@ -41,16 +41,20 @@ class RegisterUserForm(UserCreationForm):
 class ProfileUserForm(forms.ModelForm):
     username = forms.CharField(label='Логин', widget=forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}))
     email = forms.CharField(label='E-mail', widget=forms.EmailInput(attrs={'class': 'form-control', 'readonly': 'readonly'}))
-    
+
     class Meta:
         model = get_user_model()
-        fields = ['photo', 'username', 'email', 'first_name', 'last_name', 'about_me', 'data_birth', 'phone_namber']
+        fields = ['photo', 'username', 'email', 'first_name', 'last_name', 'about_me', 'data_birth', 'phone_namber', 
+                  'banner_gradient_start', 'banner_gradient_end', 'banner_image']
         labels = {
             'first_name': 'Имя',
             'last_name': 'Фамилия',
             'data_birth': 'Дата рождения',
             'phone_namber': 'Номер телефона',
             'about_me': 'О себе',
+            'banner_gradient_start': 'Начальный цвет градиента',
+            'banner_gradient_end': 'Конечный цвет градиента',
+            'banner_image': 'Изображение баннера',
         }
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ваше имя'}),
@@ -59,6 +63,9 @@ class ProfileUserForm(forms.ModelForm):
             'about_me': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Расскажите немного о себе...', 'maxlength': 255}),
             'data_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'format': '%Y-%m-%d'}),
             'phone_namber': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+7 (___) ___-__-__', 'type': 'tel', 'id': 'phone-input'}),
+            'banner_gradient_start': forms.TextInput(attrs={'class': 'form-control', 'type': 'color', 'style': 'height: 50px; cursor: pointer;'}),
+            'banner_gradient_end': forms.TextInput(attrs={'class': 'form-control', 'type': 'color', 'style': 'height: 50px; cursor: pointer;'}),
+            'banner_image': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
         }
     
     def clean_data_birth(self):

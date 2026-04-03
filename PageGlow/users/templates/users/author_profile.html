@@ -736,7 +736,13 @@
 <div class="author-profile-page">
     <!-- Hero Banner -->
     <div class="author-hero">
-        <div class="author-hero-bg"></div>
+        <div class="author-hero-bg" 
+             {% if author.banner_image %}
+             style="background: url('{{ author.banner_image.url }}') center/cover no-repeat;"
+             {% else %}
+             style="background: linear-gradient(135deg, {{ author.banner_gradient_start }} 0%, {{ author.banner_gradient_end }} 100%);"
+             {% endif %}>
+        </div>
         <div class="author-hero-content">
             <div class="author-hero-top">
                 <div>

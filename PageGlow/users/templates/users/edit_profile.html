@@ -4,6 +4,23 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js"></script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обновление предпросмотра баннера
+    const startColorInput = document.querySelector('input[name="banner_gradient_start"]');
+    const endColorInput = document.querySelector('input[name="banner_gradient_end"]');
+    const bannerPreview = document.getElementById('banner-preview-inner');
+
+    if (startColorInput && endColorInput && bannerPreview) {
+        function updateBannerPreview() {
+            bannerPreview.style.background = `linear-gradient(135deg, ${startColorInput.value} 0%, ${endColorInput.value} 100%)`;
+        }
+
+        startColorInput.addEventListener('input', updateBannerPreview);
+        endColorInput.addEventListener('input', updateBannerPreview);
+    }
+});
+</script>
 {% endblock %}
 
 {% block content %}
@@ -114,6 +131,54 @@
                         <small class="form-text">
                             <i class="fas fa-info-circle"></i> Например: 9991234567
                         </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кастомизация баннера -->
+            <div class="form-section">
+                <h3><i class="fas fa-palette"></i> Кастомизация баннера профиля</h3>
+                <p class="form-text" style="margin-bottom: 20px;">
+                    <i class="fas fa-info-circle"></i>
+                    Настройте внешний вид баннера в вашем профиле. Вы можете использовать градиент или загрузить изображение.
+                </p>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.banner_gradient_start.id_for_label }}">
+                            <i class="fas fa-fill-drip"></i> {{ form.banner_gradient_start.label }}
+                        </label>
+                        {{ form.banner_gradient_start }}
+                        <div class="form-error">{{ form.banner_gradient_start.errors }}</div>
+                        <small class="form-text">Начальный цвет градиента</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.banner_gradient_end.id_for_label }}">
+                            <i class="fas fa-fill-drip"></i> {{ form.banner_gradient_end.label }}
+                        </label>
+                        {{ form.banner_gradient_end }}
+                        <div class="form-error">{{ form.banner_gradient_end.errors }}</div>
+                        <small class="form-text">Конечный цвет градиента</small>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="{{ form.banner_image.id_for_label }}">
+                        <i class="fas fa-image"></i> {{ form.banner_image.label }}
+                    </label>
+                    {{ form.banner_image }}
+                    <div class="form-error">{{ form.banner_image.errors }}</div>
+                    <small class="form-text">
+                        <i class="fas fa-lightbulb"></i>
+                        Если загрузить изображение, оно будет использоваться вместо градиента.
+                        Рекомендуемый размер: 1200×300px.
+                    </small>
+                </div>
+
+                <!-- Предпросмотр баннера -->
+                <div class="banner-preview" style="margin-top: 20px; border-radius: 12px; overflow: hidden; height: 150px;">
+                    <div id="banner-preview-inner" 
+                         style="width: 100%; height: 100%; background: linear-gradient(135deg, {{ user.banner_gradient_start }} 0%, {{ user.banner_gradient_end }} 100%);">
                     </div>
                 </div>
             </div>
@@ -296,6 +361,36 @@
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(12, 106, 207, 0.1);
+}
+
+/* Стили для color picker */
+.form-group input[type="color"] {
+    width: 100%;
+    height: 60px;
+    padding: 5px;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.form-group input[type="color"]:hover {
+    border-color: var(--primary);
+}
+
+.form-group input[type="color"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(12, 106, 207, 0.1);
+}
+
+/* Предпросмотр баннера */
+.banner-preview {
+    border: 2px solid var(--border);
+    transition: border-color 0.3s ease;
+}
+
+.banner-preview:hover {
+    border-color: var(--primary);
 }
 
 .form-group input.is-valid,
