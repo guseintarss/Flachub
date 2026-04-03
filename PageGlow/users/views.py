@@ -89,6 +89,12 @@ class RegisterUser(CreateView):
     extra_context = {'title': 'Регистрация'}
     success_url = reverse_lazy('users:login')
 
+    def form_valid(self, form):
+        # Устанавливаем значения по умолчанию для баннера
+        form.instance.banner_gradient_start = '#0c6acf'
+        form.instance.banner_gradient_end = '#764ba2'
+        return super().form_valid(form)
+
 class EditProfileUser(LoginRequiredMixin, UpdateView):
     model = get_user_model()
     form_class = ProfileUserForm

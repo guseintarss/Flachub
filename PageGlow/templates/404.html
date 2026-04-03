@@ -1,24 +1,453 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
+<div class="error-page">
     <div class="error-container">
-        <div class="error-content">
-            <h1 class="error-code">404</h1>
-            <div class="error-message">
-                <h2>Ой, кажется мы заблудились!</h2>
-                <p>Страница, которую вы ищете, не существует или была перемещена.</p>
-            </div>
-            <div class="error-illustration">
-                <div class="astronaut">
-                    <div class="helmet"></div>
-            <div class="body"></div>
-            <div class="legs"></div>
+        <!-- Анимированная SVG иллюстрация -->
+        <div class="error-illustration">
+            <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                <!-- Звёзды на фоне -->
+                <circle cx="100" cy="80" r="2" fill="#fff" opacity="0.6">
+                    <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="250" cy="120" r="1.5" fill="#fff" opacity="0.4">
+                    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="400" cy="60" r="2" fill="#fff" opacity="0.7">
+                    <animate attributeName="opacity" values="0.7;1;0.7" dur="4s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="550" cy="100" r="1" fill="#fff" opacity="0.5">
+                    <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="700" cy="90" r="1.5" fill="#fff" opacity="0.6">
+                    <animate attributeName="opacity" values="0.6;0.8;0.6" dur="3.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="150" cy="200" r="1" fill="#fff" opacity="0.3">
+                    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2.8s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="650" cy="180" r="2" fill="#fff" opacity="0.5">
+                    <animate attributeName="opacity" values="0.5;1;0.5" dur="3.2s" repeatCount="indefinite"/>
+                </circle>
+                
+                <!-- Планета -->
+                <g transform="translate(500, 450)">
+                    <circle cx="0" cy="0" r="80" fill="url(#planetGradient)"/>
+                    <ellipse cx="0" cy="0" rx="120" ry="20" fill="none" stroke="#0c6acf" stroke-width="3" opacity="0.4" transform="rotate(-20)">
+                        <animateTransform attributeName="transform" type="rotate" values="-20;-20;340;340" dur="20s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <defs>
+                        <radialGradient id="planetGradient" cx="30%" cy="30%">
+                            <stop offset="0%" stop-color="#667eea"/>
+                            <stop offset="100%" stop-color="#764ba2"/>
+                        </radialGradient>
+                    </defs>
+                </g>
+                
+                <!-- Астронавт -->
+                <g transform="translate(250, 280)">
+                    <!-- Тело -->
+                    <g class="astronaut-body">
+                        <ellipse cx="0" cy="0" rx="35" ry="45" fill="#e8e8e8"/>
+                        <!-- Визор -->
+                        <ellipse cx="0" cy="-10" rx="28" ry="22" fill="#1a1a2e"/>
+                        <ellipse cx="5" cy="-12" rx="8" ry="6" fill="#fff" opacity="0.3"/>
+                        <!-- Антенна -->
+                        <line x1="0" y1="-45" x2="0" y2="-60" stroke="#e8e8e8" stroke-width="3"/>
+                        <circle cx="0" cy="-60" r="5" fill="#0c6acf">
+                            <animate attributeName="fill" values="#0c6acf;#f59e0b;#0c6acf" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Рюкзак -->
+                        <rect x="-40" y="-20" width="8" height="35" rx="3" fill="#d0d0d0"/>
+                        <!-- Руки -->
+                        <g class="astronaut-arm-left">
+                            <path d="M -35,-10 Q -60,0 -50,20" stroke="#e8e8e8" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        </g>
+                        <g class="astronaut-arm-right">
+                            <path d="M 35,-10 Q 60,0 50,20" stroke="#e8e8e8" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        </g>
+                        <!-- Ноги -->
+                        <g class="astronaut-legs">
+                            <path d="M -15,40 L -20,70" stroke="#e8e8e8" stroke-width="10" fill="none" stroke-linecap="round"/>
+                            <path d="M 15,40 L 20,70" stroke="#e8e8e8" stroke-width="10" fill="none" stroke-linecap="round"/>
+                        </g>
+                    </g>
+                </g>
+                
+                <!-- Текст 404 -->
+                <text x="400" y="200" text-anchor="middle" font-size="120" font-weight="800" fill="url(#textGradient)" font-family="system-ui, -apple-system, sans-serif">
+                    404
+                    <animate attributeName="y" values="200;195;200" dur="4s" repeatCount="indefinite"/>
+                </text>
+                <defs>
+                    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#0c6acf"/>
+                        <stop offset="50%" stop-color="#667eea"/>
+                        <stop offset="100%" stop-color="#764ba2"/>
+                    </linearGradient>
+                </defs>
+            </svg>
         </div>
-        <div class="planet"></div>
-    </div>
-    <div class="error-actions">
-        <a href="/" class="btn-home">Вернуться на главную</a>
-        <a href="/search" class="btn-search">Поиск по сайту</a>
+
+        <!-- Текст ошибки -->
+        <div class="error-text">
+            <h1>Страница не найдена</h1>
+            <p>Кажется, эта страница улетела в космос 🚀</p>
+            <p class="error-hint">Проверьте адрес или вернитесь на главную страницу</p>
+        </div>
+
+        <!-- Кнопки действий -->
+        <div class="error-actions">
+            <a href="/" class="btn btn-home">
+                <i class="fas fa-home"></i>
+                <span>На главную</span>
+            </a>
+            <a href="{% url 'search' %}" class="btn btn-search">
+                <i class="fas fa-search"></i>
+                <span>Поиск</span>
+            </a>
+            <a href="{% url 'popular' %}" class="btn btn-popular">
+                <i class="fas fa-fire"></i>
+                <span>Популярное</span>
+            </a>
+        </div>
+
+        <!-- Полезные ссылки -->
+        <div class="error-helpful">
+            <p class="helpful-title">Или перейдите в раздел:</p>
+            <div class="helpful-links">
+                <a href="{% url 'discussions' %}" class="helpful-link">
+                    <i class="fas fa-comments"></i>
+                    <span>Обсуждения</span>
+                </a>
+                <a href="{% url 'home' %}" class="helpful-link">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Статьи</span>
+                </a>
+                <a href="{% url 'users:login' %}" class="helpful-link">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Войти</span>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+/* =====================================================
+   PageGlow - 404 Error Page
+   ===================================================== */
+
+.error-page {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.error-container {
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+}
+
+/* Иллюстрация */
+.error-illustration {
+    margin-bottom: 20px;
+}
+
+.error-illustration svg {
+    width: 100%;
+    max-width: 700px;
+    height: auto;
+    margin: 0 auto;
+}
+
+/* Анимация астронавта */
+.astronaut-body {
+    animation: float 6s ease-in-out infinite;
+}
+
+.astronaut-arm-left {
+    animation: waveLeft 4s ease-in-out infinite;
+    transform-origin: -35px -10px;
+}
+
+.astronaut-arm-right {
+    animation: waveRight 4s ease-in-out infinite 0.5s;
+    transform-origin: 35px -10px;
+}
+
+.astronaut-legs {
+    animation: floatLegs 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-15px) rotate(-2deg); }
+    50% { transform: translateY(-5px) rotate(1deg); }
+    75% { transform: translateY(-20px) rotate(-1deg); }
+}
+
+@keyframes waveLeft {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-15deg); }
+}
+
+@keyframes waveRight {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(15deg); }
+}
+
+@keyframes floatLegs {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* Текст ошибки */
+.error-text {
+    margin-bottom: 40px;
+}
+
+.error-text h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 16px 0;
+    line-height: 1.3;
+}
+
+.error-text p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin: 0 0 8px 0;
+    line-height: 1.6;
+}
+
+.error-hint {
+    font-size: 0.95rem !important;
+    color: var(--muted) !important;
+    opacity: 0.8;
+}
+
+/* Кнопки действий */
+.error-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+}
+
+.error-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    border: 2px solid transparent;
+}
+
+.error-actions .btn i {
+    font-size: 1.1rem;
+}
+
+.btn-home {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
+.btn-home:hover {
+    background: var(--primary-700);
+    border-color: var(--primary-700);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(12, 106, 207, 0.35);
+}
+
+.btn-search {
+    background: transparent;
+    color: var(--primary);
+    border-color: var(--border);
+}
+
+.btn-search:hover {
+    border-color: var(--primary);
+    background: rgba(12, 106, 207, 0.05);
+    transform: translateY(-2px);
+}
+
+.btn-popular {
+    background: transparent;
+    color: #f59e0b;
+    border-color: var(--border);
+}
+
+.btn-popular:hover {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.05);
+    transform: translateY(-2px);
+}
+
+/* Полезные ссылки */
+.error-helpful {
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+}
+
+.helpful-title {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0 0 16px 0;
+}
+
+.helpful-links {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.helpful-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    border: 1px solid var(--border);
+}
+
+.helpful-link:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(12, 106, 207, 0.25);
+}
+
+.helpful-link i {
+    font-size: 1rem;
+}
+
+/* =====================================================
+   DARK MODE
+   ===================================================== */
+
+html.dark-mode .error-illustration svg text {
+    filter: drop-shadow(0 0 20px rgba(12, 106, 207, 0.3));
+}
+
+html.dark-mode .btn-search,
+html.dark-mode .btn-popular {
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .btn-search:hover {
+    background: rgba(41, 156, 245, 0.1);
+    border-color: var(--dark-primary);
+}
+
+html.dark-mode .btn-popular:hover {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: #f59e0b;
+}
+
+html.dark-mode .helpful-link {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .helpful-link:hover {
+    background: var(--dark-primary);
+    border-color: var(--dark-primary);
+}
+
+html.dark-mode .error-helpful {
+    border-top-color: var(--dark-border);
+}
+
+/* =====================================================
+   MOBILE VERSION
+   ===================================================== */
+
+@media (max-width: 768px) {
+    .error-page {
+        padding: 30px 16px;
+        min-height: calc(100vh - 150px);
+    }
+
+    .error-illustration svg {
+        max-width: 500px;
+    }
+
+    .error-text h1 {
+        font-size: 1.5rem;
+    }
+
+    .error-text p {
+        font-size: 1rem;
+    }
+
+    .error-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .error-actions .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+    }
+
+    .helpful-links {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .helpful-link {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .error-page {
+        padding: 20px 12px;
+    }
+
+    .error-illustration svg {
+        max-width: 350px;
+    }
+
+    .error-text h1 {
+        font-size: 1.3rem;
+    }
+
+    .error-text p {
+        font-size: 0.9rem;
+    }
+
+    .error-actions .btn {
+        font-size: 0.9rem;
+        padding: 10px 16px;
+    }
+
+    .helpful-link {
+        font-size: 0.85rem;
+        padding: 8px 16px;
+    }
+}
+</style>
 {% endblock %}
