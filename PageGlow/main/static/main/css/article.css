@@ -1396,7 +1396,7 @@ html.dark-mode .no-comments {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        justify-content: center;
+        justify-content: start;
     }
     
     .tag-chip {

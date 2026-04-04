@@ -72,7 +72,7 @@ document.body.addEventListener('htmx:configRequest', function (event) {
     flex-shrink: 0;
 }
 
-.author-hero-info { flex: 1; min-width: 0; padding-bottom: 6px; }
+.author-hero-info { flex: 1; min-width: 0; padding-bottom: 6px; margin-top: 10px; }
 
 .author-hero-name-row {
     display: flex;
@@ -268,10 +268,10 @@ html.dark-mode .badge-card { background: var(--dark-bg); }
             <!-- Actions -->
             <div class="author-actions">
                 <a class="btn btn-primary" href="{% url 'users:edit_profile' %}">
-                    <i class="fas fa-cog"></i> Редактировать
+                    <i class="fas fa-cog"></i> 
                 </a>
                 <a class="btn btn-outline-primary" href="{% url 'users:reputation_history' %}">
-                    <i class="fas fa-history"></i> История репутации
+                    <i class="fas fa-history"></i> 
                 </a>
             </div>
 

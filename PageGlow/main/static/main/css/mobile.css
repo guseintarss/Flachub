@@ -651,6 +651,7 @@
     justify-content: space-between;
     gap: 8px;
     width: 100%;
+    margin-top: 10px;
   }
 
   .post-stats {
@@ -1022,8 +1023,8 @@
 
   .tag-chip {
     font-size: 0.8rem;
-    padding: 5px 10px;
-    min-height: 36px;
+    padding: 0px 10px;
+    min-height: 29px;
   }
 
   .meta-badge {
@@ -2102,7 +2103,7 @@
   .content,
   body,
   html {
-    overflow: visible !important;
+    overflow: auto !important;
   }
 
   .dropdown-menu {

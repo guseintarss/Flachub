@@ -818,48 +818,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (bookmarkBtn) {
-        bookmarkBtn.addEventListener('click', function() {
-            const postId = this.dataset.postId;
-
-            fetch('{% url "bookmark_toggle" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: `post_id=${postId}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const isBookmarked = data.is_bookmarked;
-                    
-                    if (isBookmarked) {
-                        this.classList.add('bookmarked');
-                    } else {
-                        this.classList.remove('bookmarked');
-                    }
-                    
-                    // Уведомление
-                    showToast(isBookmarked ? '✅ Добавлено в закладки' : '🗑️ Удалено из закладок');
-                }
-            });
-        });
-    }
-
-    // Прогресс чтения
-    const progressBar = document.getElementById('reading-progress');
-    if (progressBar) {
-        window.addEventListener('scroll', function() {
-            const windowHeight = window.innerHeight;
-            const documentHeight = document.documentElement.scrollHeight - windowHeight;
-            const scrolled = window.scrollY;
-            const progress = (scrolled / documentHeight) * 100;
-            progressBar.style.width = progress + '%';
-        });
-    }
-    
     // Переключение меню "Поделиться"
     window.toggleShareMenu = function() {
         const menu = document.getElementById('shareMenu');
