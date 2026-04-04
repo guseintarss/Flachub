@@ -6,19 +6,90 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Обновление предпросмотра баннера
     const startColorInput = document.querySelector('input[name="banner_gradient_start"]');
     const endColorInput = document.querySelector('input[name="banner_gradient_end"]');
-    const bannerPreview = document.getElementById('banner-preview-inner');
+    const bannerImageInput = document.querySelector('input[name="banner_image"]');
+    const liveBannerBg = document.getElementById('live-banner-bg');
+    const startColorValue = document.getElementById('start-color-value');
+    const endColorValue = document.getElementById('end-color-value');
+    const presetBtns = document.querySelectorAll('.preset-btn');
 
-    if (startColorInput && endColorInput && bannerPreview) {
-        function updateBannerPreview() {
-            bannerPreview.style.background = `linear-gradient(135deg, ${startColorInput.value} 0%, ${endColorInput.value} 100%)`;
+    let bannerImageFile = null;
+
+    // Обновление предпросмотра баннера
+    function updateBannerPreview() {
+        if (bannerImageFile) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                liveBannerBg.style.backgroundImage = `url(${e.target.result})`;
+                liveBannerBg.style.background = `url(${e.target.result}) center/cover no-repeat`;
+            };
+            reader.readAsDataURL(bannerImageFile);
+        } else {
+            const startColor = startColorInput.value;
+            const endColor = endColorInput.value;
+            liveBannerBg.style.backgroundImage = 'none';
+            liveBannerBg.style.background = `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`;
+
+            // Обновляем отображение цветов
+            if (startColorValue) startColorValue.textContent = startColor;
+            if (endColorValue) endColorValue.textContent = endColor;
         }
-
-        startColorInput.addEventListener('input', updateBannerPreview);
-        endColorInput.addEventListener('input', updateBannerPreview);
     }
+
+    // Слушаем изменение цветов
+    if (startColorInput) {
+        startColorInput.addEventListener('input', function() {
+            bannerImageFile = null; // Сбрасываем изображение если меняем цвет
+            updateBannerPreview();
+            clearPresetActive();
+        });
+    }
+
+    if (endColorInput) {
+        endColorInput.addEventListener('input', function() {
+            bannerImageFile = null;
+            updateBannerPreview();
+            clearPresetActive();
+        });
+    }
+
+    // Слушаем загрузку изображения
+    if (bannerImageInput) {
+        bannerImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                bannerImageFile = file;
+                updateBannerPreview();
+            } else {
+                bannerImageFile = null;
+                updateBannerPreview();
+            }
+        });
+    }
+
+    // Пресеты градиентов
+    presetBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const start = this.dataset.start;
+            const end = this.dataset.end;
+
+            startColorInput.value = start;
+            endColorInput.value = end;
+            bannerImageFile = null; // Сбрасываем изображение
+
+            updateBannerPreview();
+            clearPresetActive();
+            this.classList.add('active');
+        });
+    });
+
+    function clearPresetActive() {
+        presetBtns.forEach(btn => btn.classList.remove('active'));
+    }
+
+    // Инициализация при загрузке
+    updateBannerPreview();
 });
 </script>
 {% endblock %}
@@ -138,31 +209,68 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- Кастомизация баннера -->
             <div class="form-section">
                 <h3><i class="fas fa-palette"></i> Кастомизация баннера профиля</h3>
-                <p class="form-text" style="margin-bottom: 20px;">
-                    <i class="fas fa-info-circle"></i>
-                    Настройте внешний вид баннера в вашем профиле. Вы можете использовать градиент или загрузить изображение.
-                </p>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="{{ form.banner_gradient_start.id_for_label }}">
-                            <i class="fas fa-fill-drip"></i> {{ form.banner_gradient_start.label }}
-                        </label>
-                        {{ form.banner_gradient_start }}
-                        <div class="form-error">{{ form.banner_gradient_start.errors }}</div>
-                        <small class="form-text">Начальный цвет градиента</small>
+                <!-- Живой предпросмотр баннера -->
+                <div class="live-banner-preview">
+                    <div id="live-banner-bg"
+                         style="height: 160px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, {{ user.banner_gradient_start|default:'#0c6acf' }} 0%, {{ user.banner_gradient_end|default:'#764ba2' }} 100%); background-size: cover; background-position: center;">
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.banner_gradient_end.id_for_label }}">
-                            <i class="fas fa-fill-drip"></i> {{ form.banner_gradient_end.label }}
+                    <span class="preview-label"><i class="fas fa-eye"></i> Предпросмотр</span>
+                </div>
+
+                <div class="form-row color-row">
+                    <div class="form-group color-group">
+                        <label for="{{ form.banner_gradient_start.id_for_label }}">
+                            <i class="fas fa-fill-drip"></i> Начало градиента
                         </label>
-                        {{ form.banner_gradient_end }}
-                        <div class="form-error">{{ form.banner_gradient_end.errors }}</div>
-                        <small class="form-text">Конечный цвет градиента</small>
+                        <div class="color-input-wrapper">
+                            {{ form.banner_gradient_start }}
+                            <span class="color-value" id="start-color-value">{{ user.banner_gradient_start|default:'#0c6acf' }}</span>
+                        </div>
+                    </div>
+                    <div class="form-group color-group">
+                        <label for="{{ form.banner_gradient_end.id_for_label }}">
+                            <i class="fas fa-fill-drip"></i> Конец градиента
+                        </label>
+                        <div class="color-input-wrapper">
+                            {{ form.banner_gradient_end }}
+                            <span class="color-value" id="end-color-value">{{ user.banner_gradient_end|default:'#764ba2' }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-top: 20px;">
+                <!-- Быстрые пресеты градиентов -->
+                <div class="gradient-presets">
+                    <span class="presets-label">Быстрые пресеты:</span>
+                    <div class="presets-grid">
+                        <button type="button" class="preset-btn" data-start="#0c6acf" data-end="#764ba2">
+                            <span style="background: linear-gradient(135deg, #0c6acf, #764ba2);"></span>
+                        </button>
+                        <button type="button" class="preset-btn" data-start="#10b981" data-end="#34d399">
+                            <span style="background: linear-gradient(135deg, #10b981, #34d399);"></span>
+                        </button>
+                        <button type="button" class="preset-btn" data-start="#f59e0b" data-end="#ef4444">
+                            <span style="background: linear-gradient(135deg, #f59e0b, #ef4444);"></span>
+                        </button>
+                        <button type="button" class="preset-btn" data-start="#8b5cf6" data-end="#ec4899">
+                            <span style="background: linear-gradient(135deg, #8b5cf6, #ec4899);"></span>
+                        </button>
+                        <button type="button" class="preset-btn" data-start="#06b6d4" data-end="#3b82f6">
+                            <span style="background: linear-gradient(135deg, #06b6d4, #3b82f6);"></span>
+                        </button>
+                        <button type="button" class="preset-btn" data-start="#1f2937" data-end="#4b5563">
+                            <span style="background: linear-gradient(135deg, #1f2937, #4b5563);"></span>
+                        </button>
+                        <button type="button" class="preset-btn" data-start="#dc2626" data-end="#f97316">
+                            <span style="background: linear-gradient(135deg, #dc2626, #f97316);"></span>
+                        </button>
+                        <button type="button" class="preset-btn" data-start="#0f172a" data-end="#1e3a5f">
+                            <span style="background: linear-gradient(135deg, #0f172a, #1e3a5f);"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group image-upload-group" style="margin-top: 20px;">
                     <label for="{{ form.banner_image.id_for_label }}">
                         <i class="fas fa-image"></i> {{ form.banner_image.label }}
                     </label>
@@ -173,13 +281,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         Если загрузить изображение, оно будет использоваться вместо градиента.
                         Рекомендуемый размер: 1200×300px.
                     </small>
-                </div>
-
-                <!-- Предпросмотр баннера -->
-                <div class="banner-preview" style="margin-top: 20px; border-radius: 12px; overflow: hidden; height: 150px;">
-                    <div id="banner-preview-inner" 
-                         style="width: 100%; height: 100%; background: linear-gradient(135deg, {{ user.banner_gradient_start }} 0%, {{ user.banner_gradient_end }} 100%);">
-                    </div>
                 </div>
             </div>
         </div>
@@ -384,13 +485,137 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 /* Предпросмотр баннера */
-.banner-preview {
-    border: 2px solid var(--border);
-    transition: border-color 0.3s ease;
+.live-banner-preview {
+    margin-bottom: 20px;
+    position: relative;
 }
 
-.banner-preview:hover {
+.live-banner-preview #live-banner-bg {
+    transition: background 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.preview-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+/* Цветовые инпуты */
+.color-row {
+    gap: 16px;
+}
+
+.color-group input[type="color"] {
+    width: 100%;
+    height: 50px;
+    padding: 3px;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    transition: all 0.2s ease;
+}
+
+.color-group input[type="color"]:hover {
     border-color: var(--primary);
+    transform: scale(1.02);
+}
+
+.color-group input[type="color"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(12, 106, 207, 0.1);
+    outline: none;
+}
+
+.color-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.color-input-wrapper input[type="color"] {
+    width: 60px;
+    height: 50px;
+    flex-shrink: 0;
+}
+
+.color-value {
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 0.95rem;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    flex: 1;
+}
+
+/* Пресеты градиентов */
+.gradient-presets {
+    margin-top: 16px;
+}
+
+.presets-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.presets-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.preset-btn {
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    background: none;
+}
+
+.preset-btn span {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.preset-btn:hover {
+    transform: scale(1.1);
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.preset-btn.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(12, 106, 207, 0.2);
+}
+
+/* Загрузка изображения */
+.image-upload-group input[type="file"] {
+    padding: 10px;
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.image-upload-group input[type="file"]:hover {
+    border-color: var(--primary);
+    background: rgba(12, 106, 207, 0.03);
 }
 
 .form-group input.is-valid,
@@ -458,19 +683,47 @@ document.addEventListener('DOMContentLoaded', function() {
     .form-row {
         grid-template-columns: 1fr;
     }
-    
+
     .form-actions {
         flex-direction: column;
     }
-    
+
     .form-actions .btn {
         width: 100%;
         justify-content: center;
     }
-    
+
     .avatar-wrapper .user-img-article {
         width: 120px;
         height: 120px;
+    }
+
+    /* Баннер на мобильном */
+    .live-banner-preview #live-banner-bg {
+        height: 120px !important;
+    }
+
+    .presets-grid {
+        gap: 6px;
+    }
+
+    .preset-btn {
+        width: 38px;
+        height: 38px;
+    }
+
+    .color-input-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .color-input-wrapper input[type="color"] {
+        width: 100%;
+        height: 45px;
+    }
+
+    .color-value {
+        text-align: center;
     }
 }
 </style>
