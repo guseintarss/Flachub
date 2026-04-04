@@ -1,34 +1,5 @@
 services:
   # ===========================================
-  # PostgreSQL Database
-  # ===========================================
-  postgres:
-    image: postgres:16-alpine
-    container_name: pageglow-db
-    restart: always
-    environment:
-      POSTGRES_DB: ${DATABASE_NAME:-pageglow_db}
-      POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backups:/backups
-    ports:
-      - "5432:5432"
-    networks:
-      - pageglow-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-postgres}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-
-  # ===========================================
   # Redis Cache
   # ===========================================
   redis:
@@ -72,7 +43,7 @@ services:
       - DEBUG=${DEBUG:-False}
       - SECRET_KEY=${SECRET_KEY}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
-      - DATABASE_HOST=postgres
+      - DATABASE_HOST=${DATABASE_HOST}
       - DATABASE_PORT=5432
       - DATABASE_NAME=${DATABASE_NAME}
       - DATABASE_USERNAME=${DATABASE_USERNAME}
@@ -95,8 +66,6 @@ services:
     expose:
       - "8000"
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     networks:
@@ -169,9 +138,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ADMINER_DEFAULT_SERVER=postgres
-    depends_on:
-      - postgres
+      - ADMINER_DEFAULT_SERVER=${DATABASE_HOST}
     networks:
       - pageglow-network
     profiles:
@@ -181,8 +148,6 @@ services:
 # Volumes
 # ===========================================
 volumes:
-  postgres_data:
-    driver: local
   redis_data:
     driver: local
   static_volume:
