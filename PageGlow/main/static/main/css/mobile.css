@@ -2093,18 +2093,6 @@
    ===================================================== */
 
 @media (max-width: 768px) {
-  /* Разрешаем overflow для всех родительских контейнеров */
-  .user-menu,
-  .user-area,
-  .header-inner,
-  .pg-container,
-  .site-header,
-  .layout,
-  .content,
-  body,
-  html {
-    overflow: auto !important;
-  }
 
   .dropdown-menu {
     position: fixed !important;
