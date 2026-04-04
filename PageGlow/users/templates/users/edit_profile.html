@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const presetBtns = document.querySelectorAll('.preset-btn');
 
     let bannerImageFile = null;
+    let hasBannerImage = {% if user.banner_image %}true{% else %}false{% endif %};
 
     // Обновление предпросмотра баннера
     function updateBannerPreview() {
@@ -25,11 +26,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 liveBannerBg.style.background = `url(${e.target.result}) center/cover no-repeat`;
             };
             reader.readAsDataURL(bannerImageFile);
-        } else {
+            hasBannerImage = true;
+        } else if (!hasBannerImage || !liveBannerBg.style.backgroundImage.includes('url')) {
+            // Показываем градиент если нет изображения
             const startColor = startColorInput.value;
             const endColor = endColorInput.value;
             liveBannerBg.style.backgroundImage = 'none';
             liveBannerBg.style.background = `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`;
+            hasBannerImage = false;
 
             // Обновляем отображение цветов
             if (startColorValue) startColorValue.textContent = startColor;
@@ -41,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (startColorInput) {
         startColorInput.addEventListener('input', function() {
             bannerImageFile = null; // Сбрасываем изображение если меняем цвет
+            hasBannerImage = false;
             updateBannerPreview();
             clearPresetActive();
         });
@@ -49,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (endColorInput) {
         endColorInput.addEventListener('input', function() {
             bannerImageFile = null;
+            hasBannerImage = false;
             updateBannerPreview();
             clearPresetActive();
         });
@@ -77,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
             startColorInput.value = start;
             endColorInput.value = end;
             bannerImageFile = null; // Сбрасываем изображение
+            hasBannerImage = false;
 
             updateBannerPreview();
             clearPresetActive();
@@ -86,6 +93,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function clearPresetActive() {
         presetBtns.forEach(btn => btn.classList.remove('active'));
+    }
+
+    // Удаление изображения баннера (через чекбокс)
+    const bannerImageClear = document.getElementById('banner-image-clear');
+    const currentBannerInfo = document.querySelector('.current-banner-info');
+    
+    if (bannerImageClear) {
+        bannerImageClear.addEventListener('change', function() {
+            if (this.checked) {
+                if (confirm('Вы уверены что хотите удалить изображение баннера? Будет использован градиент.')) {
+                    // Очищаем инпут файла
+                    if (bannerImageInput) {
+                        bannerImageInput.value = '';
+                    }
+                    bannerImageFile = null;
+                    hasBannerImage = false;
+                    
+                    // Скрываем информацию о текущем изображении
+                    if (currentBannerInfo) {
+                        currentBannerInfo.style.opacity = '0.5';
+                    }
+                    
+                    // Обновляем предпросмотр на градиент
+                    const startColor = startColorInput.value;
+                    const endColor = endColorInput.value;
+                    liveBannerBg.style.backgroundImage = 'none';
+                    liveBannerBg.style.background = `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`;
+                } else {
+                    this.checked = false;
+                }
+            } else {
+                // Если сняли чекбокс - восстанавливаем вид
+                if (currentBannerInfo) {
+                    currentBannerInfo.style.opacity = '1';
+                }
+            }
+        });
     }
 
     // Инициализация при загрузке
@@ -100,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <form method="post" enctype="multipart/form-data" id="profile-form">
         {% csrf_token %}
-        
+
         <!-- Аватарка с предпросмотром -->
         <div class="avatar-preview-container">
             <div class="avatar-wrappers">
@@ -213,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- Живой предпросмотр баннера -->
                 <div class="live-banner-preview">
                     <div id="live-banner-bg"
-                         style="height: 160px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, {{ user.banner_gradient_start|default:'#0c6acf' }} 0%, {{ user.banner_gradient_end|default:'#764ba2' }} 100%); background-size: cover; background-position: center;">
+                         style="height: 160px; border-radius: 12px; overflow: hidden; {% if user.banner_image %}background: url('{{ user.banner_image.url }}') center/cover no-repeat;{% else %}background: linear-gradient(135deg, {{ user.banner_gradient_start|default:'#0c6acf' }} 0%, {{ user.banner_gradient_end|default:'#764ba2' }} 100%);{% endif %}">
                     </div>
                     <span class="preview-label"><i class="fas fa-eye"></i> Предпросмотр</span>
                 </div>
@@ -274,6 +318,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     <label for="{{ form.banner_image.id_for_label }}">
                         <i class="fas fa-image"></i> {{ form.banner_image.label }}
                     </label>
+                    
+                    <!-- Текущее изображение баннера -->
+                    {% if user.banner_image %}
+                    <div class="current-banner-info">
+                        <div class="current-banner-preview">
+                            <img src="{{ user.banner_image.url }}" alt="Текущий баннер">
+                        </div>
+                        <div class="current-banner-actions">
+                            <label class="clear-banner-checkbox">
+                                <input type="checkbox" name="banner_image-clear" id="banner-image-clear">
+                                <span class="clear-banner-label">
+                                    <i class="fas fa-trash"></i> Удалить изображение
+                                </span>
+                            </label>
+                            <span class="current-banner-text">
+                                <i class="fas fa-check-circle"></i> Изображение загружено
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
                     {{ form.banner_image }}
                     <div class="form-error">{{ form.banner_image.errors }}</div>
                     <small class="form-text">
@@ -618,6 +683,101 @@ document.addEventListener('DOMContentLoaded', function() {
     background: rgba(12, 106, 207, 0.03);
 }
 
+/* Текущее изображение баннера */
+.current-banner-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+.current-banner-preview {
+    flex-shrink: 0;
+    width: 120px;
+    height: 50px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.current-banner-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.current-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+/* Чекбокс удаления баннера */
+.clear-banner-checkbox {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.clear-banner-checkbox input[type="checkbox"] {
+    display: none;
+}
+
+.clear-banner-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 8px;
+    white-space: nowrap;
+    border: 2px solid #dc3545;
+    color: #dc3545;
+    background: transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.clear-banner-label:hover {
+    background: #dc3545;
+    color: #ffffff;
+}
+
+.clear-banner-checkbox input[type="checkbox"]:checked + .clear-banner-label {
+    background: #dc3545;
+    color: #ffffff;
+}
+
+.clear-banner-checkbox input[type="checkbox"]:checked + .clear-banner-label i {
+    animation: trashShake 0.4s ease;
+}
+
+@keyframes trashShake {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+}
+
+.current-banner-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #10b981;
+    font-weight: 500;
+}
+
+.current-banner-text i {
+    font-size: 1rem;
+}
+
 .form-group input.is-valid,
 .form-group textarea.is-valid {
     border-color: #28a745;
@@ -724,6 +884,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     .color-value {
         text-align: center;
+    }
+
+    /* Баннер на мобильном */
+    .current-banner-info {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .current-banner-preview {
+        width: 100%;
+        height: 60px;
+    }
+
+    .current-banner-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .clear-banner-label {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .current-banner-text {
+        justify-content: center;
     }
 }
 </style>

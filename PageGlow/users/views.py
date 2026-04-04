@@ -111,6 +111,15 @@ class EditProfileUser(LoginRequiredMixin, UpdateView):
         return self.request.user
     
     def form_valid(self, form):
+        # Обрабатываем удаление баннера (Django clear checkbox)
+        if self.request.POST.get('banner_image-clear') == 'on':
+            user = self.request.user
+            if user.banner_image:
+                # Удаляем файл с диска
+                user.banner_image.delete(save=False)
+                user.banner_image = None
+                user.save(update_fields=['banner_image'])
+
         # Обрабатываем дату рождения если она есть
         if form.cleaned_data.get('data_birth'):
             from datetime import datetime
@@ -125,21 +134,21 @@ class EditProfileUser(LoginRequiredMixin, UpdateView):
                         form.add_error('data_birth', 'Неверный формат даты')
                         return self.form_invalid(form)
             form.instance.data_birth = data_birth
-        
+
         # Обрабатываем телефон
         if form.cleaned_data.get('phone_namber'):
             phone = form.cleaned_data['phone_namber']
             # Очищаем от форматирования, оставляем только цифры
             cleaned = ''.join(filter(lambda x: x.isdigit(), phone))
-            
+
             # Если номер начинается с 8, заменяем на 7
             if cleaned.startswith('8'):
                 cleaned = '7' + cleaned[1:]
-            
+
             # Если не начинается с 7, добавляем 7
             if not cleaned.startswith('7'):
                 cleaned = '7' + cleaned
-            
+
             # Ограничиваем 11 цифрами
             form.instance.phone_namber = cleaned[:11]
 
