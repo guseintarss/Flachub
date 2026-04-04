@@ -1,74 +1,109 @@
-# robots.txt для PageGlow (ФлакХаб)
-# Платформа для IT-специалистов
+# robots.txt для ФлакХаб (PageGlow)
+# Платформа для IT-специалистов: https://pageglow.ru
+# Последнее обновление: 2025
 
 User-agent: *
-# Разрешаем индексацию основного контента
+# Разрешаем индексацию контента
 Allow: /
-Allow: /articles/
-Allow: /posts/
-Allow: /categories/
-Allow: /tags/
-Allow: /users/
+Allow: /post/
+Allow: /category/
+Allow: /tag/
 Allow: /discussions/
+Allow: /users/
+Allow: /about/
+Allow: /about-us/
+Allow: /terms/
+Allow: /privacy/
+Allow: /popular/
+Allow: /search/
 
-# Запрещаем индексацию служебных страниц
+# Запрещаем служебные страницы
 Disallow: /admin/
 Disallow: /api/
-Disallow: /auth/
-Disallow: /accounts/
-Disallow: /bookmarks/
-Disallow: /favorites/
-Disallow: /settings/
 Disallow: /dashboard/
 Disallow: /ckeditor5/
-Disallow: /static/
-Disallow: /media/cache/
-Disallow: /logs/
-Disallow: /cache/
+Disallow: /bookmarks/
+Disallow: /bookmarks/toggle/
+Disallow: /collections/
+Disallow: /ajax/
+Disallow: /feed/
+Disallow: /upload/
+Disallow: /users/password/
+Disallow: /users/edit/
+Disallow: /health/
+Disallow: /__debug__/
 
-# Запрещаем индексацию поиска и пагинации для избежания дублей
-Disallow: /search/?q=
+# Запрещаем дубли и параметры пагинации для ботов
 Disallow: /*?*page=
-Disallow: /*?*order=
+Disallow: /*?*sort=
+Disallow: /*?*type=
 Disallow: /*?*filter=
+Disallow: /*?*order=
 
-# Запрещаем индексацию черновиков и личных страниц
+# Запрещаем страницы поиска с параметрами (чтобы не индексировать мусор)
+Disallow: /search/?q=
+Disallow: /*?q=*
+
+# Запрещаем черновики и приватные страницы
 Disallow: /drafts/
 Disallow: /private/
+Disallow: /settings/
 
 # Карта сайта
 Sitemap: https://pageglow.ru/sitemap.xml
 
-# Хост (для Яндекс)
-Host: https://pageglow.ru
+# Хост (для Яндекса)
+Host: pageglow.ru
 
-# Яндекс дополнительно
+# ===== Специфичные правила для поисковиков =====
+
+# Яндекс
 User-agent: Yandex
 Allow: /
 Disallow: /admin/
 Disallow: /api/
-Disallow: /auth/
+Disallow: /dashboard/
+Disallow: /ckeditor5/
 Disallow: /bookmarks/
-Disallow: /favorites/
+Disallow: /ajax/
+Disallow: /feed/
+Disallow: /health/
+Disallow: /*?*page=
+Disallow: /*?*sort=
+Disallow: /search/?q=
+Clean-Param: utm_source&utm_medium&utm_campaign&utm_content&utm_term&gclid&yclid&fbclid
 
-# Googlebot
+# Google
 User-agent: Googlebot
 Allow: /
 Disallow: /admin/
 Disallow: /api/
-Disallow: /auth/
+Disallow: /dashboard/
+Disallow: /ckeditor5/
 Disallow: /bookmarks/
-Disallow: /favorites/
+Disallow: /ajax/
+Disallow: /feed/
+Disallow: /health/
+Disallow: /*?*page=
+Disallow: /*?*sort=
+Disallow: /search/?q=
 
 # Bing
 User-agent: Bingbot
 Allow: /
 Disallow: /admin/
 Disallow: /api/
-Disallow: /auth/
+Disallow: /dashboard/
+Disallow: /ckeditor5/
+Disallow: /bookmarks/
+Disallow: /ajax/
+Disallow: /health/
 
-# Baidu
-User-agent: Baiduspider
+# DuckDuckGo
+User-agent: DuckDuckBot
 Allow: /
 Disallow: /admin/
 Disallow: /api/
+Disallow: /dashboard/
+Disallow: /ajax/
+Disallow: /health/

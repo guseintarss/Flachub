@@ -1,6 +1,19 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block head %}
+<meta name="robots" content="noindex, follow" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Страница не найдена — 404",
+  "description": "Запрашиваемая страница не найдена на ФлакХаб. Вернитесь на главную или воспользуйтесь поиском.",
+  "url": "{{ request.build_absolute_uri }}"
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="error-page">
     <div class="error-container">

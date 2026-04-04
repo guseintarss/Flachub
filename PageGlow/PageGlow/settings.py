@@ -103,6 +103,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'PageGlow.middleware.SEOMiddleware',
+    'PageGlow.middleware.MetaDescriptionMiddleware',
 ]
 
 # Отключаем debug_toolbar middleware для ASGI

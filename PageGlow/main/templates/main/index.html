@@ -7,13 +7,16 @@
 {% endblock %}
 
 {% block head %}
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
 <!-- Schema.org ItemList для ленты постов -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "ItemList",
-  "name": "Лента публикаций PageGlow",
-  "description": "Последние публикации на платформе PageGlow - IT-статьи, новости и обсуждения",
+  "@type": "CollectionPage",
+  "name": "Лента публикаций ФлакХаб",
+  "description": "Последние публикации на платформе ФлакХаб — IT-статьи, новости, идеи и обсуждения от разработчиков и IT-специалистов",
+  "url": "{{ request.build_absolute_uri }}",
+  "inLanguage": "ru",
   "numberOfItems": {{ posts|length }},
   "itemListElement": [
     {% for p in posts %}

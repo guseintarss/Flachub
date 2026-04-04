@@ -3,32 +3,41 @@
 
 <!-- ===== SEO Meta Tags ===== -->
 <!-- Primary Meta Tags -->
-<meta name="title" content="{{ meta_title|default:title|default:'PageGlow - Платформа для IT-специалистов' }}" />
-<meta name="description" content="{{ meta_description|default:'Платформа для IT-специалистов: делитесь знаниями, находите возможности и развивайтесь вместе с нами'}}" />
-<meta name="keywords" content="{{ meta_keywords|default:'IT, программирование, разработка, технологии, статьи'}}" />
-<meta name="author" content="{{ meta_author|default:'PageGlow' }}" />
-<meta name="robots" content="index, follow" />
+<meta name="title" content="{{ meta_title|default:title|default:'ФлакХаб — Платформа для IT-специалистов: статьи, обсуждения, знания' }}" />
+<meta name="description" content="{{ meta_description|default:'ФлакХаб — платформа для IT-специалистов и разработчиков. Делитесь знаниями, читайте статьи по программированию, участвуйте в обсуждениях, находите возможности для роста и развивайтесь вместе с нами.'}}" />
+<meta name="keywords" content="{{ meta_keywords|default:'IT, программирование, разработка, технологии, статьи, блог, разработчик, Python, JavaScript, Django, веб-разработка, DevOps, базы данных, алгоритмы, карьера в IT'}}" />
+<meta name="author" content="{{ meta_author|default:'ФлакХаб' }}" />
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
 <meta name="language" content="ru" />
-<meta name="copyright" content="PageGlow" />
+<meta name="copyright" content="ФлакХаб" />
+<meta name="revisit-after" content="3 days" />
+<meta name="rating" content="general" />
+<meta name="distribution" content="global" />
+
+<!-- Geo Meta Tags -->
+<meta name="geo.region" content="RU" />
+<meta name="geo.placename" content="Черкесск" />
 
 <!-- Canonical URL -->
-<link rel="canonical" href="{{ request.build_absolute_uri }}" />
+<link rel="canonical" href="{{ meta_canonical|default:request.build_absolute_uri|default:request.scheme }}://{{ request.get_host }}{{ request.path }}" />
 
 <!-- ===== Open Graph / Facebook ===== -->
 <meta property="og:type" content="{{ meta_og_type|default:'website' }}" />
-<meta property="og:url" content="{{ request.build_absolute_uri }}" />
-<meta property="og:title" content="{{ meta_title|default:title|default:'PageGlow - Платформа для IT-специалистов' }}" />
-<meta property="og:description" content="{{ meta_description|default:'Платформа для IT-специалистов: делитесь знаниями, находите возможности и развивайтесь вместе с нами'}}" />
-<meta property="og:image" content="{{ meta_image|default:request.scheme }}://{{ request.get_host }}/static/images/og-default.svg" />
-<meta property="og:image:alt" content="{{ meta_title|default:title|default:'PageGlow' }}" />
+<meta property="og:url" content="{{ request.build_absolute_uri|default:request.scheme }}://{{ request.get_host }}{{ request.path }}" />
+<meta property="og:title" content="{{ meta_title|default:title|default:'ФлакХаб — Платформа для IT-специалистов' }}" />
+<meta property="og:description" content="{{ meta_description|default:'ФлакХаб — платформа для IT-специалистов и разработчиков. Делитесь знаниями, читайте статьи, участвуйте в обсуждениях.'}}" />
+<meta property="og:image" content="{{ meta_image|default:request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="{{ meta_title|default:title|default:'ФлакХаб' }}" />
 <meta property="og:locale" content="ru_RU" />
-<meta property="og:site_name" content="PageGlow" />
+<meta property="og:site_name" content="ФлакХаб" />
 
 <!-- Article Meta Tags (для статей) -->
 {% if meta_og_type == 'article' %}
 <meta property="article:published_time" content="{{ meta_published_time|default:'' }}" />
 <meta property="article:modified_time" content="{{ meta_modified_time|default:'' }}" />
-<meta property="article:author" content="{{ meta_author|default:'' }}" />
+<meta property="article:author" content="{{ meta_author_url|default:'' }}" />
 <meta property="article:section" content="{{ meta_section|default:'' }}" />
 {% if meta_tags|default:tags %}
 {% for tag in meta_tags|default:tags %}
@@ -39,11 +48,18 @@
 
 <!-- ===== Twitter Card ===== -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:url" content="{{ request.build_absolute_uri }}" />
-<meta name="twitter:title" content="{{ meta_title|default:title|default:'PageGlow - Платформа для IT-специалистов' }}" />
-<meta name="twitter:description" content="{{ meta_description|default:'Платформа для IT-специалистов'}}" />
-<meta name="twitter:image" content="{{ meta_image|default:request.scheme }}://{{ request.get_host }}/static/images/og-default.svg" />
-<meta name="twitter:creator" content="@pageglow" />
+<meta name="twitter:url" content="{{ request.build_absolute_uri|default:request.scheme }}://{{ request.get_host }}{{ request.path }}" />
+<meta name="twitter:title" content="{{ meta_title|default:title|default:'ФлакХаб — Платформа для IT-специалистов' }}" />
+<meta name="twitter:description" content="{{ meta_description|default:'ФлакХаб — платформа для IT-специалистов и разработчиков. Статьи, обсуждения, знания.'}}" />
+<meta name="twitter:image" content="{{ meta_image|default:request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}" />
+<meta name="twitter:creator" content="@flakhub" />
+<meta name="twitter:site" content="@flakhub" />
+
+<!-- ===== Yandex Verification ===== -->
+<!-- <meta name="yandex-verification" content="YOUR_YANDEX_VERIFICATION_CODE" /> -->
+
+<!-- ===== Google Verification ===== -->
+<!-- <meta name="google-site-verification" content="YOUR_GOOGLE_VERIFICATION_CODE" /> -->
 
 <!-- ===== Favicon ===== -->
 <link rel="icon" type="image/png" sizes="96x96" href="{% static 'images/favicon-96x96.png' %}" />
@@ -51,7 +67,7 @@
 <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" />
 <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}" />
 <link rel="manifest" href="{% static 'images/site.webmanifest' %}" />
-<meta name="apple-mobile-web-app-title" content="PageGlow" />
+<meta name="apple-mobile-web-app-title" content="ФлакХаб" />
 <meta name="theme-color" content="#1c3e7e" />
 
 <!-- ===== Schema.org JSON-LD ===== -->
@@ -59,30 +75,42 @@
 {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "name": "PageGlow",
-  "alternateName": "ФлакХаб",
+  "name": "ФлакХаб",
+  "alternateName": ["PageGlow", "FlakHub"],
   "url": "{{ request.scheme }}://{{ request.get_host }}",
-  "description": "Платформа для IT-специалистов: делитесь знаниями, находите возможности и развивайтесь вместе с нами",
+  "description": "ФлакХаб — платформа для IT-специалистов и разработчиков. Делитесь знаниями, читайте статьи по программированию, участвуйте в обсуждениях, находите возможности для роста.",
   "inLanguage": "ru",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "{{ request.scheme }}://{{ request.get_host }}/search/?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  },
   "publisher": {
     "@type": "Organization",
-    "name": "PageGlow",
+    "name": "ФлакХаб",
     "url": "{{ request.scheme }}://{{ request.get_host }}",
     "logo": {
       "@type": "ImageObject",
-      "url": "{{ request.scheme }}://{{ request.get_host }}/static/images/favicon-96x96.png"
-    }
-  },
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "{{ request.scheme }}://{{ request.get_host }}/search/?q={search_term_string}",
-    "query-input": "required name=search_term_string"
+      "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/favicon-96x96.png' %}"
+    },
+    "sameAs": [
+      "https://github.com/guseintarss/FlakHub",
+      "https://t.me/flakhub",
+      "https://vk.com/flakhub"
+    ]
   }
 }
 </script>
 
 <!-- ===== Preconnect для внешних ресурсов ===== -->
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+<!-- ===== DNS Prefetch ===== -->
+<link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+<link rel="dns-prefetch" href="//fonts.gstatic.com" />

@@ -7,13 +7,15 @@
 {% endblock %}
 
 {% block head %}
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
 <!-- Schema.org Article -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Article",
   "headline": "{{ post.title }}",
-  "image": "{% if post.photo %}{{ post.photo.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}/static/images/og-default.svg{% endif %}",
+  "description": "{{ meta_description|default:post.content|striptags|truncatewords:20 }}",
+  "image": "{% if post.photo %}{{ request.scheme }}://{{ request.get_host }}{{ post.photo.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}/static/images/og-default.jpg{% endif %}",
   "datePublished": "{{ post.time_create|date:'c' }}",
   "dateModified": "{{ post.time_update|date:'c' }}",
   "author": {
@@ -23,19 +25,21 @@
   },
   "publisher": {
     "@type": "Organization",
-    "name": "PageGlow",
+    "name": "ФлакХаб",
     "logo": {
       "@type": "ImageObject",
       "url": "{{ request.scheme }}://{{ request.get_host }}/static/images/favicon-96x96.png"
     }
   },
-  "description": "{{ meta_description|default:post.content|striptags|truncatewords:20 }}",
   "mainEntityOfPage": {
     "@type": "WebPage",
     "@id": "{{ request.build_absolute_uri }}"
   },
   "articleSection": "{{ post.cat.name|default:'Блог' }}",
-  "keywords": "{% for tag in post.tags.all %}{{ tag.tag }}{% if not forloop.last %}, {% endif %}{% endfor %}"
+  "keywords": "{% for tag in post.tags.all %}{{ tag.tag }}{% if not forloop.last %}, {% endif %}{% endfor %}",
+  "wordCount": {{ post.content|striptags|wordcount }},
+  "inLanguage": "ru",
+  "commentCount": {{ object.comments.count|default:0 }}
 }
 </script>
 {% endblock %}

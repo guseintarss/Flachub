@@ -8,14 +8,27 @@ from datetime import timedelta
 
 class StaticViewSitemap(Sitemap):
     """Карта статических страниц"""
-    priority = 0.5
-    changefreq = 'daily'
 
     def items(self):
-        return ['home', 'about', 'discussions']
+        return [
+            {'name': 'home', 'priority': 1.0, 'changefreq': 'daily'},
+            {'name': 'discussions', 'priority': 0.8, 'changefreq': 'daily'},
+            {'name': 'search', 'priority': 0.5, 'changefreq': 'daily'},
+            {'name': 'popular', 'priority': 0.7, 'changefreq': 'daily'},
+            {'name': 'about', 'priority': 0.6, 'changefreq': 'monthly'},
+            {'name': 'about_us', 'priority': 0.5, 'changefreq': 'monthly'},
+            {'name': 'terms_of_use', 'priority': 0.3, 'changefreq': 'yearly'},
+            {'name': 'privacy_policy', 'priority': 0.3, 'changefreq': 'yearly'},
+        ]
 
     def location(self, item):
-        return reverse(item)
+        return reverse(item['name'])
+
+    def priority(self, item):
+        return item['priority']
+
+    def changefreq(self, item):
+        return item['changefreq']
 
 
 class PostSitemap(Sitemap):
