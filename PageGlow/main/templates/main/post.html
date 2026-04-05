@@ -218,12 +218,22 @@
 
     <!-- Комментарии -->
     <div class="comments-section">
-        <h3><i class="fas fa-comments"></i> Комментарии ({{ object.comments.count }})</h3>
-        <form id="comment-form">
+        <div class="comments-header">
+            <h3><i class="fas fa-comments"></i> Комментарии ({{ object.comments.count }})</h3>
+            
+        </div>
+        
+        <!-- Кнопка добавления комментария -->
+        <button type="button" id="show-comment-form" class="btn btn-primary" onclick="toggleCommentForm()">
+            <i class="fas fa-plus"></i> Написать комментарий
+        </button>
+        
+        <!-- Форма комментария (скрыта по умолчанию) -->
+        <form id="comment-form" style="display: none;">
             {% csrf_token %}
             <input type="hidden" name="post_id" value="{{ object.id }}">
             <input type="hidden" name="parent_id" id="parent-id" value="">
-            <textarea name="content" id="comment-content" rows="3"
+            <textarea name="content" id="comment-content" rows="1"
                     class="form-control mb-2"
                     placeholder="Напишите комментарий..."></textarea>
             <div id="reply-cancel" style="display: none; margin-top: 10px;">
@@ -231,8 +241,12 @@
                     <i class="fas fa-times"></i> Отмена ответа
                 </button>
             </div>
-            <button type="submit" class="btn btn-primary">Отправить комментарий</button>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">Отправить комментарий</button>
+                <button type="button" class="btn btn-secondary" onclick="toggleCommentForm()">Отмена</button>
+            </div>
         </form>
+        
         <div id="comments-list">
             {% for comment in comments_page %}
             {% if not comment.parent %}
@@ -247,7 +261,7 @@
                         <i class="fas fa-heart"></i>
                         <span class="comment-likes-count">{{ comment.number_of_likes }}</span>
                     </button>
-                    <button class="comment-reply-btn" data-comment-id="{{ comment.id }}" data-comment-author="{{ comment.author.username }}">
+                    <button class="comment-reply-btn" data-comment-id="{{ comment.id }}" data-comment-author="{{ comment.author.username }}" onclick="showReplyForm(this)">
                         <i class="fas fa-reply"></i> Ответить
                     </button>
                     {% if comment.author == user or user.is_staff %}
@@ -258,7 +272,21 @@
                 </div>
             </div>
             
-            <!-- Ответы на комментарий (после родителя, не внутри) -->
+            <!-- Форма ответа (скрыта по умолчанию, под комментарием) -->
+            <div class="reply-form" data-parent-id="{{ comment.id }}" style="display: none; margin-left: 40px; margin-bottom: 15px;">
+                <form class="reply-submit-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="post_id" value="{{ object.id }}">
+                    <input type="hidden" name="parent_id" class="reply-parent-id" value="{{ comment.id }}">
+                    <textarea name="content" rows="1" class="form-control mb-2 reply-textarea" placeholder="Напишите ответ..."></textarea>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-sm btn-primary">Отправить ответ</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="hideReplyForm(this)">Отмена</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Ответы на комментарий (после формы ответа) -->
             {% if comment.replies.all %}
             {% for reply in comment.replies.all %}
             <div class="comment-reply-item" data-comment-id="{{ reply.id }}">
@@ -548,6 +576,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const parentInput = document.getElementById('parent-id');
     const replyCancel = document.getElementById('reply-cancel');
 
+    // Показать/скрыть основную форму комментария
+    window.toggleCommentForm = function() {
+        const form = document.getElementById('comment-form');
+        const showBtn = document.getElementById('show-comment-form');
+        if (form.style.display === 'none') {
+            form.style.display = 'block';
+            showBtn.style.display = 'none';
+            document.getElementById('comment-content').focus();
+        } else {
+            form.style.display = 'none';
+            showBtn.style.display = 'block';
+        }
+    }
+
+    // Показать форму ответа под комментарием
+    window.showReplyForm = function(btn) {
+        const comment = btn.closest('.comment');
+        const commentId = comment.getAttribute('data-comment-id');
+        const replyForm = document.querySelector(`.reply-form[data-parent-id="${commentId}"]`);
+        replyForm.style.display = 'block';
+        const textarea = replyForm.querySelector('.reply-textarea');
+        textarea.focus();
+    }
+
+    // Скрыть форму ответа
+    window.hideReplyForm = function(btn) {
+        const replyForm = btn.closest('.reply-form');
+        replyForm.style.display = 'none';
+        replyForm.querySelector('.reply-textarea').value = '';
+    }
+
+    // Отправка основного комментария
     commentForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const content = document.getElementById('comment-content').value.trim();
@@ -579,6 +639,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 document.getElementById('comment-content').value = '';
                 cancelReply();
+                toggleCommentForm(); // Скрыть форму после отправки
                 const newComment = createCommentElement(data.comment);
                 if (parentId) {
                     // Добавляем ответ после родительского комментария
@@ -587,6 +648,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         parentComment.insertAdjacentElement('afterend', newComment);
                     }
                 } else {
+                    // Вставляем фрагмент (комментарий + форма ответа) в начало списка
                     commentsList.insertBefore(newComment, commentsList.firstChild);
                 }
                 showToast('✅ Комментарий добавлен');
@@ -598,6 +660,58 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Отправить комментарий';
             alert('Ошибка при отправке комментария');
+        });
+    });
+
+    // Отправка формы ответа
+    document.querySelectorAll('.reply-submit-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const textarea = this.querySelector('.reply-textarea');
+            const content = textarea.value.trim();
+            const postId = this.querySelector('input[name="post_id"]').value;
+            const parentId = this.querySelector('.reply-parent-id').value;
+
+            if (!content) {
+                alert('Текст ответа не может быть пустым');
+                return;
+            }
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+
+            fetch('{% url "add_comment_ajax" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `post_id=${postId}&content=${encodeURIComponent(content)}&parent_id=${parentId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Отправить ответ';
+
+                if (data.success) {
+                    textarea.value = '';
+                    hideReplyForm(submitBtn);
+                    const newComment = createCommentElement(data.comment);
+                    const parentComment = document.querySelector(`[data-comment-id="${parentId}"]`);
+                    if (parentComment) {
+                        parentComment.insertAdjacentElement('afterend', newComment);
+                    }
+                    showToast('✅ Ответ добавлен');
+                } else {
+                    alert('Ошибка: ' + data.error);
+                }
+            })
+            .catch(error => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Отправить ответ';
+                alert('Ошибка при отправке ответа');
+            });
         });
     });
 
@@ -641,7 +755,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i class="fas fa-heart${is_liked ? '' : ''}"></i>
                         <span class="comment-likes-count">${commentData.likes_count || 0}</span>
                     </button>
-                    <button class="comment-reply-btn" data-comment-id="${commentData.id}" data-comment-author="${commentData.author}">
+                    <button class="comment-reply-btn" data-comment-id="${commentData.id}" data-comment-author="${commentData.author}" onclick="showReplyForm(this)">
                         <i class="fas fa-reply"></i> Ответить
                     </button>
                     ${can_delete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}">
@@ -649,24 +763,95 @@ document.addEventListener('DOMContentLoaded', function() {
                     </button>` : ''}
                 </div>
             `;
+            
+            // Создаём форму ответа после комментария
+            const replyForm = document.createElement('div');
+            replyForm.className = 'reply-form';
+            replyForm.setAttribute('data-parent-id', commentData.id);
+            replyForm.style.display = 'none';
+            replyForm.style.marginLeft = '40px';
+            replyForm.style.marginBottom = '15px';
+            replyForm.innerHTML = `
+                <form class="reply-submit-form">
+                    <input type="hidden" name="post_id" value="{{ object.id }}">
+                    <input type="hidden" name="parent_id" class="reply-parent-id" value="${commentData.id}">
+                    <textarea name="content" rows="2" class="form-control mb-2 reply-textarea" placeholder="Напишите ответ..."></textarea>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-sm btn-primary">Отправить ответ</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="hideReplyForm(this)">Отмена</button>
+                    </div>
+                </form>
+            `;
+            
+            // Добавляем обработчик для формы ответа
+            const replyFormEl = replyForm.querySelector('.reply-submit-form');
+            replyFormEl.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const textarea = this.querySelector('.reply-textarea');
+                const content = textarea.value.trim();
+                const postId = this.querySelector('input[name="post_id"]').value;
+                const parentId = this.querySelector('.reply-parent-id').value;
+
+                if (!content) {
+                    alert('Текст ответа не может быть пустым');
+                    return;
+                }
+
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+
+                fetch('{% url "add_comment_ajax" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: `post_id=${postId}&content=${encodeURIComponent(content)}&parent_id=${parentId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Отправить ответ';
+
+                    if (data.success) {
+                        textarea.value = '';
+                        hideReplyForm(submitBtn);
+                        const newComment = createCommentElement(data.comment);
+                        const parentComment = document.querySelector(`[data-comment-id="${parentId}"]`);
+                        if (parentComment) {
+                            parentComment.insertAdjacentElement('afterend', newComment);
+                        }
+                        showToast('✅ Ответ добавлен');
+                    } else {
+                        alert('Ошибка: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Отправить ответ';
+                    alert('Ошибка при отправке ответа');
+                });
+            });
+            
+            // Возвращаем фрагмент с комментарием и формой
+            const fragment = document.createDocumentFragment();
+            fragment.appendChild(div);
+            fragment.appendChild(replyForm);
+            return fragment;
         }
-        
+
         // Добавляем обработчики событий
         const likeBtn = div.querySelector('.comment-like-btn');
         if (likeBtn) {
             likeBtn.addEventListener('click', handleLikeComment);
         }
-        
-        const replyBtn = div.querySelector('.comment-reply-btn');
-        if (replyBtn) {
-            replyBtn.addEventListener('click', handleReplyComment);
-        }
-        
+
         const deleteBtn = div.querySelector('.delete-comment-btn');
         if (deleteBtn) {
             deleteBtn.addEventListener('click', handleDeleteComment);
         }
-        
+
         return div;
     }
 
@@ -729,26 +914,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }).catch(err => {});
     }
 
-    // Ответ на комментарий
-    function handleReplyComment(e) {
-        const btn = e.currentTarget;
-        const commentId = btn.getAttribute('data-comment-id');
-        const commentAuthor = btn.getAttribute('data-comment-author');
-        
-        // Устанавливаем parent_id
-        parentInput.value = commentId;
-        
-        // Показываем кнопку отмены
-        replyCancel.style.display = 'block';
-        
-        // Фокус на поле ввода
-        document.getElementById('comment-content').focus();
-        document.getElementById('comment-content').placeholder = `Ответ ${commentAuthor}...`;
-        
-        // Прокрутка к форме
-        document.getElementById('comment-form').scrollIntoView({ behavior: 'smooth' });
-    }
-
     // Отмена ответа
     function cancelReply() {
         parentInput.value = '';
@@ -760,10 +925,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Инициализация обработчиков для существующих комментариев
     document.querySelectorAll('.comment-like-btn').forEach(btn => {
         btn.addEventListener('click', handleLikeComment);
-    });
-
-    document.querySelectorAll('.comment-reply-btn').forEach(btn => {
-        btn.addEventListener('click', handleReplyComment);
     });
 
     document.querySelectorAll('.delete-comment-btn').forEach(btn => {

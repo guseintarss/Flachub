@@ -941,6 +941,22 @@ html.dark-mode .share-menu-close:hover {
     font-size: 1.6rem;
 }
 
+.comments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.comments-header h3 {
+    margin: 0;
+}
+
+.comment-sort-buttons {
+    display: flex;
+    gap: 8px;
+}
+
 #comment-form {
     margin-bottom: 35px;
 }
@@ -970,8 +986,9 @@ html.dark-mode .share-menu-close:hover {
 
 #comment-form button {
     margin-top: 12px;
-    padding: 12px 28px;
+    padding: 0;
     font-weight: 600;
+    font-size: 15px;
     border-radius: 8px;
     transition: all 0.25s ease;
 }
@@ -1094,6 +1111,34 @@ html.dark-mode .share-menu-close:hover {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+}
+
+/* Форма ответа */
+.reply-form {
+    margin-left: 40px;
+    margin-bottom: 15px;
+}
+
+.reply-form form {
+    padding: 15px;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.reply-textarea {
+    width: 100%;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.reply-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
 }
 
 /* Кнопка показа ответов */
