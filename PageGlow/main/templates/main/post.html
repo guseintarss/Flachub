@@ -256,36 +256,36 @@
                     </div>
                 </div>
                 <p class="comment-content">{{ comment.content }}</p>
-
-                <!-- Ответы на комментарий -->
-                {% if comment.replies.all %}
-                {% for reply in comment.replies.all %}
-                <div class="comment-reply-item" data-comment-id="{{ reply.id }}">
-                    <div class="comment-header">
-                        <strong class="comment-author">{{ reply.author.username }}</strong>
-                        <small class="comment-time">{{ reply.created_at }}</small>
-                        {% if reply.parent %}
-                        <small class="reply-to">
-                            <i class="fas fa-arrow-right"></i> {{ reply.parent.author.username }}
-                        </small>
-                        {% endif %}
-                        <div class="comment-actions">
-                            <button class="comment-like-btn" data-comment-id="{{ reply.id }}" data-is-liked="{{ reply.user_has_liked|yesno:'true,false' }}">
-                                <i class="fas fa-heart{% if not reply.user_has_liked %}fas fa-heart{% endif %}"></i>
-                                <span class="comment-likes-count">{{ reply.number_of_likes }}</span>
-                            </button>
-                            {% if reply.author == user or user.is_staff %}
-                            <button class="delete-comment-btn" data-comment-id="{{ reply.id }}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <p class="comment-content">{{ reply.content }}</p>
-                </div>
-                {% endfor %}
-                {% endif %}
             </div>
+            
+            <!-- Ответы на комментарий (после родителя, не внутри) -->
+            {% if comment.replies.all %}
+            {% for reply in comment.replies.all %}
+            <div class="comment-reply-item" data-comment-id="{{ reply.id }}">
+                <div class="comment-header">
+                    <strong class="comment-author">{{ reply.author.username }}</strong>
+                    <small class="comment-time">{{ reply.created_at }}</small>
+                    {% if reply.parent %}
+                    <small class="reply-to">
+                        <i class="fas fa-arrow-right"></i> {{ reply.parent.author.username }}
+                    </small>
+                    {% endif %}
+                    <div class="comment-actions">
+                        <button class="comment-like-btn" data-comment-id="{{ reply.id }}" data-is-liked="{{ reply.user_has_liked|yesno:'true,false' }}">
+                            <i class="fas fa-heart{% if not reply.user_has_liked %}fas fa-heart{% endif %}"></i>
+                            <span class="comment-likes-count">{{ reply.number_of_likes }}</span>
+                        </button>
+                        {% if reply.author == user or user.is_staff %}
+                        <button class="delete-comment-btn" data-comment-id="{{ reply.id }}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                <p class="comment-content">{{ reply.content }}</p>
+            </div>
+            {% endfor %}
+            {% endif %}
             {% endif %}
             {% empty %}
             <div class="no-comments">
@@ -581,10 +581,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 cancelReply();
                 const newComment = createCommentElement(data.comment);
                 if (parentId) {
-                    // Добавляем ответ к родительскому комментарию
+                    // Добавляем ответ после родительского комментария
                     const parentComment = document.querySelector(`[data-comment-id="${parentId}"]`);
                     if (parentComment) {
-                        // Вставляем ответ после родительского комментария
                         parentComment.insertAdjacentElement('afterend', newComment);
                     }
                 } else {
@@ -610,26 +609,47 @@ document.addEventListener('DOMContentLoaded', function() {
         const can_delete = commentData.can_delete || false;
         const is_liked = commentData.is_liked || false;
 
-        div.innerHTML = `
-            <div class="comment-header">
-                <strong class="comment-author">${commentData.author}</strong>
-                <small class="comment-time">${commentData.created_at}</small>
-                ${commentData.parent_author ? `<small class="reply-to"><i class="fas fa-arrow-right"></i> ${commentData.parent_author}</small>` : ''}
-                <div class="comment-actions">
-                    <button class="comment-like-btn" data-comment-id="${commentData.id}" data-is-liked="${is_liked}">
-                        <i class="fas fa-heart${is_liked ? '' : '-o'}"></i>
-                        <span class="comment-likes-count">${commentData.likes_count || 0}</span>
-                    </button>
-                    ${!commentData.parent_id ? `<button class="comment-reply-btn" data-comment-id="${commentData.id}" data-comment-author="${commentData.author}">
-                        <i class="fas fa-reply"></i> Ответить
-                    </button>` : ''}
-                    ${can_delete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>` : ''}
+        if (commentData.parent_id) {
+            // Это ответ - создаём с правильным форматированием
+            div.innerHTML = `
+                <div class="comment-header">
+                    <strong class="comment-author">${commentData.author}</strong>
+                    <small class="comment-time">${commentData.created_at}</small>
+                    ${commentData.parent_author ? `<small class="reply-to"><i class="fas fa-arrow-right"></i> ${commentData.parent_author}</small>` : ''}
+                    <div class="comment-actions">
+                        <button class="comment-like-btn" data-comment-id="${commentData.id}" data-is-liked="${is_liked}">
+                            <i class="fas fa-heart${is_liked ? '' : ''}"></i>
+                            <span class="comment-likes-count">${commentData.likes_count || 0}</span>
+                        </button>
+                        ${can_delete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>` : ''}
+                    </div>
                 </div>
-            </div>
-            <p class="comment-content">${commentData.content}</p>
-        `;
+                <p class="comment-content">${commentData.content}</p>
+            `;
+        } else {
+            // Это главный комментарий
+            div.innerHTML = `
+                <div class="comment-header">
+                    <strong class="comment-author">${commentData.author}</strong>
+                    <small class="comment-time">${commentData.created_at}</small>
+                    <div class="comment-actions">
+                        <button class="comment-like-btn" data-comment-id="${commentData.id}" data-is-liked="${is_liked}">
+                            <i class="fas fa-heart${is_liked ? '' : ''}"></i>
+                            <span class="comment-likes-count">${commentData.likes_count || 0}</span>
+                        </button>
+                        <button class="comment-reply-btn" data-comment-id="${commentData.id}" data-comment-author="${commentData.author}">
+                            <i class="fas fa-reply"></i> Ответить
+                        </button>
+                        ${can_delete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>` : ''}
+                    </div>
+                </div>
+                <p class="comment-content">${commentData.content}</p>
+            `;
+        }
         
         // Добавляем обработчики событий
         const likeBtn = div.querySelector('.comment-like-btn');
