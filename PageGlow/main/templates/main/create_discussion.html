@@ -1,60 +1,73 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/discussion.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="create-discussion-page">
     <div class="card">
         <div class="card-body">
-            <h2 class="card-title h3 mb-4">
+            <h2 class="card-title">
                 <i class="fas fa-plus-circle"></i> Начать обсуждение
             </h2>
 
             <form method="post">
                 {% csrf_token %}
-                
-                <div class="mb-3">
+
+                <div class="mb-4">
                     <label for="{{ form.title.id_for_label }}" class="form-label">
-                        Заголовок темы <span class="text-danger">*</span>
+                        <i class="fas fa-heading"></i> Заголовок темы <span class="text-danger">*</span>
                     </label>
                     {{ form.title }}
                     {% if form.title.errors %}
-                    <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                    <div class="text-danger small mt-2">
+                        <i class="fas fa-exclamation-circle"></i> {{ form.title.errors }}
+                    </div>
                     {% endif %}
-                    <div class="form-text">Кратко опишите суть вашего вопроса</div>
+                    <div class="form-text"><i class="fas fa-lightbulb"></i> Кратко опишите суть вашего вопроса</div>
                 </div>
 
-                <div class="mb-3">
+                <div class="mb-4">
                     <label for="{{ form.content.id_for_label }}" class="form-label">
-                        Описание вопроса <span class="text-danger">*</span>
+                        <i class="fas fa-align-left"></i> Описание вопроса <span class="text-danger">*</span>
                     </label>
                     {{ form.content }}
                     {% if form.content.errors %}
-                    <div class="text-danger small mt-1">{{ form.content.errors }}</div>
+                    <div class="text-danger small mt-2">
+                        <i class="fas fa-exclamation-circle"></i> {{ form.content.errors }}
+                    </div>
                     {% endif %}
-                    <div class="form-text">Подробно опишите вашу проблему или вопрос</div>
+                    <div class="form-text"><i class="fas fa-info-circle"></i> Подробно опишите вашу проблему или вопрос</div>
                 </div>
 
-                <div class="mb-3">
+                <div class="mb-4">
                     <label for="{{ form.cat.id_for_label }}" class="form-label">
-                        Категория
+                        <i class="fas fa-folder"></i> Категория
                     </label>
                     {{ form.cat }}
                     {% if form.cat.errors %}
-                    <div class="text-danger small mt-1">{{ form.cat.errors }}</div>
+                    <div class="text-danger small mt-2">
+                        <i class="fas fa-exclamation-circle"></i> {{ form.cat.errors }}
+                    </div>
                     {% endif %}
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Теги</label>
+                <div class="mb-4">
+                    <label class="form-label"><i class="fas fa-tags"></i> Теги</label>
                     <div class="tags-checkboxes">
                         {{ form.tags }}
                     </div>
                     {% if form.tags.errors %}
-                    <div class="text-danger small mt-1">{{ form.tags.errors }}</div>
+                    <div class="text-danger small mt-2">
+                        <i class="fas fa-exclamation-circle"></i> {{ form.tags.errors }}
+                    </div>
                     {% endif %}
-                    <div class="form-text">Выберите подходящие теги для вашего вопроса</div>
+                    <div class="form-text"><i class="fas fa-lightbulb"></i> Выберите подходящие теги для вашего вопроса</div>
                 </div>
 
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-3 mt-4">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-paper-plane"></i> Опубликовать
                     </button>

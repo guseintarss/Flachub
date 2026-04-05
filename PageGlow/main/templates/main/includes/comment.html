@@ -4,50 +4,50 @@
 {% endcomment %}
 {% load main_extras %}
 
-<div class="comment-card card mb-3 {% if depth > 0 %}ms-4 border-start{% endif %}" data-comment-id="{{ comment.id }}" style="{% if depth > 0 %}margin-top: 0.75rem; margin-bottom: 0.75rem;{% else %}margin-bottom: 1.5rem;{% endif %}">
+<div class="comment-card {% if depth > 0 %}border-start{% endif %}" data-comment-id="{{ comment.id }}">
     <div class="card-body">
-        <div class="comment-header d-flex align-items-center mb-2" style="flex-wrap: nowrap;">
+        <div class="comment-header">
             {% if comment.author.photo %}
             <img src="{{ comment.author.photo.url }}" alt="{{ comment.author.username }}"
-                 class="comment-author-avatar rounded-circle me-2" style="flex-shrink: 0;">
+                 class="comment-author-avatar">
             {% else %}
             <img src="{{ default_image }}" alt="{{ comment.author.username }}"
-                 class="comment-author-avatar rounded-circle me-2" style="flex-shrink: 0;">
+                 class="comment-author-avatar">
             {% endif %}
-            <div class="comment-author-info" style="flex-shrink: 0;">
+            <div class="comment-author-info">
                 <a href="{% url 'users:author_profile' comment.author.username %}"
-                   class="comment-author-name text-decoration-none fw-bold">
+                   class="comment-author-name">
                     {{ comment.author.username }}
                 </a>
-                <span class="comment-date text-muted small ms-2">
+                <span class="comment-date">
                     {{ comment.created_at|date:"d.m.Y H:i" }}
                 </span>
                 {% if depth > 0 %}
-                <span class="badge bg-light text-dark ms-2" style="font-size: 0.75rem; padding: 0.25em 0.5em;">
+                <span class="badge">
                     <i class="fas fa-reply"></i> Ответ
                 </span>
                 {% endif %}
             </div>
-            <div class="comment-actions ms-auto d-flex align-items-center" style="margin-left: auto !important; flex-shrink: 0; gap: 0.25rem; position: absolute; bottom: 17px; left: 8px;">
+            <div class="comment-actions">
                 {% if user.is_authenticated %}
-                <button class="like-comment-btn btn btn-sm btn-link text-decoration-none p-0 me-1"
+                <button class="like-comment-btn btn btn-sm btn-link text-decoration-none"
                         data-comment-id="{{ comment.id }}"
                         data-user-id="{{ user.id }}">
                     <i class="fas fa-heart {% if comment|has_user_liked:user %}text-danger liked{% else %}text-muted{% endif %}"></i>
                     <span class="likes-count">{{ comment.number_of_likes }}</span>
                 </button>
                 {% else %}
-                <span class="text-muted small me-1">
+                <span class="text-muted small">
                     <i class="fas fa-heart text-muted"></i>
                     <span class="likes-count">{{ comment.number_of_likes }}</span>
                 </span>
                 {% endif %}
 
                 {% if user.is_authenticated and not is_closed %}
-                <button class="reply-comment-btn btn btn-sm btn-link text-decoration-none p-0 me-1"
+                <button class="reply-comment-btn btn btn-sm btn-link text-decoration-none"
                         data-comment-id="{{ comment.id }}"
                         data-comment-author="{{ comment.author.username }}">
-                    <i class="fas fa-reply text-muted"></i>
+                    <i class="fas fa-reply"></i>
                     <span class="ms-1">Ответить</span>
                 </button>
                 {% endif %}
@@ -56,13 +56,13 @@
         <div class="comment-content">
             {{ comment.content|linebreaks }}
         </div>
-        
+
         <!-- Кнопка удаления внизу -->
         {% if comment.author == user or user.is_staff %}
-        <div class="comment-delete mt-2 text-end">
+        <div class="comment-delete text-end">
             <button class="delete-comment btn btn-sm btn-outline-danger"
                     data-comment-id="{{ comment.id }}">
-                <i class="fas fa-trash"></i>
+                <i class="fas fa-trash"></i> Удалить
             </button>
         </div>
         {% endif %}
@@ -72,17 +72,17 @@
 <!-- Вложенные ответы -->
 {% if comment.replies.all %}
 <div class="replies-container" data-parent-id="{{ comment.id }}">
-    <div class="replies-list" style="margin-top: 1rem; margin-left: 0.5rem;">
+    <div class="replies-list">
         {% for reply in comment.replies.all %}
             {% if forloop.counter <= 2 %}
                 {% include 'main/includes/comment.html' with comment=reply depth=depth|add:1 %}
             {% endif %}
         {% endfor %}
     </div>
-    
+
     {% if comment.replies.count > 2 %}
-    <button class="show-all-replies btn btn-sm btn-link text-decoration-none ms-4 mt-2" 
-            data-parent-id="{{ comment.id }}" 
+    <button class="show-all-replies btn btn-sm btn-link text-decoration-none"
+            data-parent-id="{{ comment.id }}"
             data-total-replies="{{ comment.replies.count }}">
         <i class="fas fa-comment-dots"></i> Все ответы ({{ comment.replies.count }})
     </button>
@@ -99,7 +99,7 @@
 
 <!-- Форма ответа (скрытая по умолчанию) -->
 {% if user.is_authenticated and not is_closed %}
-<div class="reply-form-container card mb-3 mt-3 ms-4 d-none" data-parent-id="{{ comment.id }}">
+<div class="reply-form-container card d-none" data-parent-id="{{ comment.id }}">
     <div class="card-body">
         <form class="reply-form">
             {% csrf_token %}
@@ -110,7 +110,7 @@
                     <i class="fas fa-reply"></i> Ответ пользователю <strong>{{ comment.author.username }}</strong>
                 </small>
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
                 <textarea name="content" rows="2"
                         class="form-control"
                         placeholder="Напишите ваш ответ..."></textarea>

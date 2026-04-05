@@ -1,15 +1,20 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/discussion.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="discussions-page">
-    <div class="post discussions-header d-flex justify-content-between align-items-center mb-4">
+    <div class="discussions-header d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="discussions-title">Обсуждения</h1>
-            <p class="text-muted">Всего обсуждений: {{ total_discussions }}</p>
+            <h1 class="discussions-title"><i class="fas fa-comments"></i> Обсуждения</h1>
+            <p class="text-muted"><i class="fas fa-layer-group"></i> Всего обсуждений: {{ total_discussions }}</p>
         </div>
         {% if user.is_authenticated %}
         <a href="{% url 'create_discussion' %}" class="text-decoration-none btn btn-primary btn-create-discussion">
-            <i class="fas fa-plus"></i> Начать обсуждение
+            <i class="fas fa-plus-circle"></i> Начать обсуждение
         </a>
         {% else %}
         <a href="{% url 'users:login' %}" class="btn btn-primary btn-create-discussion">
@@ -21,76 +26,74 @@
     {% if discussions %}
     <div class="discussions-list">
         {% for discussion in discussions %}
-        <div class="discussion-card card mb-3">
-            <div class="card-body">
-                <div class="discussion-card-header d-flex justify-content-between align-items-start">
-                    <div class="discussion-title-wrapper">
-                        <h3 class="discussion-title h5 mb-2">
-                            <a href="{% url 'discussion_detail' discussion.pk %}" class="text-decoration-none">
-                                {{ discussion.title }}
+        <div class="discussion-card">
+            <div class="discussion-card-header">
+                <div class="discussion-title-wrapper">
+                    <h3 class="discussion-title">
+                        <a href="{% url 'discussion_detail' discussion.pk %}">
+                            {{ discussion.title }}
+                        </a>
+                    </h3>
+                    <div class="discussion-meta">
+                        <span>
+                            <i class="fas fa-user-circle"></i>
+                            <a href="{% url 'users:author_profile' discussion.author.username %}">
+                                {{ discussion.author.username }}
                             </a>
-                        </h3>
-                        <div class="discussion-meta text-muted small">
-                            <span class="me-3">
-                                <i class="fas fa-user"></i>
-                                <a href="{% url 'users:author_profile' discussion.author.username %}" class="text-decoration-none">
-                                    {{ discussion.author.username }}
-                                </a>
-                            </span>
-                            <span class="me-3">
-                                <i class="fas fa-clock"></i>
-                                {{ discussion.time_create|date:"d.m.Y H:i" }}
-                            </span>
-                            <span class="me-3">
-                                <i class="fas fa-eye"></i>
-                                {{ discussion.views }}
-                            </span>
-                            <span>
-                                <i class="fas fa-comments"></i>
-                                {{ discussion.comments_count }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="discussion-badges">
-                        {% if discussion.is_closed %}
-                        <span class="badge bg-secondary">
-                            <i class="fas fa-lock"></i> Закрыто
                         </span>
-                        {% endif %}
-                        {% if discussion.cat %}
-                        <span class="badge bg-primary">
-                            {{ discussion.cat.name }}
+                        <span>
+                            <i class="fas fa-clock"></i>
+                            {{ discussion.time_create|date:"d.m.Y H:i" }}
                         </span>
-                        {% endif %}
+                        <span>
+                            <i class="fas fa-eye"></i>
+                            {{ discussion.views }}
+                        </span>
+                        <span>
+                            <i class="fas fa-comment-dots"></i>
+                            {{ discussion.comments_count }}
+                        </span>
                     </div>
                 </div>
-                
-                <p class="discussion-preview text-muted mb-3">
-                    {{ discussion.content|truncatewords:20 }}
-                </p>
-
-                {% if discussion.tags.all %}
-                <div class="discussion-tags">
-                    {% for tag in discussion.tags.all %}
-                    <a href="{% url 'tag' tag.slug %}" class="badge bg-light text-dark text-decoration-none me-1">
-                        #{{ tag.tag }}
-                    </a>
-                    {% endfor %}
+                <div class="discussion-badges">
+                    {% if discussion.is_closed %}
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-lock"></i> Закрыто
+                    </span>
+                    {% endif %}
+                    {% if discussion.cat %}
+                    <span class="badge bg-primary">
+                        <i class="fas fa-folder"></i> {{ discussion.cat.name }}
+                    </span>
+                    {% endif %}
                 </div>
-                {% endif %}
-
-                {% with discussion.get_last_comment_author as last_author %}
-                {% if last_author %}
-                <div class="last-comment mt-2 text-muted small">
-                    <i class="fas fa-reply"></i>
-                    Последний комментарий: 
-                    <a href="{% url 'users:author_profile' last_author.username %}" class="text-decoration-none">
-                        {{ last_author.username }}
-                    </a>
-                </div>
-                {% endif %}
-                {% endwith %}
             </div>
+
+            <p class="discussion-preview">
+                {{ discussion.content|truncatewords:20 }}
+            </p>
+
+            {% if discussion.tags.all %}
+            <div class="discussion-tags">
+                {% for tag in discussion.tags.all %}
+                <a href="{% url 'tag' tag.slug %}" class="badge">
+                    <i class="fas fa-tag"></i> {{ tag.tag }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% with discussion.get_last_comment_author as last_author %}
+            {% if last_author %}
+            <div class="last-comment">
+                <i class="fas fa-reply"></i>
+                Последний комментарий:
+                <a href="{% url 'users:author_profile' last_author.username %}">
+                    {{ last_author.username }}
+                </a>
+            </div>
+            {% endif %}
+            {% endwith %}
         </div>
         {% endfor %}
     </div>
@@ -101,25 +104,25 @@
         <ul class="pagination justify-content-center">
             {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?page=1">Первая</a>
+                <a class="page-link" href="?page=1"><i class="fas fa-angle-double-left"></i> Первая</a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Пред.</a>
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}"><i class="fas fa-angle-left"></i> Пред.</a>
             </li>
             {% endif %}
 
             <li class="page-item active">
                 <span class="page-link">
-                    Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                    <i class="fas fa-file-alt"></i> Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
                 </span>
             </li>
 
             {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}">След.</a>
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">След. <i class="fas fa-angle-right"></i></a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последняя</a>
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последняя <i class="fas fa-angle-double-right"></i></a>
             </li>
             {% endif %}
         </ul>
@@ -129,7 +132,7 @@
     {% else %}
     <div class="alert alert-info" role="alert">
         <i class="fas fa-info-circle"></i>
-        Пока нет обсуждений. Будьте первыми - <a href="{% url 'create_discussion' %}" class="alert-link">создайте обсуждение</a>!
+        Пока нет обсуждений. Будьте первыми — <a href="{% url 'create_discussion' %}">создайте обсуждение</a>!
     </div>
     {% endif %}
 </div>

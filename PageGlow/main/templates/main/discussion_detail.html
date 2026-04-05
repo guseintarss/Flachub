@@ -1,113 +1,31 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/discussion.css' %}">
 <style>
-    /* Стили для комментариев */
+    /* Дополнительные специфические стили для detail страницы */
     .comment-header {
         flex-wrap: nowrap;
     }
-    
+
     .comment-author-info {
         flex-shrink: 0;
     }
-    
+
     .comment-actions {
         margin-left: auto !important;
         flex-shrink: 0;
     }
-    
+
     .comment-actions .btn {
         white-space: nowrap;
     }
-    
-    .reply-form-container {
-        transition: all 0.3s ease;
-    }
-    
-    /* Отступы для ответов */
-    .replies-list {
-        margin-top: 1rem;
-        margin-left: 0.5rem;
-    }
-    
-    .replies-list .comment-card {
-        margin-top: 0.75rem;
-        margin-bottom: 0.75rem;
-    }
-    
-    /* Отступы между основными комментариями */
-    #comments-list > .comment-card {
-        margin-bottom: 1.5rem;
-    }
-    
+
     /* Исправление для badge */
     .comment-author-info .badge {
         font-size: 0.75rem;
         padding: 0.25em 0.5em;
-    }
-    
-    /* Лайк комментарий */
-    .like-comment-btn.liked i {
-        color: #dc3545 !important;
-    }
-
-    .like-comment-btn:hover i {
-        color: #dc3545 !important;
-    }
-
-    /* Вложенность ответов */
-    .replies-list .replies-list {
-        margin-left: 1rem;
-    }
-    
-    /* Кнопка удаления - видима всегда когда присутствует в DOM */
-    .delete-comment {
-        display: inline-flex !important;
-        opacity: 0.7;
-        transition: opacity 0.2s;
-    }
-
-    .delete-comment:hover {
-        opacity: 1;
-    }
-    
-    /* Стили для кнопки с комментариями */
-    .comments-toggle {
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-    
-    .comments-toggle:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-    }
-    
-    /* Стили для лайков обсуждения */
-    .like-discussion-btn.liked i {
-        color: #dc3545 !important;
-    }
-    
-    .like-discussion-btn:hover i {
-        color: #dc3545 !important;
-    }
-    
-    /* Скрытые ответы */
-    .hidden-replies {
-        animation: fadeIn 0.3s ease-in;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
-    .show-all-replies {
-        color: #0d6efd;
-        font-size: 0.875rem;
-    }
-    
-    .show-all-replies:hover {
-        color: #0a58ca;
-        text-decoration: underline;
     }
 </style>
 {% endblock %}
@@ -139,58 +57,57 @@ function showToast(message, duration = 2000) {
             <div class="discussion-header d-flex justify-content-between align-items-start mb-3">
                 <div class="discussion-title-wrapper">
                     <h1 class="discussion-title h3 mb-2">{{ discussion.title }}</h1>
-                    <div class="discussion-meta text-muted small">
-                        <span class="me-3">
-                            <i class="fas fa-user"></i>
-                            <a href="{% url 'users:author_profile' discussion.author.username %}" class="text-decoration-none">
+                    <div class="discussion-meta">
+                        <span>
+                            <i class="fas fa-user-circle"></i>
+                            <a href="{% url 'users:author_profile' discussion.author.username %}">
                                 {{ discussion.author.username }}
                             </a>
                         </span>
-                        <span class="me-3">
+                        <span>
                             <i class="fas fa-clock"></i>
                             {{ discussion.time_create|date:"d.m.Y H:i" }}
                         </span>
-                        <span class="me-3">
+                        <span>
                             <i class="fas fa-eye"></i>
                             {{ discussion.views }} просмотров
                         </span>
                     </div>
                 </div>
-                <div class="discussion-actions">
+                <div class="discussion-badges">
                     {% if discussion.is_closed %}
-                    <span class="badge bg-secondary me-2">
+                    <span class="badge bg-secondary">
                         <i class="fas fa-lock"></i> Закрыто
                     </span>
                     {% endif %}
                     {% if discussion.cat %}
                     <span class="badge bg-primary">
-                        {{ discussion.cat.name }}
+                        <i class="fas fa-folder"></i> {{ discussion.cat.name }}
                     </span>
                     {% endif %}
                 </div>
             </div>
 
-            <div class="discussion-content mb-3">
-                {{ discussion.content|linebreaks }}
-            </div>
+            <div class="discussion-content mb-4">{{ discussion.content|linebreaks }}</div>
 
             {% if discussion.tags.all %}
-            <div class="discussion-tags mb-3">
+            <div class="discussion-tags mb-4">
                 {% for tag in discussion.tags.all %}
-                <a href="{% url 'tag' tag.slug %}" class="badge bg-light text-dark text-decoration-none me-1">
-                    #{{ tag.tag }}
+                <a href="{% url 'tag' tag.slug %}" class="badge">
+                    <i class="fas fa-tag"></i> {{ tag.tag }}
                 </a>
                 {% endfor %}
             </div>
             {% endif %}
-            
+
             <!-- Лайки и поделиться -->
-            <div class="discussion-stats d-flex  mb-3">
+            <div class="discussion-stats d-flex mb-4">
                 {% if user.is_authenticated %}
                 <button class="like-discussion-btn btn btn-sm btn-link text-decoration-none"
                         data-discussion-id="{{ discussion.id }}">
                     <i class="fas fa-heart {% if user in discussion.likes.all %}text-danger{% else %}text-muted{% endif %}"></i>
                     <span class="likes-count">{{ discussion.number_of_likes }}</span>
+                    <span>Нравится</span>
                 </button>
                 {% else %}
                 <span class="text-muted">
@@ -198,7 +115,7 @@ function showToast(message, duration = 2000) {
                     <span class="likes-count">{{ discussion.number_of_likes }}</span>
                 </span>
                 {% endif %}
-                
+
                 <button class="share-discussion-btn btn btn-sm btn-link text-decoration-none"
                         data-discussion-url="{{ request.build_absolute_uri }}">
                     <i class="fas fa-share text-muted"></i>
@@ -208,7 +125,7 @@ function showToast(message, duration = 2000) {
 
             <!-- Кнопки управления для автора/админа -->
             {% if user == discussion.author or user.is_staff %}
-            <div class="discussion-controls mt-3 pt-3 border-top">
+            <div class="discussion-controls mt-4 pt-3" style="border-top: 1px solid var(--border);">
                 {% if user == discussion.author or user.is_staff %}
                 <button id="close-discussion-btn" class="btn btn-sm btn-outline-secondary"
                         data-discussion-id="{{ discussion.id }}"
@@ -223,13 +140,13 @@ function showToast(message, duration = 2000) {
             </div>
             {% endif %}
         </div>
-        
+
         <!-- Кнопка с количеством комментариев -->
-        <div class="comments-toggle card mb-3" id="comments-toggle">
+        <div class="comments-toggle card mb-4" id="comments-toggle">
             <div class="card-body d-flex justify-content-between align-items-center">
                 <h3 class="h4 mb-0">
                     <i class="fas fa-comments"></i>
-                     {{ discussion.comments_count }}
+                    Комментарии: {{ discussion.comments_count }}
                 </h3>
                 <button class="btn btn-outline-primary" id="toggle-comment-form-btn">
                     <i class="fas fa-pen"></i> Написать комментарий
@@ -240,11 +157,12 @@ function showToast(message, duration = 2000) {
 
     <!-- Комментарии -->
     <section id="comments-section" class="discussion-comments">
-        
+
         <!-- Форма добавления комментария (скрыта по умолчанию) -->
         {% if user.is_authenticated and not is_closed %}
         <div class="comment-form-container card mb-4" id="comment-form-container" style="display: none;">
             <div class="card-body">
+                <h4 class="h5 mb-3"><i class="fas fa-pen-to-square"></i> Написать комментарий</h4>
                 <form id="comment-form">
                     {% csrf_token %}
                     <input type="hidden" name="discussion_id" value="{{ discussion.id }}">
@@ -261,8 +179,8 @@ function showToast(message, duration = 2000) {
         </div>
         {% elif not user.is_authenticated %}
         <div class="alert alert-info mb-4" role="alert">
-            <i class="fas fa-info-circle"></i>
-            <a href="{% url 'users:login' %}?next={{ request.path }}" class="alert-link">Войдите</a>, 
+            <i class="fas fa-sign-in-alt"></i>
+            <a href="{% url 'users:login' %}?next={{ request.path }}" class="alert-link">Войдите</a>,
             чтобы оставить комментарий.
         </div>
         {% else %}

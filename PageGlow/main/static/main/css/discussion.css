@@ -1,0 +1,1149 @@
+/* =====================================================
+   PageGlow - Обсуждения
+   Современный дизайн для IT-специалистов и пользователей
+   ===================================================== */
+
+/* =====================================================
+   DISCUSSION PAGE LAYOUT
+   Работает внутри grid layout base.html
+   ===================================================== */
+
+.discussions-page,
+.discussion-detail-page,
+.create-discussion-page {
+    width: 100%;
+    padding-bottom: 24px;
+}
+
+/* Контент занимает всю доступную ширину в grid ячейке */
+.discussions-list,
+.discussion-main,
+.create-discussion-page .card {
+    width: 100%;
+}
+
+/* =====================================================
+   ЗАГОЛОВОК СТРАНИЦЫ ОБСУЖДЕНИЙ
+   ===================================================== */
+
+.discussions-header {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.discussions-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-700) 100%);
+}
+
+.discussions-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+}
+
+.discussions-header .text-muted {
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.btn-create-discussion {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-700) 100%);
+    border: none;
+    padding: 12px 24px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(12, 106, 207, 0.3);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.btn-create-discussion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(12, 106, 207, 0.4);
+}
+
+/* =====================================================
+   КАРТОЧКА ОБСУЖДЕНИЯ (СПИСОК)
+   ===================================================== */
+
+.discussion-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.discussion-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--primary);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.discussion-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+    border-color: rgba(12, 106, 207, 0.2);
+}
+
+.discussion-card:hover::before {
+    opacity: 1;
+}
+
+.discussion-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.discussion-title-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.discussion-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.discussion-title a {
+    color: var(--text);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.discussion-title a:hover {
+    color: var(--primary);
+}
+
+.discussion-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+}
+
+.discussion-meta i {
+    color: var(--muted);
+    margin-right: 4px;
+}
+
+.discussion-meta a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.discussion-meta a:hover {
+    text-decoration: underline;
+}
+
+.discussion-badges {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.discussion-badges .badge {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.discussion-badges .badge.bg-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-700) 100%);
+}
+
+.discussion-badges .badge.bg-secondary {
+    background: var(--muted);
+}
+
+.discussion-preview {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--muted);
+    margin-bottom: 16px;
+}
+
+.discussion-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.discussion-tags .badge {
+    background: var(--tags-bg);
+    color: var(--tags-color);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.discussion-tags .badge:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.last-comment {
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+}
+
+.last-comment a {
+    color: var(--primary);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.last-comment a:hover {
+    text-decoration: underline;
+}
+
+/* =====================================================
+   ДЕТАЛЬНАЯ СТРАНИЦА ОБСУЖДЕНИЯ
+   ===================================================== */
+
+.discussion-main {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.discussion-main .card-body {
+    padding: 32px;
+}
+
+.discussion-header {
+    margin-bottom: 24px;
+}
+
+.discussion-title.h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.3;
+}
+
+.discussion-content {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--text);
+    margin-bottom: 24px;
+}
+
+.discussion-content p {
+    margin-bottom: 16px;
+}
+
+.discussion-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.discussion-tags .badge {
+    background: var(--tags-bg);
+    color: var(--tags-color);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.discussion-tags .badge:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Статистика обсуждения */
+.discussion-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.like-discussion-btn,
+.share-discussion-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.like-discussion-btn:hover,
+.share-discussion-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.like-discussion-btn i {
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
+}
+
+.like-discussion-btn:hover i {
+    transform: scale(1.1);
+}
+
+.likes-count {
+    font-weight: 600;
+}
+
+/* Контролы обсуждения */
+.discussion-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+#close-discussion-btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+/* =====================================================
+   СЕКЦИЯ КОММЕНТАРИЕВ
+   ===================================================== */
+
+.discussion-comments {
+    margin-top: 32px;
+}
+
+/* Переключатель комментариев */
+.comments-toggle {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.comments-toggle:hover {
+    background-color: var(--bg);
+    border-color: rgba(12, 106, 207, 0.3);
+    transform: translateY(-1px);
+}
+
+.comments-toggle .h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+}
+
+.comments-toggle i {
+    color: var(--primary);
+    margin-right: 8px;
+}
+
+#toggle-comment-form-btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+#toggle-comment-form-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Форма комментария */
+.comment-form-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+}
+
+.comment-form-container .card-body {
+    padding: 24px;
+}
+
+.comment-form-container textarea {
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    transition: all 0.2s ease;
+    resize: vertical;
+    background: var(--bg);
+}
+
+.comment-form-container textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(12, 106, 207, 0.1);
+    outline: none;
+}
+
+.comment-form-container button[type="submit"] {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-700) 100%);
+    border: none;
+    padding: 10px 24px;
+    font-weight: 600;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(12, 106, 207, 0.3);
+    transition: all 0.25s ease;
+}
+
+.comment-form-container button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(12, 106, 207, 0.4);
+}
+
+/* =====================================================
+   КАРТОЧКА КОММЕНТАРИЯ
+   ===================================================== */
+
+.comment-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 16px;
+}
+
+.comment-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border-color: rgba(12, 106, 207, 0.2);
+}
+
+/* Вложенные комментарии */
+.comment-card.border-start {
+    border-left: 3px solid var(--primary);
+    background: var(--bg);
+}
+
+.comment-card .card-body {
+    padding: 20px;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.comment-author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    flex-shrink: 0;
+}
+
+.comment-author-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.comment-author-name {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.comment-author-name:hover {
+    color: var(--primary);
+}
+
+.comment-date {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* Кнопки лайков и ответов */
+.like-comment-btn,
+.reply-comment-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.like-comment-btn:hover {
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.like-comment-btn.liked i {
+    color: #dc3545 !important;
+    animation: heartBeat 0.3s ease;
+}
+
+@keyframes heartBeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.reply-comment-btn:hover {
+    background: rgba(12, 106, 207, 0.1);
+}
+
+.reply-comment-btn:hover i,
+.like-comment-btn:hover i {
+    color: var(--primary);
+}
+
+.likes-count {
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+/* Содержимое комментария */
+.comment-content {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text);
+    margin-top: 12px;
+    padding-left: 52px;
+}
+
+.comment-content p {
+    margin-bottom: 12px;
+}
+
+/* Кнопка удаления */
+.comment-delete {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.comment-delete .delete-comment {
+    border-radius: 6px;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    transition: all 0.2s ease;
+}
+
+/* =====================================================
+   ВЛОЖЕННЫЕ ОТВЕТЫ
+   ===================================================== */
+
+.replies-list {
+    margin-top: 16px;
+    margin-left: 52px;
+    padding-left: 16px;
+    border-left: 2px solid var(--border);
+}
+
+.replies-list .comment-card {
+    margin-bottom: 12px;
+}
+
+.replies-list .replies-list {
+    margin-left: 32px;
+}
+
+.show-all-replies {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary);
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.show-all-replies:hover {
+    background: rgba(12, 106, 207, 0.1);
+    color: var(--primary-700);
+}
+
+.hidden-replies {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =====================================================
+   ФОРМА ОТВЕТА
+   ===================================================== */
+
+.reply-form-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    margin-top: 16px;
+    margin-left: 52px;
+    transition: all 0.3s ease;
+}
+
+.reply-form-container .card-body {
+    padding: 20px;
+}
+
+.reply-form small {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.reply-form small i {
+    color: var(--primary);
+    margin-right: 4px;
+}
+
+.reply-form textarea {
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    transition: all 0.2s ease;
+    resize: vertical;
+    background: var(--bg);
+}
+
+.reply-form textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(12, 106, 207, 0.1);
+    outline: none;
+}
+
+.reply-form .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-700) 100%);
+    border: none;
+    padding: 8px 16px;
+    font-weight: 600;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(12, 106, 207, 0.3);
+    transition: all 0.25s ease;
+}
+
+.reply-form .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(12, 106, 207, 0.4);
+}
+
+.reply-form .btn-secondary {
+    border-radius: 6px;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+/* =====================================================
+   СТРАНИЦА СОЗДАНИЯ ОБСУЖДЕНИЯ
+   ===================================================== */
+
+.create-discussion-page .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.create-discussion-page .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-700) 100%);
+}
+
+.create-discussion-page .card {
+    position: relative;
+}
+
+.create-discussion-page .card-body {
+    padding: 32px;
+}
+
+.create-discussion-page .card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.create-discussion-page .card-title i {
+    color: var(--primary);
+}
+
+.create-discussion-page .form-label {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.create-discussion-page .form-text {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 6px;
+}
+
+.create-discussion-page input[type="text"],
+.create-discussion-page textarea,
+.create-discussion-page select {
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    transition: all 0.2s ease;
+    background: var(--bg);
+    width: 100%;
+}
+
+.create-discussion-page input[type="text"]:focus,
+.create-discussion-page textarea:focus,
+.create-discussion-page select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(12, 106, 207, 0.1);
+    outline: none;
+}
+
+.create-discussion-page textarea {
+    resize: vertical;
+    min-height: 200px;
+}
+
+.create-discussion-page .tags-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+}
+
+.create-discussion-page .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-700) 100%);
+    border: none;
+    padding: 12px 28px;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(12, 106, 207, 0.3);
+    transition: all 0.25s ease;
+}
+
+.create-discussion-page .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(12, 106, 207, 0.4);
+}
+
+.create-discussion-page .btn-secondary {
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+/* =====================================================
+   ПАГИНАЦИЯ
+   ===================================================== */
+
+.pagination {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 32px;
+}
+
+.pagination .page-link {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 16px;
+    color: var(--text);
+    background: var(--surface);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+    background: var(--bg);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.pagination .active .page-link {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+/* =====================================================
+   EMPTY STATE & ALERTS
+   ===================================================== */
+
+.alert-info {
+    background: linear-gradient(135deg, rgba(12, 106, 207, 0.1) 0%, rgba(12, 106, 207, 0.05) 100%);
+    border: 1px solid rgba(12, 106, 207, 0.2);
+    border-radius: var(--radius);
+    padding: 24px;
+    color: var(--text);
+}
+
+.alert-info i {
+    color: var(--primary);
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+.alert-info a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.alert-info a:hover {
+    text-decoration: underline;
+}
+
+.alert-light {
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    color: var(--muted);
+}
+
+.alert-light i {
+    margin-right: 8px;
+}
+
+/* =====================================================
+   DARK MODE
+   ===================================================== */
+
+html.dark-mode .discussion-card::before,
+html.dark-mode .discussions-header::before {
+    background: linear-gradient(180deg, var(--dark-primary) 0%, var(--dark-primary-700) 100%);
+}
+
+html.dark-mode .discussion-card:hover {
+    border-color: rgba(41, 156, 245, 0.3);
+}
+
+html.dark-mode .discussion-meta i {
+    color: var(--dark-muted);
+}
+
+html.dark-mode .comment-card.border-start {
+    border-left-color: var(--dark-primary);
+}
+
+html.dark-mode .replies-list {
+    border-left-color: var(--dark-border);
+}
+
+html.dark-mode .like-comment-btn:hover {
+    background: rgba(220, 53, 69, 0.15);
+}
+
+html.dark-mode .reply-comment-btn:hover {
+    background: rgba(41, 156, 245, 0.15);
+}
+
+html.dark-mode .comments-toggle:hover {
+    background-color: var(--dark-surface);
+}
+
+html.dark-mode .create-discussion-page .card::before {
+    background: linear-gradient(180deg, var(--dark-primary) 0%, var(--dark-primary-700) 100%);
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (max-width: 768px) {
+    .discussions-page,
+    .discussion-detail-page,
+    .create-discussion-page {
+        padding: 16px 0;
+    }
+
+    .discussions-header {
+        padding: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .discussions-title {
+        font-size: 1.5rem;
+    }
+
+    .btn-create-discussion {
+        width: 100%;
+        margin-top: 16px;
+        text-align: center;
+    }
+
+    .discussion-card {
+        padding: 16px;
+    }
+
+    .discussion-card-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .discussion-meta {
+        gap: 12px;
+        font-size: 0.8rem;
+    }
+
+    .discussion-main .card-body {
+        padding: 20px;
+    }
+
+    .discussion-title.h3 {
+        font-size: 1.35rem;
+    }
+
+    .comment-card .card-body {
+        padding: 16px;
+    }
+
+    .comment-content {
+        padding-left: 0;
+        margin-top: 8px;
+    }
+
+    .replies-list {
+        margin-left: 24px;
+    }
+
+    .reply-form-container {
+        margin-left: 24px;
+    }
+
+    .create-discussion-page .card-body {
+        padding: 20px;
+    }
+
+    .create-discussion-page .tags-checkboxes {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+}
+
+@media (max-width: 576px) {
+    .discussion-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .discussion-stats {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .comment-actions {
+        flex-wrap: wrap;
+    }
+
+    .reply-form .d-flex {
+        flex-direction: column;
+    }
+
+    .reply-form .btn {
+        width: 100%;
+    }
+}
+
+/* =====================================================
+   ТОСТ УВЕДОМЛЕНИЙ
+   ===================================================== */
+
+.toast-notification {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    color: var(--text);
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid var(--primary);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+html.dark-mode .toast-notification {
+    background: var(--dark-surface);
+    color: var(--dark-text);
+    border-left-color: var(--dark-primary);
+}
+
+/* =====================================================
+   SIDEBAR СТИЛИ
+   ===================================================== */
+
+.sidebar .sidebar-widget {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.sidebar .sidebar-widget h3,
+.sidebar .sidebar-widget h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar .sidebar-widget h3 i,
+.sidebar .sidebar-widget h4 i {
+    color: var(--primary);
+}
+
+.sidebar .recent-post-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.2s ease;
+}
+
+.sidebar .recent-post-item:last-child {
+    border-bottom: none;
+}
+
+.sidebar .recent-post-item:hover {
+    opacity: 0.8;
+}
+
+.sidebar .recent-post-link {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.4;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.sidebar .recent-post-link:hover {
+    color: var(--primary);
+}
+
+.sidebar .recent-post-meta {
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar .recent-post-meta i {
+    margin-right: 4px;
+}
+
+/* Dark mode для sidebar */
+html.dark-mode .sidebar .sidebar-widget {
+    background: var(--dark-surface);
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .sidebar .recent-post-item {
+    border-bottom-color: var(--dark-border);
+}
