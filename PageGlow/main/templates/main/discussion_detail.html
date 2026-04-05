@@ -30,24 +30,6 @@
 </style>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-// Уведомления (toast)
-function showToast(message, duration = 2000) {
-    const toast = document.createElement('div');
-    toast.className = 'toast-notification';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-
-    setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, duration);
-}
-</script>
-{% endblock %}
-
 {% block content %}
 <div class="discussion-detail-page">
 
@@ -101,7 +83,6 @@ function showToast(message, duration = 2000) {
             {% endif %}
 
             <!-- Лайки и поделиться -->
-            <div class="discussion-stats d-flex mb-4">
                 {% if user.is_authenticated %}
                 <button class="like-discussion-btn btn btn-sm btn-link text-decoration-none"
                         data-discussion-id="{{ discussion.id }}">
@@ -121,7 +102,6 @@ function showToast(message, duration = 2000) {
                     <i class="fas fa-share text-muted"></i>
                     <span>Поделиться</span>
                 </button>
-            </div>
 
             <!-- Кнопки управления для автора/админа -->
             {% if user == discussion.author or user.is_staff %}
@@ -142,8 +122,8 @@ function showToast(message, duration = 2000) {
         </div>
 
         <!-- Кнопка с количеством комментариев -->
-        <div class="comments-toggle card mb-4" id="comments-toggle">
-            <div class="card-body d-flex justify-content-between align-items-center">
+        <div class="comments-toggle card" id="comments-toggle">
+            <div class=" d-flex justify-content-between ">
                 <h3 class="h4 mb-0">
                     <i class="fas fa-comments"></i>
                     Комментарии: {{ discussion.comments_count }}
@@ -209,6 +189,20 @@ function showToast(message, duration = 2000) {
 
 {% block extra_js %}
 <script>
+// Уведомления (toast)
+function showToast(message, duration = 2000) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const commentForm = document.getElementById('comment-form');
     const commentsList = document.getElementById('comments-list');
