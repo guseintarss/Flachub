@@ -240,22 +240,22 @@
                 <div class="comment-header">
                     <strong class="comment-author">{{ comment.author.username }}</strong>
                     <small class="comment-time">{{ comment.created_at }}</small>
-                    <div class="comment-actions">
-                        <button class="comment-like-btn" data-comment-id="{{ comment.id }}" data-is-liked="{{ comment.user_has_liked|yesno:'true,false' }}">
-                            <i class="fas fa-heart"></i>
-                            <span class="comment-likes-count">{{ comment.number_of_likes }}</span>
-                        </button>
-                        <button class="comment-reply-btn" data-comment-id="{{ comment.id }}" data-comment-author="{{ comment.author.username }}">
-                            <i class="fas fa-reply"></i> Ответить
-                        </button>
-                        {% if comment.author == user or user.is_staff %}
-                        <button class="delete-comment-btn" data-comment-id="{{ comment.id }}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        {% endif %}
-                    </div>
                 </div>
                 <p class="comment-content">{{ comment.content }}</p>
+                <div class="comment-actions">
+                    <button class="comment-like-btn" data-comment-id="{{ comment.id }}" data-is-liked="{{ comment.user_has_liked|yesno:'true,false' }}">
+                        <i class="fas fa-heart"></i>
+                        <span class="comment-likes-count">{{ comment.number_of_likes }}</span>
+                    </button>
+                    <button class="comment-reply-btn" data-comment-id="{{ comment.id }}" data-comment-author="{{ comment.author.username }}">
+                        <i class="fas fa-reply"></i> Ответить
+                    </button>
+                    {% if comment.author == user or user.is_staff %}
+                    <button class="delete-comment-btn" data-comment-id="{{ comment.id }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    {% endif %}
+                </div>
             </div>
             
             <!-- Ответы на комментарий (после родителя, не внутри) -->
@@ -270,19 +270,19 @@
                         <i class="fas fa-arrow-right"></i> {{ reply.parent.author.username }}
                     </small>
                     {% endif %}
-                    <div class="comment-actions">
-                        <button class="comment-like-btn" data-comment-id="{{ reply.id }}" data-is-liked="{{ reply.user_has_liked|yesno:'true,false' }}">
-                            <i class="fas fa-heart{% if not reply.user_has_liked %}fas fa-heart{% endif %}"></i>
-                            <span class="comment-likes-count">{{ reply.number_of_likes }}</span>
-                        </button>
-                        {% if reply.author == user or user.is_staff %}
-                        <button class="delete-comment-btn" data-comment-id="{{ reply.id }}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        {% endif %}
-                    </div>
                 </div>
                 <p class="comment-content">{{ reply.content }}</p>
+                <div class="comment-actions">
+                    <button class="comment-like-btn" data-comment-id="{{ reply.id }}" data-is-liked="{{ reply.user_has_liked|yesno:'true,false' }}">
+                        <i class="fas fa-heart{% if not reply.user_has_liked %}fas fa-heart{% endif %}"></i>
+                        <span class="comment-likes-count">{{ reply.number_of_likes }}</span>
+                    </button>
+                    {% if reply.author == user or user.is_staff %}
+                    <button class="delete-comment-btn" data-comment-id="{{ reply.id }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    {% endif %}
+                </div>
             </div>
             {% endfor %}
             {% endif %}
@@ -616,17 +616,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     <strong class="comment-author">${commentData.author}</strong>
                     <small class="comment-time">${commentData.created_at}</small>
                     ${commentData.parent_author ? `<small class="reply-to"><i class="fas fa-arrow-right"></i> ${commentData.parent_author}</small>` : ''}
-                    <div class="comment-actions">
-                        <button class="comment-like-btn" data-comment-id="${commentData.id}" data-is-liked="${is_liked}">
-                            <i class="fas fa-heart${is_liked ? '' : ''}"></i>
-                            <span class="comment-likes-count">${commentData.likes_count || 0}</span>
-                        </button>
-                        ${can_delete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}">
-                            <i class="fas fa-trash"></i>
-                        </button>` : ''}
-                    </div>
                 </div>
                 <p class="comment-content">${commentData.content}</p>
+                <div class="comment-actions">
+                    <button class="comment-like-btn" data-comment-id="${commentData.id}" data-is-liked="${is_liked}">
+                        <i class="fas fa-heart${is_liked ? '' : ''}"></i>
+                        <span class="comment-likes-count">${commentData.likes_count || 0}</span>
+                    </button>
+                    ${can_delete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>` : ''}
+                </div>
             `;
         } else {
             // Это главный комментарий
@@ -634,20 +634,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="comment-header">
                     <strong class="comment-author">${commentData.author}</strong>
                     <small class="comment-time">${commentData.created_at}</small>
-                    <div class="comment-actions">
-                        <button class="comment-like-btn" data-comment-id="${commentData.id}" data-is-liked="${is_liked}">
-                            <i class="fas fa-heart${is_liked ? '' : ''}"></i>
-                            <span class="comment-likes-count">${commentData.likes_count || 0}</span>
-                        </button>
-                        <button class="comment-reply-btn" data-comment-id="${commentData.id}" data-comment-author="${commentData.author}">
-                            <i class="fas fa-reply"></i> Ответить
-                        </button>
-                        ${can_delete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}">
-                            <i class="fas fa-trash"></i>
-                        </button>` : ''}
-                    </div>
                 </div>
                 <p class="comment-content">${commentData.content}</p>
+                <div class="comment-actions">
+                    <button class="comment-like-btn" data-comment-id="${commentData.id}" data-is-liked="${is_liked}">
+                        <i class="fas fa-heart${is_liked ? '' : ''}"></i>
+                        <span class="comment-likes-count">${commentData.likes_count || 0}</span>
+                    </button>
+                    <button class="comment-reply-btn" data-comment-id="${commentData.id}" data-comment-author="${commentData.author}">
+                        <i class="fas fa-reply"></i> Ответить
+                    </button>
+                    ${can_delete ? `<button class="delete-comment-btn" data-comment-id="${commentData.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>` : ''}
+                </div>
             `;
         }
         
