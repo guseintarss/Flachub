@@ -986,9 +986,8 @@ html.dark-mode .share-menu-close:hover {
 
 #comment-form button {
     margin-top: 12px;
-    padding: 0;
+    padding: 12px 28px;
     font-weight: 600;
-    font-size: 15px;
     border-radius: 8px;
     transition: all 0.25s ease;
 }
