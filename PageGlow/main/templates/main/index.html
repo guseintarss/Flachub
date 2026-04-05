@@ -93,19 +93,6 @@
 
         <!-- Подвал поста -->
         <div class="post-footer">
-            <div class="post-tags">
-                {% with p.tags.all as tags %}
-                    {% if tags %}
-                        {% for t in tags|slice:":5" %}
-                            <a href="{{ t.get_absolute_url }}" class="text-decoration-none tag-chip">{{ t.tag }}</a>
-                        {% endfor %}
-                        {% if tags|length > 5 %}
-                            <span class="tags-more">+{{ tags|length|add:"-5" }}</span>
-                        {% endif %}
-                    {% endif %}
-                {% endwith %}
-            </div>
-
             <div class="post-stats-and-btn">
                 <div class="post-stats">
                     <span class="stat-item" title="Просмотры">
