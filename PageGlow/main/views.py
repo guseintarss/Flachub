@@ -2,6 +2,8 @@
 import logging
 import os
 import math
+import re
+import unicodedata
 from bleach import clean
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Q, Sum
@@ -28,6 +30,55 @@ from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView
 from django.contrib import messages
 from django.core.files.storage import FileSystemStorage
+
+
+def transliterate(text):
+    """Транслитерация русского текста на английский"""
+    translit_map = {
+        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
+        'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+        'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+        'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch',
+        'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
+    }
+    result = []
+    for char in text.lower():
+        result.append(translit_map.get(char, char))
+    return ''.join(result)
+
+
+def expand_search_query(query):
+    """
+    Расширяет поисковый запрос для поддержки:
+    - Транслитерации (русский -> английский и наоборот)
+    - Частичного совпадения
+    """
+    if not query:
+        return [query]
+
+    queries = [query.lower()]
+
+    # Если запрос на русском - добавим транслитерированную версию
+    has_cyrillic = any('\u0400' <= c <= '\u04FF' for c in query)
+    if has_cyrillic:
+        queries.append(transliterate(query))
+
+    # Если запрос на английском и похож на транслит - добавим русский вариант
+    # Проверяем, есть ли характерные сочетания
+    translit_patterns = {
+        'kh': 'х', 'zh': 'ж', 'ch': 'ч', 'sh': 'ш', 'shch': 'щ',
+        'yu': 'ю', 'ya': 'я', 'yo': 'ё', 'ts': 'ц',
+    }
+    for pattern, rus_char in translit_patterns.items():
+        if pattern in query.lower():
+            # Попробуем заменить обратно
+            alt_query = query.lower().replace(pattern, rus_char)
+            if alt_query != query.lower():
+                queries.append(alt_query)
+            break
+
+    # Удаляем дубликаты
+    return list(set(queries))
 from django.core.paginator import Paginator
 from django.core.cache import cache
 
@@ -820,54 +871,73 @@ class Search(DataMixin, ListView):
         if search_type == 'authors' and query:
             from django.contrib.auth import get_user_model
             User = get_user_model()
-            
-            authors = User.objects.filter(
-                Q(username__icontains=query) |
-                Q(first_name__icontains=query) |
-                Q(last_name__icontains=query) |
-                Q(email__icontains=query)
-            ).annotate(
+
+            # Используем расширенный поиск с транслитерацией
+            expanded_queries = expand_search_query(query)
+
+            authors_q = Q()
+            for eq in expanded_queries:
+                authors_q |= Q(username__icontains=eq)
+                authors_q |= Q(first_name__icontains=eq)
+                authors_q |= Q(last_name__icontains=eq)
+                authors_q |= Q(email__icontains=eq)
+
+            authors = User.objects.filter(authors_q).annotate(
                 posts_count=Count('posts', filter=Q(posts__is_published=True))
             ).order_by('-posts_count')
-            
+
             return authors
 
+        # Если в режиме поиска авторов, но нет запроса - возвращаем пустой
+        if search_type == 'authors':
+            from django.contrib.auth import get_user_model
+            return get_user_model().objects.none()
+
         # Поиск по постам
-        if query and search_type == 'posts':
-            search = Post.published.select_related('cat', 'author').prefetch_related('tags').annotate(
-                likes_count=Count('likes', distinct=True),
-                favorites_count=Count('favorites', distinct=True)
-            )
-
-            # Фильтр по типу контента
-            if post_type == 'articles':
-                search = search.filter(post_type=Post.PostType.ARTICLE)
-            elif post_type == 'posts':
-                search = search.filter(post_type=Post.PostType.POST)
-            elif post_type == 'news':
-                search = search.filter(post_type=Post.PostType.NEWS)
-            elif post_type == 'ideas':
-                search = search.filter(post_type=Post.PostType.IDEA)
-
-            # Поиск по title, content, tags (регистронезависимый через icontains)
-            search = search.filter(
-                Q(title__icontains=query) |
-                Q(content__icontains=query) |
-                Q(tags__tag__icontains=query)
-            ).distinct()
-
-            # Сортировка
-            if sort == 'date':
-                search = search.order_by('-time_create')
-            elif sort == 'views':
-                search = search.order_by('-views')
-            elif sort == 'likes':
-                search = search.order_by('-likes_count')
-        else:
-            search = Post.published.select_related('cat', 'author').prefetch_related('tags').annotate(
+        if not query:
+            return Post.published.select_related('cat', 'author').prefetch_related('tags').annotate(
                 likes_count=Count('likes', distinct=True),
                 favorites_count=Count('favorites', distinct=True)
             ).order_by('-time_create')
+
+        search = Post.published.select_related('cat', 'author').prefetch_related('tags').annotate(
+            likes_count=Count('likes', distinct=True),
+            favorites_count=Count('favorites', distinct=True)
+        )
+
+        # Фильтр по типу контента
+        if post_type == 'articles':
+            search = search.filter(post_type=Post.PostType.ARTICLE)
+        elif post_type == 'posts':
+            search = search.filter(post_type=Post.PostType.POST)
+        elif post_type == 'news':
+            search = search.filter(post_type=Post.PostType.NEWS)
+        elif post_type == 'ideas':
+            search = search.filter(post_type=Post.PostType.IDEA)
+
+        # Поиск по title, content, author, tags (регистронезависимый через icontains)
+        # Добавлен поиск по имени автора и расширенный поиск с транслитерацией
+        expanded_queries = expand_search_query(query)
+
+        # Создаём Q-объект для всех вариантов запроса
+        search_q = Q()
+        for eq in expanded_queries:
+            search_q |= Q(title__icontains=eq)
+            search_q |= Q(content__icontains=eq)
+            search_q |= Q(tags__tag__icontains=eq)
+            search_q |= Q(author__username__icontains=eq)
+            search_q |= Q(author__first_name__icontains=eq)
+            search_q |= Q(author__last_name__icontains=eq)
+
+        search = search.filter(search_q).distinct()
+
+        # Сортировка
+        if sort == 'date':
+            search = search.order_by('-time_create')
+        elif sort == 'views':
+            search = search.order_by('-views')
+        elif sort == 'likes':
+            search = search.order_by('-likes_count')
 
         return search
 
