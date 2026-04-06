@@ -813,9 +813,27 @@ class Search(DataMixin, ListView):
     def get_queryset(self):
         query = self.request.GET.get('q', '').strip()
         post_type = self.request.GET.get('type', 'all')
+        search_type = self.request.GET.get('search_type', 'posts')  # posts или authors
         sort = self.request.GET.get('sort', 'relevance')
 
-        if query:
+        # Если поиск по авторам
+        if search_type == 'authors' and query:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            
+            authors = User.objects.filter(
+                Q(username__icontains=query) |
+                Q(first_name__icontains=query) |
+                Q(last_name__icontains=query) |
+                Q(email__icontains=query)
+            ).annotate(
+                posts_count=Count('posts', filter=Q(posts__is_published=True))
+            ).order_by('-posts_count')
+            
+            return authors
+
+        # Поиск по постам
+        if query and search_type == 'posts':
             search = Post.published.select_related('cat', 'author').prefetch_related('tags').annotate(
                 likes_count=Count('likes', distinct=True),
                 favorites_count=Count('favorites', distinct=True)
@@ -831,16 +849,20 @@ class Search(DataMixin, ListView):
             elif post_type == 'ideas':
                 search = search.filter(post_type=Post.PostType.IDEA)
 
-            # Поиск по title и content
+            # Поиск по title, content, tags (регистронезависимый через icontains)
             search = search.filter(
-                Q(title__icontains=query) | Q(content__icontains=query)
-            )
+                Q(title__icontains=query) |
+                Q(content__icontains=query) |
+                Q(tags__tag__icontains=query)
+            ).distinct()
 
             # Сортировка
             if sort == 'date':
                 search = search.order_by('-time_create')
             elif sort == 'views':
                 search = search.order_by('-views')
+            elif sort == 'likes':
+                search = search.order_by('-likes_count')
         else:
             search = Post.published.select_related('cat', 'author').prefetch_related('tags').annotate(
                 likes_count=Count('likes', distinct=True),
@@ -854,6 +876,7 @@ class Search(DataMixin, ListView):
         request = self.request
         context['q'] = request.GET.get('q', '')
         context['post_type'] = request.GET.get('type', 'all')
+        context['search_type'] = request.GET.get('search_type', 'posts')
         context['sort'] = request.GET.get('sort', 'relevance')
         context['categories'] = Category.objects.all()
         context['title'] = 'Поиск'

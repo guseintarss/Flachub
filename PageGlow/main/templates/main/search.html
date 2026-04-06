@@ -39,50 +39,68 @@
     {% if q %}
     <!-- Результаты поиска -->
     <div class="search-results-section">
-        <!-- Фильтры и сортировка -->
+        <!-- Переключатель типа поиска -->
+        <div class="search-type-tabs">
+            <a href="?q={{ q }}&search_type=posts&type={{ post_type }}&sort={{ sort }}"
+               class="text-decoration-none search-type-tab {% if search_type == 'posts' or not search_type %}active{% endif %}">
+                <i class="fas fa-file-alt"></i> Поиск по постам
+            </a>
+            <a href="?q={{ q }}&search_type=authors"
+               class="text-decoration-none search-type-tab {% if search_type == 'authors' %}active{% endif %}">
+                <i class="fas fa-user"></i> Поиск по авторам
+            </a>
+        </div>
+
+        <!-- Фильтры и сортировка (только для поиска по постам) -->
+        {% if search_type == 'posts' or not search_type %}
         <div class="search-toolbar">
             <div class="search-filters">
                 <span class="filter-label"><i class="fas fa-filter"></i> Тип:</span>
-                <a href="?q={{ q }}&type=all&sort={{ sort }}"
+                <a href="?q={{ q }}&search_type=posts&type=all&sort={{ sort }}"
                    class="text-decoration-none filter-btn {% if post_type == 'all' %}active{% endif %}">
                     Все
                 </a>
-                <a href="?q={{ q }}&type=articles&sort={{ sort }}"
+                <a href="?q={{ q }}&search_type=posts&type=articles&sort={{ sort }}"
                    class="text-decoration-none filter-btn {% if post_type == 'articles' %}active{% endif %}">
                     <i class="fas fa-file-alt"></i> Статьи
                 </a>
-                <a href="?q={{ q }}&type=posts&sort={{ sort }}"
+                <a href="?q={{ q }}&search_type=posts&type=posts&sort={{ sort }}"
                    class="text-decoration-none filter-btn {% if post_type == 'posts' %}active{% endif %}">
                     <i class="fas fa-sticky-note"></i> Посты
                 </a>
-                <a href="?q={{ q }}&type=news&sort={{ sort }}"
+                <a href="?q={{ q }}&search_type=posts&type=news&sort={{ sort }}"
                    class="text-decoration-none filter-btn {% if post_type == 'news' %}active{% endif %}">
                     <i class="fas fa-newspaper"></i> Новости
                 </a>
-                <a href="?q={{ q }}&type=ideas&sort={{ sort }}"
+                <a href="?q={{ q }}&search_type=posts&type=ideas&sort={{ sort }}"
                    class="text-decoration-none filter-btn {% if post_type == 'ideas' %}active{% endif %}">
                     <i class="fas fa-lightbulb"></i> Идеи
                 </a>
             </div>
-            
+
             <div class="search-sort">
                 <span class="sort-label"><i class="fas fa-sort"></i> Сортировка:</span>
                 <div class="sort-buttons">
-                    <a href="?q={{ q }}&type={{ post_type }}&sort=relevance" 
+                    <a href="?q={{ q }}&search_type=posts&type={{ post_type }}&sort=relevance"
                        class="text-decoration-none sort-btn {% if sort == 'relevance' %}active{% endif %}">
                         По релевантности
                     </a>
-                    <a href="?q={{ q }}&type={{ post_type }}&sort=date" 
+                    <a href="?q={{ q }}&search_type=posts&type={{ post_type }}&sort=date"
                        class="text-decoration-none sort-btn {% if sort == 'date' %}active{% endif %}">
                         <i class="fas fa-calendar"></i> По дате
                     </a>
-                    <a href="?q={{ q }}&type={{ post_type }}&sort=views" 
+                    <a href="?q={{ q }}&search_type=posts&type={{ post_type }}&sort=views"
                        class="text-decoration-none sort-btn {% if sort == 'views' %}active{% endif %}">
                         <i class="fas fa-eye"></i> По просмотрам
+                    </a>
+                    <a href="?q={{ q }}&search_type=posts&type={{ post_type }}&sort=likes"
+                       class="text-decoration-none sort-btn {% if sort == 'likes' %}active{% endif %}">
+                        <i class="fas fa-heart"></i> По лайкам
                     </a>
                 </div>
             </div>
         </div>
+        {% endif %}
 
         <!-- Счетчик результатов -->
         <div class="search-results-info">
@@ -97,10 +115,43 @@
 
         <!-- Список результатов -->
         {% if posts %}
-        <div class="search-results-grid">
-            {% for p in posts %}
-    <article class="feed-post {% if p.post_type == 'article' %}post-type-article{% elif p.post_type == 'news' %}post-type-news{% elif p.post_type == 'idea' %}post-type-idea{% else %}post-type-post{% endif %}">
-        
+            {% if search_type == 'authors' %}
+            <!-- Результаты поиска авторов -->
+            <div class="search-authors-grid">
+                {% for author in posts %}
+                <div class="search-author-card">
+                    <a href="{% url 'users:author_profile' author.username %}" class="text-decoration-none author-profile-link">
+                        <div class="author-avatar-large">
+                            {% if author.photo %}
+                                <img src="{{ author.photo.url }}" alt="{{ author.username }}">
+                            {% else %}
+                                <img src="{{ default_image }}" alt="{{ author.username }}">
+                            {% endif %}
+                        </div>
+                        <div class="author-details">
+                            <h3 class="author-name">{{ author.username }}</h3>
+                            {% if author.get_full_name %}
+                            <p class="author-full-name">{{ author.get_full_name }}</p>
+                            {% endif %}
+                            {% if author.about_me %}
+                            <p class="author-bio">{{ author.about_me|truncatechars:100 }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="author-stats">
+                            <span class="author-posts-count">
+                                <i class="fas fa-file-alt"></i> {{ author.posts_count }} публикаций
+                            </span>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Результаты поиска постов -->
+            <div class="search-results-grid">
+                {% for p in posts %}
+                <article class="feed-post {% if p.post_type == 'article' %}post-type-article{% elif p.post_type == 'news' %}post-type-news{% elif p.post_type == 'idea' %}post-type-idea{% else %}post-type-post{% endif %}">
+
         <!-- Шапка поста -->
         <div class="post-header">
             <div class="post-author">
@@ -116,7 +167,7 @@
                     </div>
                 </a>
             </div>
-            
+
             <div class="post-meta-badges">
                 <span class="post-type-badge" title="Тип публикации">
                     {% if p.post_type == 'article' %}
@@ -138,7 +189,7 @@
             <h2 class="post-title">
                 <a href="{{ p.get_absolute_url }}">{{ p.title }}</a>
             </h2>
-            
+
             {% if p.photo %}
                 <div class="post-cover">
                     <a href="{{ p.get_absolute_url }}">
@@ -146,7 +197,7 @@
                     </a>
                 </div>
                 {% endif %}
-                
+
                 <div class="post-excerpt">
                     {% autoescape off %}
                     {{ p.content|truncatewords_html:30|safe }}
@@ -193,18 +244,20 @@
         <div class="empty-feed">
             <i class="fas fa-inbox"></i>
             <h3>Пока нет публикаций</h3>
-            <p>Будьте первым, кто опубликует материал!</p>
+            <p>Будьте первым, кто опубликуете материал!</p>
         </div>
         {% endfor %}
-        </div>
+            </div>
+            {% endif %}
+        {% endif %}
 
         <!-- Пагинация -->
         {% if page_obj.has_other_pages %}
-        {% include 'main/includes/pagination.html' %}
+        {% include 'main/includes/pagination.html' with search_type=search_type post_type=post_type sort=sort %}
         {% endif %}
 
-        {% else %}
-        <!-- Нет результатов -->
+        <!-- Нет результатов (вложенный блок, показывается когда posts пуст) -->
+        {% if not posts %}
         <div class="search-no-results">
             <div class="no-results-icon">
                 <i class="fas fa-search"></i>
@@ -354,6 +407,132 @@
 .search-submit-btn:hover {
     background: var(--primary-700);
     transform: translateY(-1px);
+}
+
+/* Табы типа поиска */
+.search-type-tabs {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.search-type-tab {
+    padding: 0.6rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-type-tab:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.search-type-tab.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Сетка авторов */
+.search-authors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.search-author-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.2s;
+}
+
+.search-author-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.author-profile-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+}
+
+.author-avatar-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary);
+    flex-shrink: 0;
+}
+
+.author-avatar-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.author-details {
+    flex: 1;
+}
+
+.author-name {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+}
+
+.author-full-name {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0 0 0.5rem 0;
+}
+
+.author-bio {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.author-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.author-posts-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.9rem;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.author-posts-count i {
+    color: var(--primary);
 }
 
 /* Toolbar с фильтрами */
