@@ -16,7 +16,7 @@ from django.contrib import messages
 from rest_framework import viewsets, permissions
 
 from PageGlow import settings
-from main.models import Discussion, Post, UserAchievement
+from main.models import Post, UserAchievement
 from main.utils import DataMixin
 from users.forms import LoginUserForm, RegisterUserForm, ProfileUserForm, UserPasswordChangeForm
 from users.models import User, Rule
@@ -180,10 +180,6 @@ def profile_user(request):
         favorites=user  # Посты, где текущий пользователь в списке избранных
     ).select_related('cat', 'author').annotate(likes_count=Count('likes', distinct=True))
 
-    discussions_data = Discussion.objects.filter(
-        author = user,
-    ).prefetch_related('tags').select_related('author', 'cat')
-
     # Достижения пользователя
     user_achievements = UserAchievement.objects.filter(
         user=user
@@ -196,7 +192,6 @@ def profile_user(request):
         'published_posts': published_posts,
         'drafts': drafts,
         'favorites': favorites,
-        'discussion_dis': discussions_data,
         'user': user,
         'user_achievements': user_achievements,
     }
@@ -293,18 +288,18 @@ class ReputationHistoryView(LoginRequiredMixin, DataMixin, ListView):
         # Если пользователь не суперпользователь, показываем только его логи
         if not user.is_staff:
             return self.request.user.reputation_logs.select_related(
-                'post', 'comment', 'discussion'
+                'post', 'comment'
             ).order_by('-created_at')
-        
+
         # Для администраторов — возможность просмотра логов других пользователей
         user_id = self.request.GET.get('user_id')
         if user_id:
             return User.objects.get(id=user_id).reputation_logs.select_related(
-                'post', 'comment', 'discussion'
+                'post', 'comment'
             ).order_by('-created_at')
-        
+
         return user.reputation_logs.select_related(
-            'post', 'comment', 'discussion'
+            'post', 'comment'
         ).order_by('-created_at')
 
     def get_context_data(self, **kwargs):

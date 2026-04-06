@@ -258,32 +258,6 @@ class TestSearchViews:
         assert response.status_code == 200
 
 
-# ===== DISCUSSION VIEWS TESTS =====
-
-@pytest.mark.unit
-class TestDiscussionViews:
-    """Тесты представлений обсуждений"""
-
-    def test_discussions_list(self, client):
-        """Проверка списка обсуждений"""
-        url = reverse('discussions')
-        response = client.get(url)
-        assert response.status_code == 200
-
-    def test_create_discussion_requires_login(self, client):
-        """Проверка что создание требует авторизации"""
-        url = reverse('create_discussion')
-        response = client.get(url)
-        assert response.status_code == 302
-
-    def test_discussion_detail(self, client, discussion):
-        """Проверка страницы обсуждения"""
-        url = reverse('discussion_detail', kwargs={'pk': discussion.pk})
-        response = client.get(url)
-        assert response.status_code == 200
-        assert discussion.title in response.content.decode()
-
-
 # ===== NOTIFICATION VIEWS TESTS =====
 
 @pytest.mark.unit

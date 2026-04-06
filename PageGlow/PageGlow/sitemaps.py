@@ -12,7 +12,6 @@ class StaticViewSitemap(Sitemap):
     def items(self):
         return [
             {'name': 'home', 'priority': 1.0, 'changefreq': 'daily'},
-            {'name': 'discussions', 'priority': 0.8, 'changefreq': 'daily'},
             {'name': 'search', 'priority': 0.5, 'changefreq': 'daily'},
             {'name': 'popular', 'priority': 0.7, 'changefreq': 'daily'},
             {'name': 'about', 'priority': 0.6, 'changefreq': 'monthly'},
@@ -90,16 +89,3 @@ class UserSitemap(Sitemap):
 
     def lastmod(self, obj):
         return obj.updated_at
-
-
-class DiscussionsSitemap(Sitemap):
-    """Карта обсуждений"""
-    changefreq = "daily"
-    priority = 0.8
-
-    def items(self):
-        from main.models import Discussion
-        return Discussion.objects.filter(is_published=True).select_related('author', 'cat')
-
-    def lastmod(self, obj):
-        return obj.time_update

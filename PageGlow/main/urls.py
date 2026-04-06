@@ -4,7 +4,7 @@ from django.urls import path
 from . import views
 from .feeds import (
     LatestPostsFeed, CategoryPostsFeed, TagPostsFeed,
-    DiscussionsFeed, FullContentPostsFeed, AtomLatestPostsFeed
+    FullContentPostsFeed, AtomLatestPostsFeed
 )
 
 
@@ -26,17 +26,7 @@ urlpatterns = [
     path('search/', views.Search.as_view(), name='search'),
     path('login/', views.login, name='login'),
     path('addpage/', views.AddPage.as_view(), name='addpage'),
-    
-    # Обсуждения
-    path('discussions/', views.DiscussionsView.as_view(), name='discussions'),
-    path('discussions/create/', views.CreateDiscussionView.as_view(), name='create_discussion'),
-    path('discussions/<int:pk>/', views.DiscussionDetailView.as_view(), name='discussion_detail'),
-    path('ajax/discussions/add-comment/', views.AddDiscussionCommentAjaxView.as_view(), name='add_discussion_comment_ajax'),
-    path('ajax/discussions/delete-comment/', views.DeleteDiscussionCommentAjaxView.as_view(), name='delete_discussion_comment_ajax'),
-    path('ajax/discussions/close/', views.CloseDiscussionView.as_view(), name='close_discussion'),
-    path('ajax/discussions/toggle-comment-like/', views.ToggleDiscussionCommentLikeView.as_view(), name='toggle_discussion_comment_like'),
-    path('ajax/discussions/toggle-like/', views.ToggleDiscussionLikeView.as_view(), name='toggle_discussion_like'),
-    
+
     path('post/<slug:post_slug>/', views.ShowPost.as_view(), name='post'),
     path('category/<slug:cat_slug>/', views.MainCategory.as_view(), name='category'),
     path('tag/<slug:tag_slug>/', views.TagPostList.as_view(), name='tag'),
@@ -61,8 +51,7 @@ urlpatterns = [
     path('atom/', AtomLatestPostsFeed(), name='atom_feed'),
     path('category/<slug:cat_slug>/rss/', CategoryPostsFeed(), name='category_rss_feed'),
     path('tag/<slug:tag_slug>/rss/', TagPostsFeed(), name='tag_rss_feed'),
-    path('discussions/rss/', DiscussionsFeed(), name='discussions_rss_feed'),
-    
+
     # Информационные страницы
     path('about-us/', views.about_us, name='about_us'),
     path('terms/', views.terms_of_use, name='terms_of_use'),

@@ -49,7 +49,6 @@ class UserReputationLog(models.Model):
         POST_LIKED = 'post_liked', 'Лайк поста (автору)'
         COMMENT_CREATED = 'comment_created', 'Создание комментария'
         COMMENT_LIKED = 'comment_liked', 'Лайк комментария (автору)'
-        DISCUSSION_CREATED = 'discussion_created', 'Создание обсуждения'
         ANSWER_ACCEPTED = 'answer_accepted', 'Лучший ответ'
         SUBSCRIPTION_RECEIVED = 'subscription_received', 'Подписка на автора'
         PENALTY = 'penalty', 'Штраф (нарушение)'
@@ -82,14 +81,6 @@ class UserReputationLog(models.Model):
         on_delete=models.SET_NULL,
         related_name='reputation_logs',
         verbose_name='Комментарий'
-    )
-    discussion = models.ForeignKey(
-        'main.Discussion',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='reputation_logs',
-        verbose_name='Обсуждение'
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     
@@ -286,20 +277,19 @@ class User(AbstractUser):
             created_at__date=today
         ).aggregate(total=Sum('amount'))['total'] or 0
 
-    def add_reputation(self, amount, reason, post=None, comment=None, discussion=None):
+    def add_reputation(self, amount, reason, post=None, comment=None):
         """
         Добавить репутацию пользователю с созданием лога
-        
+
         Args:
             amount: Количество репутации (+ или -)
             reason: Причина (из UserReputationLog.ReasonType)
             post: Связанный пост (опционально)
             comment: Связанный комментарий (опционально)
-            discussion: Связанное обсуждение (опционально)
         """
         from django.db import transaction
         from main.models import Notification
-        
+
         with transaction.atomic():
             # Создаём лог
             UserReputationLog.objects.create(
@@ -307,8 +297,7 @@ class User(AbstractUser):
                 amount=amount,
                 reason=reason,
                 post=post,
-                comment=comment,
-                discussion=discussion
+                comment=comment
             )
             
             # Проверка нового уровня

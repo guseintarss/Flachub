@@ -2,7 +2,7 @@ from django.contrib import admin, messages
 from django.utils.safestring import mark_safe
 
 
-from .models import Post, Category, TagPost, Discussion, DiscussionComment
+from .models import Post, Category, TagPost
 
 
 @admin.register(Post)
@@ -51,27 +51,3 @@ class TagsAdmin(admin.ModelAdmin):
     list_display = ('id', 'tag')
     readonly_fields = ['slug']
     list_display_links = ('id', 'tag')
-
-
-@admin.register(Discussion)
-class DiscussionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author', 'cat', 'views', 'is_published', 'is_closed', 'time_create')
-    list_filter = ('is_published', 'is_closed', 'cat', 'time_create')
-    search_fields = ('title', 'content', 'author__username')
-    readonly_fields = ('time_create', 'time_update', 'views')
-    list_editable = ('is_published', 'is_closed')
-    ordering = ('-time_create',)
-    list_per_page = 20
-    save_on_top = True
-    filter_horizontal = ('tags',)
-
-
-@admin.register(DiscussionComment)
-class DiscussionCommentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'discussion', 'author', 'created_at', 'is_active')
-    list_filter = ('is_active', 'created_at')
-    search_fields = ('content', 'author__username', 'discussion__title')
-    readonly_fields = ('created_at',)
-    ordering = ('-created_at',)
-    list_per_page = 20
-    save_on_top = True

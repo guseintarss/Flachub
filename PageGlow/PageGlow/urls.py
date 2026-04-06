@@ -8,7 +8,7 @@ from PageGlow import settings
 from main.views import page_not_found, CKEditorUploadView
 from .sitemaps import (
     PostSitemap, StaticViewSitemap, CategorySitemap,
-    TagSitemap, UserSitemap, DiscussionsSitemap
+    TagSitemap, UserSitemap
 )
 from django.contrib.sitemaps.views import sitemap
 
@@ -40,7 +40,6 @@ sitemaps = {
     'categories': CategorySitemap,
     'tags': TagSitemap,
     'users': UserSitemap,
-    'discussions': DiscussionsSitemap,
 }
 
 urlpatterns = [

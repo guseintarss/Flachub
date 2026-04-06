@@ -76,20 +76,19 @@ def get_cached_admin_stats():
     """
     cache_key = 'admin_dashboard_stats'
     stats = cache.get(cache_key)
-    
+
     if stats is None:
-        from main.models import Post, Comment, User, Discussion
-        
+        from main.models import Post, Comment, User
+
         stats = {
             'total_posts': Post.objects.count(),
             'published_posts': Post.published.count(),
             'total_users': User.objects.filter(is_active=True).count(),
             'total_comments': Comment.objects.count(),
-            'total_discussions': Discussion.objects.filter(is_published=True).count(),
         }
-        
+
         cache.set(cache_key, stats, 300)  # 5 минут
-    
+
     return stats
 
 

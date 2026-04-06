@@ -34,10 +34,10 @@ from django.core.cache import cache
 from PageGlow import settings
 from main import serializers
 from main.serializers import PostSerializer
-from .forms import AddPostForm, AddQuestionForm, PostUpdateForm, UploadFileForm, CommentForm, DiscussionCommentForm
+from .forms import AddPostForm, PostUpdateForm, UploadFileForm, CommentForm
 from .models import (
     Post, Category, TagPost, UploadFiles, Comment, Subscription,
-    Notification, Discussion, DiscussionComment, Bookmark, Collection,
+    Notification, Bookmark, Collection,
     UserBadge, UserAchievement
 )
 from .utils import DataMixin
@@ -98,11 +98,6 @@ class AdminDashboardView(LoginRequiredMixin, DataMixin, TemplateView):
             last_login__gte=month_ago
         ).count()
         context['total_comments'] = Comment.objects.count()
-        context['total_discussions'] = Discussion.objects.filter(is_published=True).count()
-        context['discussions_open'] = Discussion.objects.filter(
-            is_published=True,
-            is_closed=False
-        ).count()
 
         # Статистика за неделю
         context['posts_week'] = Post.objects.filter(
@@ -145,9 +140,6 @@ class AdminDashboardView(LoginRequiredMixin, DataMixin, TemplateView):
         # Средние значения
         context['avg_comments_per_post'] = Comment.objects.count() / max(Post.objects.count(), 1)
         context['avg_views_per_post'] = total_views / max(Post.objects.count(), 1)
-        context['avg_comments_per_discussion'] = Discussion.objects.annotate(
-            comment_count=Count('comments')
-        ).aggregate(Avg('comment_count'))['comment_count__avg'] or 0
 
         # Популярные статьи (топ 10)
         context['popular_posts'] = Post.published.select_related(
@@ -239,7 +231,6 @@ class AnalyticsAPIView(LoginRequiredMixin, View):
             'published_posts': Post.published.count(),
             'total_users': User.objects.filter(is_active=True).count(),
             'total_comments': Comment.objects.count(),
-            'total_discussions': Discussion.objects.filter(is_published=True).count(),
             'period_stats': {
                 'new_posts': Post.objects.filter(time_create__gte=start_date).count(),
                 'new_users': User.objects.filter(date_joined__gte=start_date).count(),
@@ -1265,323 +1256,6 @@ class SubscriptionFeedView(LoginRequiredMixin, DataMixin, ListView):
             favorites_count=Count('favorites', distinct=True)
         ).order_by('-time_create')
 
-
-# ===== ОБСУЖДЕНИЯ =====
-
-class DiscussionsView(DataMixin, ListView):
-    """Список всех обсуждений"""
-    template_name = 'main/discussions.html'
-    context_object_name = 'discussions'
-    title_page = 'Обсуждения | ФлакХаб'
-    paginate_by = 20
-
-    def get_queryset(self):
-        return Discussion.objects.filter(
-            is_published=True
-        ).select_related('author', 'cat').prefetch_related('tags').order_by('-time_create')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['total_discussions'] = Discussion.objects.filter(is_published=True).count()
-        return context
-
-
-class DiscussionDetailView(DataMixin, DetailView):
-    """Детальное обсуждение с комментариями"""
-    template_name = 'main/discussion_detail.html'
-    context_object_name = 'discussion'
-    pk_url_kwarg = 'pk'
-
-    def get_queryset(self):
-        return Discussion.objects.filter(
-            is_published=True
-        ).select_related('author', 'cat').prefetch_related('tags')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        discussion = self.object
-
-        # Увеличиваем счётчик просмотров
-        session_key = f'viewed_discussion_{discussion.id}'
-        if not self.request.session.get(session_key, False):
-            discussion.views += 1
-            discussion.save(update_fields=['views'])
-            self.request.session[session_key] = True
-
-        # Комментарии с данными авторов и лайками (только top level)
-        comments = discussion.comments.filter(
-            is_active=True, parent__isnull=True
-        ).select_related('author').prefetch_related('likes', 'replies__likes', 'replies__author').order_by('created_at')
-
-        context['comments'] = comments
-        context['comment_form'] = DiscussionCommentForm()
-
-        # Проверяем, закрыто ли обсуждение
-        context['is_closed'] = discussion.is_closed
-        
-        # Передаем объект обсуждения для доступа к лайкам
-        context['discussion'] = discussion
-
-        return context
-
-    def post(self, request, *args, **kwargs):
-        """Обработка добавления комментария"""
-        if not request.user.is_authenticated:
-            return JsonResponse({
-                'success': False,
-                'error': 'Необходимо войти в систему'
-            }, status=403)
-
-        discussion = self.get_object()
-        
-        if discussion.is_closed:
-            return JsonResponse({
-                'success': False,
-                'error': 'Обсуждение закрыто'
-            }, status=403)
-
-        form = DiscussionCommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.discussion = discussion
-            comment.author = request.user
-            comment.save()
-
-            return JsonResponse({
-                'success': True,
-                'comment': {
-                    'id': comment.id,
-                    'content': comment.content,
-                    'author': comment.author.username,
-                    'author_avatar': comment.author.photo.url if comment.author.photo else settings.DEFAULT_USER_IMAGE,
-                    'created_at': comment.created_at.strftime('%d.%m.%Y %H:%M'),
-                    'discussion_id': discussion.id,
-                    'is_author': True
-                }
-            })
-        
-        return JsonResponse({
-            'success': False,
-            'errors': form.errors
-        }, status=400)
-
-
-class CreateDiscussionView(LoginRequiredMixin, DataMixin, CreateView):
-    """Создание нового обсуждения"""
-    form_class = AddQuestionForm
-    template_name = 'main/create_discussion.html'
-    title_page = 'Начать обсуждение | ФлакХаб'
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        response = super().form_valid(form)
-        
-        # Начисляем репутацию за создание обсуждения
-        discussion = self.object
-        if discussion.author:
-            from users.reputation_utils import award_reputation
-            award_reputation(
-                user=discussion.author,
-                reason='discussion_created',
-                discussion=discussion
-            )
-        
-        return response
-
-    def get_success_url(self):
-        return reverse_lazy('discussions')
-
-
-@method_decorator(login_required, name='dispatch')
-class AddDiscussionCommentAjaxView(View):
-    """AJAX добавление комментария к обсуждению"""
-    def post(self, request, *args, **kwargs):
-        try:
-            discussion_id = request.POST.get('discussion_id')
-            content = request.POST.get('content')
-            parent_id = request.POST.get('parent_id')
-
-            if not content or len(content.strip()) == 0:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Текст комментария не может быть пустым'
-                }, status=400)
-
-            discussion = get_object_or_404(Discussion, id=discussion_id)
-
-            if discussion.is_closed:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Обсуждение закрыто'
-                }, status=403)
-
-            parent = None
-            if parent_id:
-                parent = get_object_or_404(DiscussionComment, id=parent_id)
-
-            comment = DiscussionComment.objects.create(
-                discussion=discussion,
-                author=request.user,
-                content=content,
-                parent=parent
-            )
-            
-            # Начисляем репутацию за создание комментария
-            from users.reputation_utils import award_reputation
-            award_reputation(
-                user=comment.author,
-                reason='comment_created',
-                comment=comment
-            )
-
-            data = {
-                'success': True,
-                'comment': {
-                    'id': comment.id,
-                    'content': comment.content,
-                    'author': comment.author.username,
-                    'author_avatar': comment.author.photo.url if comment.author.photo else settings.DEFAULT_USER_IMAGE,
-                    'created_at': comment.created_at.strftime('%d.%m.%Y %H:%M'),
-                    'is_reply': parent is not None,
-                    'parent_id': parent.id if parent else None,
-                    'discussion_id': discussion.id,
-                    'is_author': request.user.id == comment.author.id
-                }
-            }
-            return JsonResponse(data)
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-
-@method_decorator(login_required, name='dispatch')
-class ToggleDiscussionCommentLikeView(View):
-    """AJAX лайк/дизлайк комментария"""
-    def post(self, request, *args, **kwargs):
-        try:
-            comment_id = request.POST.get('comment_id')
-            if not comment_id:
-                return JsonResponse({'success': False, 'error': 'ID комментария не указан'}, status=400)
-
-            comment = get_object_or_404(DiscussionComment, id=comment_id)
-
-            # Переключаем лайк
-            if comment.likes.filter(id=request.user.id).exists():
-                comment.likes.remove(request.user)
-                liked = False
-                # Отменяем репутацию при удалении лайка
-                if comment.author != request.user:
-                    from users.reputation_utils import undo_reputation
-                    undo_reputation(
-                        user=comment.author,
-                        reason='comment_liked',
-                        comment=comment
-                    )
-            else:
-                comment.likes.add(request.user)
-                liked = True
-                # Начисляем репутацию автору за лайк
-                if comment.author != request.user:
-                    from users.reputation_utils import award_reputation
-                    award_reputation(
-                        user=comment.author,
-                        reason='comment_liked',
-                        comment=comment
-                    )
-
-            return JsonResponse({
-                'success': True,
-                'liked': liked,
-                'likes_count': comment.number_of_likes()
-            })
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-
-@method_decorator(login_required, name='dispatch')
-class ToggleDiscussionLikeView(View):
-    """AJAX лайк/дизлайк обсуждения"""
-    def post(self, request, *args, **kwargs):
-        try:
-            discussion_id = request.POST.get('discussion_id')
-            if not discussion_id:
-                return JsonResponse({'success': False, 'error': 'ID обсуждения не указан'}, status=400)
-
-            discussion = get_object_or_404(Discussion, id=discussion_id)
-
-            # Переключаем лайк
-            if discussion.likes.filter(id=request.user.id).exists():
-                discussion.likes.remove(request.user)
-                liked = False
-            else:
-                discussion.likes.add(request.user)
-                liked = True
-                # Начисляем репутацию автору за лайк обсуждения
-                if discussion.author and discussion.author != request.user:
-                    from users.reputation_utils import award_reputation
-                    award_reputation(
-                        user=discussion.author,
-                        reason='post_liked',  # Используем ту же причину
-                        discussion=discussion
-                    )
-
-            return JsonResponse({
-                'success': True,
-                'liked': liked,
-                'likes_count': discussion.number_of_likes()
-            })
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-
-@method_decorator(login_required, name='dispatch')
-class DeleteDiscussionCommentAjaxView(View):
-    """AJAX удаление комментария"""
-    def post(self, request, *args, **kwargs):
-        try:
-            comment_id = request.POST.get('comment_id')
-            if not comment_id:
-                return JsonResponse({'success': False, 'error': 'ID комментария не указан'}, status=400)
-
-            comment = get_object_or_404(DiscussionComment, id=comment_id)
-
-            # Проверяем, что пользователь — автор комментария или администратор
-            if comment.author != request.user and not request.user.is_staff:
-                return JsonResponse(
-                    {'success': False, 'error': 'У вас нет прав для удаления этого комментария'},
-                    status=403
-                )
-
-            comment.delete()
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-
-@method_decorator(login_required, name='dispatch')
-class CloseDiscussionView(View):
-    """Закрытие/открытие обсуждения (только автор или админ)"""
-    def post(self, request, *args, **kwargs):
-        try:
-            discussion_id = request.POST.get('discussion_id')
-            discussion = get_object_or_404(Discussion, id=discussion_id)
-
-            # Проверка прав
-            if discussion.author != request.user and not request.user.is_staff:
-                return JsonResponse(
-                    {'success': False, 'error': 'У вас нет прав для этого действия'},
-                    status=403
-                )
-
-            discussion.is_closed = not discussion.is_closed
-            discussion.save(update_fields=['is_closed'])
-
-            return JsonResponse({
-                'success': True,
-                'is_closed': discussion.is_closed
-            })
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    
 
 @method_decorator(login_required, name='dispatch')
 class NotificationsView(View):

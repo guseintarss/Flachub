@@ -46,8 +46,6 @@ class UserReputationLogAdmin(admin.ModelAdmin):
             return f"Пост: {obj.post.title[:30]}"
         elif obj.comment:
             return "Комментарий"
-        elif obj.discussion:
-            return f"Обсуждение: {obj.discussion.title[:30]}"
         return "—"
     get_related_object.short_description = 'Связано с'
 

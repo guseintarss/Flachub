@@ -7,7 +7,7 @@ from django.utils import feedgenerator
 from django.utils.encoding import force_str
 from django.utils.html import strip_tags
 from bs4 import BeautifulSoup
-from main.models import Post, Discussion
+from main.models import Post
 import re
 
 
@@ -94,33 +94,6 @@ class TagPostsFeed(LatestPostsFeed):
 
     def items(self, obj):
         return Post.published.filter(tags=obj).order_by('-time_create')[:30]
-
-
-class DiscussionsFeed(Feed):
-    """RSS лента обсуждений"""
-    title = "PageGlow - Обсуждения"
-    link = "/discussions/"
-    description = "Последние обсуждения на PageGlow"
-
-    def items(self):
-        return Discussion.objects.filter(
-            is_published=True
-        ).select_related('author', 'cat').order_by('-time_create')[:30]
-
-    def item_title(self, item):
-        return item.title
-
-    def item_description(self, item):
-        return strip_tags(item.content)[:500]
-
-    def item_pubdate(self, item):
-        return item.time_create
-
-    def item_author_name(self, item):
-        return item.author.username if item.author else "Unknown"
-
-    def item_link(self, item):
-        return item.get_absolute_url()
 
 
 class AtomLatestPostsFeed(LatestPostsFeed):

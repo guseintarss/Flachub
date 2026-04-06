@@ -13,16 +13,15 @@ REPUTATION_SETTINGS = {
     # Публикация контента
     'post_created': 10,           # Создание поста
     'comment_created': 2,         # Создание комментария
-    'discussion_created': 5,      # Создание обсуждения
-    
+
     # Получение лайков
     'post_liked': 1,              # Лайк поста (автору)
     'comment_liked': 1,           # Лайк комментария (автору)
-    
+
     # Социальные действия
     'subscription_received': 3,   # Подписка на автора
     'answer_accepted': 15,        # Лучший ответ в обсуждении
-    
+
     # Нарушения
     'penalty_small': -5,          # Малое нарушение
     'penalty_medium': -15,        # Среднее нарушение
@@ -74,28 +73,27 @@ def check_daily_limit(giver_user, receiver_user, amount):
 
 
 @transaction.atomic
-def award_reputation(user, reason, amount=None, post=None, comment=None, discussion=None, skip_limit=False):
+def award_reputation(user, reason, amount=None, post=None, comment=None, skip_limit=False):
     """
     Начислить репутацию пользователю
-    
+
     Args:
         user: Пользователь, получающий репутацию
         reason: Причина (из UserReputationLog.ReasonType)
         amount: Количество (если None, берётся из настроек)
         post: Связанный пост
         comment: Связанный комментарий
-        discussion: Связанное обсуждение
         skip_limit: Пропустить проверку дневного лимита
-    
+
     Returns:
         bool: Успешно ли начислена репутация
     """
     if amount is None:
         amount = get_reputation_value(reason)
-    
+
     if amount == 0:
         return False
-    
+
     # Проверка дневного лимита на получение репутации (для положительных значений)
     if amount > 0 and not skip_limit:
         today = timezone.now().date()
@@ -103,46 +101,43 @@ def award_reputation(user, reason, amount=None, post=None, comment=None, discuss
             created_at__date=today,
             amount__gt=0
         ).aggregate(total=models.Sum('amount'))['total'] or 0
-        
+
         # Лимит на получение репутации в день (5x от базового)
         max_daily_receive = DAILY_REPUTATION_LIMIT * 5
         if received_today + amount > max_daily_receive:
             return False
-    
+
     # Начисляем репутацию
     user.add_reputation(
         amount=amount,
         reason=reason,
         post=post,
-        comment=comment,
-        discussion=discussion
+        comment=comment
     )
-    
+
     return True
 
 
-def undo_reputation(user, reason, post=None, comment=None, discussion=None):
+def undo_reputation(user, reason, post=None, comment=None):
     """
     Отменить начисление репутации (например, при удалении лайка)
-    
+
     Args:
         user: Пользователь, у которого отменяется репутация
         reason: Причина отмены
         post: Связанный пост
         comment: Связанный комментарий
-        discussion: Связанное обсуждение
     """
     amount = get_reputation_value(reason)
     if amount == 0:
         return
-    
+
     # Отменяем, вычитая репутацию
     user.add_reputation(
         amount=-amount,
         reason=reason,
         post=post,
-        comment=comment,
-        discussion=discussion
+        comment=comment
     )
 
 

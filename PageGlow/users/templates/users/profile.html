@@ -325,11 +325,6 @@ html.dark-mode .badge-card { background: var(--dark-bg); }
                     <i class="fas fa-heart"></i> <span>Избранные</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="#discussions" class="nav-link tab" data-tab="discussions">
-                    <i class="fas fa-comments"></i> <span>Обсуждения</span>
-                </a>
-            </li>
         </ul>
     </div>
 
@@ -465,71 +460,6 @@ html.dark-mode .badge-card { background: var(--dark-bg); }
                     <p>Избранных статей пока нет</p>
                     <a href="{% url 'home' %}" class="text-decoration-none btn btn-outline-secondary">
                         <i class="fas fa-search"></i> Найти статьи
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Обсуждения -->
-        <div id="discussions" class="content-tab">
-            <div class="discussions-list">
-                {% for discussion in discussion_dis %}
-                <div class="discussion-card">
-                    <div class="discussion-header">
-                        <h3 class="discussion-title">
-                            <a href="{% url 'discussion_detail' discussion.pk %}">{{ discussion.title|truncatechars:80 }}</a>
-                        </h3>
-                        <div class="discussion-badges">
-                            {% if discussion.is_closed %}
-                            <span class="badge badge-closed">
-                                <i class="fas fa-lock"></i> Закрыто
-                            </span>
-                            {% endif %}
-                            {% if discussion.cat %}
-                            <span class="badge badge-category">
-                                {{ discussion.cat.name }}
-                            </span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="discussion-meta">
-                        <span>
-                            <i class="fas fa-user"></i>
-                            <a href="{% url 'users:author_profile' discussion.author.username %}">
-                                {{ discussion.author.username }}
-                            </a>
-                        </span>
-                        <span>
-                            <i class="fas fa-clock"></i>
-                            {{ discussion.time_create|date:"d.m.Y H:i" }}
-                        </span>
-                        <span>
-                            <i class="fas fa-eye"></i> {{ discussion.views }}
-                        </span>
-                        <span>
-                            <i class="fas fa-comments"></i> {{ discussion.comments_count }}
-                        </span>
-                    </div>
-                    <p class="discussion-preview">
-                        {{ discussion.content|truncatewords:20 }}
-                    </p>
-                    {% if discussion.tags.all %}
-                    <div class="discussion-tags">
-                        {% for tag in discussion.tags.all %}
-                        <a href="{% url 'tag' tag.slug %}" class="text-decoration-none badge badge-tag">
-                            #{{ tag.tag }}
-                        </a>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-                {% empty %}
-                <div class="empty-state">
-                    <i class="fas fa-comments"></i>
-                    <p>Обсуждений пока нет</p>
-                    <a href="{% url 'discussions' %}" class="text-decoration-none btn btn-outline-secondary">
-                        <i class="fas fa-plus"></i> Создать обсуждение
                     </a>
                 </div>
                 {% endfor %}
@@ -1131,106 +1061,10 @@ html.dark-mode .badge-card { background: var(--dark-bg); }
     color: inherit;
 }
 
-/* Обсуждения */
-.discussions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.discussion-card {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    transition: transform 0.2s;
-}
-
-.discussion-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-}
-
-.discussion-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 15px;
-    gap: 15px;
-}
-
-.discussion-title {
-    margin: 0;
-    font-size: 1.2rem;
-}
-
-.discussion-title a {
-    color: var(--text);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.discussion-title a:hover {
-    color: var(--primary);
-}
-
-.discussion-badges {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.badge-closed {
-    background: #6c757d;
-}
-
-.badge-category {
-    background: var(--primary);
-}
-
-.badge-tag {
-    background: var(--tags-bg);
-    color: var(--tags-color);
-    text-decoration: none;
-}
-
-.discussion-meta {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 15px;
-    font-size: 0.9rem;
-    color: var(--muted);
-}
-
-.discussion-meta span {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.discussion-meta a {
-    color: var(--primary);
-    text-decoration: none;
-}
-
-.discussion-preview {
-    color: var(--text);
-    line-height: 1.6;
-    margin-bottom: 15px;
-}
-
-.discussion-tags {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
 /* Темная тема */
 .dark-mode .profile-header,
 .dark-mode .profile-tabs,
 .dark-mode .post-card,
-.dark-mode .discussion-card,
 .dark-mode .empty-state {
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }

@@ -3,9 +3,7 @@ from PageGlow import settings
 import logging
 
 
-menu = [
-    {'title': "Обсуждения", 'url_name': 'discussions'},
-]
+menu = []
 
 logger = logging.getLogger(__name__)
 

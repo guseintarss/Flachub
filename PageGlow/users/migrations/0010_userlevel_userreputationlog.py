@@ -41,10 +41,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('amount', models.IntegerField(verbose_name='Изменение репутации')),
-                ('reason', models.CharField(choices=[('post_created', 'Публикация поста'), ('post_liked', 'Лайк поста (автору)'), ('comment_created', 'Создание комментария'), ('comment_liked', 'Лайк комментария (автору)'), ('discussion_created', 'Создание обсуждения'), ('answer_accepted', 'Лучший ответ'), ('subscription_received', 'Подписка на автора'), ('penalty', 'Штраф (нарушение)'), ('manual', 'Ручное изменение')], max_length=50, verbose_name='Причина')),
+                ('reason', models.CharField(choices=[('post_created', 'Публикация поста'), ('post_liked', 'Лайк поста (автору)'), ('comment_created', 'Создание комментария'), ('comment_liked', 'Лайк комментария (автору)'), ('answer_accepted', 'Лучший ответ'), ('subscription_received', 'Подписка на автора'), ('penalty', 'Штраф (нарушение)'), ('manual', 'Ручное изменение')], max_length=50, verbose_name='Причина')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
                 ('comment', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='reputation_logs', to='main.comment', verbose_name='Комментарий')),
-                ('discussion', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='reputation_logs', to='main.discussion', verbose_name='Обсуждение')),
                 ('post', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='reputation_logs', to='main.post', verbose_name='Пост')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reputation_logs', to=settings.AUTH_USER_MODEL, verbose_name='Пользователь')),
             ],

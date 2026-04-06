@@ -107,10 +107,6 @@ class MetaDescriptionMiddleware(MiddlewareMixin):
                 return f'Профиль автора {author.username} на ФлакХаб. {text}'
             return f'Профиль автора {author.username} на ФлакХаб. Все публикации, статьи и обсуждения.'
 
-        # Для обсуждений
-        if context.get('discussions') is not None:
-            return 'Обсуждения на ФлакХаб — задавайте вопросы, делитесь опытом и участвуйте в профессиональных дискуссиях с IT-специалистами.'
-
         # Для главной страницы
         if context.get('posts') is not None and not context.get('q'):
             return 'ФлакХаб — платформа для IT-специалистов. Читайте статьи по программированию, участвуйте в обсуждениях, делитесь знаниями и развивайтесь вместе с нами.'

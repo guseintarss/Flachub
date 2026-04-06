@@ -59,8 +59,6 @@
                                     <a href="{{ log.post.get_absolute_url }}">{{ log.post.title|truncatechars:30 }}</a>
                                 {% elif log.comment %}
                                     <span>Комментарий</span>
-                                {% elif log.discussion %}
-                                    <a href="{{ log.discussion.get_absolute_url }}">{{ log.discussion.title|truncatechars:30 }}</a>
                                 {% else %}
                                     <span>—</span>
                                 {% endif %}
