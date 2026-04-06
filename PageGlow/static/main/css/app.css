@@ -1280,6 +1280,32 @@ html.dark-mode .header-icon {
     opacity: 1;
 }
 
+/* Стили для ссылок категорий с бейджем */
+.menu_link-category {
+    justify-content: space-between;
+}
+
+.menu-link-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.category-count {
+    background: rgba(12, 106, 207, 0.1);
+    color: var(--primary);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.menu_link:hover .category-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
 .menu-divider {
     height: 1px;
     background: var(--border);
@@ -3713,4 +3739,14 @@ html.dark-mode .text-muted { color: #8892b0 !important; }
 
 html.dark-mode .comment-like-btn.liked i {
     color: #ef4444 !important;
+}
+
+html.dark-mode .category-count {
+    background: rgba(41, 156, 245, 0.15);
+    color: #299cf5;
+}
+
+html.dark-mode .menu_link:hover .category-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }

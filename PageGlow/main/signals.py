@@ -3,7 +3,8 @@
 """
 from django.db.models import Count, Q, Sum
 from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete, m2m_changed
+from django.core.cache import cache
 from main.models import Post, Comment, Bookmark, UserBadge, UserAchievement, Notification
 import logging
 
@@ -208,3 +209,24 @@ def check_bookmark_badge(sender, instance, created, **kwargs):
                 badge_color='#3f51b5',
                 reason='50 закладок'
             )
+
+
+# ===== СИГНАЛЫ ДЛЯ ОБНОВЛЕНИЯ SIDEBAR =====
+
+@receiver(post_delete, sender=Post)
+@receiver(m2m_changed, sender=Post.tags.through)
+def invalidate_sidebar_cache(sender, instance=None, **kwargs):
+    """Инвалидация кэша sidebar при удалении поста или изменении связей"""
+    cache.delete('sidebar_context_data')
+    # Также инвалидируем кэш шаблонов
+    from django.core.cache.utils import make_template_fragment_key
+    cache.delete(make_template_fragment_key("side_cache"))
+
+
+@receiver(post_save, sender='main.Category')
+@receiver(post_delete, sender='main.Category')
+def invalidate_sidebar_cache_on_category_change(sender, instance=None, **kwargs):
+    """Инвалидация кэша sidebar при создании/удалении категории"""
+    cache.delete('sidebar_context_data')
+    from django.core.cache.utils import make_template_fragment_key
+    cache.delete(make_template_fragment_key("side_cache"))
