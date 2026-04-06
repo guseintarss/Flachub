@@ -1,0 +1,463 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+<meta name="robots" content="noindex, follow" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Сервис недоступен — 503",
+  "description": "Сервер временно недоступен. Ведутся технические работы.",
+  "url": "{{ request.build_absolute_uri }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-container">
+        <!-- Анимированная SVG иллюстрация -->
+        <div class="error-illustration">
+            <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                <!-- Фоновые инструменты/шестерёнки -->
+                <g class="gear-big" transform="translate(200, 200)">
+                    <path d="M 0,-50 L 8,-45 L 15,-55 L 22,-47 L 30,-50 L 28,-40 L 38,-35 L 30,-28 L 35,-20 L 25,-18 L 25,-8 L 15,-12 L 8,-3 L 0,-8 L -8,-3 L -15,-12 L -25,-8 L -25,-18 L -35,-20 L -30,-28 L -38,-35 L -28,-40 L -30,-50 L -22,-47 L -15,-55 L -8,-45 Z" 
+                          fill="#64748b" stroke="#475569" stroke-width="2">
+                        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/>
+                    </path>
+                    <circle cx="0" cy="0" r="15" fill="#475569"/>
+                </g>
+
+                <g class="gear-small" transform="translate(280, 280)">
+                    <path d="M 0,-35 L 6,-30 L 10,-38 L 16,-32 L 22,-35 L 20,-27 L 27,-24 L 22,-19 L 24,-12 L 17,-12 L 17,-4 L 10,-8 L 4,-2 L 0,-6 L -4,-2 L -10,-8 L -17,-4 L -17,-12 L -24,-12 L -22,-19 L -27,-24 L -20,-27 L -22,-35 L -16,-32 L -10,-38 L -6,-30 Z" 
+                          fill="#94a3b8" stroke="#64748b" stroke-width="2">
+                        <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="15s" repeatCount="indefinite"/>
+                    </path>
+                    <circle cx="0" cy="0" r="10" fill="#64748b"/>
+                </g>
+
+                <!-- Сервер на обслуживании -->
+                <g transform="translate(500, 350)">
+                    <!-- Корпус сервера -->
+                    <rect x="-100" y="-120" width="200" height="220" rx="10" fill="#1e293b" stroke="#334155" stroke-width="3"/>
+                    
+                    <!-- Полосы сервера -->
+                    <rect x="-80" y="-100" width="160" height="30" rx="4" fill="#334155"/>
+                    <circle cx="-60" y="-85" r="5" fill="#22c55e" opacity="0.5"/>
+                    <circle cx="-40" y="-85" r="5" fill="#f59e0b">
+                        <animate attributeName="fill" values="#f59e0b;#ef4444;#f59e0b" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <rect x="-80" y="-60" width="160" height="30" rx="4" fill="#334155"/>
+                    <circle cx="-60" y="-45" r="5" fill="#22c55e" opacity="0.5"/>
+                    <circle cx="-40" y="-45" r="5" fill="#f59e0b">
+                        <animate attributeName="fill" values="#f59e0b;#ef4444;#f59e0b" dur="2.5s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <rect x="-80" y="-20" width="160" height="30" rx="4" fill="#334155"/>
+                    <circle cx="-60" y="-5" r="5" fill="#ef4444">
+                        <animate attributeName="fill" values="#ef4444;#f59e0b;#ef4444" dur="1.8s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="-40" y="-5" r="5" fill="#ef4444"/>
+
+                    <!-- Экран состояния -->
+                    <rect x="-70" y="20" width="140" height="70" rx="4" fill="#0f172a"/>
+                    <text x="0" y="-5" text-anchor="middle" font-size="28" font-weight="bold" fill="#f59e0b" font-family="monospace">
+                        503
+                        <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+                    </text>
+                    <text x="0" y="20" text-anchor="middle" font-size="11" fill="#94a3b8" font-family="monospace">
+                        SERVICE UNAVAILABLE
+                    </text>
+                </g>
+
+                <!-- Гаечный ключ -->
+                <g class="wrench" transform="translate(350, 400)">
+                    <rect x="-60" y="-8" width="120" height="16" rx="3" fill="#f59e0b" stroke="#d97706" stroke-width="1">
+                        <animateTransform attributeName="transform" type="rotate" values="-5;5;-5" dur="3s" repeatCount="indefinite"/>
+                    </rect>
+                    <circle cx="-60" cy="0" r="12" fill="none" stroke="#d97706" stroke-width="6"/>
+                </g>
+
+                <!-- Текст 503 на фоне -->
+                <text x="400" y="100" text-anchor="middle" font-size="100" font-weight="800" fill="url(#textGradient)" font-family="system-ui, -apple-system, sans-serif" opacity="0.12">
+                    503
+                </text>
+                <defs>
+                    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#f59e0b"/>
+                        <stop offset="50%" stop-color="#f97316"/>
+                        <stop offset="100%" stop-color="#ef4444"/>
+                    </linearGradient>
+                </defs>
+
+                <!-- Часики -->
+                <g class="clock" transform="translate(150, 450)">
+                    <circle cx="0" cy="0" r="50" fill="none" stroke="#64748b" stroke-width="4"/>
+                    <line x1="0" y1="0" x2="0" y2="-30" stroke="#94a3b8" stroke-width="3" stroke-linecap="round">
+                        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="60s" repeatCount="indefinite"/>
+                    </line>
+                    <line x1="0" y1="0" x2="20" y2="0" stroke="#94a3b8" stroke-width="3" stroke-linecap="round">
+                        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="720s" repeatCount="indefinite"/>
+                    </line>
+                    <circle cx="0" cy="0" r="4" fill="#f59e0b"/>
+                </g>
+            </svg>
+        </div>
+
+        <!-- Текст ошибки -->
+        <div class="error-text">
+            <h1>Сервис временно недоступен</h1>
+            <p>Ведутся технические работы — мы скоро вернёмся 🔧</p>
+            <p class="error-hint">Попробуйте зайти через несколько минут</p>
+        </div>
+
+        <!-- Кнопки действий -->
+        <div class="error-actions">
+            <a href="/" class="btn btn-home">
+                <i class="fas fa-home"></i>
+                <span>На главную</span>
+            </a>
+            <button onclick="setTimeout(() => location.reload(), 5000)" class="btn btn-retry">
+                <i class="fas fa-clock"></i>
+                <span>Попробовать через 5 сек</span>
+            </button>
+            <a href="{% url 'search' %}" class="btn btn-search">
+                <i class="fas fa-search"></i>
+                <span>Поиск</span>
+            </a>
+        </div>
+
+        <!-- Полезная информация -->
+        <div class="error-helpful">
+            <p class="helpful-title">Что делать:</p>
+            <div class="helpful-links">
+                <button onclick="setTimeout(() => location.reload(), 10000)" class="helpful-link">
+                    <i class="fas fa-hourglass-half"></i>
+                    <span>Подождать 10 секунд</span>
+                </button>
+                <a href="{% url 'home' %}" class="helpful-link">
+                    <i class="fas fa-home"></i>
+                    <span>Вернуться на главную</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* =====================================================
+   PageGlow - 503 Error Page
+   ===================================================== */
+
+.error-page {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.error-container {
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+}
+
+/* Иллюстрация */
+.error-illustration {
+    margin-bottom: 20px;
+}
+
+.error-illustration svg {
+    width: 100%;
+    max-width: 700px;
+    height: auto;
+    margin: 0 auto;
+}
+
+/* Анимация шестерёнок */
+.gear-big {
+    animation: gearPulse 4s ease-in-out infinite;
+}
+
+.gear-small {
+    animation: gearPulse 3s ease-in-out infinite;
+}
+
+@keyframes gearPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Анимация ключа */
+.wrench {
+    animation: wrenchMove 3s ease-in-out infinite;
+}
+
+@keyframes wrenchMove {
+    0%, 100% { transform: translate(350px, 400px) rotate(-5deg); }
+    50% { transform: translate(350px, 390px) rotate(5deg); }
+}
+
+/* Анимация часов */
+.clock {
+    animation: clockPulse 2s ease-in-out infinite;
+}
+
+@keyframes clockPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Текст ошибки */
+.error-text {
+    margin-bottom: 40px;
+}
+
+.error-text h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 16px 0;
+    line-height: 1.3;
+}
+
+.error-text p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin: 0 0 8px 0;
+    line-height: 1.6;
+}
+
+.error-hint {
+    font-size: 0.95rem !important;
+    color: var(--muted) !important;
+    opacity: 0.8;
+}
+
+/* Кнопки действий */
+.error-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+}
+
+.error-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background: transparent;
+    font-family: inherit;
+}
+
+.error-actions .btn i {
+    font-size: 1.1rem;
+}
+
+.btn-home {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
+.btn-home:hover {
+    background: var(--primary-700);
+    border-color: var(--primary-700);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(12, 106, 207, 0.35);
+}
+
+.btn-retry {
+    background: transparent;
+    color: #f59e0b;
+    border-color: var(--border);
+}
+
+.btn-retry:hover {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.05);
+    transform: translateY(-2px);
+}
+
+.btn-search {
+    background: transparent;
+    color: var(--primary);
+    border-color: var(--border);
+}
+
+.btn-search:hover {
+    border-color: var(--primary);
+    background: rgba(12, 106, 207, 0.05);
+    transform: translateY(-2px);
+}
+
+/* Полезные ссылки */
+.error-helpful {
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+}
+
+.helpful-title {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0 0 16px 0;
+}
+
+.helpful-links {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.helpful-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.helpful-link:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(12, 106, 207, 0.25);
+}
+
+.helpful-link i {
+    font-size: 1rem;
+}
+
+/* =====================================================
+   DARK MODE
+   ===================================================== */
+
+html.dark-mode .btn-retry {
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .btn-retry:hover {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: #f59e0b;
+}
+
+html.dark-mode .btn-search {
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .btn-search:hover {
+    background: rgba(41, 156, 245, 0.1);
+    border-color: var(--dark-primary);
+}
+
+html.dark-mode .helpful-link {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .helpful-link:hover {
+    background: var(--dark-primary);
+    border-color: var(--dark-primary);
+}
+
+html.dark-mode .error-helpful {
+    border-top-color: var(--dark-border);
+}
+
+/* =====================================================
+   MOBILE VERSION
+   ===================================================== */
+
+@media (max-width: 768px) {
+    .error-page {
+        padding: 30px 16px;
+        min-height: calc(100vh - 150px);
+    }
+
+    .error-illustration svg {
+        max-width: 500px;
+    }
+
+    .error-text h1 {
+        font-size: 1.5rem;
+    }
+
+    .error-text p {
+        font-size: 1rem;
+    }
+
+    .error-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .error-actions .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+    }
+
+    .helpful-links {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .helpful-link {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .error-page {
+        padding: 20px 12px;
+    }
+
+    .error-illustration svg {
+        max-width: 350px;
+    }
+
+    .error-text h1 {
+        font-size: 1.3rem;
+    }
+
+    .error-text p {
+        font-size: 0.9rem;
+    }
+
+    .error-actions .btn {
+        font-size: 0.9rem;
+        padding: 10px 16px;
+    }
+
+    .helpful-link {
+        font-size: 0.85rem;
+        padding: 8px 16px;
+    }
+}
+</style>
+{% endblock %}

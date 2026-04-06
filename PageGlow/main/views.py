@@ -771,6 +771,18 @@ class MainCategory(DataMixin, ListView):
 def page_not_found(request, exception):
     return render(request, '404.html', status=404)
 
+def server_error(request):
+    return render(request, '500.html', status=500)
+
+def bad_gateway(request):
+    return render(request, '502.html', status=502)
+
+def service_unavailable(request):
+    return render(request, '503.html', status=503)
+
+def permission_denied(request, exception):
+    return render(request, '403.html', status=403)
+
 class TagPostList(DataMixin, ListView):
     template_name = 'main/index.html'
     context_object_name = 'posts'

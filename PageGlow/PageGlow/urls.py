@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 from django.http import JsonResponse
 from django.db import connection
 from PageGlow import settings
-from main.views import page_not_found, CKEditorUploadView
+from main.views import page_not_found, CKEditorUploadView, server_error, bad_gateway, service_unavailable, permission_denied
 from .sitemaps import (
     PostSitemap, StaticViewSitemap, CategorySitemap,
     TagSitemap, UserSitemap
@@ -72,5 +72,9 @@ if settings.DEBUG:
     urlpatterns += static('/ckeditor5/', document_root=settings.BASE_DIR / 'ckeditor5')
 
 handler404 = page_not_found
+handler500 = server_error
+handler502 = bad_gateway
+handler503 = service_unavailable
+handler403 = permission_denied
 
 admin.site.site_header = 'Панель администрирования'

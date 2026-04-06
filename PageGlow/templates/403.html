@@ -1,0 +1,444 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+<meta name="robots" content="noindex, follow" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Доступ запрещён — 403",
+  "description": "У вас нет прав для доступа к этой странице. Авторизуйтесь или вернитесь на главную.",
+  "url": "{{ request.build_absolute_uri }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-container">
+        <!-- Анимированная SVG иллюстрация -->
+        <div class="error-illustration">
+            <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                <!-- Фоновый замок -->
+                <g transform="translate(400, 350)">
+                    <!-- Дверь -->
+                    <rect x="-80" y="-120" width="160" height="240" rx="80" fill="#1e293b" stroke="#334155" stroke-width="4"/>
+                    <rect x="-60" y="-80" width="120" height="200" fill="#0f172a"/>
+                    
+                    <!-- Замок -->
+                    <g class="lock" transform="translate(0, 0)">
+                        <!-- Корпус замка -->
+                        <rect x="-25" y="-20" width="50" height="40" rx="6" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+                        
+                        <!-- Дужка замка -->
+                        <path d="M -15,-20 L -15,-40 C -15,-55 15,-55 15,-40 L 15,-20" 
+                              fill="none" stroke="#d97706" stroke-width="5" stroke-linecap="round"/>
+                        
+                        <!-- Замочная скважина -->
+                        <circle cx="0" cy="-5" r="5" fill="#1e293b"/>
+                        <rect x="-3" y="-5" width="6" height="12" fill="#1e293b"/>
+                    </g>
+
+                    <!-- Знак стоп -->
+                    <g class="stop-sign" transform="translate(0, -180)">
+                        <polygon points="0,-35 25,-15 25,15 0,35 -25,15 -25,-15" 
+                                 fill="#ef4444" stroke="#dc2626" stroke-width="2">
+                            <animate attributeName="opacity" values="1;0.7;1" dur="2s" repeatCount="indefinite"/>
+                        </polygon>
+                        <text x="0" y="8" text-anchor="middle" font-size="24" font-weight="bold" fill="#ffffff" font-family="sans-serif">
+                            ✕
+                        </text>
+                    </g>
+                </g>
+
+                <!-- Охранник -->
+                <g class="guard" transform="translate(200, 300)">
+                    <!-- Тело -->
+                    <rect x="-20" y="-40" width="40" height="80" rx="8" fill="#3b82f6"/>
+                    <!-- Голова -->
+                    <circle cx="0" cy="-60" r="20" fill="#fcd34d"/>
+                    <!-- Кепка -->
+                    <rect x="-22" y="-75" width="44" height="10" rx="3" fill="#1e40af"/>
+                    <rect x="-15" y="-80" width="30" height="8" rx="3" fill="#1e40af"/>
+                    <!-- Рука с жезлом -->
+                    <line x1="20" y1="-20" x2="40" y2="-50" stroke="#fcd34d" stroke-width="8" stroke-linecap="round"/>
+                    <line x1="40" y1="-50" x2="45" y2="-70" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+                    <!-- Ноги -->
+                    <line x1="-10" y1="40" x2="-15" y2="80" stroke="#1e40af" stroke-width="10" stroke-linecap="round"/>
+                    <line x1="10" y1="40" x2="15" y2="80" stroke="#1e40af" stroke-width="10" stroke-linecap="round"/>
+                </g>
+
+                <!-- Текст 403 -->
+                <text x="400" y="100" text-anchor="middle" font-size="100" font-weight="800" fill="url(#textGradient)" font-family="system-ui, -apple-system, sans-serif" opacity="0.12">
+                    403
+                </text>
+                <defs>
+                    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#ef4444"/>
+                        <stop offset="50%" stop-color="#f59e0b"/>
+                        <stop offset="100%" stop-color="#f97316"/>
+                    </linearGradient>
+                </defs>
+
+                <!-- Звёзды/искры -->
+                <circle cx="100" cy="150" r="2" fill="#ef4444" opacity="0.5">
+                    <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="700" cy="120" r="1.5" fill="#f59e0b" opacity="0.4">
+                    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="600" cy="450" r="2.5" fill="#ef4444" opacity="0.3">
+                    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+        </div>
+
+        <!-- Текст ошибки -->
+        <div class="error-text">
+            <h1>Доступ запрещён</h1>
+            <p>У вас нет прав для просмотра этой страницы 🔒</p>
+            <p class="error-hint">Авторизуйтесь или обратитесь к администратору</p>
+        </div>
+
+        <!-- Кнопки действий -->
+        <div class="error-actions">
+            <a href="/" class="btn btn-home">
+                <i class="fas fa-home"></i>
+                <span>На главную</span>
+            </a>
+            {% if not user.is_authenticated %}
+            <a href="{% url 'users:login' %}" class="btn btn-login">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Войти</span>
+            </a>
+            {% endif %}
+            <a href="{% url 'search' %}" class="btn btn-search">
+                <i class="fas fa-search"></i>
+                <span>Поиск</span>
+            </a>
+        </div>
+
+        <!-- Полезная информация -->
+        <div class="error-helpful">
+            <p class="helpful-title">Возможные причины:</p>
+            <div class="helpful-links">
+                {% if not user.is_authenticated %}
+                <a href="{% url 'users:login' %}" class="helpful-link">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Авторизоваться</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'home' %}" class="helpful-link">
+                    <i class="fas fa-home"></i>
+                    <span>Вернуться на главную</span>
+                </a>
+                <a href="{% url 'popular' %}" class="helpful-link">
+                    <i class="fas fa-fire"></i>
+                    <span>Популярное</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* =====================================================
+   PageGlow - 403 Error Page
+   ===================================================== */
+
+.error-page {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.error-container {
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+}
+
+/* Иллюстрация */
+.error-illustration {
+    margin-bottom: 20px;
+}
+
+.error-illustration svg {
+    width: 100%;
+    max-width: 700px;
+    height: auto;
+    margin: 0 auto;
+}
+
+/* Анимация замка */
+.lock {
+    animation: lockShake 3s ease-in-out infinite;
+}
+
+@keyframes lockShake {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(0, 0) rotate(-3deg); }
+    20% { transform: translate(0, 0) rotate(3deg); }
+    30% { transform: translate(0, 0) rotate(-3deg); }
+    40% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* Анимация охранника */
+.guard {
+    animation: guardWave 4s ease-in-out infinite;
+}
+
+@keyframes guardWave {
+    0%, 100% { transform: translate(200px, 300px) rotate(0deg); }
+    25% { transform: translate(200px, 295px) rotate(-2deg); }
+    75% { transform: translate(200px, 305px) rotate(2deg); }
+}
+
+/* Текст ошибки */
+.error-text {
+    margin-bottom: 40px;
+}
+
+.error-text h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 16px 0;
+    line-height: 1.3;
+}
+
+.error-text p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin: 0 0 8px 0;
+    line-height: 1.6;
+}
+
+.error-hint {
+    font-size: 0.95rem !important;
+    color: var(--muted) !important;
+    opacity: 0.8;
+}
+
+/* Кнопки действий */
+.error-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+}
+
+.error-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    border: 2px solid transparent;
+}
+
+.error-actions .btn i {
+    font-size: 1.1rem;
+}
+
+.btn-home {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
+.btn-home:hover {
+    background: var(--primary-700);
+    border-color: var(--primary-700);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(12, 106, 207, 0.35);
+}
+
+.btn-login {
+    background: transparent;
+    color: #22c55e;
+    border-color: var(--border);
+}
+
+.btn-login:hover {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.05);
+    transform: translateY(-2px);
+}
+
+.btn-search {
+    background: transparent;
+    color: var(--primary);
+    border-color: var(--border);
+}
+
+.btn-search:hover {
+    border-color: var(--primary);
+    background: rgba(12, 106, 207, 0.05);
+    transform: translateY(-2px);
+}
+
+/* Полезные ссылки */
+.error-helpful {
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+}
+
+.helpful-title {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0 0 16px 0;
+}
+
+.helpful-links {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.helpful-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    border: 1px solid var(--border);
+}
+
+.helpful-link:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(12, 106, 207, 0.25);
+}
+
+.helpful-link i {
+    font-size: 1rem;
+}
+
+/* =====================================================
+   DARK MODE
+   ===================================================== */
+
+html.dark-mode .btn-login {
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .btn-login:hover {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: #22c55e;
+}
+
+html.dark-mode .btn-search {
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .btn-search:hover {
+    background: rgba(41, 156, 245, 0.1);
+    border-color: var(--dark-primary);
+}
+
+html.dark-mode .helpful-link {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .helpful-link:hover {
+    background: var(--dark-primary);
+    border-color: var(--dark-primary);
+}
+
+html.dark-mode .error-helpful {
+    border-top-color: var(--dark-border);
+}
+
+/* =====================================================
+   MOBILE VERSION
+   ===================================================== */
+
+@media (max-width: 768px) {
+    .error-page {
+        padding: 30px 16px;
+        min-height: calc(100vh - 150px);
+    }
+
+    .error-illustration svg {
+        max-width: 500px;
+    }
+
+    .error-text h1 {
+        font-size: 1.5rem;
+    }
+
+    .error-text p {
+        font-size: 1rem;
+    }
+
+    .error-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .error-actions .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+    }
+
+    .helpful-links {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .helpful-link {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .error-page {
+        padding: 20px 12px;
+    }
+
+    .error-illustration svg {
+        max-width: 350px;
+    }
+
+    .error-text h1 {
+        font-size: 1.3rem;
+    }
+
+    .error-text p {
+        font-size: 0.9rem;
+    }
+
+    .error-actions .btn {
+        font-size: 0.9rem;
+        padding: 10px 16px;
+    }
+
+    .helpful-link {
+        font-size: 0.85rem;
+        padding: 8px 16px;
+    }
+}
+</style>
+{% endblock %}

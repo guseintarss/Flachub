@@ -1,0 +1,429 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+<meta name="robots" content="noindex, follow" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Ошибка сервера — 500",
+  "description": "Внутренняя ошибка сервера. Попробуйте обновить страницу или вернитесь позже.",
+  "url": "{{ request.build_absolute_uri }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-container">
+        <!-- Анимированная SVG иллюстрация -->
+        <div class="error-illustration">
+            <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                <!-- Фоновые частицы -->
+                <circle cx="150" cy="100" r="3" fill="#ef4444" opacity="0.4">
+                    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="650" cy="150" r="2" fill="#f59e0b" opacity="0.5">
+                    <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="200" cy="250" r="2.5" fill="#ef4444" opacity="0.3">
+                    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="600" cy="280" r="1.5" fill="#f97316" opacity="0.6">
+                    <animate attributeName="opacity" values="0.6;1;0.6" dur="2.8s" repeatCount="indefinite"/>
+                </circle>
+
+                <!-- Сервер/компьютер -->
+                <g transform="translate(400, 350)">
+                    <!-- Корпус сервера -->
+                    <rect x="-120" y="-150" width="240" height="280" rx="12" fill="#1e293b" stroke="#334155" stroke-width="3"/>
+                    
+                    <!-- Экран -->
+                    <rect x="-100" y="-130" width="200" height="120" rx="6" fill="#0f172a"/>
+                    
+                    <!-- Текст ошибки на экране -->
+                    <text x="0" y="-80" text-anchor="middle" font-size="48" font-weight="bold" fill="#ef4444" font-family="monospace">
+                        500
+                        <animate attributeName="opacity" values="1;0.5;1" dur="1.5s" repeatCount="indefinite"/>
+                    </text>
+                    <text x="0" y="-50" text-anchor="middle" font-size="14" fill="#94a3b8" font-family="monospace">
+                        INTERNAL SERVER ERROR
+                    </text>
+                    
+                    <!-- Индикаторы -->
+                    <circle cx="-60" cy="60" r="6" fill="#ef4444">
+                        <animate attributeName="fill" values="#ef4444;#f97316;#ef4444" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="-30" cy="60" r="6" fill="#f59e0b">
+                        <animate attributeName="fill" values="#f59e0b;#ef4444;#f59e0b" dur="1.8s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="0" cy="60" r="6" fill="#ef4444">
+                        <animate attributeName="fill" values="#ef4444;#f97316;#ef4444" dur="2.2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="30" cy="60" r="6" fill="#22c55e" opacity="0.5"/>
+                    
+                    <!-- Полоски сервера -->
+                    <rect x="-90" y="80" width="180" height="8" rx="4" fill="#334155"/>
+                    <rect x="-90" y="100" width="180" height="8" rx="4" fill="#334155"/>
+                </g>
+
+                <!-- Молнии/искры -->
+                <g class="sparks">
+                    <path d="M 280,200 L 290,180 L 285,190 L 300,175" stroke="#f59e0b" stroke-width="2" fill="none">
+                        <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M 520,220 L 510,200 L 515,210 L 500,195" stroke="#ef4444" stroke-width="2" fill="none">
+                        <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                    </path>
+                </g>
+
+                <!-- Текст 500 -->
+                <text x="400" y="120" text-anchor="middle" font-size="100" font-weight="800" fill="url(#textGradient)" font-family="system-ui, -apple-system, sans-serif" opacity="0.15">
+                    500
+                </text>
+                <defs>
+                    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#ef4444"/>
+                        <stop offset="50%" stop-color="#f59e0b"/>
+                        <stop offset="100%" stop-color="#f97316"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <!-- Текст ошибки -->
+        <div class="error-text">
+            <h1>Внутренняя ошибка сервера</h1>
+            <p>Что-то пошло не так на нашей стороне 🔧</p>
+            <p class="error-hint">Попробуйте обновить страницу или вернитесь позже</p>
+        </div>
+
+        <!-- Кнопки действий -->
+        <div class="error-actions">
+            <a href="/" class="btn btn-home">
+                <i class="fas fa-home"></i>
+                <span>На главную</span>
+            </a>
+            <button onclick="location.reload()" class="btn btn-reload">
+                <i class="fas fa-sync-alt"></i>
+                <span>Обновить</span>
+            </button>
+            <a href="{% url 'search' %}" class="btn btn-search">
+                <i class="fas fa-search"></i>
+                <span>Поиск</span>
+            </a>
+        </div>
+
+        <!-- Техническая информация -->
+        <div class="error-helpful">
+            <p class="helpful-title">Что можно сделать:</p>
+            <div class="helpful-links">
+                <button onclick="location.reload()" class="helpful-link">
+                    <i class="fas fa-redo"></i>
+                    <span>Обновить страницу</span>
+                </button>
+                <a href="{% url 'home' %}" class="helpful-link">
+                    <i class="fas fa-home"></i>
+                    <span>Вернуться на главную</span>
+                </a>
+                <a href="{% url 'popular' %}" class="helpful-link">
+                    <i class="fas fa-fire"></i>
+                    <span>Популярное</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* =====================================================
+   PageGlow - 500 Error Page
+   ===================================================== */
+
+.error-page {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.error-container {
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+}
+
+/* Иллюстрация */
+.error-illustration {
+    margin-bottom: 20px;
+}
+
+.error-illustration svg {
+    width: 100%;
+    max-width: 700px;
+    height: auto;
+    margin: 0 auto;
+}
+
+/* Анимация искр */
+.sparks {
+    animation: sparksFloat 3s ease-in-out infinite;
+}
+
+@keyframes sparksFloat {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Текст ошибки */
+.error-text {
+    margin-bottom: 40px;
+}
+
+.error-text h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 16px 0;
+    line-height: 1.3;
+}
+
+.error-text p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin: 0 0 8px 0;
+    line-height: 1.6;
+}
+
+.error-hint {
+    font-size: 0.95rem !important;
+    color: var(--muted) !important;
+    opacity: 0.8;
+}
+
+/* Кнопки действий */
+.error-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+}
+
+.error-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background: transparent;
+    font-family: inherit;
+}
+
+.error-actions .btn i {
+    font-size: 1.1rem;
+}
+
+.btn-home {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
+.btn-home:hover {
+    background: var(--primary-700);
+    border-color: var(--primary-700);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(12, 106, 207, 0.35);
+}
+
+.btn-reload {
+    background: transparent;
+    color: #f59e0b;
+    border-color: var(--border);
+}
+
+.btn-reload:hover {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.05);
+    transform: translateY(-2px);
+}
+
+.btn-search {
+    background: transparent;
+    color: var(--primary);
+    border-color: var(--border);
+}
+
+.btn-search:hover {
+    border-color: var(--primary);
+    background: rgba(12, 106, 207, 0.05);
+    transform: translateY(-2px);
+}
+
+/* Полезные ссылки */
+.error-helpful {
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+}
+
+.helpful-title {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0 0 16px 0;
+}
+
+.helpful-links {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.helpful-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.helpful-link:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(12, 106, 207, 0.25);
+}
+
+.helpful-link i {
+    font-size: 1rem;
+}
+
+/* =====================================================
+   DARK MODE
+   ===================================================== */
+
+html.dark-mode .btn-reload {
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .btn-reload:hover {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: #f59e0b;
+}
+
+html.dark-mode .btn-search {
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .btn-search:hover {
+    background: rgba(41, 156, 245, 0.1);
+    border-color: var(--dark-primary);
+}
+
+html.dark-mode .helpful-link {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .helpful-link:hover {
+    background: var(--dark-primary);
+    border-color: var(--dark-primary);
+}
+
+html.dark-mode .error-helpful {
+    border-top-color: var(--dark-border);
+}
+
+/* =====================================================
+   MOBILE VERSION
+   ===================================================== */
+
+@media (max-width: 768px) {
+    .error-page {
+        padding: 30px 16px;
+        min-height: calc(100vh - 150px);
+    }
+
+    .error-illustration svg {
+        max-width: 500px;
+    }
+
+    .error-text h1 {
+        font-size: 1.5rem;
+    }
+
+    .error-text p {
+        font-size: 1rem;
+    }
+
+    .error-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .error-actions .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+    }
+
+    .helpful-links {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .helpful-link {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .error-page {
+        padding: 20px 12px;
+    }
+
+    .error-illustration svg {
+        max-width: 350px;
+    }
+
+    .error-text h1 {
+        font-size: 1.3rem;
+    }
+
+    .error-text p {
+        font-size: 0.9rem;
+    }
+
+    .error-actions .btn {
+        font-size: 0.9rem;
+        padding: 10px 16px;
+    }
+
+    .helpful-link {
+        font-size: 0.85rem;
+        padding: 8px 16px;
+    }
+}
+</style>
+{% endblock %}
