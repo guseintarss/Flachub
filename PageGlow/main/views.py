@@ -823,7 +823,13 @@ class Search(DataMixin, ListView):
 
             # Фильтр по типу контента
             if post_type == 'articles':
-                search = search.filter(cat__isnull=False)
+                search = search.filter(post_type=Post.PostType.ARTICLE)
+            elif post_type == 'posts':
+                search = search.filter(post_type=Post.PostType.POST)
+            elif post_type == 'news':
+                search = search.filter(post_type=Post.PostType.NEWS)
+            elif post_type == 'ideas':
+                search = search.filter(post_type=Post.PostType.IDEA)
 
             # Поиск по title и content
             search = search.filter(

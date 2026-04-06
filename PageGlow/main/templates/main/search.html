@@ -43,13 +43,25 @@
         <div class="search-toolbar">
             <div class="search-filters">
                 <span class="filter-label"><i class="fas fa-filter"></i> Тип:</span>
-                <a href="?q={{ q }}&type=all&sort={{ sort }}" 
+                <a href="?q={{ q }}&type=all&sort={{ sort }}"
                    class="text-decoration-none filter-btn {% if post_type == 'all' %}active{% endif %}">
                     Все
                 </a>
-                <a href="?q={{ q }}&type=articles&sort={{ sort }}" 
+                <a href="?q={{ q }}&type=articles&sort={{ sort }}"
                    class="text-decoration-none filter-btn {% if post_type == 'articles' %}active{% endif %}">
                     <i class="fas fa-file-alt"></i> Статьи
+                </a>
+                <a href="?q={{ q }}&type=posts&sort={{ sort }}"
+                   class="text-decoration-none filter-btn {% if post_type == 'posts' %}active{% endif %}">
+                    <i class="fas fa-sticky-note"></i> Посты
+                </a>
+                <a href="?q={{ q }}&type=news&sort={{ sort }}"
+                   class="text-decoration-none filter-btn {% if post_type == 'news' %}active{% endif %}">
+                    <i class="fas fa-newspaper"></i> Новости
+                </a>
+                <a href="?q={{ q }}&type=ideas&sort={{ sort }}"
+                   class="text-decoration-none filter-btn {% if post_type == 'ideas' %}active{% endif %}">
+                    <i class="fas fa-lightbulb"></i> Идеи
                 </a>
             </div>
             
