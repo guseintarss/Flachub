@@ -12,6 +12,7 @@ from datetime import timedelta
 REPUTATION_SETTINGS = {
     # Публикация контента
     'post_created': 10,           # Создание поста
+    'post_deleted': -10,          # Удаление поста (штраф)
     'comment_created': 2,         # Создание комментария
 
     # Получение лайков

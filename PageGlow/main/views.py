@@ -788,11 +788,27 @@ class PostDeleteView(LoginRequiredMixin, DataMixin, DeleteView):
     success_url = reverse_lazy('users:profile')
 
     def form_valid(self, form):
-        print(f"Удален объект: {self.object}")
+        # Сохраняем автора для начисления штрафа
+        post = self.get_object()
+        author = post.author
         
+        print(f"Удален объект: {post}")
+
+        # Отнимаем репутацию у автора за удаление поста
+        if author:
+            from users.reputation_utils import award_reputation
+            from users.models import UserReputationLog
+            
+            award_reputation(
+                user=author,
+                reason=UserReputationLog.ReasonType.POST_DELETED,
+                post=post,
+                skip_limit=True
+            )
+
         # Очищаем кэш сайдбара
         cache.clear()
-        
+
         return super().form_valid(form)
 
     def get_queryset(self):

@@ -46,6 +46,7 @@ class UserReputationLog(models.Model):
     """История изменений репутации пользователя"""
     class ReasonType(models.TextChoices):
         POST_CREATED = 'post_created', 'Публикация поста'
+        POST_DELETED = 'post_deleted', 'Удаление поста'
         POST_LIKED = 'post_liked', 'Лайк поста (автору)'
         COMMENT_CREATED = 'comment_created', 'Создание комментария'
         COMMENT_LIKED = 'comment_liked', 'Лайк комментария (автору)'
