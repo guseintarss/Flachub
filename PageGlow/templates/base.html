@@ -12,9 +12,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
+    <link rel="canonical" href="{{ request.build_absolute_uri|default:'https://flachub.ru/' }}">
     <title>{{ meta_title|default:title|default:'ФлакХаб - Платформа для IT-специалистов' }}</title>
 
     <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'main/img/favicon.ico' %}" sizes="48x48" />
     <link rel="icon" type="image/png" href="{% static 'main/img/favicon-16x16.png' %}" sizes="16x16" />
     <link rel="icon" type="image/png" href="{% static 'main/img/favicon-32x32.png' %}" sizes="32x32" />
     <link rel="icon" type="image/png" href="{% static 'main/img/favicon-48x48.png' %}" sizes="48x48" />
