@@ -52,10 +52,12 @@
   body {
     padding-left: var(--safe-left);
     padding-right: var(--safe-right);
+    padding-top: var(--safe-top);
   }
 
   .pg-container {
     width: calc(100% - 24px);
+    padding-top: 8px;
   }
 
   .page {
@@ -128,9 +130,14 @@
    ===================================================== */
 
 @media (max-width: 768px) {
+  .site-header {
+    padding-top: var(--safe-top);
+  }
+
   .header-inner {
     gap: 10px;
     padding: 10px 12px;
+    padding-top: calc(10px + var(--safe-top));
   }
 
   .brand {
@@ -282,9 +289,14 @@
 }
 
 @media (max-width: 480px) {
+  .site-header {
+    padding-top: var(--safe-top);
+  }
+
   .header-inner {
     gap: 6px;
     padding: 8px 10px;
+    padding-top: calc(8px + var(--safe-top));
   }
 
   .brand {
@@ -464,9 +476,14 @@
 
 /* Очень маленькие экраны (380px и ниже) */
 @media (max-width: 380px) {
+  .site-header {
+    padding-top: var(--safe-top);
+  }
+
   .header-inner {
     gap: 4px;
     padding: 6px 8px;
+    padding-top: calc(6px + var(--safe-top));
   }
 
   .brand {

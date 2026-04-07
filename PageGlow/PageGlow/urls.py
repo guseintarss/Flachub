@@ -47,6 +47,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include("main.urls")),
     path('users/',include("users.urls", namespace='users')),
+    path('api/mobile/', include('mobile_api.urls')),
 ]
 
 # Отключаем debug_toolbar для ASGI
