@@ -14,6 +14,21 @@
   --safe-right: env(safe-area-inset-right, 0px);
 }
 
+/* Убираем нижний отступ в PWA режиме (закладка на рабочем столе) */
+@media (display-mode: standalone) {
+  :root {
+    --safe-bottom: 0px;
+  }
+
+  .site-footer {
+    padding-bottom: 16px;
+  }
+
+  body {
+    padding-bottom: 0;
+  }
+}
+
 /* =====================================================
    LAYOUT ORDER - SIDEBAR ПОСЛЕ КОНТЕНТА
    ===================================================== */

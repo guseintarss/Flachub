@@ -3747,3 +3747,10 @@ html.dark-mode .menu_link:hover .category-count {
     background: rgba(255, 255, 255, 0.2);
     color: white;
 }
+
+/* Убираем нижний отступ в PWA режиме (закладка на рабочем столе iPhone) */
+@media (display-mode: standalone) {
+    .site-footer {
+        padding-bottom: 16px;
+    }
+}
