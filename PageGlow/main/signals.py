@@ -213,6 +213,14 @@ def check_bookmark_badge(sender, instance, created, **kwargs):
 
 # ===== СИГНАЛЫ ДЛЯ ОБНОВЛЕНИЯ SIDEBAR =====
 
+@receiver(post_save, sender=Post)
+def invalidate_sidebar_cache_on_post_save(sender, instance=None, **kwargs):
+    """Инвалидация кэша sidebar при создании или обновлении поста"""
+    cache.delete('sidebar_context_data')
+    from django.core.cache.utils import make_template_fragment_key
+    cache.delete(make_template_fragment_key("side_cache"))
+
+
 @receiver(post_delete, sender=Post)
 @receiver(m2m_changed, sender=Post.tags.through)
 def invalidate_sidebar_cache(sender, instance=None, **kwargs):
