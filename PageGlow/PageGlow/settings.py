@@ -115,6 +115,7 @@ if not IS_ASGI:
 
 
 SITE_ID = 1
+SITE_DOMAIN = 'flachub.ru'
 
 ROOT_URLCONF = 'PageGlow.urls'
 
