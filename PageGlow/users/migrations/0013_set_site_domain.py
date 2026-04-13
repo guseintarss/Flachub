@@ -15,7 +15,9 @@ def set_site_domain(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    dependencies = []
+    dependencies = [
+        ('users', '0012_remove_discussion_field'),
+    ]
 
     operations = [
         migrations.RunPython(set_site_domain, migrations.RunPython.noop),
