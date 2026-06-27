@@ -784,20 +784,13 @@ html.dark-mode .cover-file-label:hover {
         width: 100% !important;
     }
 
-    .ck.ck-editor__top .ck-sticky-panel .ck-sticky-panel__content_sticky {
-        top: 0 !important;
-        position: relative !important;
+    .ck.ck-editor__editable_inline {
+        min-height: 300px !important;
+        max-height: 60vh !important;
     }
 
-    .ck.ck-toolbar {
-        flex-wrap: wrap !important;
+    .ck.ck-balloon-panel .ck.ck-toolbar {
         padding: 6px !important;
-        gap: 2px !important;
-        justify-content: flex-start !important;
-    }
-
-    .ck.ck-toolbar .ck-toolbar__items {
-        flex-wrap: wrap !important;
         gap: 2px !important;
     }
 
@@ -926,7 +919,6 @@ html.dark-mode .search-results {
 .editor-container {
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
 }
 .editor-container .ck.ck-editor {
     max-width: 100%;
@@ -934,33 +926,34 @@ html.dark-mode .search-results {
 .editor-container .ck.ck-editor__editable_inline {
     min-height: 500px;
     max-height: 800px;
-}
-.editor-container .ck.ck-toolbar {
-    border-radius: 10px 10px 0 0;
     border: 2px solid var(--border);
-    border-bottom: none;
-    background: var(--bg);
-    flex-wrap: wrap !important;
-}
-.editor-container .ck.ck-toolbar .ck-toolbar__items {
-    flex-wrap: wrap !important;
-}
-.editor-container .ck.ck-editor__editable_inline {
-    border: 2px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 10px 10px;
+    border-radius: 10px;
     background: var(--bg);
     color: var(--text);
+    padding: 16px;
 }
 
-html.dark-mode .editor-container .ck.ck-toolbar {
-    background: var(--dark-surface);
-    border-color: var(--dark-border);
+/* Balloon editor toolbar */
+.ck.ck-balloon-panel .ck.ck-toolbar {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    flex-wrap: wrap !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
+.ck.ck-balloon-panel .ck.ck-toolbar .ck-toolbar__items {
+    flex-wrap: wrap !important;
+}
+
 html.dark-mode .editor-container .ck.ck-editor__editable_inline {
     background: var(--dark-bg);
     color: var(--dark-text);
     border-color: var(--dark-border);
+}
+html.dark-mode .ck.ck-balloon-panel .ck.ck-toolbar {
+    background: var(--dark-surface);
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 html.dark-mode .ck.ck-button {
     color: var(--dark-text);

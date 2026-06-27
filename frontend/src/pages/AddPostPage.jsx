@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Main/Sidebar/Sidebar'
 import { CKEditor } from '@ckeditor/ckeditor5-react'
 import {
-  ClassicEditor, Essentials, Paragraph, Heading,
+  BalloonEditor, Essentials, Paragraph, Heading,
   Bold, Italic, Underline, Strikethrough, Code,
   List, Link as CkLink, BlockQuote, CodeBlock, Table,
   Font, Alignment, Indent, HorizontalLine,
@@ -272,7 +272,7 @@ function AddPostPage() {
                     />
                     {step === 2 && (
                       <CKEditor
-                        editor={ClassicEditor}
+                        editor={BalloonEditor}
                         data={form.content}
                         config={editorConfig}
                         disableWatchdog
