@@ -534,14 +534,19 @@ html.dark-mode .cover-file-label:hover {
 .tag-selected {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
+    gap: 2px;
+    padding: 5px 10px;
     background: var(--primary);
     color: white;
-    border-radius: 20px;
-    font-size: 0.9rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
     font-weight: 500;
     animation: popIn 0.3s ease;
+    transition: all 0.2s ease;
+}
+
+.tag-selected:hover {
+    background: var(--primary-hover, #0b5ed7);
 }
 
 @keyframes popIn {
@@ -557,8 +562,13 @@ html.dark-mode .cover-file-label:hover {
 
 .tag-remove {
     cursor: pointer;
-    padding: 2px 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
+    font-size: 0.75rem;
     transition: background 0.2s;
 }
 

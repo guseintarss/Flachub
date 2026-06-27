@@ -16,7 +16,7 @@ const POST_TYPES = [
 ]
 
 function AddPostPage() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [categories, setCategories] = useState([])
@@ -43,12 +43,13 @@ function AddPostPage() {
   })
 
   useEffect(() => {
+    if (loading) return
     if (!user) { navigate('/login/'); return }
-    fetch('/api/categories/', { credentials: 'same-origin' })
+    fetch('/api/mobile/categories/', { credentials: 'same-origin' })
       .then(r => r.json()).then(d => setCategories(d.results || d)).catch(() => {})
-    fetch('/api/tags/', { credentials: 'same-origin' })
+    fetch('/api/mobile/tags/', { credentials: 'same-origin' })
       .then(r => r.json()).then(d => setAllTags(d.results || d)).catch(() => {})
-  }, [])
+  }, [user, loading])
 
   useEffect(() => {
     if (searchQuery.length < 2) { setShowSearch(false); return }
@@ -140,7 +141,7 @@ function AddPostPage() {
       selectedTagIds.forEach(id => fd.append('tags', id))
       if (photoFile) fd.append('photo', photoFile)
 
-      const res = await fetch('/api/posts/', {
+      const res = await fetch('/api/mobile/posts/', {
         method: 'POST',
         headers: { 'X-CSRFToken': csrfToken() },
         credentials: 'same-origin',
@@ -158,6 +159,16 @@ function AddPostPage() {
   }
 
   const steps = [{ n: 1, t: 'Тип поста' }, { n: 2, t: 'Редактор' }, { n: 3, t: 'Настройки' }]
+
+  if (loading) {
+    return (
+      <main className="page">
+        <div className="pg-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', color: '#666' }}></i>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="page">
@@ -334,10 +345,13 @@ function AddPostPage() {
                               const t = allTags.find(tt => tt.id === id)
                               if (!t) return null
                               return (
-                                <span key={t.id} className="tag-selected" data-id={t.id}>
+                                <span key={t.id} className="tag-selected" data-id={t.id}
+                                  onClick={() => removeTag(t.id)}
+                                  style={{ cursor: 'pointer' }}
+                                >
                                   {t.tag}
                                   <span className="tag-remove" data-id={t.id}
-                                    onClick={() => removeTag(t.id)}
+                                    onClick={e => { e.stopPropagation(); removeTag(t.id) }}
                                   >
                                     <i className="fas fa-times"></i>
                                   </span>
@@ -370,12 +384,13 @@ function AddPostPage() {
                               <div key={t.id}
                                 className={`tag-wrapper${t.is_popular ? ' popular' : ''}${isSelected ? ' hidden' : ''}`}
                                 data-tag-id={t.id} data-tag-name={t.tag}
-                                style={{ display: isSelected ? 'none' : 'flex' }}
+                                style={{ display: isSelected ? 'none' : 'inline-flex' }}
                               >
                                 <input type="checkbox" name="tags" value={t.id}
                                   id={`tag-${t.id}`} data-tag-id={t.id} data-tag-name={t.tag}
                                   checked={isSelected}
                                   onChange={() => isSelected ? removeTag(t.id) : addTag(t.id)}
+                                  style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
                                 />
                                 <label htmlFor={`tag-${t.id}`} className="tag-option">{t.tag}</label>
                               </div>
