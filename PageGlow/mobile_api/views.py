@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status, permissions, mixins
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -417,3 +417,69 @@ class MediaUploadViewSet(viewsets.GenericViewSet):
             'url': file_url,
             'filename': filename
         })
+
+
+# ===== Sidebar Data =====
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def sidebar_data(request):
+    from django.db.models import Count, Q
+    from django.core.cache import cache
+
+    cache_key = 'sidebar_data_api'
+    cached = cache.get(cache_key)
+    if cached:
+        return Response(cached)
+
+    posts = Post.objects.filter(
+        is_published=True
+    ).select_related('author', 'cat').annotate(
+        likes_count=Count('likes', distinct=True)
+    ).order_by('-time_create')[:5]
+
+    categories = Category.objects.annotate(
+        posts_count=Count('posts', filter=Q(posts__is_published=True))
+    ).filter(posts_count__gt=0).order_by('-posts_count')[:10]
+
+    tags = TagPost.objects.all()[:20]
+    total_posts = Post.objects.count()
+    total_users = User.objects.filter(is_active=True).count()
+    total_comments = Comment.objects.count()
+
+    result = {
+        'recent_posts': [
+            {
+                'id': p.id,
+                'title': p.title,
+                'slug': p.slug,
+                'photo': p.photo.url if p.photo else None,
+                'author': p.author.username if p.author else 'Аноним',
+                'time_create': p.time_create.isoformat(),
+                'views': p.views,
+                'likes_count': getattr(p, 'likes_count', 0),
+            }
+            for p in posts
+        ],
+        'categories': [
+            {
+                'id': c.id,
+                'name': c.name,
+                'slug': c.slug,
+                'posts_count': getattr(c, 'posts_count', 0),
+            }
+            for c in categories
+        ],
+        'tags': [
+            {'id': t.id, 'name': t.tag, 'slug': t.slug}
+            for t in tags
+        ],
+        'stats': {
+            'total_posts': total_posts,
+            'total_users': total_users,
+            'total_comments': total_comments,
+        },
+    }
+
+    cache.set(cache_key, result, 300)
+    return Response(result)

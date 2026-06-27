@@ -1,19 +1,17 @@
+import Sidebar from "./Sidebar/Sidebar"
+
 const Main = () => {
     return (
-        <main class="page">
-            <div class="pg-container layout">
-                <div class="content">
+        <main className="page">
+            <div className="pg-container layout">
+                <div className="content">
                 </div>
-                    <aside class="sidebar" aria-label="Боковая панель">
-                            <aside>
-                            </aside>
-                    </aside>
-            </div>
-            <div class="pg-container">
+                <aside className="sidebar" aria-label="Боковая панель">
+                    <Sidebar />
+                </aside>
             </div>
         </main>
     )
 }
-
 
 export default Main

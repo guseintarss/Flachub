@@ -4,7 +4,8 @@ from .views import (
     PostViewSet, CategoryViewSet, TagViewSet,
     CommentViewSet, CommentLikeViewSet,
     NotificationViewSet, BookmarkViewSet, CollectionViewSet,
-    UserStatsViewSet, PostLikeViewSet, MediaUploadViewSet
+    UserStatsViewSet, PostLikeViewSet, MediaUploadViewSet,
+    sidebar_data
 )
 
 router = DefaultRouter()
@@ -36,4 +37,5 @@ router.register(r'media', MediaUploadViewSet, basename='media')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('sidebar/', sidebar_data, name='sidebar-data'),
 ]

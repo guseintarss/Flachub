@@ -40,7 +40,7 @@ class MetaDescriptionMiddleware(MiddlewareMixin):
 
     def process_template_response(self, request, response):
         # Работаем только с HTML ответами
-        content_type = getattr(response, 'content_type', '')
+        content_type = getattr(response, 'content_type', '') or ''
         if 'text/html' not in content_type:
             return response
 
