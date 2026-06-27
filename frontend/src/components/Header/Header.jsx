@@ -2,11 +2,12 @@ import BurgerButton from "./Button"
 import Brand from "./Brand"
 import Top_nav from "./Left_menu/Top-nav"
 import User_area from "./Userarea"
+import { useBurgerMenu } from "./useBurgerMenu"
 
 
 const Header = () =>{
+    useBurgerMenu()
 
-    
     return (
     
         <header className="site-header">
