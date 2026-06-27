@@ -2,10 +2,58 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Main/Sidebar/Sidebar'
+import { CKEditor } from '@ckeditor/ckeditor5-react'
+import {
+  ClassicEditor, Essentials, Paragraph, Heading,
+  Bold, Italic, Underline, Strikethrough, Code,
+  List, Link as CkLink, BlockQuote, CodeBlock, Table,
+  Font, Alignment, Indent, HorizontalLine,
+  Autoformat, PasteFromOffice, RemoveFormat,
+} from 'ckeditor5'
 
 function csrfToken() {
   const m = document.cookie.match(/csrftoken=([^;]+)/)
   return m ? m[1] : ''
+}
+
+const editorConfig = {
+  licenseKey: 'GPL',
+  plugins: [
+    Essentials, Paragraph, Heading,
+    Bold, Italic, Underline, Strikethrough, Code,
+    List, CkLink, BlockQuote, CodeBlock, Table,
+    Font, Alignment, Indent, HorizontalLine,
+    Autoformat, PasteFromOffice, RemoveFormat,
+  ],
+  toolbar: [
+    'undo', 'redo', '|',
+    'heading', '|',
+    'bold', 'italic', 'underline', 'strikethrough', 'code', '|',
+    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
+    'alignment', '|',
+    'outdent', 'indent', '|',
+    'numberedList', 'bulletedList', '|',
+    'link', 'blockQuote', 'codeBlock', 'insertTable', 'horizontalLine', '|',
+    'removeFormat',
+  ],
+  heading: {
+    options: [
+      { model: 'paragraph', title: 'Параграф', class: 'ck-heading_paragraph' },
+      { model: 'heading1', view: 'h1', title: 'Заголовок 1', class: 'ck-heading_h1' },
+      { model: 'heading2', view: 'h2', title: 'Заголовок 2', class: 'ck-heading_h2' },
+      { model: 'heading3', view: 'h3', title: 'Заголовок 3', class: 'ck-heading_h3' },
+      { model: 'heading4', view: 'h4', title: 'Заголовок 4', class: 'ck-heading_h4' },
+      { model: 'heading5', view: 'h5', title: 'Заголовок 5', class: 'ck-heading_h5' },
+      { model: 'heading6', view: 'h6', title: 'Заголовок 6', class: 'ck-heading_h6' },
+    ],
+  },
+  alignment: {
+    options: ['left', 'center', 'right', 'justify'],
+  },
+  table: {
+    contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells'],
+  },
+  placeholder: 'Напишите текст публикации...',
 }
 
 const POST_TYPES = [
@@ -31,7 +79,6 @@ function AddPostPage() {
   const [fileName, setFileName] = useState('Файл не выбран')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const textareaRef = useRef(null)
   const searchRef = useRef(null)
 
   const [form, setForm] = useState({
@@ -69,10 +116,6 @@ function AddPostPage() {
     return () => document.removeEventListener('click', handleClick)
   }, [])
 
-  useEffect(() => {
-    if (step === 2 && textareaRef.current) autoResize()
-  }, [step])
-
   function goTo(s) {
     setStep(s)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -80,13 +123,6 @@ function AddPostPage() {
 
   function f(field, value) {
     setForm(p => ({ ...p, [field]: value }))
-  }
-
-  function autoResize() {
-    const el = textareaRef.current
-    if (!el) return
-    el.style.height = 'auto'
-    el.style.height = el.scrollHeight + 'px'
   }
 
   function handlePhoto(e) {
@@ -234,12 +270,20 @@ function AddPostPage() {
                       placeholder="Заголовок публикации"
                       style={{ fontSize: '1.3rem', fontWeight: 700, padding: '14px 16px', marginBottom: 16, border: '2px solid var(--border)', borderRadius: 10, background: 'var(--bg)', color: 'var(--text)', width: '100%', boxSizing: 'border-box' }}
                     />
-                    <textarea ref={textareaRef} className="form-control" value={form.content}
-                      onChange={e => { f('content', e.target.value); setTimeout(autoResize, 0) }}
-                      onInput={autoResize}
-                      placeholder="Напишите текст публикации... Поддерживается HTML разметка"
-                      style={{ minHeight: 500, fontFamily: 'inherit', fontSize: '1rem', lineHeight: 1.8, resize: 'none', overflow: 'hidden', padding: '16px', border: '2px solid var(--border)', borderRadius: 10, background: 'var(--bg)', color: 'var(--text)', width: '100%', boxSizing: 'border-box' }}
-                    />
+                    {step === 2 && (
+                      <CKEditor
+                        editor={ClassicEditor}
+                        data={form.content}
+                        config={editorConfig}
+                        disableWatchdog
+                        onChange={(event, editor) => {
+                          f('content', editor.getData())
+                        }}
+                        onError={(error, details) => {
+                          console.error('CKEditor error:', error, details)
+                        }}
+                      />
+                    )}
                   </div>
                 </div>
                 <div className="step-footer" style={{ marginTop: 20 }}>

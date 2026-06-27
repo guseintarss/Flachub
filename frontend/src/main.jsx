@@ -8,6 +8,7 @@ import './styles/bookmarks.css'
 import './styles/footer.css'
 import './styles/add-article.css'
 import './styles/mobile.css'
+import 'ckeditor5/ckeditor5.css'
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(

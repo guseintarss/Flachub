@@ -921,3 +921,58 @@ html.dark-mode .search-results {
     background: var(--dark-surface);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
 }
+
+/* CKEditor 5 */
+.editor-container {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+.editor-container .ck.ck-editor {
+    max-width: 100%;
+}
+.editor-container .ck.ck-editor__editable_inline {
+    min-height: 500px;
+    max-height: 800px;
+}
+.editor-container .ck.ck-toolbar {
+    border-radius: 10px 10px 0 0;
+    border: 2px solid var(--border);
+    border-bottom: none;
+    background: var(--bg);
+    flex-wrap: wrap !important;
+}
+.editor-container .ck.ck-toolbar .ck-toolbar__items {
+    flex-wrap: wrap !important;
+}
+.editor-container .ck.ck-editor__editable_inline {
+    border: 2px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    background: var(--bg);
+    color: var(--text);
+}
+
+html.dark-mode .editor-container .ck.ck-toolbar {
+    background: var(--dark-surface);
+    border-color: var(--dark-border);
+}
+html.dark-mode .editor-container .ck.ck-editor__editable_inline {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+    border-color: var(--dark-border);
+}
+html.dark-mode .ck.ck-button {
+    color: var(--dark-text);
+}
+html.dark-mode .ck.ck-button:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+html.dark-mode .ck.ck-button.ck-on {
+    background: rgba(41, 156, 245, 0.15);
+    color: #299cf5;
+}
+html.dark-mode .ck.ck-dropdown__panel {
+    background: var(--dark-surface);
+    border-color: var(--dark-border);
+}
