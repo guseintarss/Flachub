@@ -20,9 +20,17 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserPublicSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+    bio = serializers.CharField(source='about_me', read_only=True)
+
     class Meta:
         model = User
         fields = ('id', 'username', 'avatar', 'bio')
+
+    def get_avatar(self, obj):
+        if obj.photo:
+            return obj.photo.url
+        return None
 
 
 # ===== Category & Tag Serializers =====
@@ -55,13 +63,14 @@ class PostListSerializer(serializers.ModelSerializer):
     is_liked = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     reading_time_minutes = serializers.SerializerMethodField()
+    excerpt = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = ('id', 'title', 'slug', 'photo', 'post_type', 'time_create',
                   'time_update', 'author', 'category', 'likes_count', 
                   'favorites_count', 'comments_count', 'is_liked', 
-                  'is_favorited', 'reading_time_minutes', 'views')
+                  'is_favorited', 'reading_time_minutes', 'views', 'excerpt')
 
     def get_likes_count(self, obj):
         if hasattr(obj, 'likes_count'):
@@ -90,6 +99,14 @@ class PostListSerializer(serializers.ModelSerializer):
 
     def get_reading_time_minutes(self, obj):
         return obj.reading_time()
+
+    def get_excerpt(self, obj):
+        import re
+        text = re.sub(r'<[^>]+>', '', obj.content or '')
+        words = text.split()
+        if len(words) > 40:
+            return ' '.join(words[:40]) + '...'
+        return text
 
 
 class PostDetailSerializer(serializers.ModelSerializer):
