@@ -2,7 +2,9 @@ const BASE = '/api/mobile'
 
 function getCSRFToken() {
   const meta = document.querySelector('meta[name="csrf-token"]')
-  return meta ? meta.getAttribute('content') : null
+  if (meta) return meta.getAttribute('content')
+  const match = document.cookie.match(/csrftoken=([^;]+)/)
+  return match ? match[1] : null
 }
 
 async function request(url, options = {}) {

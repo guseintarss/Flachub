@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 function UserDropdown({ user, onClose }) {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
   const ref = useRef()
 
   useEffect(() => {
@@ -16,6 +18,12 @@ function UserDropdown({ user, onClose }) {
   const displayName = user.first_name && user.last_name
     ? `${user.first_name} ${user.last_name}`
     : user.username
+
+  async function handleLogout() {
+    await logout()
+    onClose()
+    navigate('/')
+  }
 
   return (
     <div className="dropdown-menu" id="user-dropdown" ref={ref}>
@@ -36,11 +44,9 @@ function UserDropdown({ user, onClose }) {
         )}
         <li><hr /></li>
         <li>
-          <form method="post" action="/users/logout/" className="m-0">
-            <button type="submit" className="dropdown-logout-btn btn">
-              <i className="fas fa-sign-out-alt" /> Выйти
-            </button>
-          </form>
+          <button className="dropdown-logout-btn btn" onClick={handleLogout}>
+            <i className="fas fa-sign-out-alt" /> Выйти
+          </button>
         </li>
       </ul>
     </div>
@@ -96,7 +102,7 @@ const UserArea = () => {
         </Link>
       )}
 
-      <a id="search" className="search" href="/search/" title="Поиск">
+      <Link id="search" className="search" to="/search/" title="Поиск">
         <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0,0,256,256" className="header-icon">
           <g fill="currentColor" fillRule="nonzero" stroke="none" strokeWidth="1" strokeLinecap="butt" strokeLinejoin="miter" strokeMiterlimit="10" strokeDasharray="" strokeDashoffset="0">
             <g transform="scale(10.66667,10.66667)">
@@ -106,7 +112,7 @@ const UserArea = () => {
             </g>
           </g>
         </svg>
-      </a>
+      </Link>
 
       {user && (
         <div className="notific-cont">
@@ -145,7 +151,7 @@ const UserArea = () => {
       )}
 
       {!loading && !user && (
-        <a className="login-pill" href="/login/">Войти</a>
+        <Link className="login-pill" to="/login/">Войти</Link>
       )}
 
       {user && (

@@ -1,3 +1,4 @@
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, status, permissions, mixins
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -425,6 +426,58 @@ class MediaUploadViewSet(viewsets.GenericViewSet):
         })
 
 
+# ===== Auth =====
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_view(request):
+    from django.contrib.auth import authenticate, login
+    username = request.data.get('username', '')
+    password = request.data.get('password', '')
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        serializer = UserPublicSerializer(user, context={'request': request})
+        data = serializer.data
+        data['is_staff'] = user.is_staff
+        data['is_superuser'] = user.is_superuser
+        return Response(data)
+    return Response({'error': 'Неверный логин или пароль'}, status=400)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def logout_view(request):
+    from django.contrib.auth import logout
+    logout(request)
+    return Response({'status': 'ok'})
+
+
+# ===== Registration =====
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_view(request):
+    from users.forms import RegisterUserForm
+    form = RegisterUserForm(request.data)
+    if form.is_valid():
+        user = form.save()
+        user.banner_gradient_start = '#0c6acf'
+        user.banner_gradient_end = '#764ba2'
+        user.save(update_fields=['banner_gradient_start', 'banner_gradient_end'])
+        from django.contrib.auth import login
+        login(request, user)
+        serializer = UserPublicSerializer(user, context={'request': request})
+        data = serializer.data
+        data['is_staff'] = user.is_staff
+        data['is_superuser'] = user.is_superuser
+        return Response(data, status=201)
+    return Response({'errors': form.errors}, status=400)
+
+
 # ===== Sidebar Data =====
 
 @api_view(['GET'])
@@ -453,6 +506,10 @@ def sidebar_data(request):
         posts_count=Count('posts', filter=Q(posts__is_published=True))
     ).filter(posts_count__gt=0).order_by('-posts_count')[:10]
 
+    tags = TagPost.objects.annotate(
+        posts_count=Count('tags', filter=Q(tags__is_published=True))
+    ).filter(posts_count__gt=0).order_by('-posts_count')[:15]
+
     return Response({
         'recent_posts': [
             {
@@ -476,7 +533,15 @@ def sidebar_data(request):
             }
             for c in categories
         ],
-        'tags': [],
+        'tags': [
+            {
+                'id': t.id,
+                'name': t.tag,
+                'slug': t.slug,
+                'posts_count': getattr(t, 'posts_count', 0),
+            }
+            for t in tags
+        ],
         'stats': {
             'total_posts': Post.objects.count(),
             'total_users': User.objects.filter(is_active=True).count(),

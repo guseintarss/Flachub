@@ -4,6 +4,8 @@ import Footer from "./components/Footer/Footer"
 import Header from "./components/Header/Header"
 import Main from "./components/Main/Main"
 import PostDetail from "./pages/PostDetail"
+import LoginPage from "./pages/LoginPage"
+import RegisterPage from "./pages/RegisterPage"
 import { TagPosts, CategoryPosts } from "./pages/PostListPage"
 
 const App = () => {
@@ -16,6 +18,8 @@ const App = () => {
           <Route path="/post/:slug/" element={<PostDetail />} />
           <Route path="/tag/:slug/" element={<TagPosts />} />
           <Route path="/category/:slug/" element={<CategoryPosts />} />
+          <Route path="/login/" element={<LoginPage />} />
+          <Route path="/register/" element={<RegisterPage />} />
         </Routes>
         <Footer />
       </AuthProvider>

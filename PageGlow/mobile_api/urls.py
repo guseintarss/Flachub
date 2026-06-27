@@ -5,7 +5,8 @@ from .views import (
     CommentViewSet, CommentLikeViewSet,
     NotificationViewSet, BookmarkViewSet, CollectionViewSet,
     UserStatsViewSet, PostLikeViewSet, MediaUploadViewSet,
-    current_user, sidebar_data
+    current_user, sidebar_data, login_view, logout_view,
+    register_view
 )
 
 router = DefaultRouter()
@@ -39,4 +40,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('sidebar/', sidebar_data, name='sidebar-data'),
     path('me/', current_user, name='current-user'),
+    path('auth/login/', login_view, name='auth-login'),
+    path('auth/logout/', logout_view, name='auth-logout'),
+    path('auth/register/', register_view, name='auth-register'),
 ]
