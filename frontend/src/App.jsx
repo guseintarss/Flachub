@@ -7,6 +7,7 @@ import PostDetail from "./pages/PostDetail"
 import LoginPage from "./pages/LoginPage"
 import RegisterPage from "./pages/RegisterPage"
 import { TagPosts, CategoryPosts } from "./pages/PostListPage"
+import AddPostPage from "./pages/AddPostPage"
 
 const App = () => {
   return(
@@ -20,6 +21,7 @@ const App = () => {
           <Route path="/category/:slug/" element={<CategoryPosts />} />
           <Route path="/login/" element={<LoginPage />} />
           <Route path="/register/" element={<RegisterPage />} />
+          <Route path="/add-post/" element={<AddPostPage />} />
         </Routes>
         <Footer />
       </AuthProvider>
