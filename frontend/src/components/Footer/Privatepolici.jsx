@@ -1,0 +1,84 @@
+const Private_polici = () => {
+    return (
+        <div className="container py-5">
+            <div className="row">
+                <div className="col-lg-8 mx-auto">
+                    <h1>Политика конфиденциальности</h1>
+                    
+                    <div className="card mb-4">
+                        <div className="card-body">
+                            <h5 className="card-title">1. Введение</h5>
+                            <p>PageGlow ("мы", "нас", "наш") управляет сайтом PageGlow.ru (далее "сайт"). Эта страница информирует вас о нашей политике в отношении сбора, использования и раскрытия персональных данных при использовании нашего сервиса.</p>
+                        </div>
+                    </div>
+
+                    <div className="card mb-4">
+                        <div className="card-body">
+                            <h5 className="card-title">2. Сбор информации</h5>
+                            <p>Мы собираем различные типы информации в целях предоставления и улучшения нашего сервиса:</p>
+                            <ul>
+                                <li>Персональные данные (имя, email, телефон)</li>
+                                <li>Информацию об использовании сайта</li>
+                                <li>Технические данные (IP-адрес, тип браузера)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="card mb-4">
+                        <div className="card-body">
+                            <h5 className="card-title">3. Использование информации</h5>
+                            <p>Мы используем собранную информацию для:</p>
+                            <ul>
+                                <li>Предоставления наших сервисов</li>
+                                <li>Улучшения пользовательского опыта</li>
+                                <li>Отправки уведомлений</li>
+                                <li>Анализа использования сайта</li>
+                                <li>Предотвращения мошенничества</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="card mb-4">
+                        <div className="card-body">
+                            <h5 className="card-title">4. Защита данных</h5>
+                            <p>Мы используем современные методы шифрования для защиты ваших данных:</p>
+                            <ul>
+                                <li>SSL шифрование для всех передач</li>
+                                <li>Безопасное хранилище паролей</li>
+                                <li>Регулярные аудиты безопасности</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="card mb-4">
+                        <div className="card-body">
+                            <h5 className="card-title">5. Ваши права</h5>
+                            <p>Вы имеете право:</p>
+                            <ul>
+                                <li>Доступа к вашим персональным данным</li>
+                                <li>Исправления неверных данных</li>
+                                <li>Удаления ваших данных</li>
+                                <li>Отказа от маркетинговых сообщений</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-body">
+                            <h5 className="card-title">6. Контакты</h5>
+                            <p>Если у вас есть вопросы о политике конфиденциальности, пожалуйста свяжитесь с нами:</p>
+                            <p><a href="mailto:privacy@pageglow.ru">privacy@pageglow.ru</a></p>
+                        </div>
+                    </div>
+
+                    <div className="alert alert-info mt-4">
+                        <p>Последнее обновление: 8 марта 2026</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    )
+}
+
+export default Private_polici
