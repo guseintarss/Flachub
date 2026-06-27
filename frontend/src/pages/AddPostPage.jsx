@@ -16,6 +16,17 @@ function csrfToken() {
   return m ? m[1] : ''
 }
 
+function extractTitle(html) {
+  const m = html.match(/<h[1-3][^>]*>([^<]+)<\/h[1-3]>/)
+  if (m) return m[1].trim()
+  const m2 = html.match(/<p>([^<]+)<\/p>/)
+  if (m2) return m2[1].trim()
+  const div = document.createElement('div')
+  div.innerHTML = html
+  const text = div.textContent.trim()
+  return text.split('\n')[0].trim() || text.slice(0, 100)
+}
+
 const editorConfig = {
   licenseKey: 'GPL',
   plugins: [
@@ -166,14 +177,9 @@ function AddPostPage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    const editor = editorRef.current
-    let title = ''
-    let content = ''
-    if (editor) {
-      const titlePlugin = editor.plugins.get('Title')
-      title = titlePlugin.getTitle().trim()
-      content = titlePlugin.getBody()
-    }
+    const fullHtml = form.content
+    const title = extractTitle(fullHtml)
+    const content = fullHtml
     if (!title) { setError('Введите заголовок'); return }
     if (!content.trim()) { setError('Введите содержание'); return }
     setError('')
@@ -188,6 +194,8 @@ function AddPostPage() {
       selectedTagIds.forEach(id => fd.append('tags', id))
       if (photoFile) fd.append('photo', photoFile)
 
+      console.log('Submitting post:', { title, content_length: content.length, post_type: form.post_type, is_published: form.is_published, cat: form.cat, tags: [...selectedTagIds] })
+
       const res = await fetch('/api/mobile/posts/', {
         method: 'POST',
         headers: { 'X-CSRFToken': csrfToken() },
@@ -197,7 +205,12 @@ function AddPostPage() {
       const text = await res.text()
       let data
       try { data = JSON.parse(text) } catch { throw new Error(`Ошибка (${res.status}): ${text.slice(0, 200)}`) }
-      if (!res.ok) throw new Error(Object.values(data).flat().join(', ') || 'Ошибка создания')
+      if (!res.ok) {
+        const msg = typeof data === 'object' && data !== null
+          ? Object.entries(data).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join('; ')
+          : data.error || data
+        throw new Error(msg)
+      }
       navigate(`/post/${data.slug}/`)
     } catch (err) {
       setError(err.message)

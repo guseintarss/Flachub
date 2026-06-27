@@ -166,6 +166,9 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
         model = Post
         fields = ('title', 'content', 'photo', 'post_type', 'is_published', 
                   'cat', 'tags')
+        extra_kwargs = {
+            'cat': {'required': False, 'allow_null': True},
+        }
 
     def validate(self, attrs):
         if not attrs.get('slug') and attrs.get('title'):

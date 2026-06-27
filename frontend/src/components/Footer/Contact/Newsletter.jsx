@@ -5,7 +5,7 @@ const Newsletter = () => {
     return (
         <div className="footer-newsletter">
             <p><i className="fas fa-bell"></i> Рассылка</p>
-            <form className="newsletter-form" onsubmit="event.preventDefault(); alert('Спасибо за подписку!');">
+            <form className="newsletter-form" onSubmit={(e) => { e.preventDefault(); alert('Спасибо за подписку!'); }}>
                 <Newsletter_input />
                 <Newsletter_button />
             </form>

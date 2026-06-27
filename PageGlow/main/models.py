@@ -40,8 +40,8 @@ class Post(ModelMeta, models.Model):
     post_type = models.CharField(max_length=20, choices=PostType.choices, default=PostType.POST, verbose_name='Тип поста')
     time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
     time_update = models.DateTimeField(auto_now=True, verbose_name='Время изменения')
-    is_published = models.BooleanField(choices=tuple(map(lambda x: (bool(x[0]), x[1]), Status.choices)), default=Status.DRAFT, verbose_name='Опубликовать?')
-    cat = models.ForeignKey('Category', on_delete=models.PROTECT, related_name='posts', verbose_name='Категории')
+    is_published = models.BooleanField(default=Status.DRAFT, verbose_name='Опубликовать?')
+    cat = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True, related_name='posts', verbose_name='Категории')
     tags = models.ManyToManyField('TagPost', blank=True, related_name='tags', verbose_name='Теги')
     author = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, related_name='posts', null=True, default=None)
     
