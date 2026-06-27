@@ -462,7 +462,7 @@ function AddPostPage() {
           </div>
         </div>
         <aside className="sidebar" aria-label="Боковая панель">
-          <Sidebar />
+          <Sidebar compact />
         </aside>
       </div>
     </main>
