@@ -72,6 +72,11 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static('/ckeditor5/', document_root=settings.BASE_DIR / 'ckeditor5')
 
+# Frontend SPA — отдаёт built React app для всех путей, не найденных выше
+urlpatterns += [
+    re_path(r'^app/.*$', TemplateView.as_view(template_name='index.html'), name='frontend'),
+]
+
 handler404 = page_not_found
 handler500 = server_error
 handler502 = bad_gateway

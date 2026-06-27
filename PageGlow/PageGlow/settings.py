@@ -45,8 +45,13 @@ INTERNAL_IPS = ["127.0.0.1"]
 import sys
 IS_ASGI = 'daphne' in sys.argv[0] or 'uvicorn' in sys.argv[0]
 
-# CORS_ALLOW_ALL_ORIGINS = True
-# CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://localhost:4173',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:8000',
+]
+CORS_ALLOW_CREDENTIALS = True
 
 # # ===== SENTRY =====
 # SENTRY_DSN = config('SENTRY_DSN', default='')
@@ -83,6 +88,7 @@ INSTALLED_APPS = [
     'meta',
     'django_filters',
 
+    'corsheaders',
     'django.contrib.sites',
     'django.contrib.sitemaps',
 
@@ -98,6 +104,7 @@ if not IS_ASGI:
     INSTALLED_APPS.insert(8, 'debug_toolbar')
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

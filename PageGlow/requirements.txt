@@ -57,4 +57,5 @@ channels-redis==4.2.0
 sentry-sdk==2.20.0
 
 # Backup
+django-cors-headers==4.9.0
 django-dbbackup==4.2.0

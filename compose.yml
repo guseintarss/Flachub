@@ -129,6 +129,36 @@ services:
       - tools
 
   # ===========================================
+  # PostgreSQL Test Database
+  # ===========================================
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: pageglow-postgres-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${TEST_DATABASE_NAME:-pageglow_test}
+      POSTGRES_USER: ${TEST_DATABASE_USERNAME:-pageglow_test}
+      POSTGRES_PASSWORD: ${TEST_DATABASE_PASSWORD:-pageglow_test_pass}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    networks:
+      - pageglow-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TEST_DATABASE_USERNAME:-pageglow_test} -d ${TEST_DATABASE_NAME:-pageglow_test}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    profiles:
+      - test
+
+  # ===========================================
   # Adminer (Database Admin - Optional)
   # ===========================================
   adminer:
@@ -157,6 +187,8 @@ volumes:
   logs_volume:
     driver: local
   nginx_logs:
+    driver: local
+  postgres_test_data:
     driver: local
 
 # ===========================================
