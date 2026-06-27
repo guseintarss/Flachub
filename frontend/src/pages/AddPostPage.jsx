@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Main/Sidebar/Sidebar'
 import { CKEditor } from '@ckeditor/ckeditor5-react'
 import {
-  BalloonEditor, Essentials, Paragraph, Heading,
+  BalloonEditor, Essentials, Paragraph, Heading, Title,
   Bold, Italic, Underline, Strikethrough, Code,
   List, Link as CkLink, BlockQuote, CodeBlock, Table,
   Font, Alignment, Indent, HorizontalLine,
@@ -19,7 +19,7 @@ function csrfToken() {
 const editorConfig = {
   licenseKey: 'GPL',
   plugins: [
-    Essentials, Paragraph, Heading,
+    Essentials, Paragraph, Heading, Title,
     Bold, Italic, Underline, Strikethrough, Code,
     List, CkLink, BlockQuote, CodeBlock, Table,
     Font, Alignment, Indent, HorizontalLine,
@@ -53,7 +53,10 @@ const editorConfig = {
   table: {
     contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells'],
   },
-  placeholder: 'Напишите текст публикации...',
+  title: {
+    placeholder: 'Заголовок публикации',
+  },
+  placeholder: 'Начните писать текст публикации...',
 }
 
 const POST_TYPES = [
@@ -80,9 +83,9 @@ function AddPostPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const searchRef = useRef(null)
+  const editorRef = useRef(null)
 
   const [form, setForm] = useState({
-    title: '',
     content: '',
     post_type: 'post',
     is_published: '1',
@@ -163,14 +166,22 @@ function AddPostPage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.title.trim()) { setError('Введите заголовок'); return }
-    if (!form.content.trim()) { setError('Введите содержание'); return }
+    const editor = editorRef.current
+    let title = ''
+    let content = ''
+    if (editor) {
+      const titlePlugin = editor.plugins.get('Title')
+      title = titlePlugin.getTitle().trim()
+      content = titlePlugin.getBody()
+    }
+    if (!title) { setError('Введите заголовок'); return }
+    if (!content.trim()) { setError('Введите содержание'); return }
     setError('')
     setSubmitting(true)
     try {
       const fd = new FormData()
-      fd.append('title', form.title)
-      fd.append('content', form.content)
+      fd.append('title', title)
+      fd.append('content', content)
       fd.append('post_type', form.post_type)
       fd.append('is_published', form.is_published)
       if (form.cat) fd.append('cat', form.cat)
@@ -265,17 +276,13 @@ function AddPostPage() {
               <div className={`wizard-step${step === 2 ? ' active' : ''}`} id="step-2">
                 <div className="editor-container">
                   <div className="form-group full-width">
-                    <input type="text" className="form-control" value={form.title}
-                      onChange={e => f('title', e.target.value)}
-                      placeholder="Заголовок публикации"
-                      style={{ fontSize: '1.3rem', fontWeight: 700, padding: '14px 16px', marginBottom: 16, border: '2px solid var(--border)', borderRadius: 10, background: 'var(--bg)', color: 'var(--text)', width: '100%', boxSizing: 'border-box' }}
-                    />
                     {step === 2 && (
                       <CKEditor
                         editor={BalloonEditor}
                         data={form.content}
                         config={editorConfig}
                         disableWatchdog
+                        onReady={(editor) => { editorRef.current = editor }}
                         onChange={(event, editor) => {
                           f('content', editor.getData())
                         }}
