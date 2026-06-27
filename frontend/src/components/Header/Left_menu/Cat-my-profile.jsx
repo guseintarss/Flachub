@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom'
+
 const My_profile = () => {
     return (
-        <a href="{% url 'users:profile' %}" className="menu_link">
+        <Link to="/profile/" className="menu_link">
             <i className="fas fa-user-circle"></i> Мой профиль
-        </a>
+        </Link>
     )
 }
 

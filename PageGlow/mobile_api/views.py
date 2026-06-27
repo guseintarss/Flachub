@@ -429,15 +429,20 @@ class MediaUploadViewSet(viewsets.GenericViewSet):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+def current_user(request):
+    """Возвращает данные текущего пользователя или null"""
+    if request.user.is_authenticated:
+        serializer = UserPublicSerializer(request.user, context={'request': request})
+        data = serializer.data
+        data['is_staff'] = request.user.is_staff
+        data['is_superuser'] = request.user.is_superuser
+        return Response(data)
+    return Response(None)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def sidebar_data(request):
-    from django.db.models import Count, Q
-    from django.core.cache import cache
-
-    cache_key = 'sidebar_data_api'
-    cached = cache.get(cache_key)
-    if cached:
-        return Response(cached)
-
     posts = Post.objects.filter(
         is_published=True
     ).select_related('author', 'cat').annotate(
@@ -448,14 +453,7 @@ def sidebar_data(request):
         posts_count=Count('posts', filter=Q(posts__is_published=True))
     ).filter(posts_count__gt=0).order_by('-posts_count')[:10]
 
-    tags = TagPost.objects.annotate(
-        posts_count=Count('tags', filter=Q(tags__is_published=True))
-    ).filter(posts_count__gt=0).order_by('-posts_count')[:20]
-    total_posts = Post.objects.count()
-    total_users = User.objects.filter(is_active=True).count()
-    total_comments = Comment.objects.count()
-
-    result = {
+    return Response({
         'recent_posts': [
             {
                 'id': p.id,
@@ -478,16 +476,10 @@ def sidebar_data(request):
             }
             for c in categories
         ],
-        'tags': [
-            {'id': t.id, 'name': t.tag, 'slug': t.slug}
-            for t in tags
-        ],
+        'tags': [],
         'stats': {
-            'total_posts': total_posts,
-            'total_users': total_users,
-            'total_comments': total_comments,
+            'total_posts': Post.objects.count(),
+            'total_users': User.objects.filter(is_active=True).count(),
+            'total_comments': Comment.objects.count(),
         },
-    }
-
-    cache.set(cache_key, result, 300)
-    return Response(result)
+    })

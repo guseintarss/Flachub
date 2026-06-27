@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom'
+
 const Brand = () => {
     return (
-        <a className="brand" href="{% url 'home' %}">
+        <Link className="brand" to="/">
             <span className="brand-text">ФлакХаб</span>
-        </a>
+        </Link>
     )
 }
 

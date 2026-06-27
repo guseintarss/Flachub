@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom'
+
 const Cat_bookmarks = () => {
     return (
-        <a href="" className="menu_link">
+        <Link to="/bookmarks/" className="menu_link">
             <i className="fas fa-bookmark"></i> Закладки
-        </a>
+        </Link>
     )
 }
 
