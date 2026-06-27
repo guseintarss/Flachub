@@ -6,6 +6,8 @@ import Main from "./components/Main/Main"
 import PostDetail from "./pages/PostDetail"
 import LoginPage from "./pages/LoginPage"
 import RegisterPage from "./pages/RegisterPage"
+import ProfilePage from "./pages/ProfilePage"
+import EditProfilePage from "./pages/EditProfilePage"
 import { TagPosts, CategoryPosts } from "./pages/PostListPage"
 import AddPostPage from "./pages/AddPostPage"
 
@@ -22,6 +24,8 @@ const App = () => {
           <Route path="/login/" element={<LoginPage />} />
           <Route path="/register/" element={<RegisterPage />} />
           <Route path="/add-post/" element={<AddPostPage />} />
+          <Route path="/profile/" element={<ProfilePage />} />
+          <Route path="/user/:username/" element={<ProfilePage />} />
         </Routes>
         <Footer />
       </AuthProvider>

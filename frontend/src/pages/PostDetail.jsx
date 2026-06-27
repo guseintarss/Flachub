@@ -367,9 +367,9 @@ function PostDetail() {
             <div className="article-header">
               <div className="post-meta-header">
                 <div className="author-info">
-                  <Link to={`/users/${post.author.username}/`} className="author-avatar-link">
-                    {post.author.photo ? (
-                      <img className="author-avatar" src={post.author.photo} alt={post.author.username} />
+                  <Link to={`/user/${post.author.username}/`} className="author-avatar-link">
+                    {post.author.avatar ? (
+                      <img className="author-avatar" src={post.author.avatar} alt={post.author.username} />
                     ) : (
                       <div className="author-avatar author-avatar-placeholder">
                         {post.author.username?.[0]?.toUpperCase() || '?'}
@@ -377,7 +377,7 @@ function PostDetail() {
                     )}
                   </Link>
                   <div className="author-details">
-                    <Link to={`/users/${post.author.username}/`} className="author-name">
+                    <Link to={`/user/${post.author.username}/`} className="author-name">
                       {post.author.username}
                     </Link>
                     <span className="post-date" title={post.time_update}>

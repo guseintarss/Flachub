@@ -157,8 +157,8 @@ const UserArea = () => {
       {user && (
         <div className="user-menu">
           <div className="avatar-wrapper">
-            {user.photo ? (
-              <img src={user.photo} alt={user.username} className="user-avatar" id="avatar-toggle"
+            {user.avatar ? (
+              <img src={user.avatar} alt={user.username} className="user-avatar" id="avatar-toggle"
                 onClick={() => setDropdownOpen(o => !o)} />
             ) : (
               <div className="user-avatar user-avatar-placeholder" id="avatar-toggle"

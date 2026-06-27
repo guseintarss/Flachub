@@ -10,11 +10,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Q, Count, Prefetch
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 
 from main.models import (
     Post, Category, TagPost, Comment, 
     Notification, Bookmark, Collection,
-    UserAchievement
+    UserAchievement, Subscription
 )
 from .serializers import (
     PostListSerializer, PostDetailSerializer, PostCreateUpdateSerializer,
@@ -24,7 +25,7 @@ from .serializers import (
     BookmarkSerializer, BookmarkCreateSerializer,
     CollectionSerializer,
     UserAchievementSerializer,
-    UserPublicSerializer
+    UserPublicSerializer, UserProfileSerializer
 )
 
 User = get_user_model()
@@ -52,13 +53,25 @@ class PostViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     lookup_field = 'slug'
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['post_type', 'cat', 'is_published']
+    filterset_fields = ['post_type', 'cat', 'is_published', 'author']
     search_fields = ['title', 'content']
     ordering_fields = ['time_create', 'time_update', 'views', 'title']
     ordering = ['-time_create']
 
     def get_queryset(self):
-        queryset = Post.published.select_related('cat', 'author').prefetch_related('tags')
+        is_published_param = self.request.query_params.get('is_published', None)
+        author_id = self.request.query_params.get('author', None)
+
+        # Если запрошены черновики (is_published=0), используем objects и проверяем права
+        if is_published_param == '0' and author_id:
+            if self.request.user.is_authenticated and str(self.request.user.id) == author_id:
+                queryset = Post.objects.filter(is_published=Post.Status.DRAFT)
+            else:
+                return Post.objects.none()
+        else:
+            queryset = Post.published.all()
+
+        queryset = queryset.select_related('cat', 'author').prefetch_related('tags')
         
         # Фильтр по тегам
         tag_slug = self.request.query_params.get('tag', None)
@@ -71,7 +84,6 @@ class PostViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(cat__slug=cat_slug)
         
         # Фильтр по автору
-        author_id = self.request.query_params.get('author', None)
         if author_id:
             queryset = queryset.filter(author_id=author_id)
         
@@ -287,6 +299,58 @@ class UserStatsViewSet(viewsets.ReadOnlyModelViewSet):
         return User.objects.all()
 
     @action(detail=True, methods=['get'])
+    def profile(self, request, pk=None):
+        """Полный профиль пользователя"""
+        user = self.get_object()
+        serializer = UserProfileSerializer(user, context={'request': request})
+        data = serializer.data
+
+        # Дополнительные данные
+        published_posts = Post.published.filter(author=user).select_related('cat', 'author')
+        drafts = Post.objects.filter(
+            author=user,
+            is_published=Post.Status.DRAFT
+        ).select_related('cat', 'author')
+        favorites = Post.objects.filter(favorites=user).select_related('cat', 'author')
+        achievements = UserAchievement.objects.filter(user=user).select_related('badge')
+
+        is_subscribed = False
+        is_own = request.user.is_authenticated and request.user.id == user.id
+        if request.user.is_authenticated and not is_own:
+            is_subscribed = Subscription.objects.filter(subscriber=request.user, author=user).exists()
+
+        data['is_own_profile'] = is_own
+        data['is_subscribed'] = is_subscribed
+        data['published_count'] = published_posts.count()
+        data['drafts_count'] = drafts.count() if is_own else 0
+        data['favorites_count'] = favorites.count() if is_own else 0
+        data['achievements'] = UserAchievementSerializer(achievements, many=True).data
+
+        return Response(data)
+
+    @action(detail=False, methods=['get'], url_path='by-username/(?P<username>[^/.]+)')
+    def by_username(self, request, username=None):
+        """Найти пользователя по username"""
+        user = get_object_or_404(User, username=username, is_active=True)
+        serializer = UserProfileSerializer(user, context={'request': request})
+        data = serializer.data
+
+        published_posts = Post.published.filter(author=user).select_related('cat', 'author')
+        achievements = UserAchievement.objects.filter(user=user).select_related('badge')
+
+        is_subscribed = False
+        is_own = request.user.is_authenticated and request.user.id == user.id
+        if request.user.is_authenticated and not is_own:
+            is_subscribed = Subscription.objects.filter(subscriber=request.user, author=user).exists()
+
+        data['is_own_profile'] = is_own
+        data['is_subscribed'] = is_subscribed
+        data['published_count'] = published_posts.count()
+        data['achievements'] = UserAchievementSerializer(achievements, many=True).data
+
+        return Response(data)
+
+    @action(detail=True, methods=['get'])
     def stats(self, request, pk=None):
         user = self.get_object()
         
@@ -300,8 +364,8 @@ class UserStatsViewSet(viewsets.ReadOnlyModelViewSet):
             'posts_count': posts_count,
             'comments_count': comments_count,
             'likes_received': likes_received,
-            'followers_count': user.subscribers.count(),
-            'following_count': user.subscriptions.count(),
+            'followers_count': Subscription.objects.filter(author=user).count(),
+            'following_count': Subscription.objects.filter(subscriber=user).count(),
         })
 
     @action(detail=True, methods=['get'])
@@ -447,10 +511,7 @@ def login_view(request):
     if user is not None:
         login(request, user)
         serializer = UserPublicSerializer(user, context={'request': request})
-        data = serializer.data
-        data['is_staff'] = user.is_staff
-        data['is_superuser'] = user.is_superuser
-        return Response(data)
+        return Response(serializer.data)
     return Response({'error': 'Неверный логин или пароль'}, status=400)
 
 
@@ -479,26 +540,62 @@ def register_view(request):
         from django.contrib.auth import login
         login(request, user)
         serializer = UserPublicSerializer(user, context={'request': request})
-        data = serializer.data
-        data['is_staff'] = user.is_staff
-        data['is_superuser'] = user.is_superuser
-        return Response(data, status=201)
+        return Response(serializer.data, status=201)
     return Response({'errors': form.errors}, status=400)
 
 
 # ===== Sidebar Data =====
 
-@api_view(['GET'])
+@api_view(['GET', 'PATCH'])
 @permission_classes([AllowAny])
 def current_user(request):
-    """Возвращает данные текущего пользователя или null"""
-    if request.user.is_authenticated:
-        serializer = UserPublicSerializer(request.user, context={'request': request})
-        data = serializer.data
-        data['is_staff'] = request.user.is_staff
-        data['is_superuser'] = request.user.is_superuser
-        return Response(data)
-    return Response(None)
+    """Возвращает или обновляет данные текущего пользователя"""
+    if not request.user.is_authenticated:
+        return Response(None)
+
+    if request.method == 'PATCH':
+        user = request.user
+        data = request.data
+
+        # Только разрешённые поля
+        allowed_fields = ['first_name', 'last_name', 'about_me',
+                          'data_birth', 'phone_namber',
+                          'banner_gradient_start', 'banner_gradient_end']
+        for field in allowed_fields:
+            if field in data:
+                setattr(user, field, data[field])
+
+        # Обработка аватара
+        if 'photo' in request.FILES:
+            user.photo = request.FILES['photo']
+        elif data.get('photo_clear') == 'true':
+            if user.photo:
+                user.photo.delete(save=False)
+                user.photo = None
+
+        # Обработка баннера
+        if 'banner_image' in request.FILES:
+            user.banner_image = request.FILES['banner_image']
+        if data.get('banner_image_clear') == 'true':
+            if user.banner_image:
+                user.banner_image.delete(save=False)
+                user.banner_image = None
+
+        # Очистка телефона
+        if 'phone_namber' in data and data['phone_namber']:
+            cleaned = ''.join(filter(lambda x: x.isdigit(), data['phone_namber']))
+            if cleaned.startswith('8'):
+                cleaned = '7' + cleaned[1:]
+            if not cleaned.startswith('7'):
+                cleaned = '7' + cleaned
+            user.phone_namber = cleaned[:11]
+
+        user.save()
+        serializer = UserProfileSerializer(user, context={'request': request})
+        return Response(serializer.data)
+
+    serializer = UserProfileSerializer(request.user, context={'request': request})
+    return Response(serializer.data)
 
 
 @api_view(['GET'])

@@ -17,7 +17,7 @@ const PostCard = ({ post }) => {
     <article className={`post ${post.post_type ? `post-type-${post.post_type}` : ""}`}>
       <div className="post-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
         <div className="post-author" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <a href={`/users/${post.author?.username || ""}/`} style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", color: "inherit" }}>
+          <a href={`/user/${post.author?.username || ""}/`} style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", color: "inherit" }}>
             {post.author?.avatar ? (
               <img className="author-avatar" src={post.author.avatar} alt={post.author.username} style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }} />
             ) : (

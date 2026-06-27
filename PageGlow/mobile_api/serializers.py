@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from main.models import (
     Post, Category, TagPost, Comment, 
     Notification, Bookmark, Collection, 
-    UserBadge, UserAchievement
+    UserBadge, UserAchievement, Subscription
 )
 
 User = get_user_model()
@@ -22,15 +22,88 @@ class UserSerializer(serializers.ModelSerializer):
 class UserPublicSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
     bio = serializers.CharField(source='about_me', read_only=True)
+    banner_image = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'avatar', 'bio')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name',
+                  'avatar', 'bio', 'is_staff', 'is_superuser', 'date_joined',
+                  'banner_gradient_start', 'banner_gradient_end', 'banner_image')
 
     def get_avatar(self, obj):
         if obj.photo:
             return obj.photo.url
         return None
+
+    def get_banner_image(self, obj):
+        if obj.banner_image:
+            return obj.banner_image.url
+        return None
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+    bio = serializers.CharField(source='about_me', read_only=True)
+    followers_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+    reputation = serializers.SerializerMethodField()
+    current_level = serializers.SerializerMethodField()
+    next_level = serializers.SerializerMethodField()
+    level_progress = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name',
+                  'avatar', 'bio', 'is_staff', 'is_superuser', 'date_joined',
+                  'banner_gradient_start', 'banner_gradient_end', 'banner_image',
+                  'followers_count', 'following_count', 'reputation',
+                  'current_level', 'next_level', 'level_progress')
+
+    def get_avatar(self, obj):
+        if obj.photo:
+            return obj.photo.url
+        return None
+
+    def get_banner_image(self, obj):
+        if obj.banner_image:
+            return obj.banner_image.url
+        return None
+
+    def get_followers_count(self, obj):
+        return Subscription.objects.filter(author=obj).count()
+
+    def get_following_count(self, obj):
+        return Subscription.objects.filter(subscriber=obj).count()
+
+    def get_reputation(self, obj):
+        return obj.reputation
+
+    def get_current_level(self, obj):
+        level = obj.current_level
+        if not level:
+            return None
+        return {
+            'name': level.name,
+            'slug': level.slug,
+            'min_reputation': level.min_reputation,
+            'icon': level.icon,
+            'color': level.color,
+        }
+
+    def get_next_level(self, obj):
+        level = obj.next_level
+        if not level:
+            return None
+        return {
+            'name': level.name,
+            'slug': level.slug,
+            'min_reputation': level.min_reputation,
+            'icon': level.icon,
+            'color': level.color,
+        }
+
+    def get_level_progress(self, obj):
+        return obj.level_progress
 
 
 # ===== Category & Tag Serializers =====
@@ -164,16 +237,18 @@ class PostDetailSerializer(serializers.ModelSerializer):
 class PostCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('title', 'content', 'photo', 'post_type', 'is_published', 
+        fields = ('id', 'slug', 'title', 'content', 'photo', 'post_type', 'is_published', 
                   'cat', 'tags')
         extra_kwargs = {
             'cat': {'required': False, 'allow_null': True},
+            'slug': {'required': False},
         }
 
     def validate(self, attrs):
         if not attrs.get('slug') and attrs.get('title'):
+            from main.models import translist_to_eng
             from django.template.defaultfilters import slugify
-            attrs['slug'] = slugify(attrs['title'])
+            attrs['slug'] = slugify(translist_to_eng(attrs['title']))
         return attrs
 
 
