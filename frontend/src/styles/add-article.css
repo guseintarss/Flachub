@@ -785,8 +785,10 @@ html.dark-mode .cover-file-label:hover {
     }
 
     .ck.ck-editor__editable_inline {
-        min-height: 300px !important;
-        max-height: 60vh !important;
+        min-height: 60vh !important;
+        max-width: 100% !important;
+        padding: 16px 20px !important;
+        margin: 0 !important;
     }
 
     .ck.ck-balloon-panel .ck.ck-toolbar {
@@ -924,16 +926,19 @@ html.dark-mode .search-results {
 
 /* editable area */
 .editor-container .ck.ck-editor__editable_inline {
-    min-height: 500px;
-    max-height: 800px;
-    padding: 24px 28px;
+    width: 100%;
+    max-width: 794px;
+    margin: 0 auto;
+    min-height: 1123px;
+    padding: 28px 36px;
     border: 2px solid var(--border);
-    border-radius: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .editor-container .ck.ck-editor__editable_inline.ck-focused {
     border-color: var(--primary) !important;
-    box-shadow: 0 0 0 4px rgba(12, 106, 207, 0.15) !important;
+    box-shadow: 0 2px 16px rgba(12, 106, 207, 0.1) !important;
 }
 
 /* floating toolbar balloon */
