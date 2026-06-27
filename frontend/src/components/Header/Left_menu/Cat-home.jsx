@@ -5,3 +5,5 @@ const Cat_home = () => {
         </a>
     )
 }
+
+export default Cat_home
