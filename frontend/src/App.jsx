@@ -3,6 +3,7 @@ import Footer from "./components/Footer/Footer"
 import Header from "./components/Header/Header"
 import Main from "./components/Main/Main"
 import PostDetail from "./pages/PostDetail"
+import { TagPosts, CategoryPosts } from "./pages/PostListPage"
 
 const App = () => {
   return(
@@ -11,6 +12,8 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Main />} />
         <Route path="/post/:slug/" element={<PostDetail />} />
+        <Route path="/tag/:slug/" element={<TagPosts />} />
+        <Route path="/category/:slug/" element={<CategoryPosts />} />
       </Routes>
       <Footer />
     </BrowserRouter>

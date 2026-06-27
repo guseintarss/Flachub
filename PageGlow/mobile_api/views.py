@@ -56,6 +56,11 @@ class PostViewSet(viewsets.ModelViewSet):
         if tag_slug:
             queryset = queryset.filter(tags__slug=tag_slug)
         
+        # Фильтр по категории (slug)
+        cat_slug = self.request.query_params.get('cat', None)
+        if cat_slug:
+            queryset = queryset.filter(cat__slug=cat_slug)
+        
         # Фильтр по автору
         author_id = self.request.query_params.get('author', None)
         if author_id:
@@ -443,7 +448,9 @@ def sidebar_data(request):
         posts_count=Count('posts', filter=Q(posts__is_published=True))
     ).filter(posts_count__gt=0).order_by('-posts_count')[:10]
 
-    tags = TagPost.objects.all()[:20]
+    tags = TagPost.objects.annotate(
+        posts_count=Count('tags', filter=Q(tags__is_published=True))
+    ).filter(posts_count__gt=0).order_by('-posts_count')[:20]
     total_posts = Post.objects.count()
     total_users = User.objects.filter(is_active=True).count()
     total_comments = Comment.objects.count()
