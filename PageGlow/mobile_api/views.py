@@ -41,6 +41,7 @@ class PostViewSet(viewsets.ModelViewSet):
     """
     permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = StandardResultsSetPagination
+    lookup_field = 'slug'
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['post_type', 'cat', 'is_published']
     search_fields = ['title', 'content']
