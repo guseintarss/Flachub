@@ -1,15 +1,11 @@
-const BASE = '/api/mobile'
+import { getCSRFToken } from './csrf'
 
-function getCSRFToken() {
-  const meta = document.querySelector('meta[name="csrf-token"]')
-  if (meta) return meta.getAttribute('content')
-  const match = document.cookie.match(/csrftoken=([^;]+)/)
-  return match ? match[1] : null
-}
+const BASE = '/api/mobile'
 
 async function request(url, options = {}) {
   const config = {
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
     ...options,
   }
   if (options.method && options.method !== 'GET') {

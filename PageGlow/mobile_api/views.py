@@ -21,7 +21,7 @@ from main.models import (
 from .serializers import (
     PostListSerializer, PostDetailSerializer, PostCreateUpdateSerializer,
     CategorySerializer, TagSerializer,
-    CommentSerializer, CommentCreateSerializer,
+    CommentWithRepliesSerializer, CommentSerializer, CommentCreateSerializer,
     NotificationSerializer,
     BookmarkSerializer, BookmarkCreateSerializer,
     CollectionSerializer,

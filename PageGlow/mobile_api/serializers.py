@@ -189,6 +189,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
     favorites_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField()
@@ -201,7 +202,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'slug', 'photo', 'content', 'post_type',
                   'is_published',
                   'time_create', 'time_update', 'author', 'category', 'tags',
-                  'likes_count', 'favorites_count', 'comments_count', 'is_liked',
+                  'likes_count', 'favorites_count', 'comments_count', 'comments', 'is_liked',
                   'is_favorited', 'is_subscribed', 'current_user',
                   'reading_time_minutes', 'views', 'similar_posts')
 
@@ -217,6 +218,10 @@ class PostDetailSerializer(serializers.ModelSerializer):
 
     def get_comments_count(self, obj):
         return obj.comments.filter(is_active=True).count()
+
+    def get_comments(self, obj):
+        qs = obj.comments.filter(parent=None, is_active=True).select_related('author').prefetch_related('likes')
+        return CommentWithRepliesSerializer(qs, many=True, context=self.context).data
 
     def get_is_liked(self, obj):
         request = self.context.get('request')
@@ -272,6 +277,31 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
 
 
 # ===== Comment Serializers =====
+
+class CommentWithRepliesSerializer(serializers.ModelSerializer):
+    author = UserPublicSerializer(read_only=True)
+    likes_count = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+    replies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'author', 'parent', 'content', 'created_at',
+                  'likes_count', 'is_liked', 'replies')
+
+    def get_likes_count(self, obj):
+        return obj.number_of_likes()
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.user_has_liked(request.user)
+        return False
+
+    def get_replies(self, obj):
+        replies = obj.replies.filter(is_active=True).select_related('author').prefetch_related('likes')
+        return CommentWithRepliesSerializer(replies, many=True, context=self.context).data
+
 
 class CommentSerializer(serializers.ModelSerializer):
     author = UserPublicSerializer(read_only=True)

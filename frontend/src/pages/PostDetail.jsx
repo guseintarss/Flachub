@@ -97,12 +97,27 @@ function ShareMenu({ slug }) {
   )
 }
 
+function formatCommentDate(dateStr) {
+  try {
+    return new Date(dateStr).toLocaleDateString('ru-RU', {
+      day: 'numeric', month: 'long', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    })
+  } catch { return dateStr }
+}
+
+function getAuthorName(comment) {
+  if (typeof comment.author === 'string') return comment.author
+  return comment.author?.username || 'Неизвестно'
+}
+
 function CommentItem({ comment, postId, currentUser, onCommentAction }) {
   const [liked, setLiked] = useState(comment.is_liked || false)
   const [likesCount, setLikesCount] = useState(comment.likes_count || 0)
   const [showReplyForm, setShowReplyForm] = useState(false)
   const [replyContent, setReplyContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
   const [shareOpen, setShareOpen] = useState(false)
   const shareRef = useRef()
   const url = `${window.location.origin}/post/${postId}/`
@@ -127,14 +142,20 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
     e.preventDefault()
     if (!replyContent.trim()) return
     setSubmitting(true)
+    setError('')
     try {
       const data = await addComment(postId, replyContent, String(comment.id))
       if (data.success) {
         setReplyContent('')
         setShowReplyForm(false)
+        setError('')
         onCommentAction(data.comment)
+      } else {
+        setError(data.error || 'Ошибка при отправке ответа')
       }
-    } catch {}
+    } catch {
+      setError('Ошибка при отправке ответа')
+    }
     setSubmitting(false)
   }, [replyContent, postId, comment.id, onCommentAction])
 
@@ -146,14 +167,14 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
     } catch {}
   }, [comment.id, onCommentAction])
 
-  const canDelete = currentUser && (comment.author?.username === currentUser)
+  const canDelete = currentUser && getAuthorName(comment) === currentUser
 
   return (
     <div className="comment" data-comment-id={comment.id}>
       <div className="comment-header">
         <div className="comment-author-info">
-          <strong className="comment-author">{comment.author?.username || 'Неизвестно'}</strong>
-          <small className="comment-time">{comment.created_at}</small>
+          <strong className="comment-author">{getAuthorName(comment)}</strong>
+          <small className="comment-time">{formatCommentDate(comment.created_at)}</small>
           {comment.parent_author && (
             <small className="reply-to"><i className="fas fa-arrow-right" /> {comment.parent_author}</small>
           )}
@@ -173,7 +194,7 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
           <i className={`fas fa-heart ${liked ? 'fa-bounce' : ''}`} />
           <span className="comment-likes-count">{likesCount}</span>
         </button>
-        {!comment.parent && (
+        {!comment.parent_id && !comment.parent && (
           <button className="comment-action-btn comment-reply-btn" onClick={() => setShowReplyForm(o => !o)}>
             <i className="fas fa-reply" /> Ответить
           </button>
@@ -208,11 +229,12 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
         <form className="reply-form" onSubmit={handleReply}>
           <textarea rows={2} className="form-control reply-textarea" placeholder="Напишите ответ..."
             value={replyContent} onChange={e => setReplyContent(e.target.value)} />
+          {error && <div className="comment-error">{error}</div>}
           <div className="reply-form-actions">
             <button type="submit" className="btn btn-sm btn-primary" disabled={submitting || !replyContent.trim()}>
               {submitting ? <i className="fas fa-spinner fa-spin" /> : null} Отправить
             </button>
-            <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setShowReplyForm(false); setReplyContent('') }}>
+            <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setShowReplyForm(false); setReplyContent(''); setError('') }}>
               Отмена
             </button>
           </div>
@@ -226,6 +248,7 @@ function CommentsSection({ comments: initialComments, postId, currentUser }) {
   const [comments, setComments] = useState(initialComments || [])
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => { setComments(initialComments || []) }, [initialComments])
 
@@ -233,13 +256,18 @@ function CommentsSection({ comments: initialComments, postId, currentUser }) {
     e.preventDefault()
     if (!content.trim()) return
     setSubmitting(true)
+    setError('')
     try {
       const data = await addComment(postId, content)
       if (data.success) {
         setContent('')
         setComments(prev => [data.comment, ...prev])
+      } else {
+        setError(data.error || 'Ошибка при отправке комментария')
       }
-    } catch {}
+    } catch (err) {
+      setError('Ошибка при отправке комментария')
+    }
     setSubmitting(false)
   }, [content, postId])
 
@@ -248,8 +276,9 @@ function CommentsSection({ comments: initialComments, postId, currentUser }) {
       setComments(prev => prev.filter(c => c.id !== deleteId))
     } else if (newComment) {
       setComments(prev => {
-        if (newComment.parent) {
-          return prev.map(c => c.id === newComment.parent ? { ...c, replies: [...(c.replies || []), newComment] } : c)
+        if (newComment.parent_id || newComment.parent) {
+          const parentId = newComment.parent_id || newComment.parent
+          return prev.map(c => c.id === parentId ? { ...c, replies: [...(c.replies || []), newComment] } : c)
         }
         return [newComment, ...prev]
       })
@@ -267,6 +296,7 @@ function CommentsSection({ comments: initialComments, postId, currentUser }) {
       <form className="comment-form" onSubmit={handleAddComment}>
         <textarea rows={3} className="form-control" placeholder="Напишите комментарий..."
           value={content} onChange={e => setContent(e.target.value)} />
+        {error && <div className="comment-error">{error}</div>}
         <div className="comment-form-actions">
           <button type="submit" className="btn btn-primary" disabled={submitting || !content.trim()}>
             {submitting ? <i className="fas fa-spinner fa-spin" /> : null} Отправить
