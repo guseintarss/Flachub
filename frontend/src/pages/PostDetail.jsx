@@ -5,6 +5,7 @@ import {
   toggleSubscribe, addComment, deleteComment, toggleCommentLike,
 } from '../api'
 import '../styles/PostDetail.css'
+import Sidebar from '../components/Sidebar/Sidebar'
 
 const postTypeLabel = {
   article: 'Статья', news: 'Новость', idea: 'Идея', post: 'Пост',
@@ -233,7 +234,6 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
 
 function CommentsSection({ comments: initialComments, postId, currentUser }) {
   const [comments, setComments] = useState(initialComments || [])
-  const [showForm, setShowForm] = useState(false)
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -247,7 +247,6 @@ function CommentsSection({ comments: initialComments, postId, currentUser }) {
       const data = await addComment(postId, content)
       if (data.success) {
         setContent('')
-        setShowForm(false)
         setComments(prev => [data.comment, ...prev])
       }
     } catch {}
@@ -275,24 +274,15 @@ function CommentsSection({ comments: initialComments, postId, currentUser }) {
         <h3><i className="fas fa-comments" /> Комментарии ({comments.length})</h3>
       </div>
 
-      {!showForm ? (
-        <button type="button" className="btn btn-primary add-comment-btn" onClick={() => setShowForm(true)}>
-          <i className="fas fa-plus" /> Написать комментарий
-        </button>
-      ) : (
-        <form className="comment-form" onSubmit={handleAddComment}>
-          <textarea rows={3} className="form-control" placeholder="Напишите комментарий..."
-            value={content} onChange={e => setContent(e.target.value)} />
-          <div className="comment-form-actions">
-            <button type="submit" className="btn btn-primary" disabled={submitting || !content.trim()}>
-              {submitting ? <i className="fas fa-spinner fa-spin" /> : null} Отправить
-            </button>
-            <button type="button" className="btn btn-secondary" onClick={() => { setShowForm(false); setContent('') }}>
-              Отмена
-            </button>
-          </div>
-        </form>
-      )}
+      <form className="comment-form" onSubmit={handleAddComment}>
+        <textarea rows={3} className="form-control" placeholder="Напишите комментарий..."
+          value={content} onChange={e => setContent(e.target.value)} />
+        <div className="comment-form-actions">
+          <button type="submit" className="btn btn-primary" disabled={submitting || !content.trim()}>
+            {submitting ? <i className="fas fa-spinner fa-spin" /> : null} Отправить
+          </button>
+        </div>
+      </form>
 
       <div className="comments-list">
         {topComments.length === 0 && (
@@ -414,8 +404,9 @@ function PostDetail() {
     <div className="page">
       <ReadingProgress />
 
-      <div className="pg-container">
-        <div className="article-container">
+      <div className="pg-container layout">
+        <div className="content">
+          <div className="article-container">
           <div className="article-wrapper">
             <div className="article-header">
               <div className="post-meta-header">
@@ -554,7 +545,11 @@ function PostDetail() {
 
           <CommentsSection comments={post.comments || []} postId={post.id}
             currentUser={post.current_user} />
+          </div>
         </div>
+        <aside className="sidebar" aria-label="Боковая панель">
+          <Sidebar />
+        </aside>
       </div>
 
       <button id="scrollToTop" className="scroll-to-top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>

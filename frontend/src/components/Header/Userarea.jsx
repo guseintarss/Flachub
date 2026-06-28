@@ -53,7 +53,12 @@ const UserArea = () => {
   }
 
   function markAllRead() {
-    fetch('/api/mobile/notifications/mark_all_read/', { method: 'POST' })
+    const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1]
+    fetch('/api/mobile/notifications/mark_all_read/', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: csrf ? { 'X-CSRFToken': csrf } : {},
+    })
       .then(() => { setUnreadCount(0); loadNotifications() })
       .catch(() => {})
   }
