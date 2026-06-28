@@ -24,6 +24,7 @@ const App = () => {
           <Route path="/login/" element={<LoginPage />} />
           <Route path="/register/" element={<RegisterPage />} />
           <Route path="/add-post/" element={<AddPostPage />} />
+          <Route path="/edit/:slug/" element={<AddPostPage />} />
           <Route path="/profile/" element={<ProfilePage />} />
           <Route path="/profile/edit/" element={<EditProfilePage />} />
           <Route path="/user/:username/" element={<ProfilePage />} />

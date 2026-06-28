@@ -333,11 +333,13 @@ function PostDetail() {
     try { await toggleFavorite(post.id) } catch {}
   }, [post])
 
+  const isOwnPost = post?.current_user && post?.author?.username === post.current_user
+
   const handleSubscribe = useCallback(async () => {
-    if (!post) return
+    if (!post || isOwnPost) return
     setSubscribed(s => !s)
     try { await toggleSubscribe(post.author.id) } catch {}
-  }, [post])
+  }, [post, isOwnPost])
 
   if (loading) return (
     <div className="page">
@@ -388,11 +390,13 @@ function PostDetail() {
                     </span>
                   </div>
                 </div>
+                {!isOwnPost && post.current_user && (
                 <button id="subscribe-btn"
                   className={`btn btn-sm ${subscribed ? 'btn-secondary' : 'btn-primary'}`}
                   onClick={handleSubscribe}>
                   {subscribed ? 'Отписаться' : 'Подписаться'}
                 </button>
+                )}
               </div>
 
               <h1 className="article-title">{post.title}</h1>

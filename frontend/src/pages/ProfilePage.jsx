@@ -344,7 +344,7 @@ function ProfilePage() {
                           </div>
                           {isOwn && (
                             <div className="post-card-actions">
-                              <Link to={`/edit-post/${post.slug}/`} className="btn btn-sm btn-primary">
+                              <Link to={`/edit/${post.slug}/`} className="btn btn-sm btn-primary">
                                 <i className="fas fa-edit" /> Редактировать
                               </Link>
                             </div>
@@ -373,7 +373,7 @@ function ProfilePage() {
                           )}
                           <div className="post-card-content">
                             <div className="draft-badge"><i className="fas fa-file" /> Черновик</div>
-                            <h3><Link to={`/edit-post/${post.slug}/`}>{post.title}</Link></h3>
+                            <h3><Link to={`/edit/${post.slug}/`}>{post.title}</Link></h3>
                             <div className="post-card-meta">
                               {post.category && <span className="badge">{post.category.name}</span>}
                               <span className="post-time" title={post.time_update}>
@@ -381,7 +381,7 @@ function ProfilePage() {
                               </span>
                             </div>
                             <div className="post-card-actions">
-                              <Link to={`/edit-post/${post.slug}/`} className="btn btn-sm btn-primary">
+                              <Link to={`/edit/${post.slug}/`} className="btn btn-sm btn-primary">
                                 <i className="fas fa-edit" /> Редактировать
                               </Link>
                             </div>

@@ -1150,6 +1150,16 @@ html.dark-mode .header-icon {
   object-fit: cover;
   background: rgba(255,255,255,0.08);
 }
+.user-avatar-btn{
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+}
 .username a{
     text-decoration:none;
 }
@@ -3622,7 +3632,6 @@ body.dark-mode .comment-date {
     top: 100%;
     right: 0;
     z-index: 1000;
-    display: none;
     min-width: 200px;
     padding: 8px 0;
     margin-top: 8px;

@@ -72,6 +72,12 @@ class PostViewSet(viewsets.ModelViewSet):
         else:
             queryset = Post.published.all()
 
+        # Для retrieve/update — автор может получить свои посты (включая черновики)
+        if self.action in ('retrieve', 'update', 'partial_update', 'destroy') and self.request.user.is_authenticated:
+            queryset = Post.objects.filter(
+                Q(is_published=Post.Status.PUBLISHED) | Q(author=self.request.user)
+            )
+
         queryset = queryset.select_related('cat', 'author').prefetch_related('tags')
         
         # Фильтр по тегам

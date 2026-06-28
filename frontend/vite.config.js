@@ -33,6 +33,26 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
+      '/ajax': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/edit': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/upload': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/ckeditor5': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/dashboard': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
     },
   },
 })

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Main/Sidebar/Sidebar'
 import { CKEditor } from '@ckeditor/ckeditor5-react'
@@ -78,9 +78,12 @@ const POST_TYPES = [
 ]
 
 function AddPostPage() {
+  const { slug } = useParams()
+  const isEditing = !!slug
   const { user, loading } = useAuth()
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
+  const [loadingPost, setLoadingPost] = useState(false)
   const [categories, setCategories] = useState([])
   const [allTags, setAllTags] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -121,6 +124,32 @@ function AddPostPage() {
     setSearchResults(filtered)
     setShowSearch(true)
   }, [searchQuery, allTags, selectedTagIds])
+
+  useEffect(() => {
+    if (!slug || !user) return
+    setLoadingPost(true)
+    fetch(`/api/mobile/posts/${slug}/`, { credentials: 'same-origin' })
+      .then(async r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
+      })
+      .then(data => {
+        if (data.author?.id !== user.id) throw new Error('Это не ваша статья')
+        setForm({
+          content: data.content || '',
+          post_type: data.post_type || 'post',
+          is_published: String(data.is_published ?? '1'),
+          cat: data.category?.id || '',
+        })
+        setSelectedTagIds(new Set(data.tags?.map(t => t.id) || []))
+        if (data.photo) {
+          setPhotoPreview(data.photo)
+          setFileName('Текущая обложка')
+        }
+      })
+      .catch(e => { setError(e.message); setStep(1) })
+      .finally(() => setLoadingPost(false))
+  }, [slug, user])
 
   useEffect(() => {
     function handleClick(e) {
@@ -196,8 +225,10 @@ function AddPostPage() {
 
       console.log('Submitting post:', { title, content_length: content.length, post_type: form.post_type, is_published: form.is_published, cat: form.cat, tags: [...selectedTagIds] })
 
-      const res = await fetch('/api/mobile/posts/', {
-        method: 'POST',
+      const url = isEditing ? `/api/mobile/posts/${slug}/` : '/api/mobile/posts/'
+      const method = isEditing ? 'PATCH' : 'POST'
+      const res = await fetch(url, {
+        method,
         headers: { 'X-CSRFToken': csrfToken() },
         credentials: 'same-origin',
         body: fd,
@@ -211,7 +242,7 @@ function AddPostPage() {
           : data.error || data
         throw new Error(msg)
       }
-      navigate(`/post/${data.slug}/`)
+      navigate(`/post/${data.slug || slug}/`)
     } catch (err) {
       setError(err.message)
     }
@@ -220,7 +251,7 @@ function AddPostPage() {
 
   const steps = [{ n: 1, t: 'Тип поста' }, { n: 2, t: 'Редактор' }, { n: 3, t: 'Настройки' }]
 
-  if (loading) {
+  if (loading || loadingPost) {
     return (
       <main className="page">
         <div className="pg-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
@@ -470,7 +501,7 @@ function AddPostPage() {
                       <i className="fas fa-arrow-left"></i> Назад
                     </button>
                     <button type="submit" className="btn btn-primary" disabled={submitting}>
-                      <i className="fas fa-save"></i> {submitting ? 'Публикация...' : 'Опубликовать'}
+                      <i className="fas fa-save"></i> {submitting ? 'Сохранение...' : isEditing ? 'Сохранить' : 'Опубликовать'}
                     </button>
                     <Link to="/" className="btn btn-secondary">
                       <i className="fas fa-times"></i> Отмена
