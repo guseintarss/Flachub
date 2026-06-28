@@ -191,15 +191,19 @@ class PostDetailSerializer(serializers.ModelSerializer):
     comments_count = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
+    current_user = serializers.SerializerMethodField()
     reading_time_minutes = serializers.SerializerMethodField()
     similar_posts = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = ('id', 'title', 'slug', 'photo', 'content', 'post_type',
+                  'is_published',
                   'time_create', 'time_update', 'author', 'category', 'tags',
                   'likes_count', 'favorites_count', 'comments_count', 'is_liked',
-                  'is_favorited', 'reading_time_minutes', 'views', 'similar_posts')
+                  'is_favorited', 'is_subscribed', 'current_user',
+                  'reading_time_minutes', 'views', 'similar_posts')
 
     def get_likes_count(self, obj):
         if hasattr(obj, 'likes_count'):
@@ -225,6 +229,21 @@ class PostDetailSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return obj.favorites.filter(id=request.user.id).exists()
         return False
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated and obj.author:
+            return Subscription.objects.filter(
+                subscriber=request.user,
+                author=obj.author
+            ).exists()
+        return False
+
+    def get_current_user(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return request.user.username
+        return None
 
     def get_reading_time_minutes(self, obj):
         return obj.reading_time()
