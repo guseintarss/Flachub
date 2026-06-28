@@ -47,30 +47,21 @@ function ShareMenu({ slug }) {
   const url = window.location.href
 
   useEffect(() => {
-    if (!open) return
     function onClick(e) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false)
     }
-    function onKey(e) {
-      if (e.key === 'Escape') setOpen(false)
-    }
     document.addEventListener('click', onClick)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('click', onClick)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
+    return () => document.removeEventListener('click', onClick)
+  }, [])
 
   return (
-    <>
-      {open && <div className="share-backdrop" onClick={() => setOpen(false)} />}
-      <div className="share-dropdown" ref={ref}>
-        <button className="action-btn share-toggle" onClick={() => setOpen(o => !o)} title="Поделиться">
-          <i className="fas fa-share-alt" />
-        </button>
-        {open && (
-          <div className="share-menu show">
+    <div className="share-dropdown" ref={ref}>
+      <button className="action-btn share-toggle" onClick={() => setOpen(o => !o)} title="Поделиться">
+        <i className="fas fa-share-alt" />
+        <span className="share-count">4</span>
+      </button>
+      {open && (
+        <div className="share-menu show">
             <div className="share-menu-header">
               <span>Поделиться</span>
               <button className="share-menu-close" onClick={() => setOpen(false)}>
@@ -103,7 +94,6 @@ function ShareMenu({ slug }) {
           </div>
         )}
       </div>
-    </>
   )
 }
 

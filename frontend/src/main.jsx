@@ -1,7 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles/index.css'
-import './styles/article.css'
 import './styles/auth.css'
 import './styles/feed.css'
 import './styles/bookmarks.css'

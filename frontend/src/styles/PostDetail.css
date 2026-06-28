@@ -321,18 +321,12 @@
   position: relative;
 }
 
-.share-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 98;
-}
-
 .share-menu {
   position: absolute;
-  bottom: calc(100% + 8px);
+  bottom: 100%;
   right: 0;
-  min-width: 200px;
+  margin-bottom: 8px;
+  min-width: 220px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -400,6 +394,11 @@
 .share-vk i { color: #4680c2; }
 .share-twitter i { color: #1da1f2; }
 .share-copy i { color: var(--muted); }
+
+.share-count {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
 
 .similar-articles {
   margin-top: 28px;
