@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Sidebar/Sidebar'
+import { AddPostSkeleton } from '../components/Skeleton'
 import { CKEditor } from '@ckeditor/ckeditor5-react'
 import {
   BalloonEditor, Essentials, Paragraph, Heading, Title,
@@ -251,15 +252,7 @@ function AddPostPage() {
 
   const steps = [{ n: 1, t: 'Тип поста' }, { n: 2, t: 'Редактор' }, { n: 3, t: 'Настройки' }]
 
-  if (loading || loadingPost) {
-    return (
-      <main className="page">
-        <div className="pg-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', color: '#666' }}></i>
-        </div>
-      </main>
-    )
-  }
+  if (loading || loadingPost) return <AddPostSkeleton />
 
   return (
     <main className="page">

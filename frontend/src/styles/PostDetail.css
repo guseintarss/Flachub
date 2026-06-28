@@ -4,7 +4,7 @@
   left: 0;
   height: 3px;
   background: linear-gradient(90deg, var(--primary), #6366f1);
-  z-index: 10000;
+  z-index: 9999;
   transition: width 0.1s linear;
 }
 

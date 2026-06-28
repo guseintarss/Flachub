@@ -6,6 +6,7 @@ import {
 } from '../api'
 import '../styles/PostDetail.css'
 import Sidebar from '../components/Sidebar/Sidebar'
+import { PostDetailSkeleton } from '../components/Skeleton'
 
 const postTypeLabel = {
   article: 'Статья', news: 'Новость', idea: 'Идея', post: 'Пост',
@@ -395,13 +396,7 @@ function PostDetail() {
     try { await toggleSubscribe(post.author.id) } catch {}
   }, [post, isOwnPost])
 
-  if (loading) return (
-    <div className="page">
-      <div className="pg-container">
-        <div className="post-loading">Загрузка...</div>
-      </div>
-    </div>
-  )
+  if (loading) return <PostDetailSkeleton />
 
   if (error) return (
     <div className="page">

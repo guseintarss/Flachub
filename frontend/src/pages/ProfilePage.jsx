@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { toggleSubscribe } from '../api'
+import { ProfileSkeleton } from '../components/Skeleton'
 import '../styles/Sidebar.css'
 
 function ProfilePage() {
@@ -134,15 +135,7 @@ function ProfilePage() {
     setSubscribing(false)
   }
 
-  if (loading || authLoading) {
-    return (
-      <main className="page">
-        <div className="pg-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div className="spinner" />
-        </div>
-      </main>
-    )
-  }
+  if (loading || authLoading) return <ProfileSkeleton />
 
   if (error) {
     return (

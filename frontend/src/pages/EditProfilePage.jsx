@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { FormSkeleton } from '../components/Skeleton'
 
 function EditProfilePage() {
   const { user, loading: authLoading, setUser } = useAuth()
@@ -189,15 +190,7 @@ function EditProfilePage() {
     setSaving(false)
   }
 
-  if (loading || authLoading) {
-    return (
-      <main className="page">
-        <div className="pg-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div className="spinner" />
-        </div>
-      </main>
-    )
-  }
+  if (loading || authLoading) return <FormSkeleton />
 
   if (!form) return null
 

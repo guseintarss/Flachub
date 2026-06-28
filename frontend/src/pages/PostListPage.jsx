@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import PostCard from '../components/Feed/PostCard'
 import Sidebar from '../components/Sidebar/Sidebar'
+import { PostListSkeleton } from '../components/Skeleton'
 
 function PostListPage({ endpoint }) {
   const { slug } = useParams()
@@ -37,12 +38,12 @@ function PostListPage({ endpoint }) {
     </main>
   )
 
+  if (loading) return <PostListSkeleton />
+
   return (
     <main className="page">
       <div className="pg-container layout">
         <div className="content">
-          {loading && <p style={{ textAlign: 'center', color: 'var(--muted)', padding: 40 }}>Загрузка...</p>}
-
           {!loading && posts.length === 0 && (
             <div style={{ textAlign: 'center', padding: 60, color: 'var(--muted)' }}>
               <i className="fas fa-tag" style={{ fontSize: 48, marginBottom: 16 }}></i>
