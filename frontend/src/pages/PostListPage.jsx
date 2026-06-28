@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import PostCard from '../components/Main/Feed/PostCard'
-import Sidebar from '../components/Main/Sidebar/Sidebar'
+import PostCard from '../components/Feed/PostCard'
+import Sidebar from '../components/Sidebar/Sidebar'
 
 function PostListPage({ endpoint }) {
   const { slug } = useParams()

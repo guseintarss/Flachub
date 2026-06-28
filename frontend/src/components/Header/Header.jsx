@@ -1,26 +1,24 @@
-import BurgerButton from "./Button"
 import Brand from "./Brand"
-import Top_nav from "./Left_menu/Top-nav"
-import User_area from "./Userarea"
+import BurgerMenu from "./BurgerMenu"
+import UserArea from "./Userarea"
 import { useBurgerMenu } from "./useBurgerMenu"
 
+const Header = () => {
+  useBurgerMenu()
 
-const Header = () =>{
-    useBurgerMenu()
-
-    return (
-    
-        <header className="site-header">
-            <div className="pg-container header-inner">
-                <BurgerButton />
-                <Brand />
-                <div className="menu-overlay" id="menu-overlay"></div>
-                <Top_nav />
-               <User_area />
-            </div>
-        </header>
-    
-    )
+  return (
+    <header className="site-header">
+      <div className="pg-container header-inner">
+        <button id="burger" className="header__burger-menu">
+          <span></span><span></span><span></span>
+        </button>
+        <Brand />
+        <div className="menu-overlay" id="menu-overlay"></div>
+        <BurgerMenu />
+        <UserArea />
+      </div>
+    </header>
+  )
 }
 
 export default Header

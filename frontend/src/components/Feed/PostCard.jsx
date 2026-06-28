@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { toggleLike } from '../../../api'
+import { toggleLike } from '../../api'
 
 const PostCard = ({ post }) => {
   const [liked, setLiked] = useState(post.is_liked || false)

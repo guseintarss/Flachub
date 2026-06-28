@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import Sidebar from '../components/Main/Sidebar/Sidebar'
+import Sidebar from '../components/Sidebar/Sidebar'
 import { CKEditor } from '@ckeditor/ckeditor5-react'
 import {
   BalloonEditor, Essentials, Paragraph, Heading, Title,

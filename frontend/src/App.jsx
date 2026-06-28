@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Footer from "./components/Footer/Footer"
 import Header from "./components/Header/Header"
-import Main from "./components/Main/Main"
+import MainPage from "./pages/MainPage"
 import PostDetail from "./pages/PostDetail"
 import LoginPage from "./pages/LoginPage"
 import RegisterPage from "./pages/RegisterPage"
@@ -17,7 +17,7 @@ const App = () => {
       <AuthProvider>
         <Header />
         <Routes>
-          <Route path="/" element={<Main />} />
+          <Route path="/" element={<MainPage />} />
           <Route path="/post/:slug/" element={<PostDetail />} />
           <Route path="/tag/:slug/" element={<TagPosts />} />
           <Route path="/category/:slug/" element={<CategoryPosts />} />

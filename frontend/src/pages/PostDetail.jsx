@@ -46,53 +46,63 @@ function ShareMenu({ slug }) {
   const url = window.location.href
 
   useEffect(() => {
+    if (!open) return
     function onClick(e) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false)
     }
+    function onKey(e) {
+      if (e.key === 'Escape') setOpen(false)
+    }
     document.addEventListener('click', onClick)
-    return () => document.removeEventListener('click', onClick)
-  }, [])
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('click', onClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
 
   return (
-    <div className="share-dropdown" ref={ref}>
-      <button className="action-btn share-toggle" onClick={() => setOpen(o => !o)} title="Поделиться">
-        <i className="fas fa-share-alt" />
-        <span className="share-count">4</span>
-      </button>
-      {open && (
-        <div className="share-menu show">
-          <div className="share-menu-header">
-            <span>Поделиться</span>
-            <button className="share-menu-close" onClick={() => setOpen(false)}>
-              <i className="fas fa-times" />
-            </button>
+    <>
+      {open && <div className="share-backdrop" onClick={() => setOpen(false)} />}
+      <div className="share-dropdown" ref={ref}>
+        <button className="action-btn share-toggle" onClick={() => setOpen(o => !o)} title="Поделиться">
+          <i className="fas fa-share-alt" />
+        </button>
+        {open && (
+          <div className="share-menu show">
+            <div className="share-menu-header">
+              <span>Поделиться</span>
+              <button className="share-menu-close" onClick={() => setOpen(false)}>
+                <i className="fas fa-times" />
+              </button>
+            </div>
+            <div className="share-menu-body">
+              <a href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(document.title)}`}
+                target="_blank" rel="noopener noreferrer" className="share-menu-item share-telegram"
+                onClick={() => setOpen(false)}>
+                <i className="fab fa-telegram-plane" /> <span>Telegram</span>
+              </a>
+              <a href={`https://vk.com/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(document.title)}`}
+                target="_blank" rel="noopener noreferrer" className="share-menu-item share-vk"
+                onClick={() => setOpen(false)}>
+                <i className="fab fa-vk" /> <span>ВКонтакте</span>
+              </a>
+              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(document.title)}`}
+                target="_blank" rel="noopener noreferrer" className="share-menu-item share-twitter"
+                onClick={() => setOpen(false)}>
+                <i className="fab fa-twitter" /> <span>Twitter</span>
+              </a>
+              <button className="share-menu-item share-copy" onClick={() => {
+                navigator.clipboard.writeText(url)
+                setOpen(false)
+              }}>
+                <i className="fas fa-link" /> <span>Копировать ссылку</span>
+              </button>
+            </div>
           </div>
-          <div className="share-menu-body">
-            <a href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(document.title)}`}
-              target="_blank" rel="noopener noreferrer" className="share-menu-item share-telegram"
-              onClick={() => setOpen(false)}>
-              <i className="fab fa-telegram-plane" /> <span>Telegram</span>
-            </a>
-            <a href={`https://vk.com/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(document.title)}`}
-              target="_blank" rel="noopener noreferrer" className="share-menu-item share-vk"
-              onClick={() => setOpen(false)}>
-              <i className="fab fa-vk" /> <span>ВКонтакте</span>
-            </a>
-            <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(document.title)}`}
-              target="_blank" rel="noopener noreferrer" className="share-menu-item share-twitter"
-              onClick={() => setOpen(false)}>
-              <i className="fab fa-twitter" /> <span>Twitter</span>
-            </a>
-            <button className="share-menu-item share-copy" onClick={() => {
-              navigator.clipboard.writeText(url)
-              setOpen(false)
-            }}>
-              <i className="fas fa-link" /> <span>Копировать ссылку</span>
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   )
 }
 
@@ -102,6 +112,18 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
   const [showReplyForm, setShowReplyForm] = useState(false)
   const [replyContent, setReplyContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const shareRef = useRef()
+  const url = `${window.location.origin}/post/${postId}/`
+
+  useEffect(() => {
+    if (!shareOpen) return
+    function onClick(e) {
+      if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false)
+    }
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [shareOpen])
 
   const handleLike = useCallback(async () => {
     const newLiked = !liked
@@ -138,29 +160,58 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
   return (
     <div className="comment" data-comment-id={comment.id}>
       <div className="comment-header">
-        <strong className="comment-author">{comment.author?.username || 'Неизвестно'}</strong>
-        <small className="comment-time">{comment.created_at}</small>
-        {comment.parent_author && (
-          <small className="reply-to"><i className="fas fa-arrow-right" /> {comment.parent_author}</small>
-        )}
+        <div className="comment-author-info">
+          <strong className="comment-author">{comment.author?.username || 'Неизвестно'}</strong>
+          <small className="comment-time">{comment.created_at}</small>
+          {comment.parent_author && (
+            <small className="reply-to"><i className="fas fa-arrow-right" /> {comment.parent_author}</small>
+          )}
+        </div>
+        <div className="comment-header-actions">
+          {canDelete && (
+            <button className="comment-action-btn delete-comment-btn" onClick={handleDelete} title="Удалить">
+              <i className="fas fa-trash" />
+            </button>
+          )}
+        </div>
       </div>
       <p className="comment-content">{comment.content}</p>
       <div className="comment-actions">
-        <button className={`comment-like-btn ${liked ? 'liked' : ''}`} onClick={handleLike}
+        <button className={`comment-action-btn comment-like-btn ${liked ? 'liked' : ''}`} onClick={handleLike}
           data-comment-id={comment.id} data-is-liked={String(liked)}>
-          <i className="fas fa-heart" />
+          <i className={`fas fa-heart ${liked ? 'fa-bounce' : ''}`} />
           <span className="comment-likes-count">{likesCount}</span>
         </button>
         {!comment.parent && (
-          <button className="comment-reply-btn" onClick={() => setShowReplyForm(o => !o)}>
+          <button className="comment-action-btn comment-reply-btn" onClick={() => setShowReplyForm(o => !o)}>
             <i className="fas fa-reply" /> Ответить
           </button>
         )}
-        {canDelete && (
-          <button className="delete-comment-btn" onClick={handleDelete}>
-            <i className="fas fa-trash" />
+        <div className="comment-share-wrap" ref={shareRef}>
+          <button className="comment-action-btn comment-share-btn" onClick={() => setShareOpen(o => !o)} title="Поделиться">
+            <i className="fas fa-share-alt" />
           </button>
-        )}
+          {shareOpen && (
+            <div className="comment-share-menu">
+              <a href={`https://t.me/share/url?url=${encodeURIComponent(url)}`}
+                target="_blank" rel="noopener noreferrer" className="share-menu-item share-telegram"
+                onClick={() => setShareOpen(false)}>
+                <i className="fab fa-telegram-plane" /> Telegram
+              </a>
+              <a href={`https://vk.com/share.php?url=${encodeURIComponent(url)}`}
+                target="_blank" rel="noopener noreferrer" className="share-menu-item share-vk"
+                onClick={() => setShareOpen(false)}>
+                <i className="fab fa-vk" /> ВКонтакте
+              </a>
+              <button className="share-menu-item share-copy" onClick={() => {
+                navigator.clipboard.writeText(url)
+                setShareOpen(false)
+              }}>
+                <i className="fas fa-link" /> Копировать
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       {showReplyForm && !comment.parent && (
         <form className="reply-form" onSubmit={handleReply}>
@@ -168,7 +219,7 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
             value={replyContent} onChange={e => setReplyContent(e.target.value)} />
           <div className="reply-form-actions">
             <button type="submit" className="btn btn-sm btn-primary" disabled={submitting || !replyContent.trim()}>
-              {submitting ? <i className="fas fa-spinner fa-spin" /> : null} Отправить ответ
+              {submitting ? <i className="fas fa-spinner fa-spin" /> : null} Отправить
             </button>
             <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setShowReplyForm(false); setReplyContent('') }}>
               Отмена
@@ -225,7 +276,7 @@ function CommentsSection({ comments: initialComments, postId, currentUser }) {
       </div>
 
       {!showForm ? (
-        <button type="button" className="btn btn-primary" onClick={() => setShowForm(true)}>
+        <button type="button" className="btn btn-primary add-comment-btn" onClick={() => setShowForm(true)}>
           <i className="fas fa-plus" /> Написать комментарий
         </button>
       ) : (
@@ -408,10 +459,10 @@ function PostDetail() {
                   </Link>
                 )}
                 <span className="meta-badge">
-                  <i className="fas fa-clock" /> {post.reading_time_minutes} мин чтения
+                  <i className="fas fa-clock" /> {post.reading_time_minutes} мин
                 </span>
                 <span className="meta-badge">
-                  <i className="fas fa-eye" /> {post.views} просмотров
+                  <i className="fas fa-eye" /> {post.views}
                 </span>
                 {post.post_type && (
                   <span className="meta-badge">
