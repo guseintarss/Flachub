@@ -299,13 +299,27 @@
 }
 
 .action-btn.liked {
-  background: #fee2e2;
-  border-color: #fecaca;
+  background: linear-gradient(135deg, #fee2e2, #ffd4d4);
+  border-color: #fca5a5;
   color: #dc2626;
+  box-shadow: 0 2px 12px rgba(220, 38, 38, 0.15);
 }
 
 .action-btn.liked:hover {
-  background: #fecaca;
+  background: linear-gradient(135deg, #fecaca, #fca5a5);
+  border-color: #f87171;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.25);
+}
+
+.action-btn.liked i {
+  animation: likePop 0.35s ease;
+}
+
+@keyframes likePop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.35); }
+  60% { transform: scale(0.9); }
+  100% { transform: scale(1); }
 }
 
 .action-btn.bookmarked,

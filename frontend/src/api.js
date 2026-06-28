@@ -26,10 +26,8 @@ export function fetchPost(slug) {
 }
 
 export function toggleLike(postId) {
-  return request('/ajax/like/', {
+  return request(`${BASE}/post-actions/${postId}/toggle_like/`, {
     method: 'POST',
-    body: new URLSearchParams({ post_id: postId }),
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   })
 }
 

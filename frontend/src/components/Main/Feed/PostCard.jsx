@@ -1,4 +1,19 @@
+import { useState, useCallback } from 'react'
+import { toggleLike } from '../../../api'
+
 const PostCard = ({ post }) => {
+  const [liked, setLiked] = useState(post.is_liked || false)
+  const [likesCount, setLikesCount] = useState(post.likes_count || 0)
+
+  const handleLike = useCallback(async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const newLiked = !liked
+    setLiked(newLiked)
+    setLikesCount(c => newLiked ? c + 1 : Math.max(0, c - 1))
+    try { await toggleLike(post.id) } catch {}
+  }, [liked, post.id])
+
   const postTypeIcon = {
     article: "fa-file-alt",
     news: "fa-newspaper",
@@ -75,9 +90,10 @@ const PostCard = ({ post }) => {
             <span className="stat-item" title="Просмотры">
               <i className="fas fa-eye"></i> {post.views || 0}
             </span>
-            <span className="stat-item" title="Лайки">
-              <i className="fas fa-heart"></i> {post.likes_count || 0}
-            </span>
+            <button className={`stat-item like-btn ${liked ? 'liked' : ''}`}
+              title="Лайки" onClick={handleLike}>
+              <i className={`fas fa-heart ${liked ? 'fa-bounce' : ''}`}></i> {likesCount}
+            </button>
             <span className="stat-item" title="Время чтения">
               <i className="fas fa-clock"></i> {post.reading_time_minutes || 1} мин
             </span>

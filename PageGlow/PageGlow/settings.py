@@ -302,6 +302,9 @@ customColorPalette = [
     },
 ]
 
+# Максимальный размер тела запроса (10MB для загрузки изображений)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
+
 # Настройка загрузки файлов для django_ckeditor_5
 DJANGO_CKEDITOR_5_FILE_UPLOAD_PERMISSION = 'authenticated'
 CKEDITOR_5_FILE_UPLOAD_PATH = 'ckeditor/uploads/'

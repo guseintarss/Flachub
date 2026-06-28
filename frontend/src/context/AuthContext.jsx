@@ -19,14 +19,19 @@ export function AuthProvider({ children }) {
   }, [])
 
   function csrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]')
+    if (meta) return meta.getAttribute('content')
     const m = document.cookie.match(/csrftoken=([^;]+)/)
     return m ? m[1] : ''
   }
 
   const login = useCallback(async (username, password) => {
+    const headers = { 'Content-Type': 'application/json' }
+    const csrf = csrfToken()
+    if (csrf) headers['X-CSRFToken'] = csrf
     const res = await fetch('/api/mobile/auth/login/', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() },
+      headers,
       credentials: 'same-origin',
       body: JSON.stringify({ username, password }),
     })
@@ -43,18 +48,24 @@ export function AuthProvider({ children }) {
   }, [])
 
   const logout = useCallback(async () => {
+    const headers = {}
+    const csrf = csrfToken()
+    if (csrf) headers['X-CSRFToken'] = csrf
     await fetch('/api/mobile/auth/logout/', {
       method: 'POST',
-      headers: { 'X-CSRFToken': csrfToken() },
+      headers,
       credentials: 'same-origin',
     })
     setUser(null)
   }, [])
 
   const register = useCallback(async (formData) => {
+    const headers = { 'Content-Type': 'application/json' }
+    const csrf = csrfToken()
+    if (csrf) headers['X-CSRFToken'] = csrf
     const res = await fetch('/api/mobile/auth/register/', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() },
+      headers,
       credentials: 'same-origin',
       body: JSON.stringify(formData),
     })

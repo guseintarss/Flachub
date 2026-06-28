@@ -1,7 +1,8 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets, status, permissions, mixins
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -546,7 +547,9 @@ def register_view(request):
 
 # ===== Sidebar Data =====
 
+@csrf_exempt
 @api_view(['GET', 'PATCH'])
+@authentication_classes([CsrfExemptSessionAuthentication, JWTAuthentication])
 @permission_classes([AllowAny])
 def current_user(request):
     """Возвращает или обновляет данные текущего пользователя"""

@@ -127,6 +127,8 @@ function EditProfilePage() {
   }
 
   function getCSRF() {
+    const meta = document.querySelector('meta[name="csrf-token"]')
+    if (meta) return meta.getAttribute('content')
     const m = document.cookie.match(/csrftoken=([^;]+)/)
     return m ? m[1] : ''
   }
@@ -160,9 +162,13 @@ function EditProfilePage() {
         fd.append('banner_image', bannerImageFile)
       }
 
+      const headers = {}
+      const csrf = getCSRF()
+      if (csrf) headers['X-CSRFToken'] = csrf
+
       const res = await fetch('/api/mobile/me/', {
         method: 'PATCH',
-        headers: { 'X-CSRFToken': getCSRF() },
+        headers,
         credentials: 'same-origin',
         body: fd,
       })
