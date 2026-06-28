@@ -382,6 +382,12 @@
     font-family: inherit;
     font-size: inherit;
     padding: 0;
+    color: var(--muted);
+    transition: color 0.2s ease;
+}
+
+.stat-item.like-btn:hover {
+    color: var(--primary);
 }
 
 .stat-item.like-btn.liked {
