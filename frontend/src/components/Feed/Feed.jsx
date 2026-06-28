@@ -1,6 +1,43 @@
 import { useState, useEffect } from "react"
 import PostCard from "./PostCard"
 
+function FeedSkeleton() {
+  return (
+    <div className="content">
+      {[1, 2, 3, 4].map(card => (
+        <div key={card} className="post" style={{ marginBottom: 20, padding: 20, background: 'var(--surface)', borderRadius: 12, border: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div className="skeleton-circle" style={{ width: 36, height: 36 }} />
+              <div>
+                <div className="skeleton-line" style={{ width: 100, height: 13, marginBottom: 4 }} />
+                <div className="skeleton-line" style={{ width: 70, height: 11 }} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div className="skeleton-line" style={{ width: 50, height: 18, borderRadius: 12 }} />
+              <div className="skeleton-line" style={{ width: 60, height: 18, borderRadius: 12 }} />
+            </div>
+          </div>
+          <div className="skeleton-line" style={{ width: '60%', height: 20, marginBottom: 10 }} />
+          {card % 2 === 0 && <div className="skeleton-line" style={{ width: '100%', height: 180, borderRadius: 8, marginBottom: 10 }} />}
+          <div className="skeleton-line" style={{ width: '100%', height: 13, marginBottom: 4 }} />
+          <div className="skeleton-line" style={{ width: '85%', height: 13, marginBottom: 16 }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <div className="skeleton-line" style={{ width: 40, height: 14 }} />
+              <div className="skeleton-line" style={{ width: 40, height: 14 }} />
+              <div className="skeleton-line" style={{ width: 40, height: 14 }} />
+              <div className="skeleton-line" style={{ width: 40, height: 14 }} />
+            </div>
+            <div className="skeleton-line" style={{ width: 90, height: 14 }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 const Feed = () => {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -24,7 +61,7 @@ const Feed = () => {
   }, [page])
 
   if (error) return <div className="content"><p style={{ color: "var(--muted)" }}>Ошибка загрузки: {error}</p></div>
-  if (loading) return <div className="content"><p style={{ color: "var(--muted)" }}>Загрузка...</p></div>
+  if (loading) return <FeedSkeleton />
 
   if (posts.length === 0) {
     return (

@@ -16,7 +16,13 @@ const Sidebar = ({ compact }) => {
   }, [])
 
   if (error) return <div className="modern-sidebar"><p className="no-posts">Ошибка загрузки: {error}</p></div>
-  if (!data) return <div className="modern-sidebar"><p className="no-posts">Загрузка...</p></div>
+  if (!data) return (
+    <div className="modern-sidebar">
+      <div className="skeleton-line" style={{ width: '100%', height: 200, borderRadius: 12, marginBottom: 16 }} />
+      <div className="skeleton-line" style={{ width: '100%', height: 150, borderRadius: 12, marginBottom: 16 }} />
+      <div className="skeleton-line" style={{ width: '100%', height: 180, borderRadius: 12 }} />
+    </div>
+  )
 
   if (compact) {
     return (

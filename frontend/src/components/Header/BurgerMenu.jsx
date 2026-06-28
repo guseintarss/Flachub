@@ -7,8 +7,14 @@ function CategoryList() {
 
   useEffect(() => {
     fetch("/api/mobile/categories/")
-      .then((res) => res.json())
-      .then((data) => setCategories(data.results || data))
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return res.json()
+      })
+      .then((data) => {
+        const list = data.results || data
+        if (Array.isArray(list)) setCategories(list)
+      })
       .catch(() => {})
   }, [])
 
