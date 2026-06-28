@@ -307,7 +307,6 @@ function PostDetail() {
   const [error, setError] = useState(null)
   const [liked, setLiked] = useState(false)
   const [likesCount, setLikesCount] = useState(0)
-  const [bookmarked, setBookmarked] = useState(false)
   const [favorited, setFavorited] = useState(false)
   const [subscribed, setSubscribed] = useState(false)
 
@@ -351,12 +350,6 @@ function PostDetail() {
     setLikesCount(c => newLiked ? c + 1 : Math.max(0, c - 1))
     try { await toggleLike(post.id) } catch {}
   }, [liked, post])
-
-  const handleBookmark = useCallback(async () => {
-    if (!post) return
-    setBookmarked(b => !b)
-    try { await toggleBookmark(post.id) } catch {}
-  }, [post])
 
   const handleFavorite = useCallback(async () => {
     if (!post) return
@@ -477,13 +470,6 @@ function PostDetail() {
                 onClick={handleLike}
                 data-post-id={post.id} data-liked={String(liked)}>
                 <i className="fas fa-heart" />{likesCount}
-              </button>
-
-              <button id="bookmark-btn"
-                className={`action-btn ${bookmarked ? 'bookmarked' : ''}`}
-                onClick={handleBookmark}
-                data-post-id={post.id}>
-                <i className="fas fa-bookmark" />
               </button>
 
               <button id="favorite-btn"

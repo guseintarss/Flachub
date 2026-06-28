@@ -319,6 +319,7 @@
 
 .share-dropdown {
   position: relative;
+  margin-left: auto;
 }
 
 .share-menu {
