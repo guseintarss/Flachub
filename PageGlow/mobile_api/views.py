@@ -73,10 +73,14 @@ class PostViewSet(viewsets.ModelViewSet):
             queryset = Post.published.all()
 
         # Для retrieve/update — автор может получить свои посты (включая черновики)
-        if self.action in ('retrieve', 'update', 'partial_update', 'destroy') and self.request.user.is_authenticated:
+        if self.action in ('retrieve', 'update', 'partial_update') and self.request.user.is_authenticated:
             queryset = Post.objects.filter(
                 Q(is_published=Post.Status.PUBLISHED) | Q(author=self.request.user)
             )
+
+        # Для destroy — только автор может удалить свой пост
+        if self.action == 'destroy' and self.request.user.is_authenticated:
+            queryset = Post.objects.filter(author=self.request.user)
 
         queryset = queryset.select_related('cat', 'author').prefetch_related('tags')
         
@@ -124,6 +128,16 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    def perform_destroy(self, instance):
+        author = instance.author
+        if author:
+            from users.reputation_utils import award_reputation
+            from users.models import UserReputationLog
+            award_reputation(user=author, reason=UserReputationLog.ReasonType.POST_DELETED, post=instance, skip_limit=True)
+        from django.core.cache import cache
+        cache.clear()
+        instance.delete()
 
 
 # ===== Category ViewSet =====

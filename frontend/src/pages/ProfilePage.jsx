@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { toggleSubscribe } from '../api'
+import { toggleSubscribe, deletePost } from '../api'
 import PostCard from '../components/Feed/PostCard'
 import { ProfileSkeleton } from '../components/Skeleton'
 import '../styles/Sidebar.css'
@@ -134,6 +134,17 @@ function ProfilePage() {
       }
     } catch {}
     setSubscribing(false)
+  }
+
+  async function handleDelete(post) {
+    if (!window.confirm(`Вы уверены, что хотите удалить статью "${post.title}"?`)) return
+    try {
+      await deletePost(post.slug)
+      setPosts(prev => prev.filter(p => p.id !== post.id))
+      setDrafts(prev => prev.filter(p => p.id !== post.id))
+    } catch {
+      alert('Ошибка при удалении статьи')
+    }
   }
 
   if (loading || authLoading) return <ProfileSkeleton />
@@ -311,7 +322,16 @@ function ProfilePage() {
                         <i className="fas fa-inbox" />
                         <p>Опубликованных статей пока нет</p>
                         {isOwn && (
-                          <Link to="/add-post/" className="btn btn-primary">
+                          <Link to="/add-post/"
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 8,
+                              padding: '8px 18px', fontSize: '0.85rem', fontWeight: 600,
+                              color: 'var(--primary)', background: 'transparent',
+                              border: '2px dashed var(--primary)', borderRadius: 12,
+                              textDecoration: 'none', transition: 'all 0.25s ease',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = '#fff' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--primary)' }}>
                             <i className="fas fa-plus" /> Создать статью
                           </Link>
                         )}
@@ -324,6 +344,10 @@ function ProfilePage() {
                           <Link to={`/edit/${post.slug}/`} className="btn btn-sm btn-primary">
                             <i className="fas fa-edit" /> Редактировать
                           </Link>
+                          <button onClick={() => handleDelete(post)} className="btn btn-sm btn-danger"
+                            style={{ background: 'var(--danger, #ef4444)', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: 8, fontSize: '0.8rem', cursor: 'pointer' }}>
+                            <i className="fas fa-trash" /> Удалить
+                          </button>
                         </div>}
                       />
                     ))}
@@ -346,6 +370,10 @@ function ProfilePage() {
                             <Link to={`/edit/${post.slug}/`} className="btn btn-sm btn-primary">
                               <i className="fas fa-edit" /> Редактировать
                             </Link>
+                            <button onClick={() => handleDelete(post)} className="btn btn-sm btn-danger"
+                              style={{ background: 'var(--danger, #ef4444)', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: 8, fontSize: '0.8rem', cursor: 'pointer' }}>
+                              <i className="fas fa-trash" /> Удалить
+                            </button>
                           </div>}
                         />
                       ))}

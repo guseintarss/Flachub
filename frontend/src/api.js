@@ -14,6 +14,7 @@ async function request(url, options = {}) {
   }
   const res = await fetch(url, config)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  if (res.status === 204) return null
   return res.json()
 }
 
@@ -72,5 +73,11 @@ export function toggleCommentLike(commentId) {
     method: 'POST',
     body: new URLSearchParams({ comment_id: commentId }),
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  })
+}
+
+export function deletePost(slug) {
+  return request(`${BASE}/posts/${slug}/`, {
+    method: 'DELETE',
   })
 }
