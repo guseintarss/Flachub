@@ -134,18 +134,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return request and request.user.is_authenticated and request.user == obj
 
     def get_email(self, obj):
-        if self._is_owner(obj) or obj.show_email:
+        if obj.show_email:
             return obj.email
         return None
 
     def get_phone_namber(self, obj):
-        if self._is_owner(obj) or (obj.show_phone and obj.phone_namber):
+        if obj.show_phone and obj.phone_namber:
             return obj.phone_namber
         return None
 
     def get_data_birth(self, obj):
-        if self._is_owner(obj) or (obj.show_birth_date and obj.data_birth):
-            return obj.data_birth.isoformat() if obj.data_birth else None
+        if obj.show_birth_date and obj.data_birth:
+            return obj.data_birth.isoformat()
         return None
 
 

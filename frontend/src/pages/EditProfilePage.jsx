@@ -37,9 +37,9 @@ function EditProfilePage() {
           banner_gradient_end: data.banner_gradient_end || '#764ba2',
           data_birth: '',
           phone_namber: '',
-          show_email: data.show_email ?? false,
-          show_phone: data.show_phone ?? false,
-          show_birth_date: data.show_birth_date ?? false,
+          show_email: data.show_email ?? true,
+          show_phone: data.show_phone ?? true,
+          show_birth_date: data.show_birth_date ?? true,
         })
         setAvatarPreview(data.avatar || null)
         setBannerPreview(data.avatar ? null : 'gradient')
@@ -153,9 +153,9 @@ function EditProfilePage() {
 
       if (form.data_birth) fd.append('data_birth', form.data_birth)
       if (form.phone_namber) fd.append('phone_namber', form.phone_namber)
-      fd.append('show_email', form.show_email ? 'true' : 'false')
-      fd.append('show_phone', form.show_phone ? 'true' : 'false')
-      fd.append('show_birth_date', form.show_birth_date ? 'true' : 'false')
+      fd.append('show_email', form.show_email ? '1' : '0')
+      fd.append('show_phone', form.show_phone ? '1' : '0')
+      fd.append('show_birth_date', form.show_birth_date ? '1' : '0')
 
       if (clearAvatar) {
         fd.append('photo_clear', 'true')

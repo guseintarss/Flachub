@@ -594,7 +594,10 @@ def current_user(request):
                           'show_email', 'show_phone', 'show_birth_date']
         for field in allowed_fields:
             if field in data:
-                setattr(user, field, data[field])
+                value = data[field]
+                if field in ('show_email', 'show_phone', 'show_birth_date'):
+                    value = value in ('1', 'true', 'True', True, 1)
+                setattr(user, field, value)
 
         # Обработка аватара
         if 'photo' in request.FILES:
@@ -622,6 +625,7 @@ def current_user(request):
             user.phone_namber = cleaned[:11]
 
         user.save()
+        user.refresh_from_db()
         serializer = UserProfileSerializer(user, context={'request': request})
         return Response(serializer.data)
 
