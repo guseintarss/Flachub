@@ -37,6 +37,9 @@ function EditProfilePage() {
           banner_gradient_end: data.banner_gradient_end || '#764ba2',
           data_birth: '',
           phone_namber: '',
+          show_email: data.show_email ?? false,
+          show_phone: data.show_phone ?? false,
+          show_birth_date: data.show_birth_date ?? false,
         })
         setAvatarPreview(data.avatar || null)
         setBannerPreview(data.avatar ? null : 'gradient')
@@ -150,6 +153,9 @@ function EditProfilePage() {
 
       if (form.data_birth) fd.append('data_birth', form.data_birth)
       if (form.phone_namber) fd.append('phone_namber', form.phone_namber)
+      fd.append('show_email', form.show_email ? 'true' : 'false')
+      fd.append('show_phone', form.show_phone ? 'true' : 'false')
+      fd.append('show_birth_date', form.show_birth_date ? 'true' : 'false')
 
       if (clearAvatar) {
         fd.append('photo_clear', 'true')
@@ -308,6 +314,42 @@ function EditProfilePage() {
                       <i className="fas fa-info-circle" /> Например: 9991234567
                     </small>
                   </div>
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h3><i className="fas fa-shield-alt" /> Конфиденциальность</h3>
+                <div className="privacy-toggles">
+                  <label className="privacy-toggle">
+                    <input type="checkbox" checked={form.show_email}
+                      onChange={e => setForm(f => ({ ...f, show_email: e.target.checked }))} />
+                    <span className="toggle-track">
+                      <span className="toggle-thumb" />
+                    </span>
+                    <span className="toggle-label">
+                      <i className="fas fa-envelope" /> Показывать email
+                    </span>
+                  </label>
+                  <label className="privacy-toggle">
+                    <input type="checkbox" checked={form.show_phone}
+                      onChange={e => setForm(f => ({ ...f, show_phone: e.target.checked }))} />
+                    <span className="toggle-track">
+                      <span className="toggle-thumb" />
+                    </span>
+                    <span className="toggle-label">
+                      <i className="fas fa-phone" /> Показывать телефон
+                    </span>
+                  </label>
+                  <label className="privacy-toggle">
+                    <input type="checkbox" checked={form.show_birth_date}
+                      onChange={e => setForm(f => ({ ...f, show_birth_date: e.target.checked }))} />
+                    <span className="toggle-track">
+                      <span className="toggle-thumb" />
+                    </span>
+                    <span className="toggle-label">
+                      <i className="fas fa-calendar" /> Показывать дату рождения
+                    </span>
+                  </label>
                 </div>
               </div>
 
@@ -550,6 +592,27 @@ function EditProfilePage() {
           display: inline-flex; align-items: center; gap: 6px;
           font-size: 0.85rem; color: #10b981; font-weight: 500;
         }
+
+        .privacy-toggles { display: flex; flex-direction: column; gap: 14px; }
+        .privacy-toggle {
+          display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none;
+        }
+        .privacy-toggle input { display: none; }
+        .toggle-track {
+          width: 44px; height: 24px; border-radius: 12px; background: var(--border);
+          position: relative; transition: background 0.25s ease; flex-shrink: 0;
+        }
+        .toggle-thumb {
+          width: 20px; height: 20px; border-radius: 50%; background: #fff;
+          position: absolute; top: 2px; left: 2px; transition: transform 0.25s ease;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .privacy-toggle input:checked + .toggle-track { background: var(--primary); }
+        .privacy-toggle input:checked + .toggle-track .toggle-thumb { transform: translateX(20px); }
+        .toggle-label {
+          display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: var(--text);
+        }
+        .toggle-label i { color: var(--primary); font-size: 0.9rem; }
 
         .form-actions {
           display: flex; gap: 15px; justify-content: flex-start;

@@ -590,7 +590,8 @@ def current_user(request):
         # Только разрешённые поля
         allowed_fields = ['first_name', 'last_name', 'about_me',
                           'data_birth', 'phone_namber',
-                          'banner_gradient_start', 'banner_gradient_end']
+                          'banner_gradient_start', 'banner_gradient_end',
+                          'show_email', 'show_phone', 'show_birth_date']
         for field in allowed_fields:
             if field in data:
                 setattr(user, field, data[field])

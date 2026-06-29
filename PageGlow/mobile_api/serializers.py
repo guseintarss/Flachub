@@ -23,12 +23,16 @@ class UserPublicSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
     bio = serializers.CharField(source='about_me', read_only=True)
     banner_image = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
+    birth_date = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name',
                   'avatar', 'bio', 'is_staff', 'is_superuser', 'date_joined',
-                  'banner_gradient_start', 'banner_gradient_end', 'banner_image')
+                  'banner_gradient_start', 'banner_gradient_end', 'banner_image',
+                  'phone', 'birth_date')
 
     def get_avatar(self, obj):
         if obj.photo:
@@ -38,6 +42,21 @@ class UserPublicSerializer(serializers.ModelSerializer):
     def get_banner_image(self, obj):
         if obj.banner_image:
             return obj.banner_image.url
+        return None
+
+    def get_email(self, obj):
+        if obj.show_email:
+            return obj.email
+        return None
+
+    def get_phone(self, obj):
+        if obj.show_phone and obj.phone_namber:
+            return obj.phone_namber
+        return None
+
+    def get_birth_date(self, obj):
+        if obj.show_birth_date and obj.data_birth:
+            return obj.data_birth.isoformat()
         return None
 
 
@@ -50,6 +69,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
     current_level = serializers.SerializerMethodField()
     next_level = serializers.SerializerMethodField()
     level_progress = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+    phone_namber = serializers.SerializerMethodField()
+    data_birth = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -57,7 +79,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
                   'avatar', 'bio', 'is_staff', 'is_superuser', 'date_joined',
                   'banner_gradient_start', 'banner_gradient_end', 'banner_image',
                   'followers_count', 'following_count', 'reputation',
-                  'current_level', 'next_level', 'level_progress')
+                  'current_level', 'next_level', 'level_progress',
+                  'show_email', 'show_phone', 'show_birth_date',
+                  'phone_namber', 'data_birth')
 
     def get_avatar(self, obj):
         if obj.photo:
@@ -104,6 +128,25 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_level_progress(self, obj):
         return obj.level_progress
+
+    def _is_owner(self, obj):
+        request = self.context.get('request')
+        return request and request.user.is_authenticated and request.user == obj
+
+    def get_email(self, obj):
+        if self._is_owner(obj) or obj.show_email:
+            return obj.email
+        return None
+
+    def get_phone_namber(self, obj):
+        if self._is_owner(obj) or (obj.show_phone and obj.phone_namber):
+            return obj.phone_namber
+        return None
+
+    def get_data_birth(self, obj):
+        if self._is_owner(obj) or (obj.show_birth_date and obj.data_birth):
+            return obj.data_birth.isoformat() if obj.data_birth else None
+        return None
 
 
 # ===== Category & Tag Serializers =====

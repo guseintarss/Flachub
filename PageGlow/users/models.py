@@ -126,6 +126,11 @@ class User(AbstractUser):
         help_text='Фоновое изображение баннера (приоритет над градиентом)'
     )
     
+    # Настройки конфиденциальности
+    show_email = models.BooleanField(default=False, verbose_name='Показывать email')
+    show_phone = models.BooleanField(default=False, verbose_name='Показывать телефон')
+    show_birth_date = models.BooleanField(default=False, verbose_name='Показывать дату рождения')
+
     # Подписки на пользователей (друзья/фолловеры)
     following = models.ManyToManyField(
         'self',
