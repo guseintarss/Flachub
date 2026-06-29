@@ -589,7 +589,6 @@ def current_user(request):
 
         # Только разрешённые поля
         allowed_fields = ['first_name', 'last_name', 'about_me',
-                          'data_birth', 'phone_namber',
                           'banner_gradient_start', 'banner_gradient_end',
                           'show_email', 'show_phone', 'show_birth_date']
         for field in allowed_fields:
@@ -615,14 +614,28 @@ def current_user(request):
                 user.banner_image.delete(save=False)
                 user.banner_image = None
 
-        # Очистка телефона
-        if 'phone_namber' in data and data['phone_namber']:
-            cleaned = ''.join(filter(lambda x: x.isdigit(), data['phone_namber']))
-            if cleaned.startswith('8'):
-                cleaned = '7' + cleaned[1:]
-            if not cleaned.startswith('7'):
-                cleaned = '7' + cleaned
-            user.phone_namber = cleaned[:11]
+        # Обработка телефона
+        if 'phone_namber' in data:
+            if data['phone_namber']:
+                cleaned = ''.join(filter(lambda x: x.isdigit(), data['phone_namber']))
+                if cleaned.startswith('8'):
+                    cleaned = '7' + cleaned[1:]
+                if not cleaned.startswith('7'):
+                    cleaned = '7' + cleaned
+                user.phone_namber = cleaned[:11]
+            else:
+                user.phone_namber = None
+
+        # Обработка даты рождения
+        if 'data_birth' in data:
+            if data['data_birth']:
+                from django.utils.dateparse import parse_date
+                from datetime import datetime
+                parsed = parse_date(data['data_birth'])
+                if parsed:
+                    user.data_birth = datetime.combine(parsed, datetime.min.time())
+            else:
+                user.data_birth = None
 
         user.save()
         user.refresh_from_db()

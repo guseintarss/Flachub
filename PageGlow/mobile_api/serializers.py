@@ -56,7 +56,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
 
     def get_birth_date(self, obj):
         if obj.show_birth_date and obj.data_birth:
-            return obj.data_birth.isoformat()
+            return obj.data_birth.date().isoformat()
         return None
 
 
@@ -129,10 +129,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_level_progress(self, obj):
         return obj.level_progress
 
-    def _is_owner(self, obj):
-        request = self.context.get('request')
-        return request and request.user.is_authenticated and request.user == obj
-
     def get_email(self, obj):
         if obj.show_email:
             return obj.email
@@ -145,7 +141,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_data_birth(self, obj):
         if obj.show_birth_date and obj.data_birth:
-            return obj.data_birth.isoformat()
+            return obj.data_birth.date().isoformat()
         return None
 
 

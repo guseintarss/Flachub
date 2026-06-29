@@ -35,8 +35,8 @@ function EditProfilePage() {
           about_me: data.bio || '',
           banner_gradient_start: data.banner_gradient_start || '#0c6acf',
           banner_gradient_end: data.banner_gradient_end || '#764ba2',
-          data_birth: '',
-          phone_namber: '',
+          data_birth: data.data_birth || '',
+          phone_namber: formatPhone(data.phone_namber || ''),
           show_email: data.show_email ?? true,
           show_phone: data.show_phone ?? true,
           show_birth_date: data.show_birth_date ?? true,
@@ -62,6 +62,21 @@ function EditProfilePage() {
 
   function set(field) {
     return e => setForm(f => ({ ...f, [field]: e.target.value }))
+  }
+
+  function formatPhone(raw) {
+    const digits = raw.replace(/\D/g, '')
+    if (!digits.length) return ''
+    const d = digits.startsWith('8') ? '7' + digits.slice(1) : digits
+    if (d.length <= 1) return '+7'
+    if (d.length <= 4) return `+7 (${d.slice(1)}`
+    if (d.length <= 7) return `+7 (${d.slice(1, 4)}) ${d.slice(4)}`
+    if (d.length <= 9) return `+7 (${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7)}`
+    return `+7 (${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7, 9)}-${d.slice(9, 11)}`
+  }
+
+  function handlePhoneChange(e) {
+    setForm(f => ({ ...f, phone_namber: formatPhone(e.target.value) }))
   }
 
   function updateBannerPreview() {
@@ -151,8 +166,8 @@ function EditProfilePage() {
       fd.append('banner_gradient_start', form.banner_gradient_start)
       fd.append('banner_gradient_end', form.banner_gradient_end)
 
-      if (form.data_birth) fd.append('data_birth', form.data_birth)
-      if (form.phone_namber) fd.append('phone_namber', form.phone_namber)
+      fd.append('data_birth', form.data_birth || '')
+      fd.append('phone_namber', form.phone_namber || '')
       fd.append('show_email', form.show_email ? '1' : '0')
       fd.append('show_phone', form.show_phone ? '1' : '0')
       fd.append('show_birth_date', form.show_birth_date ? '1' : '0')
@@ -308,7 +323,7 @@ function EditProfilePage() {
                   </div>
                   <div className="form-group">
                     <label><i className="fas fa-phone" /> Номер телефона</label>
-                    <input type="tel" value={form.phone_namber} onChange={set('phone_namber')}
+                    <input type="tel" value={form.phone_namber} onChange={handlePhoneChange} placeholder="+7 (___) ___-__-__"
                       className="form-control" placeholder="+7 (___) ___-__-__" />
                     <small className="form-text">
                       <i className="fas fa-info-circle" /> Например: 9991234567
