@@ -387,8 +387,16 @@ function ProfilePage() {
                         <div className="empty-state">
                           <i className="fas fa-heart" />
                           <p>Избранных статей пока нет</p>
-                          <Link to="/" className="btn btn-outline-secondary">
-                            <i className="fas fa-search" /> Найти статьи
+                          <Link to="/"
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 6,
+                              fontSize: '0.9rem', fontWeight: 500,
+                              color: 'var(--primary)', textDecoration: 'none',
+                              transition: 'opacity 0.2s',
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
+                            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+                            <i className="fas fa-search" style={{ fontSize: '0.8rem' }} /> Найти статьи
                           </Link>
                         </div>
                       )}
