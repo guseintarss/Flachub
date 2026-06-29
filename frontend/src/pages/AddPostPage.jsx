@@ -28,6 +28,14 @@ function extractTitle(html) {
   return text.split('\n')[0].trim() || text.slice(0, 100)
 }
 
+function stripTitleFromContent(html) {
+  const div = document.createElement('div')
+  div.innerHTML = html
+  const h = div.querySelector('h1, h2, h3')
+  if (h) h.remove()
+  return div.innerHTML
+}
+
 const editorConfig = {
   licenseKey: 'GPL',
   plugins: [
@@ -218,7 +226,7 @@ function AddPostPage() {
     e.preventDefault()
     const fullHtml = form.content
     const title = extractTitle(fullHtml)
-    const content = fullHtml
+    const content = stripTitleFromContent(fullHtml)
     if (!title) { setError('Введите заголовок'); return }
     if (!content.trim()) { setError('Введите содержание'); return }
     setError('')
