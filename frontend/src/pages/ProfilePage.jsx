@@ -324,15 +324,14 @@ function ProfilePage() {
                         {isOwn && (
                           <Link to="/add-post/"
                             style={{
-                              display: 'inline-flex', alignItems: 'center', gap: 8,
-                              padding: '8px 18px', fontSize: '0.85rem', fontWeight: 600,
-                              color: 'var(--primary)', background: 'transparent',
-                              border: '2px dashed var(--primary)', borderRadius: 12,
-                              textDecoration: 'none', transition: 'all 0.25s ease',
+                              display: 'inline-flex', alignItems: 'center', gap: 6,
+                              fontSize: '0.9rem', fontWeight: 500,
+                              color: 'var(--primary)', textDecoration: 'none',
+                              transition: 'opacity 0.2s',
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = '#fff' }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--primary)' }}>
-                            <i className="fas fa-plus" /> Создать статью
+                            onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
+                            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+                            <i className="fas fa-plus" style={{ fontSize: '0.8rem' }} /> Создать статью
                           </Link>
                         )}
                       </div>
