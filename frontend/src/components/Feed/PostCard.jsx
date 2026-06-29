@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { toggleLike } from '../../api'
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, extra, badge, noReadMore }) => {
   const [liked, setLiked] = useState(post.is_liked || false)
   const [likesCount, setLikesCount] = useState(post.likes_count || 0)
 
@@ -79,6 +79,8 @@ const PostCard = ({ post }) => {
           </div>
         )}
 
+        {badge}
+
         {post.excerpt && (
           <div className="post-excerpt" style={{ opacity: 0.85, lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: post.excerpt }} />
         )}
@@ -101,10 +103,13 @@ const PostCard = ({ post }) => {
               <i className="fas fa-comment"></i> {post.comments_count || 0}
             </span>
           </div>
-          <a className="read-more" href={`/post/${post.slug}/`} style={{ textDecoration: "none" }}>
-            Читать далее <i className="fas fa-arrow-right"></i>
-          </a>
+          {!noReadMore && (
+            <a className="read-more" href={`/post/${post.slug}/`} style={{ textDecoration: "none" }}>
+              Читать далее <i className="fas fa-arrow-right"></i>
+            </a>
+          )}
         </div>
+        {extra}
       </div>
     </article>
   )

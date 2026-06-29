@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { toggleSubscribe } from '../api'
+import PostCard from '../components/Feed/PostCard'
 import { ProfileSkeleton } from '../components/Skeleton'
 import '../styles/Sidebar.css'
 
@@ -317,33 +318,14 @@ function ProfilePage() {
                       </div>
                     )}
                     {posts.map(post => (
-                      <article key={post.id} className="post-card">
-                        {post.photo && (
-                          <div className="post-card-image">
-                            <img src={post.photo} alt={post.title} />
-                          </div>
-                        )}
-                        <div className="post-card-content">
-                          <h3><Link to={`/post/${post.slug}/`}>{post.title}</Link></h3>
-                          <div className="post-card-meta">
-                            {post.category && <span className="badge">{post.category.name}</span>}
-                            <span className="post-time" title={post.time_update}>
-                              <i className="fas fa-clock" /> {new Date(post.time_update).toLocaleDateString('ru-RU')}
-                            </span>
-                          </div>
-                          <div className="post-card-stats">
-                            <span title="Просмотры"><i className="fas fa-eye" /> {post.views}</span>
-                            <span title="Лайки"><i className="fas fa-heart" /> {post.likes_count || 0}</span>
-                          </div>
-                          {isOwn && (
-                            <div className="post-card-actions">
-                              <Link to={`/edit/${post.slug}/`} className="btn btn-sm btn-primary">
-                                <i className="fas fa-edit" /> Редактировать
-                              </Link>
-                            </div>
-                          )}
-                        </div>
-                      </article>
+                      <PostCard key={post.id} post={post}
+                        badge={isOwn && <div style={{ marginBottom: 8 }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 10px', borderRadius: 20, background: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '0.78rem', fontWeight: 600 }}><i className="fas fa-check-circle" /> Опубликовано</span></div>}
+                        extra={isOwn && <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+                          <Link to={`/edit/${post.slug}/`} className="btn btn-sm btn-primary">
+                            <i className="fas fa-edit" /> Редактировать
+                          </Link>
+                        </div>}
+                      />
                     ))}
                   </div>
                 </div>
@@ -358,28 +340,14 @@ function ProfilePage() {
                         </div>
                       )}
                       {drafts.map(post => (
-                        <article key={post.id} className="post-card draft">
-                          {post.photo && (
-                            <div className="post-card-image">
-                              <img src={post.photo} alt={post.title} />
-                            </div>
-                          )}
-                          <div className="post-card-content">
-                            <div className="draft-badge"><i className="fas fa-file" /> Черновик</div>
-                            <h3><Link to={`/edit/${post.slug}/`}>{post.title}</Link></h3>
-                            <div className="post-card-meta">
-                              {post.category && <span className="badge">{post.category.name}</span>}
-                              <span className="post-time" title={post.time_update}>
-                                <i className="fas fa-clock" /> {new Date(post.time_update).toLocaleDateString('ru-RU')}
-                              </span>
-                            </div>
-                            <div className="post-card-actions">
-                              <Link to={`/edit/${post.slug}/`} className="btn btn-sm btn-primary">
-                                <i className="fas fa-edit" /> Редактировать
-                              </Link>
-                            </div>
-                          </div>
-                        </article>
+                        <PostCard key={post.id} post={post} noReadMore
+                          badge={<div style={{ marginBottom: 8 }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 10px', borderRadius: 20, background: 'rgba(245,158,11,0.1)', color: '#f59e0b', fontSize: '0.78rem', fontWeight: 600 }}><i className="fas fa-file" /> Черновик</span></div>}
+                          extra={<div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+                            <Link to={`/edit/${post.slug}/`} className="btn btn-sm btn-primary">
+                              <i className="fas fa-edit" /> Редактировать
+                            </Link>
+                          </div>}
+                        />
                       ))}
                     </div>
                   </div>
@@ -398,32 +366,9 @@ function ProfilePage() {
                         </div>
                       )}
                       {favorites.map(post => (
-                        <article key={post.id} className="post-card">
-                          {post.photo && (
-                            <div className="post-card-image">
-                              <img src={post.photo} alt={post.title} />
-                            </div>
-                          )}
-                          <div className="post-card-content">
-                            <div className="favorite-badge"><i className="fas fa-heart" /> В избранном</div>
-                            <h3><Link to={`/post/${post.slug}/`}>{post.title}</Link></h3>
-                            <div className="post-card-meta">
-                              {post.category && <span className="badge">{post.category.name}</span>}
-                              <span className="post-time" title={post.time_update}>
-                                <i className="fas fa-clock" /> {new Date(post.time_update).toLocaleDateString('ru-RU')}
-                              </span>
-                            </div>
-                            <div className="post-card-stats">
-                              <span title="Просмотры"><i className="fas fa-eye" /> {post.views}</span>
-                              <span title="Лайки"><i className="fas fa-heart" /> {post.likes_count || 0}</span>
-                            </div>
-                            <div className="post-card-actions">
-                              <Link to={`/post/${post.slug}/`} className="btn btn-sm btn-primary">
-                                <i className="fas fa-book-open" /> Читать
-                              </Link>
-                            </div>
-                          </div>
-                        </article>
+                        <PostCard key={post.id} post={post}
+                          badge={<div style={{ marginBottom: 8 }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 10px', borderRadius: 20, background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '0.78rem', fontWeight: 600 }}><i className="fas fa-heart" /> В избранном</span></div>}
+                        />
                       ))}
                     </div>
                   </div>
@@ -730,35 +675,11 @@ function ProfilePage() {
         .content-tab.active { display: block; }
 
         .posts-grid { display: grid; gap: 25px; }
-        .post-card {
-          background: var(--surface); border-radius: var(--radius);
-          overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .post-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
-        .post-card-image { width: 100%; height: 200px; overflow: hidden; }
-        .post-card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
-        .post-card:hover .post-card-image img { transform: scale(1.1); }
-        .post-card-content { padding: 20px; }
-        .post-card-content h3 { margin: 0 0 15px 0; font-size: 1.2rem; line-height: 1.4; }
-        .post-card-content h3 a { color: var(--text); text-decoration: none; transition: color 0.2s; }
-        .post-card-content h3 a:hover { color: var(--primary); }
-        .post-card-meta { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
         .badge {
           padding: 4px 12px; background: var(--primary); color: white;
           border-radius: 20px; font-size: 0.8rem; font-weight: 500;
         }
         .post-time { color: var(--muted); font-size: 0.85rem; display: flex; align-items: center; gap: 5px; }
-        .post-card-stats { display: flex; gap: 15px; margin-bottom: 20px; color: var(--muted); font-size: 0.9rem; }
-        .post-card-stats span { display: flex; align-items: center; gap: 5px; }
-        .post-card-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-
-        .draft-badge, .favorite-badge {
-          display: inline-block; padding: 4px 12px; border-radius: 20px;
-          font-size: 0.8rem; font-weight: 500; margin-bottom: 10px;
-        }
-        .draft-badge { background: #ffc107; color: #000; }
-        .favorite-badge { background: #dc3545; color: white; }
 
         .empty-state {
           grid-column: 1 / -1; text-align: center;
