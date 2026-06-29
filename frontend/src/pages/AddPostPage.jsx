@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Sidebar/Sidebar'
@@ -148,7 +148,7 @@ function AddPostPage() {
           setFileName('Текущая обложка')
         }
       })
-      .catch(e => { setError(e.message); setStep(1) })
+      .catch(e => { setError(e.message); goTo(1) })
       .finally(() => setLoadingPost(false))
   }, [slug, user])
 
@@ -162,8 +162,11 @@ function AddPostPage() {
 
   function goTo(s) {
     setStep(s)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [step])
 
   function f(field, value) {
     setForm(p => ({ ...p, [field]: value }))

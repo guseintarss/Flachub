@@ -17,10 +17,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 40px;
-    padding: 30px;
+    margin-bottom: 24px;
+    padding: 16px 24px;
     background: var(--surface);
-    border-radius: 20px;
+    border-radius: 14px;
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
 }
@@ -29,7 +29,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
     opacity: 0.5;
     transition: all 0.3s ease;
     position: relative;
@@ -41,16 +41,16 @@
 }
 
 .step-number {
-    width: 55px;
-    height: 55px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: var(--bg);
-    border: 3px solid var(--border);
+    border: 2px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 1.3rem;
+    font-size: 0.9rem;
     color: var(--muted);
     transition: all 0.3s ease;
 }
@@ -59,12 +59,12 @@
     background: var(--primary);
     border-color: var(--primary);
     color: white;
-    transform: scale(1.15);
-    box-shadow: 0 4px 20px rgba(12, 106, 207, 0.4);
+    transform: scale(1.1);
+    box-shadow: 0 3px 12px rgba(12, 106, 207, 0.35);
 }
 
 .step-text {
-    font-size: 0.95rem;
+    font-size: 0.78rem;
     font-weight: 600;
     color: var(--muted);
     white-space: nowrap;
@@ -76,9 +76,9 @@
 
 .progress-bar {
     flex: 1;
-    height: 4px;
+    height: 3px;
     background: var(--border);
-    margin: 0 15px;
+    margin: 0 10px;
     border-radius: 2px;
 }
 
@@ -675,10 +675,11 @@ html.dark-mode .cover-file-label:hover {
 @media (max-width: 768px) {
 
     .wizard-progress {
-        padding: 15px 10px;
+        padding: 12px 10px;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 6px;
         justify-content: center;
+        margin-bottom: 16px;
     }
 
     .progress-bar {
@@ -687,17 +688,18 @@ html.dark-mode .cover-file-label:hover {
 
     .progress-step {
         flex-direction: row;
-        gap: 8px;
+        gap: 5px;
     }
 
     .step-number {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+        border-width: 2px;
     }
 
     .step-text {
-        font-size: 0.8rem;
+        font-size: 0.72rem;
     }
 
     .step-content {
