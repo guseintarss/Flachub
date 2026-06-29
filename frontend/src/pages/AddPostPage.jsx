@@ -89,7 +89,7 @@ const POST_TYPES = [
 function AddPostPage() {
   const { slug } = useParams()
   const isEditing = !!slug
-  const { user, loading } = useAuth()
+  const { user, loading, setUser } = useAuth()
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [loadingPost, setLoadingPost] = useState(false)
@@ -260,6 +260,10 @@ function AddPostPage() {
           : data.error || data
         throw new Error(msg)
       }
+      fetch('/api/mobile/me/', { credentials: 'same-origin' })
+        .then(r => r.ok ? r.json() : null)
+        .then(u => { if (u) setUser(u) })
+        .catch(() => {})
       navigate(`/post/${data.slug || slug}/`)
     } catch (err) {
       setError(err.message)

@@ -18,6 +18,7 @@ from main.models import (
     Notification, Bookmark, Collection,
     UserAchievement, Subscription
 )
+from users.models import UserReputationLog
 from .serializers import (
     PostListSerializer, PostDetailSerializer, PostCreateUpdateSerializer,
     CategorySerializer, TagSerializer,
@@ -127,14 +128,20 @@ class PostViewSet(viewsets.ModelViewSet):
         return super().retrieve(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        post = serializer.save(author=self.request.user)
+        UserReputationLog.objects.create(
+            user=post.author,
+            amount=10,
+            reason='post_created',
+            post=post
+        )
+        from django.core.cache import cache
+        cache.delete(f'user_reputation_{post.author.id}')
 
     def perform_destroy(self, instance):
         author = instance.author
         if author:
-            from users.reputation_utils import award_reputation
-            from users.models import UserReputationLog
-            award_reputation(user=author, reason=UserReputationLog.ReasonType.POST_DELETED, post=instance, skip_limit=True)
+            author.add_reputation(amount=-10, reason=UserReputationLog.ReasonType.POST_DELETED, post=instance)
         from django.core.cache import cache
         cache.clear()
         instance.delete()

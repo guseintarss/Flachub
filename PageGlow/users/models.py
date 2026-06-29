@@ -214,7 +214,7 @@ class User(AbstractUser):
                 total=Sum('amount')
             )['total'] or 0
             cache.set(cache_key, rep, 3600)  # Кэш на 1 час
-        return rep
+        return max(0, rep)
 
     @property
     def current_level(self):
@@ -290,6 +290,17 @@ class User(AbstractUser):
         """
         from django.db import transaction
         from main.models import Notification
+
+        # Не даём репутации уйти в минус
+        if amount < 0:
+            current = self.reputation_logs.aggregate(
+                total=Sum('amount')
+            )['total'] or 0
+            if current + amount < 0:
+                amount = -current
+
+        if amount == 0:
+            return
 
         with transaction.atomic():
             # Создаём лог
