@@ -1,5 +1,20 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    const scroll = () => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }
+    scroll()
+    setTimeout(scroll, 50)
+  }, [pathname])
+  return null
+}
 import Footer from "./components/Footer/Footer"
 import Header from "./components/Header/Header"
 import MainPage from "./pages/MainPage"
@@ -15,6 +30,7 @@ const App = () => {
   return(
     <BrowserRouter>
       <AuthProvider>
+        <ScrollToTop />
         <Header />
         <Routes>
           <Route path="/" element={<MainPage />} />
