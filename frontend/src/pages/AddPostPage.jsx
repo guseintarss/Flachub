@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Sidebar/Sidebar'
@@ -165,7 +165,13 @@ function AddPostPage() {
   }
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    const scrollToTop = () => {
+      window.scroll(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }
+    scrollToTop()
+    setTimeout(scrollToTop, 50)
   }, [step])
 
   function f(field, value) {
