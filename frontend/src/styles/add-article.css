@@ -1264,6 +1264,10 @@ body.dark-mode .ck-content pre {
     background: rgba(12, 106, 207, 0.08);
 }
 
+.slash-menu-item.highlighted {
+    background: rgba(12, 106, 207, 0.13);
+}
+
 .slash-menu-item-icon {
     width: 34px;
     height: 34px;
@@ -1311,6 +1315,10 @@ html.dark-mode .slash-menu {
 
 html.dark-mode .slash-menu-item:hover {
     background: rgba(41, 156, 245, 0.12);
+}
+
+html.dark-mode .slash-menu-item.highlighted {
+    background: rgba(41, 156, 245, 0.2);
 }
 
 html.dark-mode .slash-menu-item-icon {

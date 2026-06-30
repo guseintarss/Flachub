@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Sidebar/Sidebar'
@@ -221,8 +221,35 @@ function AddPostPage() {
 
   const [showRules, setShowRules] = useState(false)
   const [slashMenu, setSlashMenu] = useState({ visible: false, x: 0, y: 0, query: '' })
+  const [slashIndex, setSlashIndex] = useState(0)
   const slashMenuRef = useRef(null)
   const hideSlashTimeout = useRef(null)
+  const slashIndexRef = useRef(slashIndex)
+
+  const visibleSlashCommands = useMemo(() => {
+    const q = slashMenu.query.toLowerCase()
+    return SLASH_COMMANDS.filter(c => {
+      if (c.separator) return false
+      if (!q) return true
+      return c.label.toLowerCase().includes(q) || c.group.toLowerCase().includes(q)
+    })
+  }, [slashMenu.query])
+
+  useEffect(() => {
+    slashIndexRef.current = slashIndex
+  }, [slashIndex])
+
+  useEffect(() => {
+    if (slashMenu.visible) {
+      setSlashIndex(0)
+    }
+  }, [slashMenu.visible, slashMenu.query])
+
+  useEffect(() => {
+    if (!slashMenu.visible || slashIndex < 0) return
+    const el = slashMenuRef.current?.querySelector(`[data-slash-index="${slashIndex}"]`)
+    el?.scrollIntoView({ block: 'nearest' })
+  }, [slashMenu.visible, slashIndex])
 
   const getSlashQuery = useCallback(() => {
     try {
@@ -321,6 +348,37 @@ function AddPostPage() {
     }
     return null
   }
+
+  useEffect(() => {
+    if (!slashMenu.visible) return
+
+    function handleKeyDown(e) {
+      const filtered = SLASH_COMMANDS.filter(c => {
+        if (c.separator) return false
+        const q = slashMenu.query.toLowerCase()
+        if (!q) return true
+        return c.label.toLowerCase().includes(q) || c.group.toLowerCase().includes(q)
+      })
+      if (filtered.length === 0) return
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        e.stopPropagation()
+        setSlashIndex(i => Math.min(i + 1, filtered.length - 1))
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        e.stopPropagation()
+        setSlashIndex(i => Math.max(i - 1, 0))
+      } else if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault()
+        e.stopPropagation()
+        execSlashCommand(filtered[slashIndexRef.current])
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown, true)
+    return () => document.removeEventListener('keydown', handleKeyDown, true)
+  }, [slashMenu.visible, slashMenu.query, execSlashCommand])
 
   const [form, setForm] = useState({
     content: '',
@@ -613,14 +671,11 @@ function AddPostPage() {
                           <i className="fas fa-slash" /> Форматирование
                         </div>
                         <div className="slash-menu-items">
-                          {SLASH_COMMANDS.filter(c => {
-                            if (c.separator) return false
-                            const q = slashMenu.query.toLowerCase()
-                            if (!q) return true
-                            return c.label.toLowerCase().includes(q) || c.group.toLowerCase().includes(q)
-                          }).map(cmd => (
-                            <div key={cmd.id} className="slash-menu-item"
-                              onMouseDown={(e) => { e.preventDefault(); execSlashCommand(cmd) }}>
+                          {visibleSlashCommands.map((cmd, i) => (
+                            <div key={cmd.id} className={`slash-menu-item${i === slashIndex ? ' highlighted' : ''}`}
+                              data-slash-index={i}
+                              onMouseDown={(e) => { e.preventDefault(); setSlashIndex(i); execSlashCommand(cmd) }}
+                              onMouseEnter={() => setSlashIndex(i)}>
                               <div className="slash-menu-item-icon">
                                 <i className={cmd.icon} />
                               </div>
@@ -630,12 +685,7 @@ function AddPostPage() {
                               </div>
                             </div>
                           ))}
-                          {SLASH_COMMANDS.filter(c => {
-                            if (c.separator) return false
-                            const q = slashMenu.query.toLowerCase()
-                            if (!q) return true
-                            return c.label.toLowerCase().includes(q) || c.group.toLowerCase().includes(q)
-                          }).length === 0 && (
+                          {visibleSlashCommands.length === 0 && (
                             <div className="slash-menu-empty">Ничего не найдено</div>
                           )}
                         </div>
