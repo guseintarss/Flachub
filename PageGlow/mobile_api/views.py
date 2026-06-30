@@ -55,7 +55,7 @@ class PostViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     lookup_field = 'slug'
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['post_type', 'cat', 'is_published', 'author']
+    filterset_fields = ['post_type', 'is_published', 'author']
     search_fields = ['title', 'content', 'author__username', 'author__first_name', 'author__last_name']
     ordering_fields = ['time_create', 'time_update', 'views', 'title']
     ordering = ['-time_create']
