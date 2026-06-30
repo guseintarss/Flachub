@@ -319,6 +319,124 @@
     color: #dc2626;
 }
 
+/* =====================================================
+   ДИАГРАММЫ
+   ===================================================== */
+
+.admin-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.admin-chart {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+}
+
+.admin-chart-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 16px;
+}
+
+.admin-chart-bars {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    height: 170px;
+}
+
+.admin-chart-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+    height: 100%;
+}
+
+.admin-chart-track {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.admin-chart-bar {
+    width: 70%;
+    max-width: 24px;
+    border-radius: 3px 3px 0 0;
+    min-height: 1px;
+    transition: height 0.25s;
+    opacity: 0.85;
+}
+
+.admin-chart-bar:hover {
+    opacity: 1;
+}
+
+.admin-chart-label {
+    font-size: 0.6rem;
+    color: var(--muted);
+    white-space: nowrap;
+    height: 14px;
+    line-height: 14px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.admin-chart-zero {
+    width: 0;
+    flex-shrink: 0;
+}
+
+/* =====================================================
+   НАСТРАИВАЕМЫЕ КОЛОНКИ
+   ===================================================== */
+
+.admin-cols-toggle {
+    position: relative;
+}
+
+.admin-cols-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px;
+    z-index: 100;
+    min-width: 180px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.admin-cols-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    font-size: 0.85rem;
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+.admin-cols-option:hover {
+    background: var(--bg);
+}
+
+.admin-cols-option input {
+    accent-color: var(--primary);
+}
+
 .admin-role-actions {
     display: flex;
     gap: 6px;
@@ -378,6 +496,20 @@ html.dark-mode .admin-search input {
     color: var(--dark-text);
 }
 
+html.dark-mode .admin-chart {
+    border-color: var(--dark-border);
+    background: rgba(255,255,255,0.03);
+}
+
+html.dark-mode .admin-cols-dropdown {
+    border-color: var(--dark-border);
+    background: var(--dark-surface);
+}
+
+html.dark-mode .admin-cols-option:hover {
+    background: rgba(255,255,255,0.05);
+}
+
 /* =====================================================
    АДАПТИВНОСТЬ
    ===================================================== */
@@ -395,5 +527,9 @@ html.dark-mode .admin-search input {
 
     .admin-stats-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .admin-charts-grid {
+        grid-template-columns: 1fr;
     }
 }

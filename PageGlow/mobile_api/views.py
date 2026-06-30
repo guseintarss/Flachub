@@ -879,6 +879,51 @@ def admin_stats_view(request):
         return Response({'error': 'Доступ запрещён'}, status=403)
 
     from main.models import Post, Comment
+    from django.db.models.functions import TruncDate
+    from django.utils import timezone
+    from datetime import timedelta
+
+    days = 14
+    since = timezone.now() - timedelta(days=days)
+
+    daily_registrations = (
+        User.objects
+        .filter(date_joined__gte=since)
+        .annotate(date=TruncDate('date_joined'))
+        .values('date')
+        .annotate(count=Count('id'))
+        .order_by('date')
+    )
+
+    daily_posts = (
+        Post.objects
+        .filter(time_create__gte=since)
+        .annotate(date=TruncDate('time_create'))
+        .values('date')
+        .annotate(count=Count('id'))
+        .order_by('date')
+    )
+
+    daily_comments = (
+        Comment.objects
+        .filter(created_at__gte=since, is_active=True)
+        .annotate(date=TruncDate('created_at'))
+        .values('date')
+        .annotate(count=Count('id'))
+        .order_by('date')
+    )
+
+    def fill_dates(qs):
+        data = {}
+        for r in qs:
+            d = r['date']
+            key = d.isoformat() if hasattr(d, 'isoformat') else str(d)
+            data[key] = r['count']
+        result = []
+        for i in range(days - 1, -1, -1):
+            d = (timezone.now() - timedelta(days=i)).date()
+            result.append({'date': d.isoformat(), 'count': data.get(d.isoformat(), 0)})
+        return result
 
     return Response({
         'total_users': User.objects.count(),
@@ -887,6 +932,9 @@ def admin_stats_view(request):
         'total_comments': Comment.objects.filter(is_active=True).count(),
         'total_admins': User.objects.filter(is_superuser=True).count(),
         'total_moderators': User.objects.filter(is_staff=True, is_superuser=False).count(),
+        'daily_registrations': fill_dates(daily_registrations),
+        'daily_posts': fill_dates(daily_posts),
+        'daily_comments': fill_dates(daily_comments),
     })
 
 
