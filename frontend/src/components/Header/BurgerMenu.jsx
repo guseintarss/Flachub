@@ -23,7 +23,7 @@ function CategoryList() {
       <div className="menu-category-title">
         <i className="fas fa-folder"></i> Категории
       </div>
-      {categories.map((cat) => (
+      {categories.filter(cat => cat.posts_count > 0).map((cat) => (
         <Link key={cat.id} to={`/category/${cat.slug}/`} className="menu_link">
           <i className="fas fa-angle-right"></i> {cat.name}
         </Link>
