@@ -145,7 +145,7 @@ function AddPostPage() {
       .then(data => {
         if (data.author?.id !== user.id) throw new Error('Это не ваша статья')
         setForm({
-          content: data.content || '',
+          content: data.content ? `<h1>${data.title}</h1>${data.content}` : '',
           post_type: data.post_type || 'post',
           is_published: String(data.is_published ?? '1'),
           cat: data.category?.id || '',
