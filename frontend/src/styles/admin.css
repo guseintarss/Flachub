@@ -222,6 +222,29 @@
 
 .admin-users-table-wrap {
     overflow-x: auto;
+    max-height: 540px;
+    overflow-y: auto;
+}
+
+.admin-users-table thead {
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 1;
+}
+
+.admin-users-table-wrap::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.admin-users-table-wrap::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+.admin-users-table-wrap::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .admin-users-table {
@@ -487,6 +510,14 @@ html.dark-mode .admin-stat-card {
 
 html.dark-mode .admin-users-table tbody tr:hover {
     background: rgba(255,255,255,0.03);
+}
+
+html.dark-mode .admin-users-table thead {
+    background: var(--dark-surface);
+}
+
+html.dark-mode .admin-users-table-wrap::-webkit-scrollbar-thumb {
+    background: var(--dark-border);
 }
 
 html.dark-mode .admin-users-filters select,
