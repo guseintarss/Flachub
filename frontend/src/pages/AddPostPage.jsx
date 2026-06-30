@@ -167,10 +167,34 @@ const SLASH_COMMANDS = [
 ]
 
 const POST_TYPES = [
-  { value: 'post',      icon: 'fa-sticky-note',  title: 'Пост',    desc: 'Короткая публикация или заметка' },
-  { value: 'article',   icon: 'fa-file-alt',      title: 'Статья',  desc: 'Подробный материал с анализом' },
-  { value: 'news',      icon: 'fa-newspaper',     title: 'Новость', desc: 'Актуальная информация о событиях' },
-  { value: 'idea',      icon: 'fa-lightbulb',     title: 'Идея',    desc: 'Креативная мысль или предложение' },
+  { value: 'post',      icon: 'fa-sticky-note',  title: 'Пост',    desc: 'Короткая публикация или заметка',
+    rules: [
+      'Краткость — сестра таланта. Оптимально до 500 символов',
+      'Одна главная мысль на весь пост',
+      'Форматирование (жирный, курсив) помогает расставить акценты',
+      'Можно добавить 1-2 изображения для наглядности',
+    ] },
+  { value: 'article',   icon: 'fa-file-alt',      title: 'Статья',  desc: 'Подробный материал с анализом',
+    rules: [
+      'Раскрывайте тему полностью — от 1000 символов',
+      'Структурируйте текст: введение, основная часть, выводы',
+      'Используйте подзаголовки, списки, таблицы',
+      'Добавляйте изображения, цитаты и ссылки на источники',
+    ] },
+  { value: 'news',      icon: 'fa-newspaper',     title: 'Новость', desc: 'Актуальная информация о событиях',
+    rules: [
+      'Заголовок должен чётко отражать суть новости',
+      'Указывайте источник информации и дату события',
+      'Излагайте факты без лишних оценок',
+      'Проверяйте информацию — объективность превыше всего',
+    ] },
+  { value: 'idea',      icon: 'fa-lightbulb',     title: 'Идея',    desc: 'Креативная мысль или предложение',
+    rules: [
+      'Опишите проблему, которую решает ваша идея',
+      'Предложите конкретное решение или подход',
+      'Оцените примерные ресурсы и сроки реализации',
+      'Приведите примеры, аналогии или прототипы',
+    ] },
 ]
 
 function AddPostPage() {
@@ -195,6 +219,7 @@ function AddPostPage() {
   const searchRef = useRef(null)
   const editorRef = useRef(null)
 
+  const [showRules, setShowRules] = useState(false)
   const [slashMenu, setSlashMenu] = useState({ visible: false, x: 0, y: 0, query: '' })
   const slashMenuRef = useRef(null)
   const hideSlashTimeout = useRef(null)
@@ -617,6 +642,27 @@ function AddPostPage() {
                       </div>
                     )}
                     </div>
+                  </div>
+                  <div className="step-rules">
+                    <div className="step-rules-header" onClick={() => setShowRules(s => !s)}>
+                      <div className="step-rules-toggle">
+                        <i className={`fas ${showRules ? 'fa-chevron-down' : 'fa-chevron-right'}`}></i>
+                        <i className="fas fa-clipboard-list"></i>
+                        <span>Правила для «{POST_TYPES.find(pt => pt.value === form.post_type)?.title || 'Поста'}»</span>
+                      </div>
+                      {!showRules && (
+                        <span className="step-rules-hint">Нажмите, чтобы посмотреть</span>
+                      )}
+                    </div>
+                    {showRules && (
+                      <div className="step-rules-body">
+                        <ul className="step-rules-list">
+                          {POST_TYPES.find(pt => pt.value === form.post_type)?.rules.map((rule, i) => (
+                            <li key={i}><i className="fas fa-check-circle"></i> {rule}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                   <div className="step-footer" style={{ marginTop: 20 }}>
                     <button type="button" className="btn btn-secondary" onClick={() => goTo(1)}>

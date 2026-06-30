@@ -669,6 +669,120 @@ html.dark-mode .cover-file-label:hover {
 }
 
 /* =====================================================
+   ПРАВИЛА ДЛЯ ТИПА ПУБЛИКАЦИИ
+   ===================================================== */
+
+.step-rules {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin: 20px 0 0;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.step-rules-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.step-rules-header:hover {
+    background: var(--bg);
+}
+
+.step-rules-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+}
+
+.step-rules-toggle .fa-chevron-right,
+.step-rules-toggle .fa-chevron-down {
+    color: var(--muted);
+    font-size: 0.8rem;
+    width: 16px;
+    transition: transform 0.2s;
+}
+
+.step-rules-toggle .fa-clipboard-list {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.step-rules-hint {
+    font-size: 0.78rem;
+    color: var(--muted);
+}
+
+.step-rules-body {
+    padding: 0 20px 16px;
+    animation: rulesSlideDown 0.2s ease;
+}
+
+@keyframes rulesSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.step-rules-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.step-rules-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text);
+    padding: 8px 12px;
+    background: var(--bg);
+    border-radius: 10px;
+}
+
+.step-rules-list li i {
+    color: #22c55e;
+    font-size: 0.95rem;
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+html.dark-mode .step-rules {
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .step-rules-header:hover {
+    background: rgba(255,255,255,0.03);
+}
+
+html.dark-mode .step-rules-list li {
+    background: rgba(255,255,255,0.03);
+}
+
+html.dark-mode .step-rules-list li i {
+    color: #4ade80;
+}
+
+/* =====================================================
    АДАПТИВНОСТЬ
    ===================================================== */
 
