@@ -456,6 +456,54 @@ html.dark-mode .reading-progress-bar {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.article-body figure.image-style-side {
+    float: right;
+    margin: 12px 0 12px 24px;
+    max-width: 40%;
+}
+
+.article-body figure.image-style-align-left {
+    float: left;
+    margin: 12px 24px 12px 0;
+    max-width: 40%;
+}
+
+.article-body figure.image-style-align-right {
+    float: right;
+    margin: 12px 0 12px 24px;
+    max-width: 40%;
+}
+
+.article-body figure.image-style-align-center {
+    margin: 24px auto;
+    text-align: center;
+}
+
+.article-body figure.image-style-block {
+    margin: 24px 0;
+    text-align: center;
+}
+
+.article-body .media {
+    margin: 24px 0;
+    position: relative;
+    width: 100%;
+}
+
+.article-body .media iframe,
+.article-body .media video {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 10px;
+    aspect-ratio: 16 / 9;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.article-body .media oembed {
+    display: block;
+    width: 100%;
+}
+
 /* =====================================================
    РАЗДЕЛИТЕЛИ
    ===================================================== */

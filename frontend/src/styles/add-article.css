@@ -863,6 +863,41 @@ html.dark-mode .cover-file-label:hover {
     .ck.ck-editor__main > .ck-editor__editable .image .image__resized {
         max-width: 100% !important;
     }
+
+    .ck.ck-editor__main > .ck-editor__editable .media {
+        margin: 24px 0 !important;
+        clear: both !important;
+    }
+
+    .ck.ck-editor__main > .ck-editor__editable .media iframe,
+    .ck.ck-editor__main > .ck-editor__editable .media video {
+        max-width: 100% !important;
+        border-radius: 10px !important;
+        aspect-ratio: 16 / 9 !important;
+    }
+
+    .ck.ck-editor__main > .ck-editor__editable .image-style-side {
+        float: right !important;
+        margin: 12px 0 12px 24px !important;
+        max-width: 40% !important;
+    }
+
+    .ck.ck-editor__main > .ck-editor__editable .image-style-align-left {
+        float: left !important;
+        margin: 12px 24px 12px 0 !important;
+        max-width: 40% !important;
+    }
+
+    .ck.ck-editor__main > .ck-editor__editable .image-style-align-right {
+        float: right !important;
+        margin: 12px 0 12px 24px !important;
+        max-width: 40% !important;
+    }
+
+    .ck.ck-editor__main > .ck-editor__editable .image-style-align-center {
+        margin: 24px auto !important;
+        text-align: center !important;
+    }
 }
 
 @media (max-width: 480px) {

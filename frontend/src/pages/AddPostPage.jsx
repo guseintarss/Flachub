@@ -10,6 +10,9 @@ import {
   List, Link as CkLink, BlockQuote, CodeBlock, Table,
   Font, Alignment, Indent, HorizontalLine,
   Autoformat, PasteFromOffice, RemoveFormat,
+  Image, ImageUpload, ImageToolbar, ImageStyle, ImageResize, ImageTextAlternative,
+  AutoImage,
+  MediaEmbed, AutoMediaEmbed, MediaEmbedResize, MediaEmbedToolbar,
 } from 'ckeditor5'
 
 function csrfToken() {
@@ -36,6 +39,31 @@ function stripTitleFromContent(html) {
   return div.innerHTML
 }
 
+class MyUploadAdapter {
+  constructor(loader) {
+    this.loader = loader
+  }
+
+  async upload() {
+    const file = await this.loader.file
+    const fd = new FormData()
+    fd.append('upload', file)
+    const res = await fetch('/upload/', {
+      method: 'POST',
+      body: fd,
+      credentials: 'same-origin',
+    })
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(text || 'Ошибка загрузки изображения')
+    }
+    const data = await res.json()
+    return { default: data.url }
+  }
+
+  abort() {}
+}
+
 const editorConfig = {
   licenseKey: 'GPL',
   plugins: [
@@ -44,6 +72,9 @@ const editorConfig = {
     List, CkLink, BlockQuote, CodeBlock, Table,
     Font, Alignment, Indent, HorizontalLine,
     Autoformat, PasteFromOffice, RemoveFormat,
+    Image, ImageUpload, ImageToolbar, ImageStyle, ImageResize, ImageTextAlternative,
+    AutoImage,
+    MediaEmbed, AutoMediaEmbed, MediaEmbedResize, MediaEmbedToolbar,
   ],
   toolbar: [
     'undo', 'redo', '|',
@@ -54,8 +85,42 @@ const editorConfig = {
     'outdent', 'indent', '|',
     'numberedList', 'bulletedList', '|',
     'link', 'blockQuote', 'codeBlock', 'insertTable', 'horizontalLine', '|',
+    'insertImage', 'mediaEmbed', '|',
     'removeFormat',
   ],
+  image: {
+    toolbar: [
+      'imageStyle:block',
+      'imageStyle:wrapText',
+      'imageStyle:breakText',
+      '|',
+      'toggleImageCaption',
+      'imageTextAlternative',
+      '|',
+      'resizeImage:original',
+      'resizeImage:50',
+      'resizeImage:75',
+    ],
+    resizeOptions: [
+      { name: 'resizeImage:original', value: null, label: 'Оригинал' },
+      { name: 'resizeImage:50', value: '50', label: '50%' },
+      { name: 'resizeImage:75', value: '75', label: '75%' },
+    ],
+    styles: {
+      options: [
+        'inline',
+        'alignLeft',
+        'alignRight',
+        'alignCenter',
+        'alignBlockLeft',
+        'alignBlockRight',
+      ],
+    },
+  },
+  mediaEmbed: {
+    previewsInData: true,
+    toolbar: ['mediaEmbedResize', 'mediaEmbedStyle'],
+  },
   heading: {
     options: [
       { model: 'paragraph', title: 'Параграф', class: 'ck-heading_paragraph' },
@@ -335,19 +400,24 @@ function AddPostPage() {
                 <div className="editor-container">
                   <div className="form-group full-width">
                     {step === 2 && (
-                      <CKEditor
-                        editor={BalloonEditor}
-                        data={form.content}
-                        config={editorConfig}
-                        disableWatchdog
-                        onReady={(editor) => { editorRef.current = editor }}
-                        onChange={(event, editor) => {
-                          f('content', editor.getData())
-                        }}
-                        onError={(error, details) => {
-                          console.error('CKEditor error:', error, details)
-                        }}
-                      />
+<CKEditor
+  editor={BalloonEditor}
+  data={form.content}
+  config={editorConfig}
+  disableWatchdog
+  onReady={(editor) => {
+    editorRef.current = editor
+    editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+      return new MyUploadAdapter(loader)
+    }
+  }}
+  onChange={(event, editor) => {
+    f('content', editor.getData())
+  }}
+  onError={(error, details) => {
+    console.error('CKEditor error:', error, details)
+  }}
+/>
                     )}
                   </div>
                 </div>
