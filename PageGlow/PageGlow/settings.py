@@ -142,16 +142,13 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'users.context_processors.get_main_context',
-                'main.context_processors.sidebar_context',
+
             ],
         },
     },
 ]
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'main', 'staticfiles'),
-]
+STATICFILES_DIRS = []
 
 
 WSGI_APPLICATION = 'PageGlow.wsgi.application'

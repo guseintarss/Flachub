@@ -1,7 +1,0 @@
-{% if tags %}
-    <ul class="tags-list">
-        {% for t in tags %}
-        <li><a class="badge bg-light text-dark text-decoration-none me-1" href="{{t.get_absolute_url}}">{{t.tag}}</a></li>
-        {% endfor %}
-    </ul>
-{%endif%}

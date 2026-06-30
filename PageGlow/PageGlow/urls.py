@@ -2,8 +2,6 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.views.generic import TemplateView
-from django.http import JsonResponse
-from django.db import connection
 from PageGlow import settings
 from main.views import page_not_found, CKEditorUploadView, server_error, bad_gateway, service_unavailable, permission_denied
 from .sitemaps import (
@@ -14,21 +12,6 @@ from django.contrib.sitemaps.views import sitemap
 
 from rest_framework.routers import DefaultRouter
 from users.views import RuleViewSet
-
-
-def health_check(request):
-    status = {"status": "ok", "version": "3.0"}
-    http_code = 200
-
-    try:
-        connection.ensure_connection()
-        status["database"] = "ok"
-    except Exception as e:
-        status["database"] = f"error: {str(e)}"
-        http_code = 503
-
-    return JsonResponse(status, status=http_code)
-
 
 router = DefaultRouter()
 router.register(r'rules', RuleViewSet, basename='rule')
@@ -43,10 +26,9 @@ sitemaps = {
 }
 
 urlpatterns = [
-    path('health/', health_check, name='health'),
     path('admin/', admin.site.urls),
-    path('',include("main.urls")),
-    path('users/',include("users.urls", namespace='users')),
+    path('', include("main.urls")),
+    path('users/', include("users.urls", namespace='users')),
     path('api/mobile/', include('mobile_api.urls')),
 ]
 
