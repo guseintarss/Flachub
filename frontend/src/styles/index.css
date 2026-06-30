@@ -1283,6 +1283,11 @@ html.dark-mode .header-icon {
     text-decoration: none;
     transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
     font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    font-family: inherit;
 }
 
 .menu_link:hover{
@@ -1663,6 +1668,8 @@ display:flex;
 
 .logout-link:hover {
   background-color: #ffeaea !important;
+  color: #dc3545 !important;
+  transform: translateX(5px);
 }
 
 

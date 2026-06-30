@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 function CategoryList() {
@@ -33,7 +33,13 @@ function CategoryList() {
 }
 
 function BurgerMenu() {
-  const { user, loading } = useAuth()
+  const { user, loading, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/')
+  }
 
   return (
     <nav className="top-nav" aria-label="Основное меню">
@@ -77,6 +83,10 @@ function BurgerMenu() {
                   <i className="fas fa-chart-line"></i> Админка
                 </Link>
               )}
+              <hr className="menu-divider" />
+              <button onClick={handleLogout} className="menu_link logout-link">
+                <i className="fas fa-sign-out-alt"></i> Выйти
+              </button>
             </>
           )}
         </li>
