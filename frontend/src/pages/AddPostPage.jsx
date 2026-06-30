@@ -145,9 +145,9 @@ const editorConfig = {
 }
 
 const SLASH_COMMANDS = [
-  { id: 'heading1',     icon: 'fas fa-heading',       label: 'Заголовок 1',  command: 'heading',      args: ['heading1'],       group: 'Структура' },
-  { id: 'heading2',     icon: 'fas fa-heading',       label: 'Заголовок 2',  command: 'heading',      args: ['heading2'],       group: 'Структура' },
-  { id: 'heading3',     icon: 'fas fa-heading',       label: 'Заголовок 3',  command: 'heading',      args: ['heading3'],       group: 'Структура' },
+  { id: 'heading1',     icon: 'fas fa-heading',       label: 'Заголовок 1',  command: 'heading',      args: [{ value: 'heading1' }],       group: 'Структура' },
+  { id: 'heading2',     icon: 'fas fa-heading',       label: 'Заголовок 2',  command: 'heading',      args: [{ value: 'heading2' }],       group: 'Структура' },
+  { id: 'heading3',     icon: 'fas fa-heading',       label: 'Заголовок 3',  command: 'heading',      args: [{ value: 'heading3' }],       group: 'Структура' },
   { id: 'bulletList',   icon: 'fas fa-list-ul',       label: 'Маркированный список', command: 'bulletedList', args: [],            group: 'Структура' },
   { id: 'numberedList', icon: 'fas fa-list-ol',       label: 'Нумерованный список',  command: 'numberedList', args: [],            group: 'Структура' },
   { id: 'blockquote',   icon: 'fas fa-quote-right',   label: 'Цитата',       command: 'blockQuote',   args: [],                 group: 'Структура' },
@@ -221,57 +221,44 @@ function AddPostPage() {
       const editor = editorRef.current
       if (!editor) return
 
-      const sel = editor.model.document.selection
-      const pos = sel.getFirstPosition()
-      if (!pos) return
-      const parent = pos.parent
-
-      editor.model.change(writer => {
-        const range = writer.createRange(
-          writer.createPositionAt(parent, 0),
-          pos
-        )
-        let textBefore = ''
-        const textSegments = []
-        for (const value of range.getWalker({ ignoreElementEnd: true })) {
-          if (value.item.is('text')) {
-            textBefore += value.item.data
-            textSegments.push({ text: value.item.data, node: value.item })
-          }
-        }
-
-        const slashIdx = textBefore.lastIndexOf('/')
-        if (slashIdx !== -1) {
-          if (slashIdx > 0 && textBefore[slashIdx - 1] !== ' ' && textBefore[slashIdx - 1] !== '\n') return
-
-          let accumulated = 0
-          let slashPos = null
-          for (const seg of textSegments) {
-            if (slashIdx < accumulated + seg.text.length) {
-              const localOffset = slashIdx - accumulated
-              slashPos = writer.createPositionAt(seg.node, localOffset)
-              break
-            }
-            accumulated += seg.text.length
-          }
-
-          if (slashPos) {
-            const removeRange = writer.createRange(slashPos, pos)
-            writer.remove(removeRange)
-            writer.setSelection(slashPos)
-          }
-        }
-      })
-
       if (cmd.command === 'uploadImage') {
         editor.execute('uploadImage')
       } else if (cmd.command === 'link') {
         const url = prompt('Введите URL ссылки:')
-        if (url) editor.execute('link', url)
+        if (!url) return
+        editor.model.change(writer => {
+          const sel = editor.model.document.selection
+          const pos = sel.getFirstPosition()
+          if (!pos) return
+          const parent = pos.parent
+          const slashPos = findSlashPosition(writer, parent, pos)
+          if (slashPos) writer.setSelection(writer.createRange(slashPos, pos))
+        })
+        editor.execute('delete')
+        editor.execute('link', url)
       } else if (cmd.command === 'mediaEmbed') {
         const url = prompt('Введите URL видео:')
-        if (url) editor.execute('mediaEmbed', url)
+        if (!url) return
+        editor.model.change(writer => {
+          const sel = editor.model.document.selection
+          const pos = sel.getFirstPosition()
+          if (!pos) return
+          const parent = pos.parent
+          const slashPos = findSlashPosition(writer, parent, pos)
+          if (slashPos) writer.setSelection(writer.createRange(slashPos, pos))
+        })
+        editor.execute('delete')
+        editor.execute('mediaEmbed', url)
       } else {
+        editor.model.change(writer => {
+          const sel = editor.model.document.selection
+          const pos = sel.getFirstPosition()
+          if (!pos) return
+          const parent = pos.parent
+          const slashPos = findSlashPosition(writer, parent, pos)
+          if (slashPos) writer.setSelection(writer.createRange(slashPos, pos))
+        })
+        editor.execute('delete')
         editor.execute(cmd.command, ...(cmd.args || []))
       }
 
@@ -281,6 +268,34 @@ function AddPostPage() {
       console.error('[SlashMenu] execSlashCommand error:', e)
     }
   }, [])
+
+  function findSlashPosition(writer, parent, pos) {
+    const range = writer.createRange(
+      writer.createPositionAt(parent, 0),
+      pos
+    )
+    let textBefore = ''
+    const textSegments = []
+    for (const value of range.getWalker({ ignoreElementEnd: true })) {
+      if (value.item.is('text')) {
+        textBefore += value.item.data
+        textSegments.push({ text: value.item.data, node: value.item })
+      }
+    }
+
+    const slashIdx = textBefore.lastIndexOf('/')
+    if (slashIdx === -1) return null
+    if (slashIdx > 0 && textBefore[slashIdx - 1] !== ' ' && textBefore[slashIdx - 1] !== '\n') return null
+
+    let accumulated = 0
+    for (const seg of textSegments) {
+      if (slashIdx < accumulated + seg.text.length) {
+        return writer.createPositionAt(seg.node, slashIdx - accumulated)
+      }
+      accumulated += seg.text.length
+    }
+    return null
+  }
 
   const [form, setForm] = useState({
     content: '',
