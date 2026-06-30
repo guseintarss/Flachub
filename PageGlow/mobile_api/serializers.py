@@ -26,13 +26,17 @@ class UserPublicSerializer(serializers.ModelSerializer):
     email = serializers.SerializerMethodField()
     phone = serializers.SerializerMethodField()
     birth_date = serializers.SerializerMethodField()
+    posts_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name',
                   'avatar', 'bio', 'is_staff', 'is_superuser', 'date_joined',
                   'banner_gradient_start', 'banner_gradient_end', 'banner_image',
-                  'phone', 'birth_date')
+                  'phone', 'birth_date', 'posts_count')
+
+    def get_posts_count(self, obj):
+        return getattr(obj, 'posts_count', None) or 0
 
     def get_avatar(self, obj):
         if obj.photo:

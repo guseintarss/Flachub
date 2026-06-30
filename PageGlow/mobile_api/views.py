@@ -56,7 +56,7 @@ class PostViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['post_type', 'cat', 'is_published', 'author']
-    search_fields = ['title', 'content']
+    search_fields = ['title', 'content', 'author__username', 'author__first_name', 'author__last_name']
     ordering_fields = ['time_create', 'time_update', 'views', 'title']
     ordering = ['-time_create']
 
@@ -98,13 +98,6 @@ class PostViewSet(viewsets.ModelViewSet):
         # Фильтр по автору
         if author_id:
             queryset = queryset.filter(author_id=author_id)
-        
-        # Поиск
-        search = self.request.query_params.get('search', None)
-        if search:
-            queryset = queryset.filter(
-                Q(title__icontains=search) | Q(content__icontains=search)
-            )
         
         return queryset
 
@@ -320,11 +313,17 @@ class UserStatsViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API для статистики пользователя
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = UserPublicSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['username', 'first_name', 'last_name', 'about_me']
+    ordering_fields = ['date_joined', 'username', 'posts_count']
+    ordering = ['-date_joined']
 
     def get_queryset(self):
-        return User.objects.all()
+        return User.objects.filter(is_active=True).annotate(
+            posts_count=Count('posts')
+        )
 
     @action(detail=True, methods=['get'])
     def profile(self, request, pk=None):
