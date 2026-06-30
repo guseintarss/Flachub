@@ -2,6 +2,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.views.generic import TemplateView
+from django.views.static import serve as static_serve
 from PageGlow import settings
 from main.views import page_not_found, CKEditorUploadView, server_error, bad_gateway, service_unavailable, permission_denied
 from .sitemaps import (
@@ -53,10 +54,15 @@ urlpatterns.extend([
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static('/ckeditor5/', document_root=settings.BASE_DIR / 'ckeditor5')
+    frontend_build = settings.BASE_DIR.parent / 'frontend' / 'build'
+    urlpatterns += [
+        re_path(r'^assets/(?P<path>.*)$', static_serve, {'document_root': frontend_build / 'assets'}),
+    ]
 
 # Frontend SPA — отдаёт built React app для всех путей, не найденных выше
 urlpatterns += [
     re_path(r'^app/.*$', TemplateView.as_view(template_name='index.html'), name='frontend'),
+    re_path(r'^admin-panel/.*$', TemplateView.as_view(template_name='index.html'), name='admin-panel'),
     re_path(r'^forgot-password/$', TemplateView.as_view(template_name='index.html'), name='forgot-password'),
     re_path(r'^reset-password/.+', TemplateView.as_view(template_name='index.html'), name='reset-password'),
 ]

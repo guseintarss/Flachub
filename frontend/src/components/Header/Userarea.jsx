@@ -73,6 +73,8 @@ const UserArea = () => {
         </Link>
       )}
 
+
+
       <Link id="search" className="search" to="/search/" title="Поиск">
         <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0,0,256,256" className="header-icon">
           <g fill="currentColor" fillRule="nonzero" stroke="none" strokeWidth="1" strokeLinecap="butt" strokeLinejoin="miter" strokeMiterlimit="10" strokeDasharray="" strokeDashoffset="0">

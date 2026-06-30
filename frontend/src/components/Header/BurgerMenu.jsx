@@ -79,7 +79,7 @@ function BurgerMenu() {
                 <i className="fas fa-pen-fancy"></i> Подписки
               </Link>
               {user?.is_staff && (
-                <Link to="/admin/" className="menu_link">
+                <Link to="/admin-panel/" className="menu_link">
                   <i className="fas fa-chart-line"></i> Админка
                 </Link>
               )}

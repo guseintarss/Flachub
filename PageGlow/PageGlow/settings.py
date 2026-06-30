@@ -129,7 +129,7 @@ ROOT_URLCONF = 'PageGlow.urls'
 TEMPLATES = [
     {
         'DIRS': [
-            os.path.join(BASE_DIR, 'frontend', 'build'),
+            BASE_DIR.parent / 'frontend' / 'build',
             BASE_DIR / 'templates',
         ],
 

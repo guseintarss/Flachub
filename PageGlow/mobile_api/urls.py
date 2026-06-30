@@ -8,7 +8,8 @@ from .views import (
     current_user, sidebar_data, login_view, logout_view,
     register_view, password_change_view,
     password_reset_view, password_reset_confirm_view,
-    subscription_feed_view
+    subscription_feed_view,
+    admin_stats_view, admin_users_view, admin_update_role_view,
 )
 
 router = DefaultRouter()
@@ -49,4 +50,7 @@ urlpatterns = [
     path('auth/password-reset/', password_reset_view, name='password-reset'),
     path('auth/password-reset/confirm/', password_reset_confirm_view, name='password-reset-confirm'),
     path('subscriptions/feed/', subscription_feed_view, name='subscription-feed'),
+    path('admin/stats/', admin_stats_view, name='admin-stats'),
+    path('admin/users/', admin_users_view, name='admin-users'),
+    path('admin/users/<int:user_id>/role/', admin_update_role_view, name='admin-update-role'),
 ]

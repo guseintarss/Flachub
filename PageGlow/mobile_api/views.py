@@ -870,3 +870,94 @@ def subscription_feed_view(request):
         'count': paginator.page.paginator.count if paginator.page else 0,
         'total_pages': paginator.page.paginator.num_pages if paginator.page else 0,
     })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_stats_view(request):
+    if not request.user.is_staff:
+        return Response({'error': 'Доступ запрещён'}, status=403)
+
+    from main.models import Post, Comment
+
+    return Response({
+        'total_users': User.objects.count(),
+        'total_posts': Post.objects.count(),
+        'published_posts': Post.published.count(),
+        'total_comments': Comment.objects.filter(is_active=True).count(),
+        'total_admins': User.objects.filter(is_superuser=True).count(),
+        'total_moderators': User.objects.filter(is_staff=True, is_superuser=False).count(),
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_users_view(request):
+    if not request.user.is_staff:
+        return Response({'error': 'Доступ запрещён'}, status=403)
+
+    search = request.query_params.get('search', '')
+    role = request.query_params.get('role', '')
+    page = request.query_params.get('page', 1)
+
+    users = User.objects.all().select_related('current_level')
+
+    if search:
+        users = users.filter(
+            Q(username__icontains=search) |
+            Q(email__icontains=search) |
+            Q(first_name__icontains=search) |
+            Q(last_name__icontains=search)
+        )
+
+    if role == 'admin':
+        users = users.filter(is_superuser=True)
+    elif role == 'moderator':
+        users = users.filter(is_staff=True, is_superuser=False)
+    elif role == 'user':
+        users = users.filter(is_staff=False, is_superuser=False)
+
+    users = users.order_by('-date_joined')
+
+    paginator = StandardResultsSetPagination()
+    paginator.page_size = 30
+    page_obj = paginator.paginate_queryset(users, request)
+
+    from .serializers import UserPublicSerializer
+    serializer = UserPublicSerializer(page_obj, many=True, context={'request': request})
+
+    return Response({
+        'users': serializer.data,
+        'count': paginator.page.paginator.count if paginator.page else 0,
+        'total_pages': paginator.page.paginator.num_pages if paginator.page else 0,
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def admin_update_role_view(request, user_id):
+    if not request.user.is_superuser:
+        return Response({'error': 'Только администратор может изменять роли'}, status=403)
+
+    try:
+        target_user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response({'error': 'Пользователь не найден'}, status=404)
+
+    if target_user == request.user:
+        return Response({'error': 'Нельзя изменить свою роль'}, status=400)
+
+    role = request.data.get('role', '')
+    if role not in ('user', 'moderator', 'admin'):
+        return Response({'error': 'Недопустимая роль. Допустимо: user, moderator, admin'}, status=400)
+
+    target_user.is_superuser = (role == 'admin')
+    target_user.is_staff = (role in ('admin', 'moderator'))
+    target_user.save(update_fields=['is_superuser', 'is_staff'])
+
+    return Response({
+        'success': True,
+        'user_id': target_user.id,
+        'username': target_user.username,
+        'role': role,
+    })
