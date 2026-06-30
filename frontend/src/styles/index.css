@@ -1029,7 +1029,6 @@ html.dark-mode .scroll-to-top:hover {
 
 img{ max-width: 100%; height: auto; display: block; }
 a{ color: inherit; text-decoration: none; }
-a:hover{ text-decoration: underline; }
 .a-link:hover{
     text-decoration:none;
 }

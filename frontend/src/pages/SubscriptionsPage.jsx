@@ -60,18 +60,18 @@ function SubscriptionsPage() {
     <main className="page">
       <div className="pg-container layout">
         <div className="content">
-          <div className="subs-header">
-            <h1><i className="fas fa-users"></i> Подписки</h1>
-            <p className="subs-header-desc">Новые публикации от авторов, на которых вы подписаны</p>
-          </div>
-
           {loading && page === 1 ? (
             <SubscriptionsSkeleton />
           ) : data ? (
             <>
               {data.authors && data.authors.length > 0 && (
                 <div className="subs-authors-row">
-                  <button className="subs-scroll-btn subs-scroll-left" onClick={e => {
+                  <div className="subs-authors-header">
+                    <h1><i className="fas fa-users"></i> Подписки</h1>
+                    <p>Новые публикации от авторов, на которых вы подписаны</p>
+                  </div>
+                  <div className="subs-authors-scroll-wrap">
+                    <button className="subs-scroll-btn subs-scroll-left" onClick={e => {
                     const el = e.currentTarget.parentElement.querySelector('.subs-authors-scroll')
                     el.scrollBy({ left: -300, behavior: 'smooth' })
                   }}><i className="fas fa-chevron-left"></i></button>
@@ -88,7 +88,8 @@ function SubscriptionsPage() {
                     const el = e.currentTarget.parentElement.querySelector('.subs-authors-scroll')
                     el.scrollBy({ left: 300, behavior: 'smooth' })
                   }}><i className="fas fa-chevron-right"></i></button>
-                </div>
+                    </div>
+                  </div>
               )}
 
               {data.authors && data.authors.length === 0 && (

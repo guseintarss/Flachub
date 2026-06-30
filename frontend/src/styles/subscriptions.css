@@ -2,27 +2,8 @@
    СТРАНИЦА ПОДПИСОК
    ===================================================== */
 
-.subs-header {
-    margin-bottom: 24px;
-}
-
-.subs-header h1 {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 6px;
-}
-
-.subs-header h1 i {
-    color: var(--primary);
-}
-
-.subs-header-desc {
-    color: var(--muted);
-    font-size: 0.95rem;
+.subs-empty + .subs-empty {
+    margin-top: 20px;
 }
 
 /* =====================================================
@@ -32,12 +13,50 @@
 .subs-authors-row {
     position: relative;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 12px;
     margin-bottom: 28px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 16px 4px;
+    padding: 16px 4px 16px 4px;
+}
+
+.subs-authors-header {
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px 14px;
+    border-bottom: 2px solid var(--border);
+    margin: 0 4px;
+}
+
+.subs-authors-header h1 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.subs-authors-header h1 i {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.subs-authors-header p {
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.subs-authors-scroll-wrap {
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
 }
 
 .subs-authors-scroll {
