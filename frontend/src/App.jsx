@@ -29,6 +29,7 @@ import SearchPage from "./pages/SearchPage"
 import ChangePasswordPage from "./pages/ChangePasswordPage"
 import ForgotPasswordPage from "./pages/ForgotPasswordPage"
 import ResetPasswordPage from "./pages/ResetPasswordPage"
+import SubscriptionsPage from "./pages/SubscriptionsPage"
 
 const App = () => {
   return(
@@ -51,8 +52,9 @@ const App = () => {
           <Route path="/user/:username/" element={<ProfilePage />} />
           <Route path="/password/change/" element={<ChangePasswordPage />} />
           <Route path="/forgot-password/" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password/:uidb64/:token/" element={<ResetPasswordPage />} />
-        </Routes>
+      <Route path="/reset-password/:uidb64/:token/" element={<ResetPasswordPage />} />
+      <Route path="/subscriptions/" element={<SubscriptionsPage />} />
+    </Routes>
         <Footer />
       </AuthProvider>
     </BrowserRouter>

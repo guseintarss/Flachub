@@ -1,0 +1,229 @@
+/* =====================================================
+   СТРАНИЦА ПОДПИСОК
+   ===================================================== */
+
+.subs-header {
+    margin-bottom: 24px;
+}
+
+.subs-header h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.subs-header h1 i {
+    color: var(--primary);
+}
+
+.subs-header-desc {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+/* =====================================================
+   ГОРИЗОНТАЛЬНЫЙ РЯД АВТОРОВ
+   ===================================================== */
+
+.subs-authors-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 4px;
+}
+
+.subs-authors-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 4px 12px;
+    flex: 1;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.subs-authors-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.subs-author-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    min-width: 80px;
+    flex-shrink: 0;
+}
+
+.subs-author-card:hover {
+    background: var(--bg);
+    transform: translateY(-3px);
+}
+
+.subs-author-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.2;
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.subs-author-posts {
+    font-size: 0.72rem;
+    color: var(--muted);
+}
+
+.subs-scroll-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    z-index: 1;
+}
+
+.subs-scroll-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.subs-scroll-left {
+    margin-left: 4px;
+}
+
+.subs-scroll-right {
+    margin-right: 4px;
+}
+
+/* =====================================================
+   ПУСТОЕ СОСТОЯНИЕ
+   ===================================================== */
+
+.subs-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+}
+
+.subs-empty i {
+    font-size: 3rem;
+    color: var(--border);
+    margin-bottom: 16px;
+}
+
+.subs-empty h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.subs-empty p {
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+/* =====================================================
+   СКЕЛЕТОН АВТОРОВ
+   ===================================================== */
+
+.subs-authors-skeleton {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding: 20px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+}
+
+.subs-author-skel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+}
+
+/* =====================================================
+   ТЁМНАЯ ТЕМА
+   ===================================================== */
+
+html.dark-mode .subs-authors-row {
+    border-color: var(--dark-border);
+}
+
+html.dark-mode .subs-author-card:hover {
+    background: rgba(255,255,255,0.03);
+}
+
+html.dark-mode .subs-scroll-btn {
+    border-color: var(--dark-border);
+    background: var(--dark-surface);
+}
+
+html.dark-mode .subs-scroll-btn:hover {
+    background: var(--dark-primary);
+    border-color: var(--dark-primary);
+    color: white;
+}
+
+html.dark-mode .subs-empty i {
+    color: var(--dark-border);
+}
+
+/* =====================================================
+   АДАПТИВНОСТЬ
+   ===================================================== */
+
+@media (max-width: 768px) {
+    .subs-header h1 {
+        font-size: 1.4rem;
+    }
+
+    .subs-authors-row {
+        padding: 12px 2px;
+    }
+
+    .subs-author-card {
+        padding: 8px 10px;
+        min-width: 64px;
+    }
+
+    .subs-author-name {
+        font-size: 0.75rem;
+        max-width: 56px;
+    }
+
+    .subs-scroll-btn {
+        display: none;
+    }
+
+    .subs-empty {
+        padding: 40px 16px;
+    }
+}

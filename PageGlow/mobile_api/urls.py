@@ -7,7 +7,8 @@ from .views import (
     UserStatsViewSet, PostLikeViewSet, MediaUploadViewSet,
     current_user, sidebar_data, login_view, logout_view,
     register_view, password_change_view,
-    password_reset_view, password_reset_confirm_view
+    password_reset_view, password_reset_confirm_view,
+    subscription_feed_view
 )
 
 router = DefaultRouter()
@@ -47,4 +48,5 @@ urlpatterns = [
     path('password/change/', password_change_view, name='password-change'),
     path('auth/password-reset/', password_reset_view, name='password-reset'),
     path('auth/password-reset/confirm/', password_reset_confirm_view, name='password-reset-confirm'),
+    path('subscriptions/feed/', subscription_feed_view, name='subscription-feed'),
 ]

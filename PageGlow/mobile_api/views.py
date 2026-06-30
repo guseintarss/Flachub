@@ -817,3 +817,56 @@ def password_reset_confirm_view(request):
     user.save(update_fields=['password'])
 
     return Response({'status': 'ok', 'detail': 'Пароль успешно сброшен'})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def subscription_feed_view(request):
+    user = request.user
+
+    subscribed_authors = User.objects.filter(
+        subscribers__subscriber=user
+    ).annotate(
+        posts_count=Count('posts', filter=Q(posts__is_published=True))
+    ).prefetch_related(
+        Prefetch('posts',
+            queryset=Post.published.select_related('cat').prefetch_related('tags')[:5],
+            to_attr='recent_posts'
+        )
+    )
+
+    authors_data = []
+    for author in subscribed_authors:
+        authors_data.append({
+            'id': author.id,
+            'username': author.username,
+            'first_name': author.first_name,
+            'last_name': author.last_name,
+            'avatar': author.photo.url if author.photo else None,
+            'bio': author.about_me or '',
+            'posts_count': author.posts_count,
+            'last_post': PostListSerializer(
+                author.recent_posts[0], context={'request': request}
+            ).data if author.recent_posts else None,
+        })
+
+    subscribed_ids = list(subscribed_authors.values_list('id', flat=True))
+
+    posts = Post.published.filter(
+        author_id__in=subscribed_ids
+    ).select_related(
+        'author', 'cat'
+    ).prefetch_related(
+        'tags', 'likes', 'favorites'
+    ).order_by('-time_create')
+
+    paginator = StandardResultsSetPagination()
+    page = paginator.paginate_queryset(posts, request)
+    posts_serializer = PostListSerializer(page, many=True, context={'request': request})
+
+    return Response({
+        'authors': authors_data,
+        'posts': posts_serializer.data,
+        'count': paginator.page.paginator.count if paginator.page else 0,
+        'total_pages': paginator.page.paginator.num_pages if paginator.page else 0,
+    })
