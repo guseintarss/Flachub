@@ -961,3 +961,31 @@ def admin_update_role_view(request, user_id):
         'username': target_user.username,
         'role': role,
     })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def admin_ban_view(request, user_id):
+    if not request.user.is_superuser:
+        return Response({'error': 'Только администратор может блокировать пользователей'}, status=403)
+
+    try:
+        target_user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response({'error': 'Пользователь не найден'}, status=404)
+
+    if target_user == request.user:
+        return Response({'error': 'Нельзя заблокировать себя'}, status=400)
+
+    if target_user.is_superuser:
+        return Response({'error': 'Нельзя заблокировать администратора'}, status=400)
+
+    target_user.is_active = not target_user.is_active
+    target_user.save(update_fields=['is_active'])
+
+    return Response({
+        'success': True,
+        'user_id': target_user.id,
+        'username': target_user.username,
+        'is_active': target_user.is_active,
+    })

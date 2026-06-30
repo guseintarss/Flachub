@@ -302,6 +302,24 @@
     color: #6b7280;
 }
 
+.admin-status-badge {
+    display: inline-flex;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: rgba(34, 197, 94, 0.12);
+    color: #16a34a;
+}
+
+.status-banned {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+}
+
 .admin-role-actions {
     display: flex;
     gap: 6px;

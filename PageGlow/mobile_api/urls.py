@@ -10,6 +10,7 @@ from .views import (
     password_reset_view, password_reset_confirm_view,
     subscription_feed_view,
     admin_stats_view, admin_users_view, admin_update_role_view,
+    admin_ban_view,
 )
 
 router = DefaultRouter()
@@ -53,4 +54,5 @@ urlpatterns = [
     path('admin/stats/', admin_stats_view, name='admin-stats'),
     path('admin/users/', admin_users_view, name='admin-users'),
     path('admin/users/<int:user_id>/role/', admin_update_role_view, name='admin-update-role'),
+    path('admin/users/<int:user_id>/ban/', admin_ban_view, name='admin-ban'),
 ]

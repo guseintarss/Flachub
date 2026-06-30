@@ -32,7 +32,7 @@ function AdminStats({ stats }) {
   )
 }
 
-function AdminUsers({ onError }) {
+function AdminUsers({ onError, currentUser }) {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -86,6 +86,22 @@ function AdminUsers({ onError }) {
     setUpdating(null)
   }
 
+  async function toggleBan(userId, currentlyActive) {
+    setUpdating(userId)
+    try {
+      const r = await fetch(`/api/mobile/admin/users/${userId}/ban/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '' },
+      })
+      const d = await r.json()
+      if (!d.success) throw new Error(d.error || 'Ошибка')
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_active: d.is_active } : u))
+    } catch (e) {
+      onError?.(e.message)
+    }
+    setUpdating(null)
+  }
+
   return (
     <div className="admin-section">
       <div className="admin-section-header">
@@ -118,6 +134,7 @@ function AdminUsers({ onError }) {
                 <th>Email</th>
                 <th>Роль</th>
                 <th>Репутация</th>
+                <th>Статус</th>
                 <th>Дата регистрации</th>
                 <th>Действия</th>
               </tr>
@@ -141,6 +158,13 @@ function AdminUsers({ onError }) {
                     </span>
                   </td>
                   <td className="admin-cell-muted">{u.reputation || 0}</td>
+                  <td>
+                    {u.is_active === false ? (
+                      <span className="admin-status-badge status-banned">Заблокирован</span>
+                    ) : (
+                      <span className="admin-status-badge status-active">Активен</span>
+                    )}
+                  </td>
                   <td className="admin-cell-muted">
                     {u.date_joined ? new Date(u.date_joined).toLocaleDateString('ru-RU') : '—'}
                   </td>
@@ -160,6 +184,13 @@ function AdminUsers({ onError }) {
                               <button className="btn btn-sm btn-primary" disabled={updating === u.id}
                                 onClick={() => changeRole(u.id, 'moderator')}>
                                 {updating === u.id ? '...' : 'Назначить модератором'}
+                              </button>
+                            )}
+                            {currentUser?.is_superuser && (
+                              <button className={`btn btn-sm ${u.is_active === false ? 'btn-success' : 'btn-danger'}`}
+                                disabled={updating === u.id}
+                                onClick={() => toggleBan(u.id, u.is_active)}>
+                                {updating === u.id ? '...' : u.is_active === false ? 'Разблокировать' : 'Заблокировать'}
                               </button>
                             )}
                           </>
@@ -244,7 +275,7 @@ function AdminPage() {
                 </div>
               )}
 
-              {tab === 'users' && <AdminUsers onError={setError} />}
+              {tab === 'users' && <AdminUsers onError={setError} currentUser={user} />}
             </div>
           </div>
         </div>
