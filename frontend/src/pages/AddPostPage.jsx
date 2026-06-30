@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Sidebar/Sidebar'
@@ -144,6 +144,28 @@ const editorConfig = {
   placeholder: 'Начните писать текст публикации...',
 }
 
+const SLASH_COMMANDS = [
+  { id: 'heading1',     icon: 'fas fa-heading',       label: 'Заголовок 1',  command: 'heading',      args: ['heading1'],       group: 'Структура' },
+  { id: 'heading2',     icon: 'fas fa-heading',       label: 'Заголовок 2',  command: 'heading',      args: ['heading2'],       group: 'Структура' },
+  { id: 'heading3',     icon: 'fas fa-heading',       label: 'Заголовок 3',  command: 'heading',      args: ['heading3'],       group: 'Структура' },
+  { id: 'bulletList',   icon: 'fas fa-list-ul',       label: 'Маркированный список', command: 'bulletedList', args: [],            group: 'Структура' },
+  { id: 'numberedList', icon: 'fas fa-list-ol',       label: 'Нумерованный список',  command: 'numberedList', args: [],            group: 'Структура' },
+  { id: 'blockquote',   icon: 'fas fa-quote-right',   label: 'Цитата',       command: 'blockQuote',   args: [],                 group: 'Структура' },
+  { id: 'codeBlock',    icon: 'fas fa-code',          label: 'Блок кода',    command: 'codeBlock',    args: [],                 group: 'Структура' },
+  { id: 'separator1',   separator: true },
+  { id: 'bold',         icon: 'fas fa-bold',          label: 'Жирный',       command: 'bold',         args: [],                 group: 'Форматирование' },
+  { id: 'italic',       icon: 'fas fa-italic',        label: 'Курсив',       command: 'italic',       args: [],                 group: 'Форматирование' },
+  { id: 'underline',    icon: 'fas fa-underline',     label: 'Подчеркнутый', command: 'underline',    args: [],                 group: 'Форматирование' },
+  { id: 'strikethrough',icon: 'fas fa-strikethrough', label: 'Зачеркнутый',  command: 'strikethrough', args: [],                 group: 'Форматирование' },
+  { id: 'code',         icon: 'fas fa-code',          label: 'Код',          command: 'code',         args: [],                 group: 'Форматирование' },
+  { id: 'separator2',   separator: true },
+  { id: 'horizontalLine',icon: 'fas fa-minus',        label: 'Горизонтальная линия', command: 'horizontalLine', args: [],        group: 'Вставка' },
+  { id: 'table',        icon: 'fas fa-table',         label: 'Таблица',      command: 'insertTable',  args: [{ rows: 3, columns: 3 }], group: 'Вставка' },
+  { id: 'image',        icon: 'fas fa-image',         label: 'Изображение',  command: 'uploadImage',  args: [],                 group: 'Вставка' },
+  { id: 'mediaEmbed',   icon: 'fas fa-video',         label: 'Видео',        command: 'mediaEmbed',   args: [],                 group: 'Вставка' },
+  { id: 'link',         icon: 'fas fa-link',          label: 'Ссылка',       command: 'link',         args: [],                 group: 'Вставка' },
+]
+
 const POST_TYPES = [
   { value: 'post',      icon: 'fa-sticky-note',  title: 'Пост',    desc: 'Короткая публикация или заметка' },
   { value: 'article',   icon: 'fa-file-alt',      title: 'Статья',  desc: 'Подробный материал с анализом' },
@@ -172,6 +194,93 @@ function AddPostPage() {
   const [error, setError] = useState('')
   const searchRef = useRef(null)
   const editorRef = useRef(null)
+
+  const [slashMenu, setSlashMenu] = useState({ visible: false, x: 0, y: 0, query: '' })
+  const slashMenuRef = useRef(null)
+  const hideSlashTimeout = useRef(null)
+
+  const getSlashQuery = useCallback(() => {
+    try {
+      const sel = window.getSelection()
+      if (!sel || !sel.rangeCount || !sel.isCollapsed) return null
+      const range = sel.getRangeAt(0)
+      if (range.startContainer.nodeType !== Node.TEXT_NODE) return null
+      const text = range.startContainer.textContent.slice(0, range.startOffset)
+      const slashIdx = text.lastIndexOf('/')
+      if (slashIdx === -1) return null
+      if (slashIdx > 0 && text[slashIdx - 1] !== ' ') return null
+      return text.slice(slashIdx + 1)
+    } catch (e) {
+      console.error('[SlashMenu] getSlashQuery error:', e)
+      return null
+    }
+  }, [])
+
+  const execSlashCommand = useCallback((cmd) => {
+    try {
+      const editor = editorRef.current
+      if (!editor) return
+
+      const sel = editor.model.document.selection
+      const pos = sel.getFirstPosition()
+      if (!pos) return
+      const parent = pos.parent
+
+      editor.model.change(writer => {
+        const range = writer.createRange(
+          writer.createPositionAt(parent, 0),
+          pos
+        )
+        let textBefore = ''
+        const textSegments = []
+        for (const value of range.getWalker({ ignoreElementEnd: true })) {
+          if (value.item.is('text')) {
+            textBefore += value.item.data
+            textSegments.push({ text: value.item.data, node: value.item })
+          }
+        }
+
+        const slashIdx = textBefore.lastIndexOf('/')
+        if (slashIdx !== -1) {
+          if (slashIdx > 0 && textBefore[slashIdx - 1] !== ' ' && textBefore[slashIdx - 1] !== '\n') return
+
+          let accumulated = 0
+          let slashPos = null
+          for (const seg of textSegments) {
+            if (slashIdx < accumulated + seg.text.length) {
+              const localOffset = slashIdx - accumulated
+              slashPos = writer.createPositionAt(seg.node, localOffset)
+              break
+            }
+            accumulated += seg.text.length
+          }
+
+          if (slashPos) {
+            const removeRange = writer.createRange(slashPos, pos)
+            writer.remove(removeRange)
+            writer.setSelection(slashPos)
+          }
+        }
+      })
+
+      if (cmd.command === 'uploadImage') {
+        editor.execute('uploadImage')
+      } else if (cmd.command === 'link') {
+        const url = prompt('Введите URL ссылки:')
+        if (url) editor.execute('link', url)
+      } else if (cmd.command === 'mediaEmbed') {
+        const url = prompt('Введите URL видео:')
+        if (url) editor.execute('mediaEmbed', url)
+      } else {
+        editor.execute(cmd.command, ...(cmd.args || []))
+      }
+
+      setSlashMenu({ visible: false, x: 0, y: 0, query: '' })
+      editor.editing.view.focus()
+    } catch (e) {
+      console.error('[SlashMenu] execSlashCommand error:', e)
+    }
+  }, [])
 
   const [form, setForm] = useState({
     content: '',
@@ -228,6 +337,9 @@ function AddPostPage() {
   useEffect(() => {
     function handleClick(e) {
       if (searchRef.current && !searchRef.current.contains(e.target)) setShowSearch(false)
+      if (slashMenuRef.current && !slashMenuRef.current.contains(e.target)) {
+        setSlashMenu(s => ({ ...s, visible: false }))
+      }
     }
     document.addEventListener('click', handleClick)
     return () => document.removeEventListener('click', handleClick)
@@ -410,28 +522,98 @@ function AddPostPage() {
     editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
       return new MyUploadAdapter(loader)
     }
+
+    editor.editing.view.document.on('keydown', (evt, data) => {
+      if (data.keyCode === 27) {
+        setSlashMenu({ visible: false, x: 0, y: 0, query: '' })
+      }
+    })
   }}
   onChange={(event, editor) => {
-    f('content', editor.getData())
+    let query = null
+    try { query = getSlashQuery(editor) } catch (e) { console.error('[SlashMenu] onChange error:', e) }
+
+    if (hideSlashTimeout.current) clearTimeout(hideSlashTimeout.current)
+
+    if (query !== null) {
+      try {
+        const nativeSel = window.getSelection()
+        let x = 40, y = 40
+        if (nativeSel && nativeSel.rangeCount) {
+          const rect = nativeSel.getRangeAt(0).getBoundingClientRect()
+          const editorEl = document.querySelector('.editor-container')
+          const editorRect = editorEl?.getBoundingClientRect()
+          if (rect && editorRect) {
+            x = rect.left - editorRect.left
+            y = rect.bottom - editorRect.top + 4
+          }
+        }
+        setSlashMenu({ visible: true, x, y, query })
+      } catch (e) {
+        console.error('[SlashMenu] positioning error:', e)
+        setSlashMenu({ visible: true, x: 40, y: 40, query })
+      }
+      f('content', editor.getData())
+    } else {
+      f('content', editor.getData())
+      hideSlashTimeout.current = setTimeout(() => {
+        setSlashMenu(s => s.visible ? { ...s, visible: false } : s)
+      }, 100)
+    }
   }}
   onError={(error, details) => {
     console.error('CKEditor error:', error, details)
   }}
 />
                     )}
+                    {slashMenu.visible && (
+                      <div className="slash-menu" ref={slashMenuRef}
+                        style={{ left: slashMenu.x, top: slashMenu.y }}>
+                        <div className="slash-menu-header">
+                          <i className="fas fa-slash" /> Форматирование
+                        </div>
+                        <div className="slash-menu-items">
+                          {SLASH_COMMANDS.filter(c => {
+                            if (c.separator) return false
+                            const q = slashMenu.query.toLowerCase()
+                            if (!q) return true
+                            return c.label.toLowerCase().includes(q) || c.group.toLowerCase().includes(q)
+                          }).map(cmd => (
+                            <div key={cmd.id} className="slash-menu-item"
+                              onMouseDown={(e) => { e.preventDefault(); execSlashCommand(cmd) }}>
+                              <div className="slash-menu-item-icon">
+                                <i className={cmd.icon} />
+                              </div>
+                              <div className="slash-menu-item-info">
+                                <span className="slash-menu-item-label">{cmd.label}</span>
+                                <span className="slash-menu-item-group">{cmd.group}</span>
+                              </div>
+                            </div>
+                          ))}
+                          {SLASH_COMMANDS.filter(c => {
+                            if (c.separator) return false
+                            const q = slashMenu.query.toLowerCase()
+                            if (!q) return true
+                            return c.label.toLowerCase().includes(q) || c.group.toLowerCase().includes(q)
+                          }).length === 0 && (
+                            <div className="slash-menu-empty">Ничего не найдено</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    </div>
+                  </div>
+                  <div className="step-footer" style={{ marginTop: 20 }}>
+                    <button type="button" className="btn btn-secondary" onClick={() => goTo(1)}>
+                      <i className="fas fa-arrow-left"></i> Назад
+                    </button>
+                    <button type="button" className="btn btn-primary" onClick={() => goTo(3)}>
+                      Продолжить <i className="fas fa-arrow-right"></i>
+                    </button>
                   </div>
                 </div>
-                <div className="step-footer" style={{ marginTop: 20 }}>
-                  <button type="button" className="btn btn-secondary" onClick={() => goTo(1)}>
-                    <i className="fas fa-arrow-left"></i> Назад
-                  </button>
-                  <button type="button" className="btn btn-primary" onClick={() => goTo(3)}>
-                    Продолжить <i className="fas fa-arrow-right"></i>
-                  </button>
-                </div>
-              </div>
 
-              {/* Шаг 3: Настройки */}
+                {/* Шаг 3: Настройки */}
               <div className={`wizard-step${step === 3 ? ' active' : ''}`} id="step-3">
                 <div className="step-content">
                   <div className="step-header">
