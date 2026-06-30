@@ -26,6 +26,7 @@ import EditProfilePage from "./pages/EditProfilePage"
 import { TagPosts, CategoryPosts } from "./pages/PostListPage"
 import AddPostPage from "./pages/AddPostPage"
 import SearchPage from "./pages/SearchPage"
+import ChangePasswordPage from "./pages/ChangePasswordPage"
 
 const App = () => {
   return(
@@ -46,6 +47,7 @@ const App = () => {
           <Route path="/profile/edit/" element={<EditProfilePage />} />
           <Route path="/search/" element={<SearchPage />} />
           <Route path="/user/:username/" element={<ProfilePage />} />
+          <Route path="/password/change/" element={<ChangePasswordPage />} />
         </Routes>
         <Footer />
       </AuthProvider>

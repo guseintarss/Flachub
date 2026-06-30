@@ -700,3 +700,42 @@ def sidebar_data(request):
             'total_comments': Comment.objects.count(),
         },
     })
+
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([CsrfExemptSessionAuthentication, JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def password_change_view(request):
+    from django.contrib.auth.password_validation import validate_password
+    from django.core.exceptions import ValidationError
+
+    user = request.user
+    old_password = request.data.get('old_password', '')
+    new_password1 = request.data.get('new_password1', '')
+    new_password2 = request.data.get('new_password2', '')
+
+    if not user.check_password(old_password):
+        return Response({'error': 'Старый пароль неверен'}, status=400)
+
+    if not new_password1:
+        return Response({'error': 'Введите новый пароль'}, status=400)
+
+    if new_password1 != new_password2:
+        return Response({'error': 'Новые пароли не совпадают'}, status=400)
+
+    if old_password == new_password1:
+        return Response({'error': 'Новый пароль должен отличаться от старого'}, status=400)
+
+    try:
+        validate_password(new_password1, user=user)
+    except ValidationError as e:
+        return Response({'error': ' '.join(e.messages)}, status=400)
+
+    user.set_password(new_password1)
+    user.save(update_fields=['password'])
+
+    from django.contrib.auth import update_session_auth_hash
+    update_session_auth_hash(request, user)
+
+    return Response({'status': 'ok', 'detail': 'Пароль успешно изменён'})
