@@ -59,6 +59,36 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
+  const resetPassword = useCallback(async (email) => {
+    const headers = { 'Content-Type': 'application/json' }
+    const csrf = csrfToken()
+    if (csrf) headers['X-CSRFToken'] = csrf
+    const res = await fetch('/api/mobile/auth/password-reset/', {
+      method: 'POST',
+      headers,
+      credentials: 'same-origin',
+      body: JSON.stringify({ email }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Ошибка отправки')
+    return data
+  }, [])
+
+  const confirmPasswordReset = useCallback(async (uidb64, token, new_password1, new_password2) => {
+    const headers = { 'Content-Type': 'application/json' }
+    const csrf = csrfToken()
+    if (csrf) headers['X-CSRFToken'] = csrf
+    const res = await fetch('/api/mobile/auth/password-reset/confirm/', {
+      method: 'POST',
+      headers,
+      credentials: 'same-origin',
+      body: JSON.stringify({ uidb64, token, new_password1, new_password2 }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Ошибка сброса пароля')
+    return data
+  }, [])
+
   const register = useCallback(async (formData) => {
     const headers = { 'Content-Type': 'application/json' }
     const csrf = csrfToken()
@@ -82,7 +112,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register, setUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, setUser, resetPassword, confirmPasswordReset }}>
       {children}
     </AuthContext.Provider>
   )

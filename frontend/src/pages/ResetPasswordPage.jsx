@@ -1,14 +1,13 @@
 import { useState } from 'react'
-import { useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-function LoginPage() {
-  const { login } = useAuth()
+function ResetPasswordPage() {
+  const { confirmPasswordReset } = useAuth()
+  const { uidb64, token } = useParams()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const resetOk = searchParams.get('reset') === 'ok'
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [newPassword1, setNewPassword1] = useState('')
+  const [newPassword2, setNewPassword2] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -17,8 +16,8 @@ function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      await login(username, password)
-      navigate('/')
+      await confirmPasswordReset(uidb64, token, newPassword1, newPassword2)
+      navigate('/login/?reset=ok')
     } catch (err) {
       setError(err.message)
     }
@@ -38,20 +37,7 @@ function LoginPage() {
             maxWidth: 400,
             margin: '0 auto',
           }}>
-            <h2 style={{ margin: '0 0 24px', textAlign: 'center', fontSize: '1.5rem' }}>Вход</h2>
-
-            {resetOk && (
-              <div style={{
-                padding: '12px 16px',
-                background: '#dcfce7',
-                color: '#16a34a',
-                borderRadius: 8,
-                marginBottom: 16,
-                fontSize: '0.9rem',
-              }}>
-                Пароль успешно изменён. Войдите с новым паролем.
-              </div>
-            )}
+            <h2 style={{ margin: '0 0 24px', textAlign: 'center', fontSize: '1.5rem' }}>Новый пароль</h2>
 
             {error && (
               <div style={{
@@ -68,13 +54,14 @@ function LoginPage() {
 
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: 16 }}>
-                <label className="form-label">Логин</label>
+                <label className="form-label">Новый пароль</label>
                 <input
-                  type="text"
+                  type="password"
                   className="form-control"
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
+                  value={newPassword1}
+                  onChange={e => setNewPassword1(e.target.value)}
                   required
+                  minLength={8}
                   style={{
                     width: '100%',
                     padding: '12px 14px',
@@ -83,18 +70,20 @@ function LoginPage() {
                     fontSize: '1rem',
                     background: 'var(--bg)',
                     color: 'var(--text)',
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
 
               <div style={{ marginBottom: 20 }}>
-                <label className="form-label">Пароль</label>
+                <label className="form-label">Подтвердите пароль</label>
                 <input
                   type="password"
                   className="form-control"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  value={newPassword2}
+                  onChange={e => setNewPassword2(e.target.value)}
                   required
+                  minLength={8}
                   style={{
                     width: '100%',
                     padding: '12px 14px',
@@ -103,6 +92,7 @@ function LoginPage() {
                     fontSize: '1rem',
                     background: 'var(--bg)',
                     color: 'var(--text)',
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
@@ -113,19 +103,12 @@ function LoginPage() {
                 disabled={loading}
                 style={{ width: '100%', justifyContent: 'center', padding: '12px 20px' }}
               >
-                {loading ? 'Вход...' : 'Войти'}
+                {loading ? 'Сохранение...' : 'Сохранить пароль'}
               </button>
-
-              <div style={{ textAlign: 'right', marginTop: 8 }}>
-                <Link to="/forgot-password/" style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-                  Забыли пароль?
-                </Link>
-              </div>
             </form>
 
             <div style={{ textAlign: 'center', marginTop: 20, fontSize: '0.9rem', color: 'var(--muted)' }}>
-              Нет аккаунта?{' '}
-              <Link to="/register/" style={{ color: 'var(--primary)' }}>Зарегистрироваться</Link>
+              <Link to="/login/" style={{ color: 'var(--primary)' }}>Вернуться к входу</Link>
             </div>
           </div>
         </div>
@@ -134,4 +117,4 @@ function LoginPage() {
   )
 }
 
-export default LoginPage
+export default ResetPasswordPage

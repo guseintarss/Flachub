@@ -27,6 +27,8 @@ import { TagPosts, CategoryPosts } from "./pages/PostListPage"
 import AddPostPage from "./pages/AddPostPage"
 import SearchPage from "./pages/SearchPage"
 import ChangePasswordPage from "./pages/ChangePasswordPage"
+import ForgotPasswordPage from "./pages/ForgotPasswordPage"
+import ResetPasswordPage from "./pages/ResetPasswordPage"
 
 const App = () => {
   return(
@@ -48,6 +50,8 @@ const App = () => {
           <Route path="/search/" element={<SearchPage />} />
           <Route path="/user/:username/" element={<ProfilePage />} />
           <Route path="/password/change/" element={<ChangePasswordPage />} />
+          <Route path="/forgot-password/" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:uidb64/:token/" element={<ResetPasswordPage />} />
         </Routes>
         <Footer />
       </AuthProvider>

@@ -564,7 +564,8 @@ def register_view(request):
         user.banner_gradient_start = '#0c6acf'
         user.banner_gradient_end = '#764ba2'
         user.save(update_fields=['banner_gradient_start', 'banner_gradient_end'])
-        from django.contrib.auth import login
+        from django.contrib.auth import authenticate, login
+        user = authenticate(request, username=user.username, password=form.cleaned_data.get('password1'))
         login(request, user)
         serializer = UserPublicSerializer(user, context={'request': request})
         return Response(serializer.data, status=201)
@@ -739,3 +740,73 @@ def password_change_view(request):
     update_session_auth_hash(request, user)
 
     return Response({'status': 'ok', 'detail': 'Пароль успешно изменён'})
+
+
+# ===== Password Reset =====
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_reset_view(request):
+    from django.contrib.auth.forms import PasswordResetForm
+    email = request.data.get('email', '')
+    if not email:
+        return Response({'error': 'Введите email'}, status=400)
+
+    form = PasswordResetForm({'email': email})
+    if not form.is_valid():
+        return Response({'error': 'Пользователь с таким email не найден'}, status=400)
+
+    form.save(
+        request=request,
+        use_https=request.is_secure(),
+        email_template_name='mobile_api/password_reset_email.html',
+        subject_template_name='mobile_api/password_reset_subject.txt',
+    )
+    return Response({'status': 'ok', 'detail': 'Письмо для сброса пароля отправлено на ваш email'})
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_reset_confirm_view(request):
+    from django.contrib.auth.forms import SetPasswordForm
+    from django.contrib.auth.tokens import default_token_generator
+    from django.utils.http import urlsafe_base64_decode
+    from django.contrib.auth import get_user_model
+
+    uidb64 = request.data.get('uidb64', '')
+    token = request.data.get('token', '')
+    new_password1 = request.data.get('new_password1', '')
+    new_password2 = request.data.get('new_password2', '')
+
+    if not uidb64 or not token:
+        return Response({'error': 'Неверная ссылка сброса пароля'}, status=400)
+
+    if not new_password1 or not new_password2:
+        return Response({'error': 'Введите новый пароль'}, status=400)
+
+    if new_password1 != new_password2:
+        return Response({'error': 'Пароли не совпадают'}, status=400)
+
+    User = get_user_model()
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return Response({'error': 'Неверная ссылка сброса пароля'}, status=400)
+
+    if not default_token_generator.check_token(user, token):
+        return Response({'error': 'Срок действия ссылки истёк или она неверна'}, status=400)
+
+    from django.contrib.auth.password_validation import validate_password
+    from django.core.exceptions import ValidationError
+    try:
+        validate_password(new_password1, user=user)
+    except ValidationError as e:
+        return Response({'error': ' '.join(e.messages)}, status=400)
+
+    user.set_password(new_password1)
+    user.save(update_fields=['password'])
+
+    return Response({'status': 'ok', 'detail': 'Пароль успешно сброшен'})

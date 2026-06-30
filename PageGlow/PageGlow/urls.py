@@ -75,6 +75,8 @@ if settings.DEBUG:
 # Frontend SPA — отдаёт built React app для всех путей, не найденных выше
 urlpatterns += [
     re_path(r'^app/.*$', TemplateView.as_view(template_name='index.html'), name='frontend'),
+    re_path(r'^forgot-password/$', TemplateView.as_view(template_name='index.html'), name='forgot-password'),
+    re_path(r'^reset-password/.+', TemplateView.as_view(template_name='index.html'), name='reset-password'),
 ]
 
 handler404 = page_not_found
