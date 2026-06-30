@@ -11,6 +11,8 @@ from django.views import View
 from django.core.files.storage import FileSystemStorage
 
 from PageGlow import settings
+from main.models import Subscription
+from users.reputation_utils import award_reputation, undo_reputation
 
 logger = logging.getLogger(__name__)
 
@@ -84,3 +86,48 @@ class CKEditorUploadView(View):
         except Exception as e:
             logger.error(f"Upload error: {str(e)}", exc_info=True)
             return JsonResponse({'error': {'message': f'Ошибка загрузки: {str(e)}'}}, status=500)
+
+
+@csrf_exempt
+@login_required
+def toggle_subscribe(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    author_id = request.POST.get('author_id')
+    if not author_id:
+        return JsonResponse({'error': 'author_id is required'}, status=400)
+
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    try:
+        target_user = User.objects.get(id=author_id)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+
+    if target_user == request.user:
+        return JsonResponse({'error': 'Cannot subscribe to yourself'}, status=400)
+
+    subscription = Subscription.objects.filter(
+        subscriber=request.user,
+        author=target_user
+    ).first()
+
+    if subscription:
+        subscription.delete()
+        undo_reputation(target_user, 'subscription_received')
+        subscribed = False
+    else:
+        Subscription.objects.create(
+            subscriber=request.user,
+            author=target_user
+        )
+        award_reputation(target_user, 'subscription_received')
+        subscribed = True
+
+    return JsonResponse({
+        'success': True,
+        'subscribed': subscribed,
+        'subscribers_count': target_user.subscribers.count(),
+    })

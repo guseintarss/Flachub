@@ -11,6 +11,7 @@ urlpatterns = [
     path('health/', views.health_check, name='health_check'),
     path('robots.txt', views.robots_txt, name='robots_txt'),
     path('upload/', views.CKEditorUploadView.as_view(), name='ckeditor_upload'),
+    path('ajax/subscribe/', views.toggle_subscribe, name='toggle_subscribe'),
 
     # RSS/Atom feeds
     path('rss/', LatestPostsFeed(), name='rss_feed'),
