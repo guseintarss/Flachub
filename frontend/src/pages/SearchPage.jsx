@@ -42,12 +42,13 @@ function SearchPage() {
     doSearch(1)
   }, [])
 
-  async function doSearch(p) {
+  async function doSearch(p, overrideTab) {
     const currentPage = p ?? page
+    const currentTab = overrideTab ?? tab
     setLoading(true)
     try {
       let url
-      if (tab === 'articles') {
+      if (currentTab === 'articles') {
         url = `/api/mobile/posts/?page=${currentPage}&page_size=20`
         if (query) url += `&search=${encodeURIComponent(query)}`
         if (filters.cat) url += `&cat=${filters.cat}`
@@ -80,7 +81,7 @@ function SearchPage() {
   function switchTab(t) {
     setTab(t)
     setPage(1)
-    setTimeout(() => doSearch(1), 0)
+    doSearch(1, t)
   }
 
   function setFilter(key, value) {
