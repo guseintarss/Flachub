@@ -2,50 +2,51 @@
    АДМИН-ПАНЕЛЬ
    ===================================================== */
 
-.admin-layout {
-    display: flex;
-    gap: 24px;
-    align-items: flex-start;
+.admin-page .layout {
+    grid-template-columns: 1fr;
 }
 
-.admin-sidebar {
-    width: 220px;
-    flex-shrink: 0;
+.admin-layout {
+    width: 100%;
+}
+
+.admin-header {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    position: sticky;
-    top: 20px;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
-.admin-sidebar-title {
-    font-size: 1rem;
+.admin-header-title {
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--text);
     display: flex;
     align-items: center;
     gap: 8px;
-    padding-bottom: 14px;
-    border-bottom: 2px solid var(--border);
-    margin-bottom: 12px;
+    margin: 0;
 }
 
-.admin-sidebar-title i {
+.admin-header-title i {
     color: var(--primary);
 }
 
-.admin-nav {
+.admin-tabs {
     display: flex;
-    flex-direction: column;
     gap: 4px;
 }
 
-.admin-nav-link {
+.admin-tab {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
+    gap: 8px;
+    padding: 8px 16px;
     border: none;
     background: transparent;
     color: var(--text);
@@ -54,28 +55,26 @@
     border-radius: 10px;
     cursor: pointer;
     text-decoration: none;
-    text-align: left;
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
-.admin-nav-link:hover {
+.admin-tab:hover {
     background: var(--bg);
 }
 
-.admin-nav-link.active {
+.admin-tab.active {
     background: rgba(12, 106, 207, 0.1);
     color: var(--primary);
     font-weight: 600;
 }
 
-.admin-nav-link i {
-    width: 18px;
-    text-align: center;
+.admin-tab i {
+    font-size: 0.95rem;
 }
 
 .admin-main {
-    flex: 1;
-    min-width: 0;
+    width: 100%;
 }
 
 .admin-error {
@@ -121,15 +120,15 @@
 
 .admin-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
 }
 
 .admin-stat-card {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 18px;
+    gap: 16px;
+    padding: 24px;
     background: var(--bg);
     border-radius: 14px;
     border: 1px solid var(--border);
@@ -341,15 +340,15 @@
    ТЁМНАЯ ТЕМА
    ===================================================== */
 
-html.dark-mode .admin-sidebar {
+html.dark-mode .admin-header {
     border-color: var(--dark-border);
 }
 
-html.dark-mode .admin-nav-link:hover {
+html.dark-mode .admin-tab:hover {
     background: rgba(255,255,255,0.03);
 }
 
-html.dark-mode .admin-nav-link.active {
+html.dark-mode .admin-tab.active {
     background: rgba(41, 156, 245, 0.12);
     color: var(--dark-primary);
 }
@@ -384,18 +383,14 @@ html.dark-mode .admin-search input {
    ===================================================== */
 
 @media (max-width: 768px) {
-    .admin-layout {
+    .admin-header {
         flex-direction: column;
+        align-items: flex-start;
     }
 
-    .admin-sidebar {
+    .admin-tabs {
         width: 100%;
-        position: static;
-    }
-
-    .admin-nav {
-        flex-direction: row;
-        flex-wrap: wrap;
+        overflow-x: auto;
     }
 
     .admin-stats-grid {

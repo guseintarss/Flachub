@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import Sidebar from '../components/Sidebar/Sidebar'
 import UserAvatar from '../components/UserAvatar'
 import '../styles/admin.css'
 
@@ -240,21 +239,21 @@ function AdminPage() {
   if (!user || !user.is_staff) return null
 
   return (
-    <main className="page">
+    <main className="page admin-page">
       <div className="pg-container layout">
         <div className="content">
           <div className="admin-layout">
-            <div className="admin-sidebar">
-              <h2 className="admin-sidebar-title"><i className="fas fa-chart-line"></i> Панель управления</h2>
-              <nav className="admin-nav">
-                <button className={`admin-nav-link${tab === 'overview' ? ' active' : ''}`} onClick={() => setTab('overview')}>
+            <div className="admin-header">
+              <h2 className="admin-header-title"><i className="fas fa-chart-line"></i> Панель управления</h2>
+              <nav className="admin-tabs">
+                <button className={`admin-tab${tab === 'overview' ? ' active' : ''}`} onClick={() => setTab('overview')}>
                   <i className="fas fa-tachometer-alt"></i> Обзор
                 </button>
-                <button className={`admin-nav-link${tab === 'users' ? ' active' : ''}`} onClick={() => setTab('users')}>
+                <button className={`admin-tab${tab === 'users' ? ' active' : ''}`} onClick={() => setTab('users')}>
                   <i className="fas fa-users"></i> Пользователи
                 </button>
                 {user.is_superuser && (
-                  <a href="/admin/" className="admin-nav-link" target="_blank" rel="noopener noreferrer">
+                  <a href="/admin/" className="admin-tab" target="_blank" rel="noopener noreferrer">
                     <i className="fas fa-database"></i> Django Admin
                   </a>
                 )}
@@ -279,9 +278,6 @@ function AdminPage() {
             </div>
           </div>
         </div>
-        <aside className="sidebar" aria-label="Боковая панель">
-          <Sidebar />
-        </aside>
       </div>
     </main>
   )
