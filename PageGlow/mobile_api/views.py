@@ -900,7 +900,7 @@ def admin_users_view(request):
     role = request.query_params.get('role', '')
     page = request.query_params.get('page', 1)
 
-    users = User.objects.all().select_related('current_level')
+    users = User.objects.all()
 
     if search:
         users = users.filter(
