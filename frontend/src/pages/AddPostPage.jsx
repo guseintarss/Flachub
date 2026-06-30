@@ -461,7 +461,7 @@ function AddPostPage() {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       autoSaveRef.current?.()
-    }, 5000)
+    }, 1000)
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }

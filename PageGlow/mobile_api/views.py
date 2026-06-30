@@ -122,14 +122,28 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         post = serializer.save(author=self.request.user)
-        UserReputationLog.objects.create(
-            user=post.author,
-            amount=10,
-            reason='post_created',
-            post=post
-        )
-        from django.core.cache import cache
-        cache.delete(f'user_reputation_{post.author.id}')
+        if post.is_published:
+            UserReputationLog.objects.create(
+                user=post.author,
+                amount=10,
+                reason='post_created',
+                post=post
+            )
+            from django.core.cache import cache
+            cache.delete(f'user_reputation_{post.author.id}')
+
+    def perform_update(self, serializer):
+        old_is_published = serializer.instance.is_published if serializer.instance else False
+        post = serializer.save()
+        if post.is_published and not old_is_published:
+            UserReputationLog.objects.create(
+                user=post.author,
+                amount=10,
+                reason='post_created',
+                post=post
+            )
+            from django.core.cache import cache
+            cache.delete(f'user_reputation_{post.author.id}')
 
     def perform_destroy(self, instance):
         author = instance.author
