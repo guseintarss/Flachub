@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import PostCard from '../components/Feed/PostCard'
+import UserAvatar from '../components/UserAvatar'
 
 const POST_TYPES = [
   { value: '', label: 'Все типы' },
@@ -234,11 +235,7 @@ function SearchPage() {
                   }}
                   onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
                   onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
-                  <img
-                    src={user.avatar || '/static/images/default-avatar.svg'}
-                    alt={user.username}
-                    style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
-                  />
+                  <UserAvatar user={user} size={56} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: '1.05rem' }}>
                       {user.first_name || user.last_name

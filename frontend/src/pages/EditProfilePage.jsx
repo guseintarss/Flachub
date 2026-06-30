@@ -250,9 +250,19 @@ function EditProfilePage() {
           <form method="post" encType="multipart/form-data" onSubmit={handleSubmit}>
             <div className="avatar-preview-container">
               <div className="avatar-wrappers">
-                <img id="avatar-preview" className="user-img-article"
-                  src={avatarPreview || '/media/users/default.png'}
-                  alt="Аватар" />
+                {avatarPreview ? (
+                  <img id="avatar-preview" className="user-img-article"
+                    src={avatarPreview} alt="Аватар" />
+                ) : (
+                  <div id="avatar-preview" className="user-img-article"
+                    style={{
+                      background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '3rem', fontWeight: 700, color: '#fff',
+                    }}>
+                    {user?.username?.[0]?.toUpperCase() || '?'}
+                  </div>
+                )}
                 <label className="avatar-overlay" onClick={() => avatarInputRef.current?.click()}>
                   <i className="fas fa-camera" />
                   <span>Изменить</span>

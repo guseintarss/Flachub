@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { toggleLike } from '../../api'
+import UserAvatar from '../UserAvatar'
 
 const PostCard = ({ post, extra, badge, noReadMore }) => {
   const [liked, setLiked] = useState(post.is_liked || false)
@@ -33,13 +34,7 @@ const PostCard = ({ post, extra, badge, noReadMore }) => {
       <div className="post-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
         <div className="post-author" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <a href={`/user/${post.author?.username || ""}/`} style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", color: "inherit" }}>
-            {post.author?.avatar ? (
-              <img className="author-avatar" src={post.author.avatar} alt={post.author.username} style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }} />
-            ) : (
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--primary)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600 }}>
-                {post.author?.username?.[0]?.toUpperCase() || "?"}
-              </div>
-            )}
+            <UserAvatar user={post.author} size={36} />
             <div className="author-info">
               <span className="author-name" style={{ fontWeight: 600, fontSize: "0.95rem" }}>
                 {post.author?.username || "Неизвестно"}

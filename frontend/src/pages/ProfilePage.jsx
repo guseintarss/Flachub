@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { toggleSubscribe, deletePost } from '../api'
 import PostCard from '../components/Feed/PostCard'
+import UserAvatar from '../components/UserAvatar'
 import { ProfileSkeleton } from '../components/Skeleton'
 import '../styles/Sidebar.css'
 
@@ -188,17 +189,7 @@ function ProfilePage() {
             <div className="author-hero-content">
               <div className="author-hero-top">
                 <div>
-                  {profile.avatar ? (
-                    <img className="author-avatar-lg" src={profile.avatar} alt={profile.username} />
-                  ) : (
-                    <div className="author-avatar-lg author-avatar-placeholder"
-                      style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: 'var(--primary)', color: '#fff', fontWeight: 700, fontSize: 36,
-                      }}>
-                      {profile.username?.[0]?.toUpperCase() || '?'}
-                    </div>
-                  )}
+                  <UserAvatar user={profile} size={120} />
                 </div>
 
                 <div className="author-hero-info">
