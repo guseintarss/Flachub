@@ -585,7 +585,7 @@ function ProfilePage() {
           .profile-sidebar { width: 100%; }
         }
 
-        .author-profile-page { max-width: 960px; margin: 0 auto; }
+        .author-profile-page { margin: 0 auto; }
 
         .author-hero {
           position: relative; border-radius: 20px; overflow: hidden;
