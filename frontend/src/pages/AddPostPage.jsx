@@ -219,6 +219,12 @@ function AddPostPage() {
   const searchRef = useRef(null)
   const editorRef = useRef(null)
 
+  const [draftSlug, setDraftSlug] = useState(null)
+  const [draftStatus, setDraftStatus] = useState('idle')
+  const dirtyRef = useRef(false)
+  const draftTimerRef = useRef(null)
+  const autoSaveRef = useRef(null)
+
   const [showRules, setShowRules] = useState(false)
   const [slashMenu, setSlashMenu] = useState({ visible: false, x: 0, y: 0, query: '' })
   const [slashIndex, setSlashIndex] = useState(0)
@@ -443,6 +449,116 @@ function AddPostPage() {
     return () => document.removeEventListener('click', handleClick)
   }, [])
 
+  useEffect(() => {
+    if (!form.content.trim()) return
+    dirtyRef.current = true
+  }, [form.content])
+
+  const debounceRef = useRef(null)
+  useEffect(() => {
+    if (step < 2) return
+    if (!form.content.trim()) return
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      autoSaveRef.current?.()
+    }, 5000)
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [form.content, step])
+
+  autoSaveRef.current = autoSaveDraft
+
+  useEffect(() => {
+    if (step < 2) return
+    if (!form.content.trim()) return
+
+    draftTimerRef.current = setInterval(() => {
+      if (!dirtyRef.current) return
+      autoSaveRef.current?.()
+    }, 30000)
+
+    return () => {
+      if (draftTimerRef.current) clearInterval(draftTimerRef.current)
+    }
+  }, [step, form.content, draftSlug])
+
+  useEffect(() => {
+    function onBeforeUnload(e) {
+      if (dirtyRef.current) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (draftTimerRef.current) clearInterval(draftTimerRef.current)
+    }
+  }, [])
+
+  function setSaved() {
+    setDraftStatus('saved')
+    setTimeout(() => setDraftStatus('idle'), 3000)
+  }
+
+  async function autoSaveDraft() {
+    if (!form.content.trim()) return
+    setDraftStatus('saving')
+    const title = extractTitle(form.content)
+    const content = stripTitleFromContent(form.content)
+    const fd = new FormData()
+    fd.append('title', title)
+    fd.append('content', content)
+    fd.append('post_type', form.post_type)
+    fd.append('is_published', '0')
+    if (form.cat) fd.append('cat', form.cat)
+    selectedTagIds.forEach(id => fd.append('tags', id))
+
+    try {
+      if (draftSlug && !isEditing) {
+        const res = await fetch(`/api/mobile/posts/${draftSlug}/`, {
+          method: 'PATCH',
+          headers: { 'X-CSRFToken': csrfToken() },
+          credentials: 'same-origin',
+          body: fd,
+        })
+        if (!res.ok) throw new Error()
+        dirtyRef.current = false
+        setSaved()
+      } else if (isEditing && slug) {
+        const res = await fetch(`/api/mobile/posts/${slug}/`, {
+          method: 'PATCH',
+          headers: { 'X-CSRFToken': csrfToken() },
+          credentials: 'same-origin',
+          body: fd,
+        })
+        if (!res.ok) throw new Error()
+        dirtyRef.current = false
+        setSaved()
+      } else {
+        if (title && content) {
+          const res = await fetch('/api/mobile/posts/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrfToken() },
+            credentials: 'same-origin',
+            body: fd,
+          })
+          if (!res.ok) throw new Error()
+          const data = await res.json()
+          if (data.slug) setDraftSlug(data.slug)
+          dirtyRef.current = false
+          setSaved()
+        }
+      }
+    } catch {
+      setDraftStatus('error')
+    }
+  }
+
   function goTo(s) {
     setStep(s)
   }
@@ -571,6 +687,16 @@ function AddPostPage() {
               {error && (
                 <div style={{ padding: '12px 16px', background: '#fee2e2', color: '#dc2626', borderRadius: 8, marginBottom: 16 }}>
                   {error}
+                </div>
+              )}
+
+              {step >= 2 && draftStatus !== 'idle' && (
+                <div style={{ padding: '8px 14px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, marginBottom: 12, fontSize: '0.85rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <i className={`fas ${draftStatus === 'saving' ? 'fa-spinner fa-spin' : draftStatus === 'saved' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}
+                    style={{ color: draftStatus === 'saved' ? '#16a34a' : draftStatus === 'error' ? '#dc2626' : 'var(--muted)' }} />
+                  {draftStatus === 'saving' && 'Сохранение черновика...'}
+                  {draftStatus === 'saved' && 'Черновик сохранён'}
+                  {draftStatus === 'error' && 'Ошибка сохранения черновика'}
                 </div>
               )}
 
