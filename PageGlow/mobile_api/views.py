@@ -640,10 +640,17 @@ def current_user(request):
         user.save()
         user.refresh_from_db()
         serializer = UserProfileSerializer(user, context={'request': request})
-        return Response(serializer.data)
+        data = serializer.data
+        achievements = UserAchievement.objects.filter(user=user).select_related('badge')
+        data['achievements'] = UserAchievementSerializer(achievements, many=True).data
+        return Response(data)
 
-    serializer = UserProfileSerializer(request.user, context={'request': request})
-    return Response(serializer.data)
+    user = request.user
+    serializer = UserProfileSerializer(user, context={'request': request})
+    data = serializer.data
+    achievements = UserAchievement.objects.filter(user=user).select_related('badge')
+    data['achievements'] = UserAchievementSerializer(achievements, many=True).data
+    return Response(data)
 
 
 @api_view(['GET'])
