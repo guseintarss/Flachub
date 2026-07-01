@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import UserAvatar from '../components/UserAvatar'
 import Sidebar from '../components/Sidebar/Sidebar'
@@ -14,11 +14,17 @@ function ChatPage() {
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [online, setOnline] = useState(false)
   const messagesEndRef = useRef(null)
+  const wsRef = useRef(null)
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  }, [])
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, scrollToBottom])
 
   useEffect(() => {
     setLoading(true)
@@ -32,20 +38,77 @@ function ChatPage() {
   }, [id])
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const host = window.location.port === '5173' ? 'localhost:8000' : window.location.host
+    const wsUrl = `${protocol}//${host}/ws/chat/${id}/`
+    let ws = new WebSocket(wsUrl)
+    wsRef.current = ws
 
-  const handleSend = async (e) => {
+    ws.onopen = () => setOnline(true)
+    ws.onclose = () => setOnline(false)
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        if (data.type === 'new_message') {
+          setMessages(prev => {
+            if (prev.some(m => m.id === data.message.id)) return prev
+            const tempIdx = prev.findIndex(m =>
+              String(m.id).startsWith('temp-') &&
+              m.sender?.id === data.message.sender?.id &&
+              m.text === data.message.text
+            )
+            if (tempIdx >= 0) {
+              const next = [...prev]
+              next[tempIdx] = data.message
+              return next
+            }
+            return [...prev, data.message]
+          })
+        } else if (data.type === 'marked_read') {
+          setMessages(prev => prev.map(m => {
+            if (m.sender?.id !== user?.id && !m.is_read) return { ...m, is_read: true }
+            return m
+          }))
+        }
+      } catch {}
+    }
+
+    return () => {
+      ws.close()
+      wsRef.current = null
+    }
+  }, [id, user])
+
+  const handleSend = useCallback(async (e) => {
     e.preventDefault()
     if (!text.trim() || sending) return
+    const msgText = text.trim()
+    setText('')
     setSending(true)
+
+    const tempId = `temp-${Date.now()}`
+    const optimistic = {
+      id: tempId,
+      sender: user ? { id: user.id, username: user.username } : null,
+      text: msgText,
+      created_at: new Date().toISOString(),
+      is_read: false,
+    }
+    setMessages(prev => [...prev, optimistic])
+
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'send_message', text: msgText }))
+    }
+
     try {
-      const msg = await sendMessage(id, text.trim())
-      setMessages(prev => [...prev, msg])
-      setText('')
-    } catch {}
+      const msg = await sendMessage(id, msgText)
+      setMessages(prev => prev.map(m => m.id === tempId ? msg : m))
+    } catch {
+      setMessages(prev => prev.filter(m => m.id !== tempId))
+    }
     setSending(false)
-  }
+  }, [text, sending, id, user])
 
   const other = chat?.participants?.find(p => p.id !== user?.id) || chat?.participants?.[0]
 
@@ -69,6 +132,9 @@ function ChatPage() {
               <UserAvatar user={other} size={36} />
               <div className="chat-header-info">
                 <div className="chat-header-name">{other?.username || 'Пользователь'}</div>
+                <div className={`chat-status ${online ? 'chat-status-online' : ''}`}>
+                  {online ? 'в сети' : 'офлайн'}
+                </div>
               </div>
             </div>
 

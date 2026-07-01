@@ -111,6 +111,24 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             'count': count
         }))
 
+    async def chat_message_notification(self, event):
+        """
+        Уведомление о новом сообщении в чате
+        """
+        await self.send(text_data=json.dumps({
+            'type': 'new_chat_message',
+            'chat_id': event['chat_id'],
+            'chat_id_str': str(event['chat_id']),
+            'sender': event['sender'],
+            'text': event['text'],
+        }))
+
+        count = await self.get_unread_count()
+        await self.send(text_data=json.dumps({
+            'type': 'count',
+            'count': count
+        }))
+
     @database_sync_to_async
     def get_unread_count(self):
         """Получить количество непрочитанных уведомлений"""
@@ -142,6 +160,187 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             recipient=self.user,
             is_read=False
         ).update(is_read=True)
+
+
+class ChatConsumer(AsyncWebsocketConsumer):
+    """
+    WebSocket consumer для realtime чата
+
+    Подключение:
+        ws://localhost:8000/ws/chat/<chat_id>/
+
+    Сообщения от клиента:
+        - {"type": "send_message", "text": "Привет!"}
+        - {"type": "mark_read"}
+
+    Сообщения клиенту:
+        - {"type": "new_message", "message": {...}}
+        - {"type": "marked_read", "by_user": 1}
+    """
+
+    async def connect(self):
+        if not self.scope["user"].is_authenticated:
+            await self.close()
+            return
+
+        self.user = self.scope["user"]
+        self.chat_id = self.scope["url_route"]["kwargs"]["chat_id"]
+        self.room_group_name = f"chat_{self.chat_id}"
+
+        if not await self.is_participant():
+            await self.close()
+            return
+
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+
+        await self.accept()
+        logger.info(f"Chat WS: user {self.user.id} joined chat {self.chat_id}")
+
+    async def disconnect(self, close_code):
+        if hasattr(self, 'room_group_name'):
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
+
+    async def receive(self, text_data):
+        try:
+            data = json.loads(text_data)
+            msg_type = data.get('type')
+
+            if msg_type == 'send_message':
+                text = data.get('text', '').strip()
+                if text:
+                    msg = await self.save_message(text)
+                    if msg:
+                        await self.channel_layer.group_send(
+                            self.room_group_name,
+                            {
+                                'type': 'chat_message',
+                                'message': msg,
+                            }
+                        )
+
+                        try:
+                            other_ids = await self.get_other_participant_ids()
+                            for other_id in other_ids:
+                                await self.channel_layer.group_send(
+                                    f'user_{other_id}',
+                                    {
+                                        'type': 'chat_message_notification',
+                                        'chat_id': self.chat_id,
+                                        'sender': self.user.username,
+                                        'text': text[:100],
+                                    }
+                                )
+                        except Exception:
+                            logger.exception('notify other user failed')
+
+            elif msg_type == 'mark_read':
+                count = await self.mark_messages_read()
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'chat_marked_read',
+                        'by_user': self.user.id,
+                    }
+                )
+
+        except json.JSONDecodeError:
+            logger.error(f"Chat WS: invalid JSON: {text_data}")
+        except Exception as e:
+            logger.error(f"Chat WS error: {e}")
+
+    async def chat_message(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'new_message',
+            'message': event['message'],
+        }))
+
+    async def chat_marked_read(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'marked_read',
+            'by_user': event['by_user'],
+        }))
+
+    @database_sync_to_async
+    def is_participant(self):
+        from main.models import Chat
+        try:
+            chat = Chat.objects.get(id=self.chat_id)
+            return chat.participants.filter(id=self.user.id).exists()
+        except Chat.DoesNotExist:
+            return False
+
+    @database_sync_to_async
+    def save_message(self, text):
+        from main.models import Chat, Message
+        from django.utils import timezone
+        try:
+            chat = Chat.objects.get(id=self.chat_id)
+            msg = Message.objects.create(chat=chat, sender=self.user, text=text)
+            chat.last_message = text
+            chat.last_message_time = msg.created_at
+            chat.last_message_sender = self.user
+            chat.save(update_fields=['last_message', 'last_message_time', 'last_message_sender', 'updated_at'])
+            return {
+                'id': msg.id,
+                'sender': {
+                    'id': self.user.id,
+                    'username': self.user.username,
+                    'avatar': self.user.photo.url if hasattr(self.user, 'photo') and self.user.photo else None,
+                },
+                'text': msg.text,
+                'created_at': msg.created_at.isoformat(),
+                'is_read': msg.is_read,
+            }
+        except Chat.DoesNotExist:
+            return None
+
+    @database_sync_to_async
+    def get_other_participant_ids(self):
+        from main.models import Chat
+        try:
+            chat = Chat.objects.get(id=self.chat_id)
+            return list(chat.participants.exclude(id=self.user.id).values_list('id', flat=True))
+        except Chat.DoesNotExist:
+            return []
+
+    @database_sync_to_async
+    def mark_messages_read(self):
+        from main.models import Message
+        return Message.objects.filter(
+            chat_id=self.chat_id,
+        ).exclude(
+            sender=self.user
+        ).filter(
+            is_read=False
+        ).update(is_read=True)
+
+
+def send_chat_notification_to_user(user_id, chat_id, sender_username, text_preview):
+    try:
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+
+        channel_layer = get_channel_layer()
+        if channel_layer is None:
+            return
+        async_to_sync(channel_layer.group_send)(
+            f'user_{user_id}',
+            {
+                'type': 'chat_message_notification',
+                'chat_id': chat_id,
+                'sender': sender_username,
+                'text': text_preview,
+            }
+        )
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception('send_chat_notification failed')
 
 
 def send_notification_to_user(user_id, notification_data):

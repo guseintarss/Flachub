@@ -53,4 +53,4 @@ USER django
 
 EXPOSE 8000
 
-CMD ["gunicorn", "--config", "gunicorn_config.py", "PageGlow.wsgi:application"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "PageGlow.asgi:application"]

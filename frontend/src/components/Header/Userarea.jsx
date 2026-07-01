@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
@@ -9,6 +9,7 @@ const UserArea = () => {
   const [notifOpen, setNotifOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const [notifications, setNotifications] = useState([])
+  const [newMsgToast, setNewMsgToast] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -17,6 +18,34 @@ const UserArea = () => {
       .then(d => setUnreadCount(d.unread_count || 0))
       .catch(() => {})
   }, [user])
+
+  useEffect(() => {
+    if (!user) return
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const host = window.location.port === '5173' ? 'localhost:8000' : window.location.host
+    const wsUrl = `${protocol}//${host}/ws/notifications/`
+    const ws = new WebSocket(wsUrl)
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        if (data.type === 'count') {
+          setUnreadCount(data.count)
+        } else if (data.type === 'new_chat_message') {
+          setUnreadCount(prev => prev + 1)
+          setNewMsgToast({ chat_id: data.chat_id, sender: data.sender, text: data.text })
+          setTimeout(() => setNewMsgToast(null), 5000)
+        }
+      } catch {}
+    }
+    return () => ws.close()
+  }, [user])
+
+  const handleToastClick = useCallback(() => {
+    if (newMsgToast) {
+      setNewMsgToast(null)
+      navigate(`/chat/${newMsgToast.chat_id}/`)
+    }
+  }, [newMsgToast, navigate])
 
   function loadNotifications() {
     fetch('/api/mobile/notifications/')
@@ -120,6 +149,16 @@ const UserArea = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {newMsgToast && (
+        <div className="chat-toast" onClick={handleToastClick}>
+          <i className="fas fa-envelope" />
+          <div className="chat-toast-body">
+            <div className="chat-toast-sender">{newMsgToast.sender}</div>
+            <div className="chat-toast-text">{newMsgToast.text}</div>
+          </div>
         </div>
       )}
 

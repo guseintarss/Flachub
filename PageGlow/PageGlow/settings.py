@@ -72,6 +72,9 @@ CORS_ALLOW_CREDENTIALS = True
 # Application definition
 
 INSTALLED_APPS = [
+    # WebSocket / Channels (должен быть первым, чтобы переопределить runserver)
+    'channels',
+
     'users.apps.UsersConfig',
     'main.apps.MainConfig',
     'mobile_api.apps.MobileApiConfig',
@@ -91,9 +94,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.sites',
     'django.contrib.sitemaps',
-
-    # WebSocket / Channels
-    'channels',
 
     # Backup
     'dbbackup',
@@ -154,15 +154,12 @@ STATICFILES_DIRS = []
 WSGI_APPLICATION = 'PageGlow.wsgi.application'
 ASGI_APPLICATION = 'PageGlow.asgi.application'
 
-# Channels / WebSocket
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             'hosts': [config('REDIS_URL', default='redis://localhost:6379/0')],
-#         },
-#     },
-# }
+# Channels / WebSocket (in-memory для разработки, для продакшена — Redis)
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 
 # Database

@@ -608,6 +608,17 @@ class ChatViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retriev
         if request.user not in chat.participants.all():
             return Response({'error': 'Вы не участник этого чата'}, status=403)
 
+        from django.utils import timezone
+        from datetime import timedelta
+        recent = chat.messages.filter(
+            sender=request.user,
+            text=request.data.get('text', '').strip(),
+            created_at__gte=timezone.now() - timedelta(seconds=5)
+        ).first()
+        if recent:
+            output = MessageSerializer(recent, context={'request': request})
+            return Response(output.data, status=200)
+
         serializer = MessageCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         message = serializer.save(chat=chat, sender=request.user)
@@ -618,6 +629,15 @@ class ChatViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retriev
         chat.save(update_fields=['last_message', 'last_message_time', 'last_message_sender', 'updated_at'])
 
         output = MessageSerializer(message, context={'request': request})
+
+        try:
+            from main.consumers import send_chat_notification_to_user
+            other_ids = list(chat.participants.exclude(id=request.user.id).values_list('id', flat=True))
+            for other_id in other_ids:
+                send_chat_notification_to_user(other_id, chat.id, request.user.username, message.text[:100])
+        except Exception:
+            pass
+
         return Response(output.data, status=201)
 
     @action(detail=True, methods=['get'])
