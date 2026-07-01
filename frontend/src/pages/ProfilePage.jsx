@@ -614,8 +614,8 @@ function ProfilePage() {
         }
         .author-avatar-lg {
           width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
-          border: 3px solid var(--surface); background: var(--bg);
-          box-shadow: 0 4px 20px rgba(0,0,0,0.15); flex-shrink: 0;
+          background: var(--bg); flex-shrink: 0; border: none;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.18);
         }
         .author-avatar-placeholder { border-radius: 50%; }
         .author-hero-info { flex: 1; min-width: 0; padding-bottom: 4px; margin-top: 4px; }
@@ -724,7 +724,7 @@ function ProfilePage() {
         .empty-state .btn { padding: 10px 24px; font-size: 0.95rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
 
         html.dark-mode .author-hero-content { background: var(--dark-surface); }
-        html.dark-mode .author-avatar-lg { border-color: var(--dark-surface); background: var(--dark-bg); }
+        html.dark-mode .author-avatar-lg { box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
         html.dark-mode .author-stat-card { background: var(--dark-bg); border-color: var(--dark-border); }
         html.dark-mode .badge-card { background: var(--dark-bg); }
 

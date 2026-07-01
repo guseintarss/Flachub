@@ -635,6 +635,18 @@ class ChatViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retriev
             other_ids = list(chat.participants.exclude(id=request.user.id).values_list('id', flat=True))
             for other_id in other_ids:
                 send_chat_notification_to_user(other_id, chat.id, request.user.username, message.text[:100])
+
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                async_to_sync(channel_layer.group_send)(
+                    f'chat_{chat.id}',
+                    {
+                        'type': 'chat_message',
+                        'message': output.data,
+                    }
+                )
         except Exception as e:
             import logging
             logging.getLogger(__name__).exception(f'send_chat_notification failed: {e}')
