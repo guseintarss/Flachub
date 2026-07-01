@@ -78,6 +78,9 @@ function BurgerMenu() {
               <Link to="/subscriptions/" className="menu_link">
                 <i className="fas fa-pen-fancy"></i> Подписки
               </Link>
+              <Link to="/inbox/" className="menu_link">
+                <i className="fas fa-envelope"></i> Сообщения
+              </Link>
               {user?.is_staff && (
                 <Link to="/admin-panel/" className="menu_link">
                   <i className="fas fa-chart-line"></i> Админка
