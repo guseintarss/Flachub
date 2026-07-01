@@ -236,6 +236,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         'text': text[:100],
                                     }
                                 )
+                                await self.create_chat_notification(other_id, self.user, self.chat_id)
                         except Exception:
                             logger.exception('notify other user failed')
 
@@ -310,6 +311,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return []
 
     @database_sync_to_async
+    def create_chat_notification(self, recipient_id, sender, chat_id):
+        from main.models import Notification
+        Notification.objects.create(
+            recipient_id=recipient_id,
+            sender=sender,
+            notification_type='chat_message',
+            chat_id=chat_id,
+            message=f'Новое сообщение от {sender.username}',
+        )
+
+    @database_sync_to_async
     def mark_messages_read(self):
         from main.models import Message
         return Message.objects.filter(
@@ -325,10 +337,26 @@ def send_chat_notification_to_user(user_id, chat_id, sender_username, text_previ
     try:
         from channels.layers import get_channel_layer
         from asgiref.sync import async_to_sync
+        from main.models import Notification, Chat
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
 
         channel_layer = get_channel_layer()
         if channel_layer is None:
             return
+
+        try:
+            sender = User.objects.get(username=sender_username)
+            Notification.objects.create(
+                recipient_id=user_id,
+                sender=sender,
+                notification_type='chat_message',
+                chat_id=chat_id,
+                message=f'Новое сообщение от {sender_username}',
+            )
+        except Exception:
+            pass
+
         async_to_sync(channel_layer.group_send)(
             f'user_{user_id}',
             {

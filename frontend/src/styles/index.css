@@ -2450,6 +2450,10 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
   display: block;
   font-size: 0.9rem;
 }
+.notif-icon {
+  margin-right: 6px;
+  color: var(--primary);
+}
 .notification-time {
   font-size: 0.8rem;
   color: var(--muted);

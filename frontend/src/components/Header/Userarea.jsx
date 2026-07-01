@@ -159,14 +159,24 @@ const UserArea = () => {
                 {notifications.length === 0 && (
                   <div className="notification-empty">Нет уведомлений</div>
                 )}
-                {notifications.map(n => (
-                  <div key={n.id} className={`notification-item ${n.is_read ? '' : 'unread'}`}>
-                    <div className="notification-content">
-                      <span className="notification-message">{n.message}</span>
-                      <span className="notification-time">{n.created_at}</span>
+                {notifications.map(n => {
+                  const isChat = n.notification_type === 'chat_message'
+                  return (
+                    <div key={n.id}
+                      className={`notification-item ${n.is_read ? '' : 'unread'} ${isChat ? 'chat-notif' : ''}`}
+                      onClick={isChat ? () => { setNotifOpen(false); navigate(`/chat/${n.chat}/`) } : undefined}
+                      style={isChat ? { cursor: 'pointer' } : undefined}
+                    >
+                      <div className="notification-content">
+                        <span className="notification-message">
+                          {isChat && <i className="fas fa-envelope notif-icon" />}
+                          {n.message}
+                        </span>
+                        <span className="notification-time">{n.created_at}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}

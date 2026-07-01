@@ -279,12 +279,14 @@ class Notification(models.Model):
         FOLLOW = 'follow', 'Подписка'
         NEW_POST = 'new_post', 'Новая статья'
         ACHIEVEMENT = 'achievement', 'Достижение'
+        CHAT_MESSAGE = 'chat_message', 'Сообщение'
 
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications', null=True)
     notification_type = models.CharField(max_length=20, choices=NotificationType.choices)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True)
+    chat = models.ForeignKey('Chat', on_delete=models.CASCADE, null=True, blank=True)
     message = models.CharField(max_length=255)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

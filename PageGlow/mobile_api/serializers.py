@@ -398,7 +398,7 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ('id', 'sender', 'notification_type', 'post', 'post_title',
-                  'message', 'is_read', 'created_at')
+                  'chat', 'message', 'is_read', 'created_at')
 
     def get_post_title(self, obj):
         return obj.post.title if obj.post else None
