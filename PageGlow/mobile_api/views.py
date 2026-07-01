@@ -1,6 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets, status, permissions, mixins
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
@@ -188,11 +189,13 @@ class CommentViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        post_id = self.kwargs.get('post_pk')
-        return Comment.objects.filter(
-            post_id=post_id, 
+        qs = Comment.objects.filter(
             is_active=True
         ).select_related('author', 'post').prefetch_related('likes')
+        post_id = self.kwargs.get('post_pk')
+        if post_id:
+            qs = qs.filter(post_id=post_id)
+        return qs
 
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
@@ -212,7 +215,8 @@ class CommentViewSet(viewsets.ModelViewSet):
         )
 
     def perform_destroy(self, instance):
-        # Мягкое удаление
+        if instance.author != self.request.user and not self.request.user.is_staff:
+            raise PermissionDenied("У вас нет прав для удаления этого комментария")
         instance.is_active = False
         instance.save()
 

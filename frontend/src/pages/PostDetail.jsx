@@ -163,8 +163,8 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
   const handleDelete = useCallback(async () => {
     if (!confirm('Удалить комментарий?')) return
     try {
-      const data = await deleteComment(comment.id)
-      if (data.success) onCommentAction(null, comment.id)
+      await deleteComment(comment.id)
+      onCommentAction(null, comment.id)
     } catch {}
   }, [comment.id, onCommentAction])
 

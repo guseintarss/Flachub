@@ -61,10 +61,8 @@ export function addComment(postId, content, parentId = '') {
 }
 
 export function deleteComment(commentId) {
-  return request('/ajax/delete-comment/', {
-    method: 'POST',
-    body: new URLSearchParams({ comment_id: commentId }),
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  return request(`${BASE}/comments/${commentId}/`, {
+    method: 'DELETE',
   })
 }
 
