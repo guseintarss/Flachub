@@ -606,7 +606,7 @@ function ProfilePage() {
           opacity: 0.5;
         }
         .author-hero-content {
-          position: relative; padding: 0 24px 24px; background: var(--surface);
+          position: relative; padding: 1px 24px 24px; background: var(--surface);
         }
         .author-hero-top {
           display: flex; align-items: flex-end; gap: 16px;
@@ -758,7 +758,7 @@ function ProfilePage() {
 
         @media (max-width: 480px) {
           .author-hero-bg { height: 90px; }
-          .author-hero-content { padding: 0 12px 14px; }
+          .author-hero-content { padding: 1px 12px 14px; }
           .author-hero-top { margin-top: -32px; gap: 10px; flex-wrap: wrap; }
           .author-avatar-lg { width: 56px; height: 56px; }
           .author-hero-info { margin-top: 0; }

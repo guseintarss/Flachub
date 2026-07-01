@@ -28,7 +28,7 @@ function UserAvatar({ user, size = 36, style }) {
       <img
         src={user.avatar}
         alt={user.username || 'avatar'}
-        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', ...style }}
+        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: '8px solid var(--dark-surface)', ...style }}
       />
     )
   }
