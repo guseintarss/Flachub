@@ -556,14 +556,17 @@ function ProfilePage() {
         .info-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
         .info-value { font-size: 0.9rem; color: var(--text); font-weight: 500; word-break: break-word; }
 
-        .stats-grid-compact { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .stats-grid-compact { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .stat-block {
-          text-align: center; padding: 12px 6px;
+          text-align: center; padding: 10px 4px;
           background: linear-gradient(135deg, rgba(12,106,207,0.05), rgba(118,75,162,0.03));
-          border: 1px solid var(--border); border-radius: 12px;
+          border: 1px solid var(--border); border-radius: 10px; min-width: 0;
         }
-        .stat-block-value { font-size: 1.3rem; font-weight: 800; color: var(--text); }
-        .stat-block-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; margin-top: 2px; }
+        .stat-block-value { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+        .stat-block-label {
+          font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.02em;
+          margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
 
         .level-progress-widget { display: flex; flex-direction: column; gap: 10px; }
         .level-info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
