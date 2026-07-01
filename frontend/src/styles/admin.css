@@ -549,18 +549,223 @@ html.dark-mode .admin-cols-option:hover {
     .admin-header {
         flex-direction: column;
         align-items: flex-start;
+        padding: 12px 16px;
+        border-radius: 12px;
+    }
+
+    .admin-header-title {
+        font-size: 1rem;
     }
 
     .admin-tabs {
         width: 100%;
         overflow-x: auto;
+        gap: 2px;
+    }
+
+    .admin-tab {
+        padding: 6px 12px;
+        font-size: 0.82rem;
+    }
+
+    .admin-tab i {
+        display: none;
     }
 
     .admin-stats-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .admin-stat-card {
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .admin-stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .admin-stat-value {
+        font-size: 1.2rem;
+    }
+
+    .admin-section {
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .admin-section-header h2 {
+        font-size: 1.05rem;
     }
 
     .admin-charts-grid {
         grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .admin-chart {
+        padding: 14px;
+    }
+
+    .admin-users-filters {
+        flex-direction: column;
+    }
+
+    .admin-search {
+        min-width: auto;
+    }
+
+    .admin-users-filters select {
+        width: 100%;
+    }
+
+    .admin-users-table thead {
+        display: none;
+    }
+
+    .admin-users-table,
+    .admin-users-table tbody,
+    .admin-users-table tr,
+    .admin-users-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .admin-users-table tr {
+        padding: 12px;
+        margin-bottom: 10px;
+        background: var(--bg);
+        border-radius: 10px;
+        border: 1px solid var(--border);
+    }
+
+    .admin-users-table td {
+        padding: 6px 0;
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .admin-users-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        font-size: 0.78rem;
+        color: var(--muted);
+        text-transform: uppercase;
+    }
+
+    .admin-cell-muted {
+        font-size: 0.85rem;
+    }
+
+    .admin-role-actions {
+        gap: 4px;
+    }
+
+    .admin-role-actions .btn {
+        padding: 4px 8px;
+        font-size: 0.72rem;
+    }
+
+    .admin-cols-dropdown {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        border-radius: 16px 16px 0 0;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-header {
+        padding: 10px 12px;
+    }
+
+    .admin-stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .admin-stat-card {
+        padding: 12px;
+    }
+
+    .admin-stat-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+
+    .admin-stat-value {
+        font-size: 1.1rem;
+    }
+
+    .admin-stat-label {
+        font-size: 0.72rem;
+    }
+
+    .admin-section {
+        padding: 12px;
+    }
+
+    .admin-charts-grid {
+        gap: 12px;
+    }
+
+    .admin-chart-title {
+        font-size: 0.85rem;
+    }
+
+    .admin-chart-col {
+        min-width: 0;
+    }
+
+    .admin-chart-bar {
+        max-width: 16px;
+    }
+
+    .admin-cols-toggle .btn {
+        padding: 6px 10px;
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .admin-header-title {
+        font-size: 0.9rem;
+    }
+
+    .admin-tab {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+    }
+
+    .admin-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-stat-value {
+        font-size: 1rem;
+    }
+
+    .admin-section-header h2 {
+        font-size: 0.95rem;
+    }
+
+    .admin-users-table td {
+        font-size: 0.8rem;
+    }
+
+    .admin-loading {
+        padding: 24px;
+        font-size: 0.85rem;
     }
 }

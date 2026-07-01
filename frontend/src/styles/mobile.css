@@ -604,42 +604,42 @@
   }
 
   .feed-post {
-    padding: 14px;
-    margin-bottom: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
     border-radius: 10px;
   }
 
   /* Шапка поста */
   .post-header {
     align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 8px;
+    margin-bottom: 8px;
   }
 
   .author-avatar {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
   }
 
   .author-name {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .post-time {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 
   .post-type-badge,
   .category-badge {
-    font-size: 0.75rem;
-    padding: 4px 8px;
+    font-size: 0.7rem;
+    padding: 3px 7px;
   }
 
   /* Заголовок */
   .post-title {
-    font-size: 1.1rem;
-    line-height: 1.35;
-    margin-bottom: 8px !important;
+    font-size: 1.05rem;
+    line-height: 1.3;
+    margin-bottom: 6px !important;
   }
 
   /* Скрываем обложку и excerpt на мобильных */
@@ -653,23 +653,23 @@
 
   /* Подвал поста - компактный */
   .post-footer {
-    gap: 8px;
-    margin-top: 10px;
-    padding-top: 10px;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
   }
 
   /* Теги */
   .post-tags {
-    gap: 5px;
+    gap: 4px;
   }
 
   .tag-chip {
-    font-size: 0.7rem;
-    padding: 3px 8px;
+    font-size: 0.65rem;
+    padding: 2px 6px;
   }
 
   .tags-more {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
 
   /* === КЛЮЧЕВОЕ: Статистика СЛЕВА, кнопка СПРАВА === */
@@ -677,41 +677,41 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 8px;
   }
 
   .post-stats {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex: 0 0 auto;
   }
 
   .stat-item {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 0.75rem;
+    gap: 3px;
+    font-size: 0.7rem;
     color: var(--muted);
     white-space: nowrap;
   }
 
   .stat-item i {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   .read-more-btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 7px 14px;
-    font-size: 0.8rem;
+    gap: 4px;
+    padding: 5px 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     background: var(--primary);
     color: #ffffff;
-    border-radius: 8px;
+    border-radius: 6px;
     text-decoration: none;
     white-space: nowrap;
     flex-shrink: 0;
@@ -724,94 +724,108 @@
   }
 
   .read-more-btn i {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 }
 
 @media (max-width: 480px) {
   .feed-post {
-    padding: 12px;
+    padding: 10px;
     border-radius: 8px;
   }
 
   .post-header {
-    gap: 8px;
-    margin-bottom: 15px;
+    gap: 6px;
+    margin-bottom: 6px;
   }
 
   .author-avatar {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
 
   .author-name {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   .post-time {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
 
   .post-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .post-type-badge,
   .category-badge {
-    font-size: 0.7rem;
-    padding: 3px 6px;
-  }
-
-  .post-tags {
-    gap: 4px;
-  }
-
-  .tag-chip {
     font-size: 0.65rem;
     padding: 2px 6px;
   }
 
-  /* Статистика ещё компактнее */
-  .post-stats {
-    gap: 8px;
-  }
-
-  .stat-item {
-    font-size: 0.7rem;
+  .post-tags {
     gap: 3px;
   }
 
-  .stat-item i {
-    font-size: 0.75rem;
+  .tag-chip {
+    font-size: 0.6rem;
+    padding: 2px 5px;
   }
 
-  .read-more-btn {
-    padding: 6px 12px;
-    font-size: 0.75rem;
-    border-radius: 6px;
-  }
-
-  .read-more-btn i {
-    font-size: 0.7rem;
-  }
-}
-
-@media (max-width: 380px) {
-  .feed-post {
-    padding: 10px;
-  }
-
+  /* Статистика ещё компактнее */
   .post-stats {
     gap: 6px;
   }
 
   .stat-item {
     font-size: 0.65rem;
+    gap: 2px;
+  }
+
+  .stat-item i {
+    font-size: 0.7rem;
   }
 
   .read-more-btn {
-    padding: 5px 10px;
+    padding: 4px 10px;
     font-size: 0.7rem;
+    border-radius: 6px;
+  }
+
+  .read-more-btn i {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .feed-post {
+    padding: 8px;
+  }
+
+  .post-header {
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  .author-avatar {
+    width: 24px;
+    height: 24px;
+  }
+
+  .post-title {
+    font-size: 0.88rem;
+  }
+
+  .post-stats {
+    gap: 4px;
+  }
+
+  .stat-item {
+    font-size: 0.6rem;
+  }
+
+  .read-more-btn {
+    padding: 3px 8px;
+    font-size: 0.65rem;
   }
 }
 

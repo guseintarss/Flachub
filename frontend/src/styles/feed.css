@@ -20,8 +20,8 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 20px;
+    padding: 18px;
+    margin-bottom: 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -59,9 +59,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
 }
 
 .post-author {
@@ -83,8 +83,8 @@
 }
 
 .author-avatar {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--border);
@@ -120,12 +120,12 @@
 .post-type-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
+    gap: 4px;
+    padding: 4px 10px;
     background: rgba(12, 106, 207, 0.1);
     color: #0c66cf;
-    border-radius: 16px;
-    font-size: 0.85rem;
+    border-radius: 14px;
+    font-size: 0.78rem;
     font-weight: 600;
     transition: all 0.2s ease;
 }
@@ -148,11 +148,11 @@
 .category-badge {
     display: inline-flex;
     align-items: center;
-    padding: 6px 12px;
+    padding: 4px 10px;
     background: var(--bg);
     color: var(--text);
-    border-radius: 16px;
-    font-size: 0.85rem;
+    border-radius: 14px;
+    font-size: 0.78rem;
     font-weight: 500;
     border: 1px solid var(--border);
     transition: all 0.2s ease;
@@ -169,14 +169,14 @@
    ===================================================== */
 
 .post-body {
-    margin-bottom: 20px;
+    margin-bottom: 14px;
 }
 
 .post-title {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: 700;
     line-height: 1.3;
-    margin: 0 0 16px 0;
+    margin: 0 0 12px 0;
     letter-spacing: -0.01em;
 }
 
@@ -213,9 +213,9 @@
 /* Цитата/отрывок */
 .post-excerpt {
     color: var(--text);
-    font-size: 1rem;
-    line-height: 1.7;
-    margin: 16px 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    margin: 12px 0;
 }
 
 .post-excerpt p {
@@ -302,8 +302,8 @@
 .post-footer {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding-top: 16px;
+    gap: 10px;
+    padding-top: 12px;
     border-top: 1px solid var(--border);
 }
 
@@ -319,11 +319,11 @@
 .tag-chip {
     display: inline-flex;
     align-items: center;
-    padding: 5px 12px;
+    padding: 4px 10px;
     background: var(--bg);
     color: var(--text);
-    border-radius: 16px;
-    font-size: 0.85rem;
+    border-radius: 14px;
+    font-size: 0.78rem;
     text-decoration: none;
     transition: all 0.2s ease;
     border: 1px solid transparent;
@@ -352,7 +352,7 @@
 
 .post-stats {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     align-items: center;
     flex: 1;
 }
@@ -360,15 +360,15 @@
 .stat-item {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     color: var(--muted);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 500;
     transition: color 0.2s ease;
 }
 
 .stat-item i {
-    font-size: 0.95rem;
+    font-size: 0.82rem;
 }
 
 .stat-item:hover {
@@ -409,14 +409,14 @@
 .read-more-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
+    gap: 6px;
+    padding: 8px 16px;
     background: var(--primary);
     color: #ffffff;
     border-radius: 8px;
     text-decoration: none;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
     flex-shrink: 0;
@@ -443,7 +443,7 @@
 
 .empty-feed {
     text-align: center;
-    padding: 60px 20px;
+    padding: 40px 16px;
     background: var(--surface);
     border: 2px dashed var(--border);
     border-radius: 12px;
@@ -451,20 +451,20 @@
 }
 
 .empty-feed i {
-    font-size: 4rem;
+    font-size: 3rem;
     color: var(--border);
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .empty-feed h3 {
     color: var(--text);
-    font-size: 1.5rem;
-    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+    margin: 0 0 8px 0;
 }
 
 .empty-feed p {
     margin: 0;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
 /* =====================================================
@@ -499,14 +499,15 @@ html.dark-mode .post-excerpt blockquote {
     }
 
     .feed-post {
-        padding: 16px;
-        margin-bottom: 16px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 10px;
     }
 
     .post-header {
         align-items: flex-start;
-        gap: 12px;
-        margin-bottom: 12px;
+        gap: 8px;
+        margin-bottom: 8px;
     }
     /* Скрываем обложку на мобильных */
     .post-cover {
@@ -515,12 +516,12 @@ html.dark-mode .post-excerpt blockquote {
 
     /* Заголовок компактный */
     .post-body {
-        margin-bottom: 12px;
+        margin-bottom: 8px;
     }
 
     .post-title {
-        font-size: 1.15rem;
-        line-height: 1.4;
+        font-size: 1.05rem;
+        line-height: 1.3;
         margin-bottom: 0 !important;
     }
 
@@ -533,28 +534,28 @@ html.dark-mode .post-excerpt blockquote {
     .post-footer {
         display: flex;
         flex-direction: column;
-        gap: 10px;
-        margin-top: 12px;
-        padding-top: 12px;
+        gap: 6px;
+        margin-top: 8px;
+        padding-top: 8px;
         border-top: 1px solid var(--border);
     }
 
     .post-tags {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
+        gap: 4px;
         width: 100%;
     }
 
     .tag-chip {
-        font-size: 0.75rem;
-        padding: 4px 8px;
+        font-size: 0.65rem;
+        padding: 2px 6px;
     }
 
     .tags-more {
-        font-size: 0.75rem;
+        font-size: 0.65rem;
         color: var(--muted);
-        padding: 4px 6px;
+        padding: 2px 4px;
     }
 
     /* Статистика и кнопка в одной линии */
@@ -562,21 +563,21 @@ html.dark-mode .post-excerpt blockquote {
         display: flex ;
         align-items: center;
         justify-content: space-between;
-        gap: 10px;
+        gap: 6px;
         width: 100%;
     }
 
     .post-stats {
         display: flex;
-        gap: 1;
+        gap: 8px;
         flex: 1;
     }
 
     .stat-item {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 3px;
         color: var(--muted);
         white-space: nowrap;
     }
@@ -584,13 +585,13 @@ html.dark-mode .post-excerpt blockquote {
     .read-more-btn {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 8px 14px;
-        font-size: 0.8rem;
+        gap: 4px;
+        padding: 5px 12px;
+        font-size: 0.75rem;
         font-weight: 600;
         background: var(--primary);
         color: white;
-        border-radius: 8px;
+        border-radius: 6px;
         text-decoration: none;
         transition: all 0.25s ease;
         white-space: nowrap;
@@ -605,46 +606,156 @@ html.dark-mode .post-excerpt blockquote {
 
 @media (max-width: 480px) {
     .feed-post {
-        padding: 14px;
-        border-radius: 10px;
+        padding: 10px;
+        border-radius: 8px;
     }
 
     .author-avatar {
-        width: 36px;
-        height: 36px;
+        width: 28px;
+        height: 28px;
     }
 
     .author-name {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
 
     .post-time {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
 
     .post-title {
-        font-size: 1.05rem;
+        font-size: 0.95rem;
     }
 
     .post-type-badge,
     .category-badge {
-        font-size: 0.75rem;
-        padding: 4px 8px;
-    }
-
-    .tag-chip {
         font-size: 0.7rem;
-        padding: 3px 7px;
+        padding: 3px 6px;
     }
 
-    .stat-item {
-        font-size: 0.75rem;
+    .post-meta-badges {
         gap: 4px;
     }
 
+    .tag-chip {
+        font-size: 0.65rem;
+        padding: 2px 5px;
+    }
+
+    .stat-item {
+        font-size: 0.65rem;
+        gap: 3px;
+    }
+
     .read-more-btn {
-        padding: 5px 10px;
-        font-size: 0.8rem;
+        padding: 4px 10px;
+        font-size: 0.7rem;
+    }
+
+    .empty-feed {
+        padding: 24px 12px;
+    }
+
+    .empty-feed i {
+        font-size: 2.5rem;
+    }
+
+    .empty-feed h3 {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .feed-post {
+        padding: 8px;
+        margin-bottom: 8px;
+        border-radius: 6px;
+    }
+
+    .post-header {
+        gap: 4px;
+        margin-bottom: 6px;
+    }
+
+    .author-link {
+        gap: 6px;
+    }
+
+    .author-avatar {
+        width: 24px;
+        height: 24px;
+        border-width: 1px;
+    }
+
+    .author-name {
+        font-size: 0.75rem;
+    }
+
+    .post-time {
+        font-size: 0.65rem;
+    }
+
+    .post-meta-badges {
+        gap: 2px;
+    }
+
+    .post-type-badge,
+    .category-badge {
+        font-size: 0.62rem;
+        padding: 2px 5px;
+    }
+
+    .post-title {
+        font-size: 0.88rem;
+        line-height: 1.25;
+    }
+
+    .post-tags {
+        gap: 3px;
+    }
+
+    .tag-chip {
+        font-size: 0.58rem;
+        padding: 1px 4px;
+    }
+
+    .post-stats-and-btn {
+        gap: 4px;
+    }
+
+    .post-stats {
+        gap: 4px;
+    }
+
+    .stat-item {
+        font-size: 0.6rem;
+        gap: 2px;
+    }
+
+    .read-more-btn {
+        padding: 3px 8px;
+        font-size: 0.65rem;
+        gap: 3px;
+    }
+
+    .read-more-btn i {
+        font-size: 0.6rem;
+    }
+
+    .empty-feed {
+        padding: 20px 10px;
+    }
+
+    .empty-feed i {
+        font-size: 2rem;
+    }
+
+    .empty-feed h3 {
+        font-size: 0.9rem;
+    }
+
+    .empty-feed p {
+        font-size: 0.78rem;
     }
 }
 
@@ -663,12 +774,12 @@ html.dark-mode .post-excerpt blockquote {
     /* Бейджи в одну строку */
     .post-meta-badges {
         display: flex;
-        gap: 6px;
+        gap: 4px;
     }
 
     /* Теги в одну строку с ограничением */
     .post-tags {
-        max-height: 60px;
+        max-height: 40px;
         overflow: hidden;
     }
 }

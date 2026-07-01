@@ -228,6 +228,14 @@ html.dark-mode .subs-empty i {
         padding: 12px 2px;
     }
 
+    .subs-authors-header h1 {
+        font-size: 1rem;
+    }
+
+    .subs-authors-header p {
+        font-size: 0.75rem;
+    }
+
     .subs-author-card {
         padding: 8px 10px;
         min-width: 64px;
@@ -244,5 +252,93 @@ html.dark-mode .subs-empty i {
 
     .subs-empty {
         padding: 40px 16px;
+    }
+
+    .subs-empty h3 {
+        font-size: 1.1rem;
+    }
+
+    .subs-empty i {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .subs-authors-row {
+        padding: 10px 0;
+        border-radius: 12px;
+    }
+
+    .subs-authors-header {
+        padding: 0 12px 10px;
+    }
+
+    .subs-authors-header h1 {
+        font-size: 0.9rem;
+    }
+
+    .subs-authors-scroll {
+        gap: 8px;
+        padding: 4px 8px;
+    }
+
+    .subs-author-card {
+        padding: 6px 8px;
+        min-width: 56px;
+    }
+
+    .subs-author-name {
+        font-size: 0.7rem;
+        max-width: 48px;
+    }
+
+    .subs-author-posts {
+        font-size: 0.65rem;
+    }
+
+    .subs-empty {
+        padding: 30px 12px;
+    }
+
+    .subs-empty i {
+        font-size: 2rem;
+    }
+
+    .subs-empty h3 {
+        font-size: 1rem;
+    }
+
+    .subs-empty p {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .subs-authors-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .subs-author-card {
+        min-width: 48px;
+        padding: 4px 6px;
+    }
+
+    .subs-author-name {
+        font-size: 0.65rem;
+        max-width: 40px;
+    }
+
+    .subs-author-posts {
+        font-size: 0.6rem;
+    }
+
+    .subs-empty i {
+        font-size: 1.5rem;
+    }
+
+    .subs-empty h3 {
+        font-size: 0.9rem;
     }
 }

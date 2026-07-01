@@ -529,13 +529,13 @@ function ProfilePage() {
         .author-profile-page { max-width: 100%; margin: 0 auto; }
 
         .profile-layout {
-          display: flex; gap: 28px; align-items: flex-start;
+          display: flex; gap: 20px; align-items: flex-start;
         }
         .profile-content {
           flex: 1; min-width: 0;
         }
         .profile-sidebar {
-          width: 320px; flex-shrink: 0;
+          width: 280px; flex-shrink: 0;
         }
         .profile-sidebar .modern-sidebar { position: sticky; top: 20px; }
 
@@ -588,107 +588,107 @@ function ProfilePage() {
         .author-profile-page { margin: 0 auto; }
 
         .author-hero {
-          position: relative; border-radius: 20px; overflow: hidden;
-          margin-bottom: 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+          position: relative; border-radius: 16px; overflow: hidden;
+          margin-bottom: 18px; box-shadow: 0 4px 24px rgba(0,0,0,0.06);
         }
-        .author-hero-bg { height: 200px; position: relative; }
+        .author-hero-bg { height: 140px; position: relative; }
         .author-hero-bg::after {
           content: ''; position: absolute; inset: 0;
           background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
           opacity: 0.5;
         }
         .author-hero-content {
-          position: relative; padding: 0 32px 32px; background: var(--surface);
+          position: relative; padding: 0 24px 24px; background: var(--surface);
         }
         .author-hero-top {
-          display: flex; align-items: flex-end; gap: 24px;
-          margin-top: -55px; margin-bottom: 18px;
+          display: flex; align-items: flex-end; gap: 16px;
+          margin-top: -45px; margin-bottom: 12px;
         }
         .author-avatar-lg {
-          width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
-          border: 4px solid var(--surface); background: var(--bg);
+          width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
+          border: 3px solid var(--surface); background: var(--bg);
           box-shadow: 0 4px 20px rgba(0,0,0,0.15); flex-shrink: 0;
         }
         .author-avatar-placeholder { border-radius: 50%; }
-        .author-hero-info { flex: 1; min-width: 0; padding-bottom: 6px; margin-top: 10px; }
+        .author-hero-info { flex: 1; min-width: 0; padding-bottom: 4px; margin-top: 4px; }
         .author-hero-name-row {
-          display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px;
+          display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px;
         }
         .author-hero-username {
-          font-size: 1.75rem; font-weight: 800; color: var(--text); margin: 0;
+          font-size: 1.35rem; font-weight: 800; color: var(--text); margin: 0;
         }
-        .author-hero-fullname { color: var(--muted); font-size: 1rem; margin: 0; }
+        .author-hero-fullname { color: var(--muted); font-size: 0.85rem; margin: 0; }
         .author-hero-bio {
-          color: var(--text); font-size: 0.95rem; line-height: 1.65;
-          margin: 0 0 24px 0; max-width: 600px;
+          color: var(--text); font-size: 0.85rem; line-height: 1.55;
+          margin: 0 0 16px 0; max-width: 600px;
         }
-        .author-hero-subscribe { flex-shrink: 0; padding-bottom: 6px; }
+        .author-hero-subscribe { flex-shrink: 0; padding-bottom: 4px; }
         #subscribe-btn {
-          padding: 10px 24px; font-size: 0.9rem; font-weight: 600;
-          border-radius: 12px; transition: all 0.25s ease; white-space: nowrap;
+          padding: 7px 18px; font-size: 0.82rem; font-weight: 600;
+          border-radius: 10px; transition: all 0.25s ease; white-space: nowrap;
         }
 
         .author-stats-row {
-          display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px;
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px;
         }
         .author-stat-card {
-          display: flex; flex-direction: column; align-items: center; gap: 6px;
-          padding: 18px 12px; background: linear-gradient(135deg, rgba(12,106,207,0.08) 0%, rgba(118,75,162,0.06) 100%);
-          border: 1px solid var(--border); border-radius: 16px; transition: all 0.25s ease;
+          display: flex; flex-direction: column; align-items: center; gap: 4px;
+          padding: 12px 8px; background: linear-gradient(135deg, rgba(12,106,207,0.08) 0%, rgba(118,75,162,0.06) 100%);
+          border: 1px solid var(--border); border-radius: 12px; transition: all 0.25s ease;
         }
         .author-stat-card:hover {
-          transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.1); border-color: var(--primary);
+          transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); border-color: var(--primary);
         }
         .author-stat-icon {
-          width: 40px; height: 40px; border-radius: 12px;
+          width: 32px; height: 32px; border-radius: 10px;
           display: flex; align-items: center; justify-content: center;
-          font-size: 1rem; color: #fff;
+          font-size: 0.85rem; color: #fff;
         }
         .author-stat-card:nth-child(1) .author-stat-icon { background: linear-gradient(135deg, #0c6acf, #667eea); }
         .author-stat-card:nth-child(2) .author-stat-icon { background: linear-gradient(135deg, #10b981, #34d399); }
         .author-stat-card:nth-child(3) .author-stat-icon { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
-        .author-stat-value { font-size: 1.6rem; font-weight: 800; color: var(--text); }
-        .author-stat-label { font-size: 0.75rem; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+        .author-stat-value { font-size: 1.2rem; font-weight: 800; color: var(--text); }
+        .author-stat-label { font-size: 0.68rem; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
 
-        .author-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .author-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .author-actions .btn {
-          padding: 10px 20px; font-size: 0.85rem; font-weight: 600; border-radius: 10px;
-          transition: all 0.25s ease; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+          padding: 8px 16px; font-size: 0.8rem; font-weight: 600; border-radius: 8px;
+          transition: all 0.25s ease; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
         }
         .author-actions .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(12,106,207,0.25); }
 
-        .author-achievements { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border); }
+        .author-achievements { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); }
         .achievements-title {
-          font-size: 1.15rem; font-weight: 700; color: var(--text);
-          margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+          font-size: 1rem; font-weight: 700; color: var(--text);
+          margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
         }
-        .achievements-title i { color: #f59e0b; font-size: 1.3rem; }
-        .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+        .achievements-title i { color: #f59e0b; font-size: 1.1rem; }
+        .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
         .badge-card {
-          display: flex; gap: 14px; padding: 14px; background: var(--bg);
-          border-radius: 12px; border-left: 3px solid var(--primary);
+          display: flex; gap: 10px; padding: 10px; background: var(--bg);
+          border-radius: 10px; border-left: 3px solid var(--primary);
         }
         .badge-icon {
-          width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
-          border-radius: 12px; font-size: 1.6rem; flex-shrink: 0;
+          width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+          border-radius: 10px; font-size: 1.3rem; flex-shrink: 0;
         }
-        .badge-info h4 { font-size: 0.95rem; font-weight: 600; color: var(--text); margin: 0 0 4px 0; }
-        .badge-info p { font-size: 0.8rem; color: var(--muted); margin: 0 0 6px 0; }
-        .badge-meta { display: flex; gap: 10px; font-size: 0.75rem; color: var(--muted); flex-wrap: wrap; }
+        .badge-info h4 { font-size: 0.85rem; font-weight: 600; color: var(--text); margin: 0 0 2px 0; }
+        .badge-info p { font-size: 0.75rem; color: var(--muted); margin: 0 0 4px 0; }
+        .badge-meta { display: flex; gap: 8px; font-size: 0.7rem; color: var(--muted); flex-wrap: wrap; }
 
         .profile-tabs {
           background: var(--surface); border-radius: var(--radius);
-          padding: 0; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+          padding: 0; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);
           overflow: hidden; position: relative;
         }
         .nav-tabs {
-          display: flex; gap: 5px; list-style: none; padding: 0 20px; margin: 0;
+          display: flex; gap: 5px; list-style: none; padding: 0 16px; margin: 0;
           border-bottom: 2px solid var(--border); overflow-x: auto; overflow-y: hidden;
           -webkit-overflow-scrolling: touch; scrollbar-width: thin;
         }
         .nav-item { margin: 0; flex-shrink: 0; }
         .nav-link {
-          display: flex; align-items: center; gap: 8px; padding: 15px 20px;
+          display: flex; align-items: center; gap: 6px; padding: 12px 16px;
           color: var(--text); text-decoration: none; font-weight: 500;
           border-bottom: 3px solid transparent; transition: all 0.3s;
           margin-bottom: -2px; white-space: nowrap; cursor: pointer;
@@ -721,23 +721,65 @@ function ProfilePage() {
         html.dark-mode .badge-card { background: var(--dark-bg); }
 
         @media (max-width: 768px) {
-          .author-hero { border-radius: 0; margin-bottom: 0; }
-          .author-hero-bg { height: 140px; }
-          .author-hero-content { padding: 0 16px 20px; }
-          .author-hero-top { margin-top: -44px; gap: 14px; }
-          .author-avatar-lg { width: 80px; height: 80px; }
-          .author-hero-username { font-size: 1.3rem; }
-          .author-stats-row { gap: 8px; }
-          .author-stat-card { padding: 12px 6px; }
-          .author-stat-icon { width: 30px; height: 30px; }
-          .author-stat-value { font-size: 1.2rem; }
-          .author-stat-label { font-size: 0.65rem; }
+          .author-hero { border-radius: 0; margin-bottom: 0; box-shadow: none; }
+          .author-hero-bg { height: 120px; }
+          .author-hero-content { padding: 0 14px 16px; }
+          .author-hero-top { margin-top: -38px; gap: 12px; }
+          .author-avatar-lg { width: 68px; height: 68px; border-width: 3px; }
+          .author-hero-username { font-size: 1.15rem; }
+          .author-hero-fullname { font-size: 0.8rem; }
+          .author-hero-bio { font-size: 0.82rem; margin-bottom: 14px; }
+          .author-stats-row { gap: 8px; margin-bottom: 14px; }
+          .author-stat-card { padding: 10px 6px; gap: 3px; }
+          .author-stat-icon { width: 28px; height: 28px; font-size: 0.75rem; }
+          .author-stat-value { font-size: 1.05rem; }
+          .author-stat-label { font-size: 0.6rem; }
           .badges-grid { grid-template-columns: 1fr; }
           .posts-grid { grid-template-columns: 1fr; }
-          .empty-state { padding: 40px 16px; }
-          .empty-state i { font-size: 3rem; }
-          .nav-link { padding: 12px 15px; font-size: 0.85rem; border-radius: 8px; margin-bottom: 0; border-bottom: none; }
+          .empty-state { padding: 32px 14px; }
+          .empty-state i { font-size: 2.5rem; }
+          .empty-state p { font-size: 0.95rem; }
+          .nav-link { padding: 10px 12px; font-size: 0.8rem; border-radius: 6px; margin-bottom: 0; border-bottom: none; }
           .nav-link.active { background: var(--primary); color: white; border-bottom: none; }
+          .author-actions .btn { padding: 6px 12px; font-size: 0.75rem; }
+          .author-achievements { margin-top: 16px; padding-top: 14px; }
+          #subscribe-btn { padding: 6px 14px; font-size: 0.78rem; }
+          .profile-layout { gap: 14px; }
+          .profile-tabs { margin-bottom: 12px; }
+        }
+
+        @media (max-width: 480px) {
+          .author-hero-bg { height: 90px; }
+          .author-hero-content { padding: 0 12px 14px; }
+          .author-hero-top { margin-top: -32px; gap: 10px; flex-wrap: wrap; }
+          .author-avatar-lg { width: 56px; height: 56px; }
+          .author-hero-info { margin-top: 0; }
+          .author-hero-username { font-size: 1rem; }
+          .author-hero-fullname { font-size: 0.75rem; }
+          .author-hero-bio { font-size: 0.78rem; margin-bottom: 12px; }
+          .author-stats-row { gap: 6px; margin-bottom: 12px; }
+          .author-stat-card { padding: 8px 4px; border-radius: 10px; }
+          .author-stat-icon { width: 24px; height: 24px; font-size: 0.65rem; border-radius: 8px; }
+          .author-stat-value { font-size: 0.95rem; }
+          .author-stat-label { font-size: 0.55rem; }
+          .author-actions { gap: 6px; }
+          .author-actions .btn { padding: 5px 10px; font-size: 0.7rem; }
+          .badge-card { padding: 8px; gap: 8px; }
+          .badge-icon { width: 32px; height: 32px; font-size: 1.1rem; }
+          .nav-link { padding: 8px 10px; font-size: 0.75rem; gap: 4px; }
+          .nav-tabs { padding: 0 10px; }
+        }
+
+        @media (max-width: 380px) {
+          .author-hero-bg { height: 70px; }
+          .author-hero-top { margin-top: -28px; }
+          .author-avatar-lg { width: 46px; height: 46px; }
+          .author-hero-username { font-size: 0.9rem; }
+          .author-hero-bio { font-size: 0.75rem; }
+          .author-stat-value { font-size: 0.85rem; }
+          .author-stat-label { font-size: 0.5rem; }
+          .nav-link { font-size: 0.7rem; padding: 6px 8px; }
+          .posts-grid { gap: 14px; }
         }
       `}</style>
     </main>

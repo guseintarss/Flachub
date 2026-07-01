@@ -243,9 +243,23 @@
     .modern-sidebar {
         gap: 15px;
     }
+
+    .sidebar-widget {
+        padding: 14px;
+    }
+
+    .widget-title {
+        font-size: 1rem;
+        margin-bottom: 14px;
+    }
     
     .stats-grid {
         grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    .stat-card {
+        padding: 10px 8px;
     }
     
     .stat-value {
@@ -254,5 +268,111 @@
     
     .stat-label {
         font-size: 0.7rem;
+    }
+
+    .recent-post-card {
+        padding: 10px;
+    }
+
+    .recent-post-img {
+        width: 56px;
+        height: 56px;
+    }
+
+    .recent-post-title {
+        font-size: 0.85rem;
+    }
+
+    .category-item {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+
+    .tag {
+        padding: 5px 10px;
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-widget {
+        padding: 12px;
+    }
+
+    .widget-title {
+        font-size: 0.9rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+
+    .stat-card {
+        padding: 8px 6px;
+    }
+
+    .stat-value {
+        font-size: 1rem;
+    }
+
+    .stat-label {
+        font-size: 0.65rem;
+    }
+
+    .recent-post-card {
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .recent-post-img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .recent-post-title {
+        font-size: 0.8rem;
+    }
+
+    .recent-post-meta {
+        font-size: 0.72rem;
+    }
+
+    .recent-post-stats {
+        font-size: 0.72rem;
+    }
+
+    .category-item {
+        padding: 7px 10px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .sidebar-widget {
+        padding: 10px;
+    }
+
+    .widget-title {
+        font-size: 0.85rem;
+        padding-bottom: 8px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .recent-post-img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .recent-post-title {
+        font-size: 0.75rem;
+    }
+
+    .view-all-link {
+        padding: 8px 12px;
+        font-size: 0.82rem;
     }
 }

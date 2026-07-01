@@ -1031,6 +1031,49 @@ html.dark-mode .step-rules-list li i {
         font-size: 1.2rem;
     }
 
+    .step-header p {
+        font-size: 0.82rem;
+    }
+
+    .settings-section {
+        padding: 12px;
+    }
+
+    .settings-section h3 {
+        font-size: 1.05rem;
+    }
+
+    .form-group label {
+        font-size: 0.85rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+
+    .cover-file-label {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+
+    .tags-grid {
+        grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+        gap: 6px;
+    }
+
+    .tag-option {
+        padding: 8px 10px;
+        font-size: 0.78rem;
+    }
+
+    .filter-btn {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+    }
+
     .ck.ck-toolbar {
         padding: 4px !important;
     }
@@ -1045,6 +1088,84 @@ html.dark-mode .step-rules-list li i {
         min-height: 200px !important;
         padding: 10px !important;
         font-size: 15px !important;
+    }
+}
+
+@media (max-width: 380px) {
+    .wizard-progress {
+        padding: 10px 6px;
+        gap: 4px;
+    }
+
+    .progress-step {
+        gap: 3px;
+    }
+
+    .step-number {
+        width: 28px;
+        height: 28px;
+        font-size: 0.72rem;
+    }
+
+    .step-text {
+        font-size: 0.65rem;
+    }
+
+    .step-content {
+        padding: 12px 10px;
+    }
+
+    .step-header {
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+    }
+
+    .step-header h1 {
+        font-size: 1.05rem;
+    }
+
+    .step-header h1 i {
+        font-size: 1.3rem;
+    }
+
+    .post-type-card {
+        padding: 14px 10px;
+        gap: 8px;
+    }
+
+    .type-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+
+    .type-title {
+        font-size: 0.85rem;
+    }
+
+    .type-desc {
+        font-size: 0.72rem;
+    }
+
+    .settings-section h3 {
+        font-size: 0.95rem;
+        margin-bottom: 16px;
+    }
+
+    .step-footer .btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+
+    .tag-search-input {
+        padding: 10px 12px 10px 36px;
+        font-size: 0.85rem;
+    }
+
+    .ck.ck-editor__main > .ck-editor__editable {
+        min-height: 160px !important;
+        padding: 8px !important;
+        font-size: 14px !important;
     }
 }
 

@@ -328,6 +328,15 @@ html.dark-mode .footer-bottom-links a {
 }
 
 @media (max-width: 480px) {
+    .site-footer {
+        padding-top: 25px;
+    }
+
+    .footer-main {
+        gap: 20px;
+        padding: 0 16px 20px;
+    }
+
     .footer-logo {
         font-size: 1.25rem;
     }
@@ -348,11 +357,90 @@ html.dark-mode .footer-bottom-links a {
         font-size: 0.9rem;
     }
 
+    .footer-contact-item {
+        font-size: 0.85rem;
+    }
+
+    .newsletter-input {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
+
+    .newsletter-btn {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+
+    .footer-bottom {
+        padding: 14px 16px;
+    }
+
     .copyright {
         font-size: 0.85rem;
     }
 
     .footer-bottom-links {
         gap: 10px;
+    }
+
+    .footer-bottom-links a {
+        font-size: 0.82rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .site-footer {
+        padding-top: 20px;
+    }
+
+    .footer-main {
+        gap: 16px;
+        padding: 0 12px 16px;
+    }
+
+    .footer-logo {
+        font-size: 1.1rem;
+    }
+
+    .footer-logo i {
+        font-size: 1.3rem;
+    }
+
+    .footer-description {
+        font-size: 0.82rem;
+    }
+
+    .footer-section h4 {
+        font-size: 0.9rem;
+    }
+
+    .footer-links a {
+        font-size: 0.82rem;
+    }
+
+    .social-link {
+        width: 30px;
+        height: 30px;
+        font-size: 0.85rem;
+    }
+
+    .footer-bottom {
+        padding: 10px 12px;
+    }
+
+    .footer-bottom-content {
+        gap: 8px;
+    }
+
+    .copyright {
+        font-size: 0.78rem;
+    }
+
+    .footer-bottom-links {
+        gap: 8px;
+    }
+
+    .footer-bottom-links a {
+        font-size: 0.78rem;
     }
 }

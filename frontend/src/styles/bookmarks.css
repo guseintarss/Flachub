@@ -775,6 +775,14 @@ html.dark-mode .read-more.btn-outline:hover {
         font-size: 0.75rem;
     }
 
+    .bookmark-item p {
+        font-size: 0.9rem;
+    }
+
+    .bookmark-footer {
+        flex-wrap: wrap;
+    }
+
     .read-more {
         padding: 8px 12px;
         font-size: 0.8rem;
@@ -784,6 +792,70 @@ html.dark-mode .read-more.btn-outline:hover {
         min-width: 36px;
         height: 36px;
         font-size: 0.85rem;
+    }
+
+    .collection-card .card-body {
+        padding: 14px;
+    }
+
+    .collection-card .card-title {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .bookmarks-page {
+        padding: 10px;
+    }
+
+    .bookmarks-page h1 {
+        font-size: 1.2rem;
+    }
+
+    .bookmark-item {
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .bookmark-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .bookmark-remove {
+        align-self: flex-end;
+    }
+
+    .bookmark-item h3 {
+        font-size: 0.95rem;
+    }
+
+    .bookmark-item .meta {
+        font-size: 0.7rem;
+    }
+
+    .bookmark-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .read-more {
+        justify-content: center;
+    }
+
+    .collections-section h2 {
+        font-size: 1.2rem;
+    }
+
+    .pagination {
+        gap: 4px;
+    }
+
+    .pagination .page-link {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.78rem;
+        padding: 0 8px;
     }
 }
 
