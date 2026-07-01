@@ -1,9 +1,11 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from main.models import (
     Post, Category, TagPost, Comment, 
     Notification, Bookmark, Collection, 
-    UserBadge, UserAchievement, Subscription
+    UserBadge, UserAchievement, Subscription,
+    Chat, Message
 )
 
 User = get_user_model()
@@ -445,3 +447,67 @@ class UserAchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAchievement
         fields = ('id', 'badge', 'earned_at', 'reason')
+
+
+# ===== Chat / Message Serializers =====
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender = UserPublicSerializer(read_only=True)
+
+    class Meta:
+        model = Message
+        fields = ('id', 'sender', 'text', 'created_at', 'is_read')
+        read_only_fields = ('sender', 'is_read')
+
+
+class ChatListSerializer(serializers.ModelSerializer):
+    participants = UserPublicSerializer(many=True, read_only=True)
+    last_message = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Chat
+        fields = ('id', 'participants', 'created_at', 'updated_at',
+                  'last_message', 'unread_count')
+
+    def get_last_message(self, obj):
+        return {
+            'text': obj.last_message,
+            'time': obj.last_message_time.isoformat() if obj.last_message_time else None,
+            'sender_id': obj.last_message_sender_id,
+        }
+
+    def get_unread_count(self, obj):
+        user = self.context['request'].user
+        return obj.messages.filter(~Q(sender=user), is_read=False).count()
+
+
+class ChatDetailSerializer(serializers.ModelSerializer):
+    participants = UserPublicSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Chat
+        fields = ('id', 'participants', 'created_at', 'updated_at')
+
+
+class ChatCreateSerializer(serializers.Serializer):
+    participant_id = serializers.IntegerField()
+
+    def validate_participant_id(self, value):
+        User = get_user_model()
+        try:
+            User.objects.get(id=value, is_active=True)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Пользователь не найден")
+        return value
+
+
+class MessageCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ('text',)
+
+    def validate_text(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Сообщение не может быть пустым")
+        return value

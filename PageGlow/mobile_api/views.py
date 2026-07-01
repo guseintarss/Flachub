@@ -17,7 +17,8 @@ from django.shortcuts import get_object_or_404
 from main.models import (
     Post, Category, TagPost, Comment, 
     Notification, Bookmark, Collection,
-    UserAchievement, Subscription
+    UserAchievement, Subscription,
+    Chat, Message
 )
 from users.models import UserReputationLog
 from .serializers import (
@@ -28,7 +29,9 @@ from .serializers import (
     BookmarkSerializer, BookmarkCreateSerializer,
     CollectionSerializer,
     UserAchievementSerializer,
-    UserPublicSerializer, UserProfileSerializer
+    UserPublicSerializer, UserProfileSerializer,
+    ChatListSerializer, ChatDetailSerializer, ChatCreateSerializer,
+    MessageSerializer, MessageCreateSerializer,
 )
 
 User = get_user_model()
@@ -551,6 +554,98 @@ class MediaUploadViewSet(viewsets.GenericViewSet):
             'url': file_url,
             'filename': filename
         })
+
+
+# ===== Chat / Direct Messages =====
+
+class ChatViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin):
+    """
+    API для чатов: список, создание, детали, отправка сообщений
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Chat.objects.filter(
+            participants=self.request.user
+        ).prefetch_related('participants').annotate(
+            unread_count=Count('messages', filter=~Q(messages__sender=self.request.user) & Q(messages__is_read=False))
+        ).order_by('-updated_at')
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return ChatCreateSerializer
+        elif self.action == 'retrieve':
+            return ChatDetailSerializer
+        return ChatListSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        participant_id = serializer.validated_data['participant_id']
+
+        if participant_id == request.user.id:
+            return Response({'error': 'Нельзя создать чат с самим собой'}, status=400)
+
+        existing = Chat.objects.filter(participants=request.user).filter(participants=participant_id)
+        if existing.exists():
+            chat = existing.first()
+            output = ChatDetailSerializer(chat, context=self.get_serializer_context())
+            return Response(output.data, status=200)
+
+        chat = Chat.objects.create()
+        chat.participants.add(request.user.id, participant_id)
+        output = ChatDetailSerializer(chat, context=self.get_serializer_context())
+        return Response(output.data, status=201)
+
+    @action(detail=True, methods=['post'])
+    def send(self, request, pk=None):
+        chat = self.get_object()
+        if request.user not in chat.participants.all():
+            return Response({'error': 'Вы не участник этого чата'}, status=403)
+
+        serializer = MessageCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        message = serializer.save(chat=chat, sender=request.user)
+
+        chat.last_message = message.text
+        chat.last_message_time = message.created_at
+        chat.last_message_sender = request.user
+        chat.save(update_fields=['last_message', 'last_message_time', 'last_message_sender', 'updated_at'])
+
+        output = MessageSerializer(message, context={'request': request})
+        return Response(output.data, status=201)
+
+    @action(detail=True, methods=['get'])
+    def messages(self, request, pk=None):
+        chat = self.get_object()
+        if request.user not in chat.participants.all():
+            return Response({'error': 'Доступ запрещён'}, status=403)
+
+        # Mark incoming messages as read
+        chat.messages.exclude(sender=request.user).filter(is_read=False).update(is_read=True)
+
+        messages_qs = chat.messages.select_related('sender').order_by('created_at')
+        page = self.paginate_queryset(messages_qs)
+        if page is not None:
+            serializer = MessageSerializer(page, many=True, context={'request': request})
+            return self.get_paginated_response(serializer.data)
+
+        serializer = MessageSerializer(messages_qs, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def mark_read(self, request, pk=None):
+        chat = self.get_object()
+        if request.user not in chat.participants.all():
+            return Response({'error': 'Доступ запрещён'}, status=403)
+
+        updated = chat.messages.exclude(sender=request.user).filter(is_read=False).update(is_read=True)
+        return Response({'marked_read': updated})
 
 
 # ===== Auth =====

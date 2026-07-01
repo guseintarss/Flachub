@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { toggleSubscribe, deletePost } from '../api'
+import { toggleSubscribe, deletePost, createChat } from '../api'
 import PostCard from '../components/Feed/PostCard'
 import UserAvatar from '../components/UserAvatar'
 import { ProfileSkeleton } from '../components/Skeleton'
@@ -215,7 +215,12 @@ function ProfilePage() {
                 </div>
 
                 {!isOwn && currentUser && (
-                  <div className="author-hero-subscribe">
+                  <div className="author-hero-actions">
+                    <button className="btn btn-outline-primary"
+                      onClick={() => createChat(profile.id).then(chat => navigate(`/chat/${chat.id}/`))}
+                      style={{ padding: '7px 18px', fontSize: '0.82rem', fontWeight: 600, borderRadius: 10, whiteSpace: 'nowrap' }}>
+                      <i className="fas fa-envelope" /> Написать
+                    </button>
                     <button id="subscribe-btn"
                       className={`btn ${profile.is_subscribed ? 'btn-secondary' : 'btn-primary'}`}
                       onClick={handleSubscribe}
@@ -622,7 +627,7 @@ function ProfilePage() {
           color: var(--text); font-size: 0.85rem; line-height: 1.55;
           margin: 0 0 16px 0; max-width: 600px;
         }
-        .author-hero-subscribe { flex-shrink: 0; padding-bottom: 4px; }
+        .author-hero-actions { display: flex; gap: 8px; flex-shrink: 0; padding-bottom: 4px; }
         #subscribe-btn {
           padding: 7px 18px; font-size: 0.82rem; font-weight: 600;
           border-radius: 10px; transition: all 0.25s ease; white-space: nowrap;

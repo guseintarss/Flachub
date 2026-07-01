@@ -303,6 +303,41 @@ class Notification(models.Model):
         return f'{self.notification_type}: {self.message}'
 
 
+# ===== CHAT / DIRECT MESSAGES =====
+
+class Chat(models.Model):
+    participants = models.ManyToManyField(User, related_name='chats')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    last_message = models.TextField(blank=True, null=True)
+    last_message_time = models.DateTimeField(blank=True, null=True)
+    last_message_sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='+')
+
+    class Meta:
+        verbose_name = 'Чат'
+        verbose_name_plural = 'Чаты'
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f'Chat #{self.id} ({self.participants.count()} участников)'
+
+
+class Message(models.Model):
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'Сообщение'
+        verbose_name_plural = 'Сообщения'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'Message from {self.sender} in Chat #{self.chat_id}'
+
+
 # ===== SOCIAL FEATURES =====
 
 class Bookmark(models.Model):

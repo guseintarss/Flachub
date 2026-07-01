@@ -80,3 +80,29 @@ export function deletePost(slug) {
     method: 'DELETE',
   })
 }
+
+export function getChats() {
+  return request(`${BASE}/chats/`)
+}
+
+export function getChat(id) {
+  return request(`${BASE}/chats/${id}/`)
+}
+
+export function getChatMessages(id) {
+  return request(`${BASE}/chats/${id}/messages/`)
+}
+
+export function sendMessage(chatId, text) {
+  return request(`${BASE}/chats/${chatId}/send/`, {
+    method: 'POST',
+    body: JSON.stringify({ text }),
+  })
+}
+
+export function createChat(participantId) {
+  return request(`${BASE}/chats/`, {
+    method: 'POST',
+    body: JSON.stringify({ participant_id: participantId }),
+  })
+}

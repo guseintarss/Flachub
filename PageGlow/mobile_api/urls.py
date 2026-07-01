@@ -5,6 +5,7 @@ from .views import (
     CommentViewSet, CommentLikeViewSet,
     NotificationViewSet, BookmarkViewSet, CollectionViewSet,
     UserStatsViewSet, PostLikeViewSet, MediaUploadViewSet,
+    ChatViewSet,
     current_user, sidebar_data, login_view, logout_view,
     register_view, password_change_view,
     password_reset_view, password_reset_confirm_view,
@@ -39,6 +40,9 @@ router.register(r'comment-actions', CommentLikeViewSet, basename='comment-action
 
 # Медиа
 router.register(r'media', MediaUploadViewSet, basename='media')
+
+# Чаты
+router.register(r'chats', ChatViewSet, basename='chat')
 
 urlpatterns = [
     path('', include(router.urls)),

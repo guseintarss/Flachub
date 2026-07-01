@@ -30,6 +30,8 @@ import ChangePasswordPage from "./pages/ChangePasswordPage"
 import ForgotPasswordPage from "./pages/ForgotPasswordPage"
 import ResetPasswordPage from "./pages/ResetPasswordPage"
 import SubscriptionsPage from "./pages/SubscriptionsPage"
+import InboxPage from "./pages/InboxPage"
+import ChatPage from "./pages/ChatPage"
 import AdminPage from "./pages/AdminPage"
 
 const App = () => {
@@ -55,6 +57,8 @@ const App = () => {
           <Route path="/forgot-password/" element={<ForgotPasswordPage />} />
       <Route path="/reset-password/:uidb64/:token/" element={<ResetPasswordPage />} />
       <Route path="/subscriptions/" element={<SubscriptionsPage />} />
+      <Route path="/inbox/" element={<InboxPage />} />
+      <Route path="/chat/:id/" element={<ChatPage />} />
       <Route path="/admin-panel/" element={<AdminPage />} />
     </Routes>
         <Footer />
