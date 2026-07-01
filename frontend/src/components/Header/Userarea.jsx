@@ -11,6 +11,25 @@ const UserArea = () => {
   const [notifications, setNotifications] = useState([])
   const [newMsgToast, setNewMsgToast] = useState(null)
 
+  const showBrowserNotifRef = useRef(null)
+  const showBrowserNotif = useCallback((chatId, sender, text) => {
+    if (!('Notification' in window)) return
+    if (Notification.permission === 'granted') {
+      const n = new Notification(`✉ ${sender}`, {
+        body: text,
+        icon: '/favicon.ico',
+        tag: `chat-${chatId}`,
+      })
+      n.onclick = () => {
+        window.focus()
+        navigate(`/chat/${chatId}/`)
+        n.close()
+      }
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission()
+    }
+  }, [navigate])
+
   useEffect(() => {
     if (!user) return
     fetch('/api/mobile/notifications/unread_count/')
@@ -25,6 +44,7 @@ const UserArea = () => {
     const host = window.location.port === '5173' ? 'localhost:8000' : window.location.host
     const wsUrl = `${protocol}//${host}/ws/notifications/`
     const ws = new WebSocket(wsUrl)
+    showBrowserNotifRef.current = showBrowserNotif
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data)
@@ -34,6 +54,7 @@ const UserArea = () => {
           setUnreadCount(prev => prev + 1)
           setNewMsgToast({ chat_id: data.chat_id, sender: data.sender, text: data.text })
           setTimeout(() => setNewMsgToast(null), 5000)
+          showBrowserNotifRef.current(data.chat_id, data.sender, data.text)
         }
       } catch {}
     }
