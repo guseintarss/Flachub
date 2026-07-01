@@ -106,3 +106,7 @@ export function createChat(participantId) {
     body: JSON.stringify({ participant_id: participantId }),
   })
 }
+
+export function markChatRead(chatId) {
+  return request(`${BASE}/chats/${chatId}/mark_read/`)
+}

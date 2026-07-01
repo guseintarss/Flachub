@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import UserAvatar from '../components/UserAvatar'
 import Sidebar from '../components/Sidebar/Sidebar'
 import { useAuth } from '../context/AuthContext'
-import { getChat, getChatMessages, sendMessage } from '../api'
+import { getChat, getChatMessages, sendMessage, markChatRead } from '../api'
 import '../styles/chat.css'
 
 function ChatPage() {
@@ -46,6 +46,7 @@ function ChatPage() {
       .then(([chatData, msgsData]) => {
         setChat(chatData)
         setMessages(msgsData.results || msgsData || [])
+        markChatRead(id).catch(() => {})
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -58,7 +59,10 @@ function ChatPage() {
     let ws = new WebSocket(wsUrl)
     wsRef.current = ws
 
-    ws.onopen = () => setOnline(true)
+    ws.onopen = () => {
+      setOnline(true)
+      ws.send(JSON.stringify({ type: 'mark_read' }))
+    }
     ws.onclose = () => setOnline(false)
 
     ws.onmessage = (event) => {
@@ -81,6 +85,7 @@ function ChatPage() {
           })
         } else if (data.type === 'marked_read') {
           setMessages(prev => prev.map(m => {
+            if (data.by_user !== user?.id && m.sender?.id === user?.id && !m.is_read) return { ...m, is_read: true }
             if (m.sender?.id !== user?.id && !m.is_read) return { ...m, is_read: true }
             return m
           }))
@@ -162,8 +167,15 @@ function ChatPage() {
                   return (
                     <div key={msg.id} className={`chat-msg ${isMine ? 'chat-msg-mine' : 'chat-msg-other'}`}>
                       <div className="chat-msg-text">{msg.text}</div>
-                      <div className="chat-msg-time">
-                        {new Date(msg.created_at).toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                      <div className="chat-msg-meta">
+                        <span className="chat-msg-time">
+                          {new Date(msg.created_at).toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        {isMine && (
+                          <span className={`chat-msg-status ${msg.is_read ? 'chat-msg-read' : 'chat-msg-delivered'}`}>
+                            {msg.is_read ? '✓✓' : '✓'}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )
