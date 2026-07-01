@@ -3,11 +3,94 @@ WebSocket consumers for PageGlow
 """
 import json
 import logging
+import asyncio
+import redis as sync_redis
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+# ─── Redis helpers для отслеживания активного чата ──────────────────────────
+
+REDIS_ACTIVE_CHAT_TTL = 300  # 5 минут
+
+def _redis_url():
+    try:
+        hosts = settings.CHANNEL_LAYERS['default']['CONFIG']['hosts']
+        if isinstance(hosts, list) and hosts:
+            return hosts[0]
+    except Exception:
+        return None
+
+def _is_user_viewing_chat(user_id, chat_id):
+    """Синхронная проверка – смотрит ли пользователь данный чат сейчас."""
+    url = _redis_url()
+    if not url:
+        return False
+    try:
+        r = sync_redis.from_url(url)
+        exists = r.exists(f'chat_active:{user_id}:{chat_id}')
+        r.close()
+        return bool(exists)
+    except Exception:
+        return False
+
+
+def _mark_chat_active(user_id, chat_id):
+    url = _redis_url()
+    if not url:
+        return
+    try:
+        r = sync_redis.from_url(url)
+        r.setex(f'chat_active:{user_id}:{chat_id}', REDIS_ACTIVE_CHAT_TTL, '1')
+        r.close()
+    except Exception:
+        pass
+
+
+def _unmark_chat_active(user_id, chat_id):
+    url = _redis_url()
+    if not url:
+        return
+    try:
+        r = sync_redis.from_url(url)
+        r.delete(f'chat_active:{user_id}:{chat_id}')
+        r.close()
+    except Exception:
+        pass
+
+
+# ─── Асинхронные варианты для использования в ChatConsumer ──────────────────
+
+
+async def _amark_chat_active(user_id, chat_id):
+    """Асинхронно установить флаг 'пользователь смотрит чат'."""
+    url = _redis_url()
+    if not url:
+        return
+    try:
+        import redis.asyncio as aio_redis
+        r = aio_redis.from_url(url)
+        await r.setex(f'chat_active:{user_id}:{chat_id}', REDIS_ACTIVE_CHAT_TTL, '1')
+        await r.aclose()
+    except Exception:
+        pass
+
+
+async def _aunmark_chat_active(user_id, chat_id):
+    """Асинхронно снять флаг 'пользователь смотрит чат'."""
+    url = _redis_url()
+    if not url:
+        return
+    try:
+        import redis.asyncio as aio_redis
+        r = aio_redis.from_url(url)
+        await r.delete(f'chat_active:{user_id}:{chat_id}')
+        await r.aclose()
+    except Exception:
+        pass
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
@@ -199,12 +282,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
         logger.info(f"Chat WS: user {self.user.id} joined chat {self.chat_id}")
 
+        await _amark_chat_active(self.user.id, self.chat_id)
+
     async def disconnect(self, close_code):
         if hasattr(self, 'room_group_name'):
             await self.channel_layer.group_discard(
                 self.room_group_name,
                 self.channel_name
             )
+        if hasattr(self, 'user') and hasattr(self, 'chat_id'):
+            await _aunmark_chat_active(self.user.id, self.chat_id)
 
     async def receive(self, text_data):
         try:
@@ -227,6 +314,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         try:
                             other_ids = await self.get_other_participant_ids()
                             for other_id in other_ids:
+                                if await self._aother_is_viewing(other_id):
+                                    continue
                                 await self.channel_layer.group_send(
                                     f'user_{other_id}',
                                     {
@@ -266,6 +355,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'type': 'marked_read',
             'by_user': event['by_user'],
         }))
+
+    async def _aother_is_viewing(self, other_id):
+        """Проверить через Redis, смотрит ли другой участник этот чат."""
+        url = _redis_url()
+        if not url:
+            return False
+        try:
+            import redis.asyncio as aio_redis
+            r = aio_redis.from_url(url)
+            exists = await r.exists(f'chat_active:{other_id}:{self.chat_id}')
+            await r.aclose()
+            return bool(exists)
+        except Exception:
+            return False
 
     @database_sync_to_async
     def is_participant(self):
@@ -340,6 +443,10 @@ def send_chat_notification_to_user(user_id, chat_id, sender_username, text_previ
         from main.models import Notification, Chat
         from django.contrib.auth import get_user_model
         User = get_user_model()
+
+        # Если адресат уже смотрит этот чат — не слать уведомление в колокольчик
+        if _is_user_viewing_chat(user_id, chat_id):
+            return
 
         channel_layer = get_channel_layer()
         if channel_layer is None:
