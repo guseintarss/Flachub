@@ -32,10 +32,15 @@ const UserArea = () => {
 
   useEffect(() => {
     if (!user) return
-    fetch('/api/mobile/notifications/unread_count/')
-      .then(r => r.json())
-      .then(d => setUnreadCount(d.unread_count || 0))
-      .catch(() => {})
+    const fetchCount = () => {
+      fetch('/api/mobile/notifications/unread_count/')
+        .then(r => r.json())
+        .then(d => setUnreadCount(d.unread_count || 0))
+        .catch(() => {})
+    }
+    fetchCount()
+    const interval = setInterval(fetchCount, 10000)
+    return () => clearInterval(interval)
   }, [user])
 
   useEffect(() => {

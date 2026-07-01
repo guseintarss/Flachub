@@ -1,0 +1,67 @@
+version: "3.9"
+
+# Упрощённый docker-compose для разработки.
+# Для продакшена используйте compose.yml (с nginx, ssl и т.д.)
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pageglow
+      POSTGRES_USER: pageglow
+      POSTGRES_PASSWORD: pageglow_pass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pageglow"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  django:
+    build:
+      context: ./PageGlow
+    image: pageglow:latest
+    env_file:
+      - .env
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: pageglow
+      DATABASE_USERNAME: pageglow
+      DATABASE_PASSWORD: pageglow_pass
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./frontend/build:/frontend/build:ro
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "
+        python manage.py migrate --noinput &&
+        python manage.py collectstatic --noinput &&
+        daphne -b 0.0.0.0 -p 8000 PageGlow.asgi:application
+      "
+
+volumes:
+  pgdata:
+  static_volume:
+  media_volume:

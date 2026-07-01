@@ -51,13 +51,15 @@ urlpatterns.extend([
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain"), name="robots"),
 ])
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static('/ckeditor5/', document_root=settings.BASE_DIR / 'ckeditor5')
-    frontend_build = settings.BASE_DIR.parent / 'frontend' / 'build'
+frontend_build = settings.BASE_DIR.parent / 'frontend' / 'build'
+if frontend_build.exists():
     urlpatterns += [
         re_path(r'^assets/(?P<path>.*)$', static_serve, {'document_root': frontend_build / 'assets'}),
     ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static('/ckeditor5/', document_root=settings.BASE_DIR / 'ckeditor5')
 
 # Frontend SPA — отдаёт built React app для всех путей, не найденных выше
 urlpatterns += [
