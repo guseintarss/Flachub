@@ -51,10 +51,13 @@ export function toggleSubscribe(authorId) {
 }
 
 export function addComment(postId, content, parentId = '') {
-  return request('/ajax/add-comment/', {
+  return request(`${BASE}/comments/`, {
     method: 'POST',
-    body: new URLSearchParams({ post_id: postId, content, parent_id: parentId }),
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: JSON.stringify({
+      post_id: postId,
+      content,
+      parent: parentId || undefined,
+    }),
   })
 }
 

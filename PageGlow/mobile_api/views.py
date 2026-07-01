@@ -208,11 +208,21 @@ class CommentViewSet(viewsets.ModelViewSet):
         return context
 
     def perform_create(self, serializer):
-        post_id = self.kwargs.get('post_pk')
         serializer.save(
             author=self.request.user,
-            post_id=post_id
+            post_id=self.request.data.get('post_id')
         )
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        comment = serializer.save(
+            author=request.user,
+            post_id=request.data.get('post_id')
+        )
+        output = CommentSerializer(comment, context=self.get_serializer_context())
+        headers = self.get_success_headers(output.data)
+        return Response(output.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_destroy(self, instance):
         if instance.author != self.request.user and not self.request.user.is_staff:

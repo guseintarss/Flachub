@@ -145,15 +145,11 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
     setSubmitting(true)
     setError('')
     try {
-      const data = await addComment(postId, replyContent, String(comment.id))
-      if (data.success) {
-        setReplyContent('')
-        setShowReplyForm(false)
-        setError('')
-        onCommentAction(data.comment)
-      } else {
-        setError(data.error || 'Ошибка при отправке ответа')
-      }
+      const reply = await addComment(postId, replyContent, String(comment.id))
+      setReplyContent('')
+      setShowReplyForm(false)
+      setError('')
+      onCommentAction(reply)
     } catch {
       setError('Ошибка при отправке ответа')
     }
@@ -259,13 +255,9 @@ function CommentsSection({ comments: initialComments, postId, currentUser }) {
     setSubmitting(true)
     setError('')
     try {
-      const data = await addComment(postId, content)
-      if (data.success) {
-        setContent('')
-        setComments(prev => [data.comment, ...prev])
-      } else {
-        setError(data.error || 'Ошибка при отправке комментария')
-      }
+      const comment = await addComment(postId, content)
+      setContent('')
+      setComments(prev => [comment, ...prev])
     } catch (err) {
       setError('Ошибка при отправке комментария')
     }
