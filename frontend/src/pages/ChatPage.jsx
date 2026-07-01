@@ -15,16 +15,30 @@ function ChatPage() {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [online, setOnline] = useState(false)
-  const messagesEndRef = useRef(null)
+  const messagesRef = useRef(null)
   const wsRef = useRef(null)
+  const isNearBottomRef = useRef(true)
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const isNearBottom = useCallback(() => {
+    const el = messagesRef.current
+    if (!el) return true
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 120
+  }, [])
+
+  const scrollToBottom = useCallback((smooth = true) => {
+    const el = messagesRef.current
+    if (!el) return
+    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'instant' })
   }, [])
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages, scrollToBottom])
+    if (isNearBottomRef.current) scrollToBottom()
+    isNearBottomRef.current = isNearBottom()
+  }, [messages, isNearBottom, scrollToBottom])
+
+  const handleScroll = useCallback(() => {
+    isNearBottomRef.current = isNearBottom()
+  }, [isNearBottom])
 
   useEffect(() => {
     setLoading(true)
@@ -96,6 +110,7 @@ function ChatPage() {
       is_read: false,
     }
     setMessages(prev => [...prev, optimistic])
+    scrollToBottom(false)
 
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: 'send_message', text: msgText }))
@@ -138,7 +153,7 @@ function ChatPage() {
               </div>
             </div>
 
-            <div className="chat-messages">
+            <div className="chat-messages" ref={messagesRef} onScroll={handleScroll}>
               {messages.length === 0 ? (
                 <div className="chat-empty">Напишите первое сообщение</div>
               ) : (
@@ -154,7 +169,6 @@ function ChatPage() {
                   )
                 })
               )}
-              <div ref={messagesEndRef} />
             </div>
 
             <form className="chat-input" onSubmit={handleSend}>
