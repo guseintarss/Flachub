@@ -37,10 +37,8 @@ export function toggleBookmark(postId) {
 }
 
 export function toggleFavorite(postId) {
-  return request('/ajax/favorite/', {
+  return request(`${BASE}/post-actions/${postId}/toggle_favorite/`, {
     method: 'POST',
-    body: new URLSearchParams({ post_id: postId }),
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   })
 }
 
