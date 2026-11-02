@@ -21,6 +21,12 @@ except ImportError:
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Собранный фронтенд (Vite). В Docker каталог монтируется отдельно,
+# поэтому путь можно переопределить через FRONTEND_BUILD_DIR.
+FRONTEND_BUILD_DIR = Path(
+    config('FRONTEND_BUILD_DIR', default=str(BASE_DIR.parent / 'frontend' / 'build'))
+)
+
 # Создать директории если их нет
 for directory in ['logs', 'cache', 'media']:
     dir_path = os.path.join(BASE_DIR, directory)
@@ -130,7 +136,7 @@ ROOT_URLCONF = 'PageGlow.urls'
 TEMPLATES = [
     {
         'DIRS': [
-            BASE_DIR.parent / 'frontend' / 'build',
+            FRONTEND_BUILD_DIR,
             BASE_DIR / 'templates',
         ],
 
@@ -177,23 +183,26 @@ else:
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+USE_SQLITE = config('USE_SQLITE', default=False, cast=bool)
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': config('DATABASE_NAME'),
-        'USER': config('DATABASE_USERNAME'),
-        'PASSWORD': config('DATABASE_PASSWORD'),
-        'HOST': config('DATABASE_HOST'),
-        'PORT': config('DATABASE_PORT'),
+if USE_SQLITE:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': config('SQLITE_PATH', default=str(BASE_DIR / 'db.sqlite3')),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': config('DATABASE_NAME'),
+            'USER': config('DATABASE_USERNAME'),
+            'PASSWORD': config('DATABASE_PASSWORD'),
+            'HOST': config('DATABASE_HOST'),
+            'PORT': config('DATABASE_PORT'),
+        }
+    }
 
 
 # Password validation
@@ -238,9 +247,9 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'
-LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = '/login/'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
@@ -564,7 +573,8 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 
 # CSRF
 CSRF_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_HTTPONLY = False if DEBUG else True
+# SPA читает токен из cookie и отправляет его в X-CSRFToken.
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173').split(',')
 

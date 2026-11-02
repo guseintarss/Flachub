@@ -1,16 +1,14 @@
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from rest_framework import viewsets, status, permissions, mixins
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from django.db.models import Q, Count, Prefetch
+from django.db.models import Q, Count, Prefetch, F
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 
@@ -45,17 +43,23 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 # ===== Post ViewSet =====
 
-class CsrfExemptSessionAuthentication(SessionAuthentication):
-    def enforce_csrf(self, request):
-        return
+class IsAuthorOrReadOnly(permissions.BasePermission):
+    """Читать может любой, изменять — только автор или модератор."""
 
-@method_decorator(csrf_exempt, name='dispatch')
+    message = 'Изменять этот объект может только его автор.'
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.author_id == request.user.id or request.user.is_staff
+
+
 class PostViewSet(viewsets.ModelViewSet):
     """
     API для постов: список, детали, создание, обновление, удаление
     """
-    authentication_classes = [CsrfExemptSessionAuthentication, BasicAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     pagination_class = StandardResultsSetPagination
     lookup_field = 'slug'
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -118,41 +122,51 @@ class PostViewSet(viewsets.ModelViewSet):
         return context
 
     def retrieve(self, request, *args, **kwargs):
-        # Увеличиваем счетчик просмотров
         instance = self.get_object()
-        instance.views += 1
-        instance.save(update_fields=['views'])
-        return super().retrieve(request, *args, **kwargs)
+        # Автор и черновики не должны накручивать просмотры.
+        if instance.is_published and instance.author_id != request.user.id:
+            Post.objects.filter(pk=instance.pk).update(views=F('views') + 1)
+            instance.refresh_from_db(fields=['views'])
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def _award_post_created(self, post):
+        """Начислить репутацию за первую публикацию, без повторов при переопубликации."""
+        if not post.is_published or not post.author:
+            return
+        already_awarded = UserReputationLog.objects.filter(
+            user=post.author,
+            reason=UserReputationLog.ReasonType.POST_CREATED,
+            post=post,
+        ).exists()
+        if already_awarded:
+            return
+        post.author.add_reputation(
+            amount=10,
+            reason=UserReputationLog.ReasonType.POST_CREATED,
+            post=post,
+        )
 
     def perform_create(self, serializer):
         post = serializer.save(author=self.request.user)
-        if post.is_published:
-            UserReputationLog.objects.create(
-                user=post.author,
-                amount=10,
-                reason='post_created',
-                post=post
-            )
-            from django.core.cache import cache
-            cache.delete(f'user_reputation_{post.author.id}')
+        self._award_post_created(post)
 
     def perform_update(self, serializer):
-        old_is_published = serializer.instance.is_published if serializer.instance else False
         post = serializer.save()
-        if post.is_published and not old_is_published:
-            UserReputationLog.objects.create(
-                user=post.author,
-                amount=10,
-                reason='post_created',
-                post=post
-            )
-            from django.core.cache import cache
-            cache.delete(f'user_reputation_{post.author.id}')
+        self._award_post_created(post)
 
     def perform_destroy(self, instance):
         author = instance.author
-        if author:
-            author.add_reputation(amount=-10, reason=UserReputationLog.ReasonType.POST_DELETED, post=instance)
+        if author and UserReputationLog.objects.filter(
+            user=author,
+            reason=UserReputationLog.ReasonType.POST_CREATED,
+            post=instance,
+        ).exists():
+            author.add_reputation(
+                amount=-10,
+                reason=UserReputationLog.ReasonType.POST_DELETED,
+                post=instance,
+            )
         from django.core.cache import cache
         cache.clear()
         instance.delete()
@@ -188,13 +202,19 @@ class CommentViewSet(viewsets.ModelViewSet):
     """
     API для комментариев: создание, обновление, удаление
     """
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        qs = Comment.objects.filter(
-            is_active=True
-        ).select_related('author', 'post').prefetch_related('likes')
+        qs = Comment.objects.filter(is_active=True)
+        # Комментарии к черновикам видны только автору черновика.
+        if self.request.user.is_authenticated:
+            qs = qs.filter(
+                Q(post__is_published=Post.Status.PUBLISHED) | Q(post__author=self.request.user)
+            )
+        else:
+            qs = qs.filter(post__is_published=Post.Status.PUBLISHED)
+        qs = qs.select_related('author', 'post').prefetch_related('likes')
         post_id = self.kwargs.get('post_pk')
         if post_id:
             qs = qs.filter(post_id=post_id)
@@ -210,28 +230,43 @@ class CommentViewSet(viewsets.ModelViewSet):
         context['request'] = self.request
         return context
 
-    def perform_create(self, serializer):
-        serializer.save(
-            author=self.request.user,
-            post_id=self.request.data.get('post_id')
-        )
+    def _get_comment_post(self, request):
+        post_id = request.data.get('post_id')
+        if not post_id:
+            raise ValidationError({'post_id': 'Не указан пост'})
+        try:
+            post_id = int(post_id)
+        except (TypeError, ValueError):
+            raise ValidationError({'post_id': 'Некорректный идентификатор поста'})
+        post = get_object_or_404(Post, pk=post_id)
+        if not post.is_published and post.author_id != request.user.id:
+            raise PermissionDenied('Нельзя комментировать чужой черновик')
+        return post
 
     def create(self, request, *args, **kwargs):
+        post = self._get_comment_post(request)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        comment = serializer.save(
-            author=request.user,
-            post_id=request.data.get('post_id')
-        )
+
+        parent = serializer.validated_data.get('parent')
+        if parent and parent.post_id != post.id:
+            raise ValidationError({'parent': 'Родительский комментарий относится к другому посту'})
+
+        comment = serializer.save(author=request.user, post=post)
         output = CommentSerializer(comment, context=self.get_serializer_context())
         headers = self.get_success_headers(output.data)
         return Response(output.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_update(self, serializer):
+        comment = serializer.save()
+        comment.is_edited = True
+        comment.save(update_fields=['is_edited', 'updated_at'])
 
     def perform_destroy(self, instance):
         if instance.author != self.request.user and not self.request.user.is_staff:
             raise PermissionDenied("У вас нет прав для удаления этого комментария")
         instance.is_active = False
-        instance.save()
+        instance.save(update_fields=['is_active'])
 
 
 # ===== Comment Like Action =====
@@ -244,7 +279,12 @@ class CommentLikeViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
 
     @action(detail=True, methods=['post'])
     def toggle_like(self, request, pk=None):
-        comment = Comment.objects.get(pk=pk)
+        comment = get_object_or_404(
+            Comment,
+            pk=pk,
+            is_active=True,
+            post__is_published=Post.Status.PUBLISHED,
+        )
         user = request.user
         
         if comment.likes.filter(id=user.id).exists():
@@ -474,7 +514,7 @@ class PostLikeViewSet(viewsets.GenericViewSet):
     @action(detail=True, methods=['post'])
     def toggle_like(self, request, pk=None):
         """Переключить лайк поста"""
-        post = Post.objects.get(pk=pk)
+        post = get_object_or_404(Post.published, pk=pk)
         user = request.user
         
         if post.likes.filter(id=user.id).exists():
@@ -492,7 +532,7 @@ class PostLikeViewSet(viewsets.GenericViewSet):
     @action(detail=True, methods=['post'])
     def toggle_favorite(self, request, pk=None):
         """Переключить избранное поста"""
-        post = Post.objects.get(pk=pk)
+        post = get_object_or_404(Post.published, pk=pk)
         user = request.user
         
         if post.favorites.filter(id=user.id).exists():
@@ -532,10 +572,11 @@ class MediaUploadViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Валидация типа файла
-        if not image.content_type.startswith('image/'):
+        # Валидация типа файла (SVG не принимаем: в нём может быть скрипт)
+        allowed_types = {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}
+        if image.content_type not in allowed_types:
             return Response(
-                {'error': 'Поддерживаются только изображения'}, 
+                {'error': 'Поддерживаются только JPEG, PNG, GIF и WebP'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -546,8 +587,11 @@ class MediaUploadViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Сохранение файла
-        filename = default_storage.save(f'uploads/{image.name}', image)
+        # Имя и расширение генерируем сами: имя от пользователя может содержать
+        # опасное расширение или путь.
+        import uuid
+        ext = {'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp'}[image.content_type]
+        filename = default_storage.save(f'uploads/{uuid.uuid4().hex}.{ext}', image)
         file_url = default_storage.url(filename)
         
         return Response({
@@ -683,9 +727,9 @@ class ChatViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retriev
 
 # ===== Auth =====
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@csrf_protect
 def login_view(request):
     from django.contrib.auth import authenticate, login
     username = request.data.get('username', '')
@@ -698,9 +742,9 @@ def login_view(request):
     return Response({'error': 'Неверный логин или пароль'}, status=400)
 
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@csrf_protect
 def logout_view(request):
     from django.contrib.auth import logout
     logout(request)
@@ -709,9 +753,9 @@ def logout_view(request):
 
 # ===== Registration =====
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@csrf_protect
 def register_view(request):
     from users.forms import RegisterUserForm
     form = RegisterUserForm(request.data)
@@ -730,9 +774,8 @@ def register_view(request):
 
 # ===== Sidebar Data =====
 
-@csrf_exempt
+@ensure_csrf_cookie
 @api_view(['GET', 'PATCH'])
-@authentication_classes([CsrfExemptSessionAuthentication, JWTAuthentication])
 @permission_classes([AllowAny])
 def current_user(request):
     """Возвращает или обновляет данные текущего пользователя"""
@@ -866,9 +909,7 @@ def sidebar_data(request):
     })
 
 
-@csrf_exempt
 @api_view(['POST'])
-@authentication_classes([CsrfExemptSessionAuthentication, JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def password_change_view(request):
     from django.contrib.auth.password_validation import validate_password
@@ -907,9 +948,9 @@ def password_change_view(request):
 
 # ===== Password Reset =====
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@csrf_protect
 def password_reset_view(request):
     from django.contrib.auth.forms import PasswordResetForm
     email = request.data.get('email', '')
@@ -929,9 +970,9 @@ def password_reset_view(request):
     return Response({'status': 'ok', 'detail': 'Письмо для сброса пароля отправлено на ваш email'})
 
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@csrf_protect
 def password_reset_confirm_view(request):
     from django.contrib.auth.forms import SetPasswordForm
     from django.contrib.auth.tokens import default_token_generator

@@ -3,6 +3,17 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { FormSkeleton } from '../components/Skeleton'
 
+function formatPhone(raw) {
+  const digits = raw.replace(/\D/g, '')
+  if (!digits.length) return ''
+  const d = digits.startsWith('8') ? '7' + digits.slice(1) : digits
+  if (d.length <= 1) return '+7'
+  if (d.length <= 4) return `+7 (${d.slice(1)}`
+  if (d.length <= 7) return `+7 (${d.slice(1, 4)}) ${d.slice(4)}`
+  if (d.length <= 9) return `+7 (${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7)}`
+  return `+7 (${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7, 9)}-${d.slice(9, 11)}`
+}
+
 function EditProfilePage() {
   const { user, loading: authLoading, setUser } = useAuth()
   const navigate = useNavigate()
@@ -62,17 +73,6 @@ function EditProfilePage() {
 
   function set(field) {
     return e => setForm(f => ({ ...f, [field]: e.target.value }))
-  }
-
-  function formatPhone(raw) {
-    const digits = raw.replace(/\D/g, '')
-    if (!digits.length) return ''
-    const d = digits.startsWith('8') ? '7' + digits.slice(1) : digits
-    if (d.length <= 1) return '+7'
-    if (d.length <= 4) return `+7 (${d.slice(1)}`
-    if (d.length <= 7) return `+7 (${d.slice(1, 4)}) ${d.slice(4)}`
-    if (d.length <= 9) return `+7 (${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7)}`
-    return `+7 (${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7, 9)}-${d.slice(9, 11)}`
   }
 
   function handlePhoneChange(e) {

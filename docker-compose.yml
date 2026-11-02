@@ -43,6 +43,7 @@ services:
       DATABASE_USERNAME: pageglow
       DATABASE_PASSWORD: pageglow_pass
       REDIS_URL: redis://redis:6379/0
+      FRONTEND_BUILD_DIR: /frontend/build
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media

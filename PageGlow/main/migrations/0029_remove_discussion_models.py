@@ -2,6 +2,35 @@
 
 from django.db import migrations
 
+DISCUSSION_TABLES = [
+    'main_discussioncomment_likes',
+    'main_discussion_tags',
+    'main_discussion_favorites',
+    'main_discussion_likes',
+    'main_discussioncomment',
+    'main_discussion',
+    'main_discussioncategory',
+]
+
+
+def drop_discussion_tables(apps, schema_editor):
+    """Удаляет таблицы обсуждений, если они существуют.
+
+    PostgreSQL требует CASCADE для таблиц со связями, SQLite не поддерживает
+    этот синтаксис. Поэтому SQL зависит от используемой СУБД.
+    """
+    connection = schema_editor.connection
+    existing_tables = set(connection.introspection.table_names())
+
+    with connection.cursor() as cursor:
+        for table in DISCUSSION_TABLES:
+            if table not in existing_tables:
+                continue
+            if connection.vendor == 'postgresql':
+                cursor.execute(f'DROP TABLE IF EXISTS "{table}" CASCADE;')
+            else:
+                cursor.execute(f'DROP TABLE IF EXISTS "{table}";')
+
 
 class Migration(migrations.Migration):
 
@@ -10,17 +39,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Удаление таблиц Discussion и DiscussionComment
-        migrations.RunSQL(
-            sql=[
-                "DROP TABLE IF EXISTS main_discussioncomment_likes CASCADE;",
-                "DROP TABLE IF EXISTS main_discussion_tags CASCADE;",
-                "DROP TABLE IF EXISTS main_discussion_favorites CASCADE;",
-                "DROP TABLE IF EXISTS main_discussion_likes CASCADE;",
-                "DROP TABLE IF EXISTS main_discussioncomment CASCADE;",
-                "DROP TABLE IF EXISTS main_discussion CASCADE;",
-                "DROP TABLE IF EXISTS main_discussioncategory CASCADE;",
-            ],
-            reverse_sql=[],  # No rollback possible
-        ),
+        migrations.RunPython(drop_discussion_tables, migrations.RunPython.noop),
     ]

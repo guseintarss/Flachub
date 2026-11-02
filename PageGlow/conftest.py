@@ -5,7 +5,6 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
 from rest_framework.test import APIClient
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from main.models import Post, Category, TagPost, Comment, Subscription, Notification
 from users.models import Rule
@@ -70,10 +69,9 @@ def api_client():
 
 @pytest.fixture
 def authenticated_api_client(user):
-    """API клиент с аутентификацией через JWT"""
+    """API клиент с принудительной аутентификацией (без CSRF-проверки)."""
     client = APIClient()
-    refresh = RefreshToken.for_user(user)
-    client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
+    client.force_authenticate(user=user)
     return client
 
 

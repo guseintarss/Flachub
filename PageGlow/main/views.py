@@ -5,7 +5,6 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.views import View
 from django.core.files.storage import FileSystemStorage
@@ -53,7 +52,6 @@ def permission_denied(request, exception):
 
 
 @method_decorator(login_required, name='dispatch')
-@method_decorator(csrf_exempt, name='dispatch')
 class CKEditorUploadView(View):
     def post(self, request):
         try:
@@ -66,7 +64,7 @@ class CKEditorUploadView(View):
 
             allowed_types = [
                 'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-                'image/x-icon', 'image/vnd.microsoft.icon', 'image/svg+xml'
+                'image/x-icon', 'image/vnd.microsoft.icon'
             ]
             if file.content_type not in allowed_types:
                 return JsonResponse({'error': {'message': f'Недопустимый тип файла: {file.content_type}'}}, status=400)
@@ -75,8 +73,10 @@ class CKEditorUploadView(View):
             os.makedirs(upload_path, exist_ok=True)
 
             import uuid
-            ext = file.name.split('.')[-1] if '.' in file.name else 'jpg'
-            unique_filename = f"{uuid.uuid4().hex}.{ext}" if ext else uuid.uuid4().hex
+            ext = os.path.splitext(os.path.basename(file.name))[1].lstrip('.').lower()
+            if ext not in {'jpg', 'jpeg', 'png', 'gif', 'webp', 'ico'}:
+                ext = 'jpg'
+            unique_filename = f'{uuid.uuid4().hex}.{ext}'
 
             fs = FileSystemStorage(location=upload_path)
             fs.save(unique_filename, file)
@@ -88,7 +88,6 @@ class CKEditorUploadView(View):
             return JsonResponse({'error': {'message': f'Ошибка загрузки: {str(e)}'}}, status=500)
 
 
-@csrf_exempt
 @login_required
 def toggle_subscribe(request):
     if request.method != 'POST':

@@ -310,19 +310,12 @@ class PostDetailSerializer(serializers.ModelSerializer):
 class PostCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('id', 'slug', 'title', 'content', 'photo', 'post_type', 'is_published', 
+        fields = ('id', 'slug', 'title', 'content', 'photo', 'post_type', 'is_published',
                   'cat', 'tags')
+        read_only_fields = ('slug',)
         extra_kwargs = {
             'cat': {'required': False, 'allow_null': True},
-            'slug': {'required': False},
         }
-
-    def validate(self, attrs):
-        if not attrs.get('slug') and attrs.get('title'):
-            from main.models import translist_to_eng
-            from django.template.defaultfilters import slugify
-            attrs['slug'] = slugify(translist_to_eng(attrs['title']))
-        return attrs
 
 
 # ===== Comment Serializers =====

@@ -72,9 +72,6 @@ function BurgerMenu() {
               <Link to="/profile/" className="menu_link">
                 <i className="fas fa-user-circle"></i> Мой профиль
               </Link>
-              <Link to="/bookmarks/" className="menu_link">
-                <i className="fas fa-bookmark"></i> Закладки
-              </Link>
               <Link to="/subscriptions/" className="menu_link">
                 <i className="fas fa-pen-fancy"></i> Подписки
               </Link>

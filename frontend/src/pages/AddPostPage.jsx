@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { getCSRFToken } from '../csrf'
 import Sidebar from '../components/Sidebar/Sidebar'
 import { AddPostSkeleton } from '../components/Skeleton'
 import { CKEditor } from '@ckeditor/ckeditor5-react'
@@ -15,9 +16,9 @@ import {
   MediaEmbed, AutoMediaEmbed, MediaEmbedResize, MediaEmbedToolbar,
 } from 'ckeditor5'
 
-function csrfToken() {
-  const m = document.cookie.match(/csrftoken=([^;]+)/)
-  return m ? m[1] : ''
+function csrfHeaders() {
+  const token = getCSRFToken()
+  return token ? { 'X-CSRFToken': token } : {}
 }
 
 function extractTitle(html) {
@@ -48,10 +49,12 @@ class MyUploadAdapter {
     const file = await this.loader.file
     const fd = new FormData()
     fd.append('upload', file)
+    const token = getCSRFToken()
     const res = await fetch('/upload/', {
       method: 'POST',
       body: fd,
       credentials: 'same-origin',
+      headers: token ? { 'X-CSRFToken': token } : {},
     })
     if (!res.ok) {
       const text = await res.text()
@@ -219,9 +222,13 @@ function AddPostPage() {
   const searchRef = useRef(null)
   const editorRef = useRef(null)
 
-  const [draftSlug, setDraftSlug] = useState(null)
   const [draftStatus, setDraftStatus] = useState('idle')
   const dirtyRef = useRef(false)
+  const draftSlugRef = useRef(null)
+  const savePromiseRef = useRef(null)
+  const draftSnapshotRef = useRef('')
+  const submittingRef = useRef(false)
+  const lastLoadedContentRef = useRef(null)
   const draftTimerRef = useRef(null)
   const autoSaveRef = useRef(null)
 
@@ -393,6 +400,18 @@ function AddPostPage() {
     cat: '',
   })
 
+  // Снимок сохраняемых данных: нужен, чтобы не потерять правки, сделанные
+  // во время уже отправленного автосохранения.
+  useEffect(() => {
+    draftSnapshotRef.current = JSON.stringify([
+      form.content,
+      form.post_type,
+      form.is_published,
+      form.cat,
+      [...selectedTagIds].sort((a, b) => a - b),
+    ])
+  }, [form, selectedTagIds])
+
   useEffect(() => {
     if (loading) return
     if (!user) { navigate('/login/'); return }
@@ -422,8 +441,11 @@ function AddPostPage() {
       })
       .then(data => {
         if (data.author?.id !== user.id) throw new Error('Это не ваша статья')
+        const loadedContent = `<h1>${data.title}</h1>${data.content || ''}`
+        lastLoadedContentRef.current = loadedContent
+        dirtyRef.current = false
         setForm({
-          content: data.content ? `<h1>${data.title}</h1>${data.content}` : '',
+          content: loadedContent,
           post_type: data.post_type || 'post',
           is_published: String(data.is_published ?? '1'),
           cat: data.category?.id || '',
@@ -450,14 +472,18 @@ function AddPostPage() {
   }, [])
 
   useEffect(() => {
-    if (!form.content.trim()) return
-    dirtyRef.current = true
+    if (lastLoadedContentRef.current !== null) {
+      dirtyRef.current = form.content !== lastLoadedContentRef.current
+      return
+    }
+    dirtyRef.current = form.content.trim().length > 0
   }, [form.content])
 
   const debounceRef = useRef(null)
   useEffect(() => {
     if (step < 2) return
     if (!form.content.trim()) return
+    if (!dirtyRef.current) return
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       autoSaveRef.current?.()
@@ -481,7 +507,7 @@ function AddPostPage() {
     return () => {
       if (draftTimerRef.current) clearInterval(draftTimerRef.current)
     }
-  }, [step, form.content, draftSlug])
+  }, [step])
 
   useEffect(() => {
     function onBeforeUnload(e) {
@@ -506,56 +532,69 @@ function AddPostPage() {
   }
 
   async function autoSaveDraft() {
+    if (submittingRef.current) return
     if (!form.content.trim()) return
-    setDraftStatus('saving')
+    if (savePromiseRef.current) return savePromiseRef.current
+
+    const snapshot = draftSnapshotRef.current
     const title = extractTitle(form.content)
     const content = stripTitleFromContent(form.content)
+    if (!title || !content.trim()) return
+
     const fd = new FormData()
     fd.append('title', title)
     fd.append('content', content)
     fd.append('post_type', form.post_type)
-    fd.append('is_published', '0')
+    // При редактировании сохраняем текущий статус, иначе автосохранение снимало бы публикацию.
+    fd.append('is_published', isEditing ? form.is_published : '0')
     if (form.cat) fd.append('cat', form.cat)
     selectedTagIds.forEach(id => fd.append('tags', id))
 
-    try {
-      if (draftSlug && !isEditing) {
-        const res = await fetch(`/api/mobile/posts/${draftSlug}/`, {
-          method: 'PATCH',
-          headers: { 'X-CSRFToken': csrfToken() },
-          credentials: 'same-origin',
-          body: fd,
-        })
-        if (!res.ok) throw new Error()
-        dirtyRef.current = false
-        setSaved()
-      } else if (isEditing && slug) {
-        const res = await fetch(`/api/mobile/posts/${slug}/`, {
-          method: 'PATCH',
-          headers: { 'X-CSRFToken': csrfToken() },
-          credentials: 'same-origin',
-          body: fd,
-        })
-        if (!res.ok) throw new Error()
-        dirtyRef.current = false
-        setSaved()
-      } else {
-        if (title && content) {
-          const res = await fetch('/api/mobile/posts/', {
-            method: 'POST',
-            headers: { 'X-CSRFToken': csrfToken() },
+    const targetSlug = isEditing ? slug : draftSlugRef.current
+    const promise = (async () => {
+      setDraftStatus('saving')
+      try {
+        const res = await fetch(
+          targetSlug ? `/api/mobile/posts/${targetSlug}/` : '/api/mobile/posts/',
+          {
+            method: targetSlug ? 'PATCH' : 'POST',
+            headers: csrfHeaders(),
             credentials: 'same-origin',
             body: fd,
-          })
-          if (!res.ok) throw new Error()
-          const data = await res.json()
-          if (data.slug) setDraftSlug(data.slug)
-          dirtyRef.current = false
-          setSaved()
+          }
+        )
+        if (!res.ok) throw new Error()
+        const data = await res.json().catch(() => null)
+        if (!targetSlug && data?.slug) {
+          draftSlugRef.current = data.slug
         }
+        return true
+      } catch {
+        setDraftStatus('error')
+        return false
       }
-    } catch {
-      setDraftStatus('error')
+    })()
+
+    savePromiseRef.current = promise
+    let saved
+    try {
+      saved = await promise
+    } finally {
+      savePromiseRef.current = null
+    }
+
+    if (!saved) return
+    if (draftSnapshotRef.current === snapshot) {
+      dirtyRef.current = false
+      setSaved()
+      return
+    }
+
+    // Пока запрос летел, пользователь продолжил печатать — сохраняем ещё раз.
+    dirtyRef.current = true
+    if (!submittingRef.current) {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(() => autoSaveRef.current?.(), 500)
     }
   }
 
@@ -620,6 +659,17 @@ function AddPostPage() {
     const content = stripTitleFromContent(fullHtml)
     if (!title) { setError('Введите заголовок'); return }
     if (!content.trim()) { setError('Введите содержание'); return }
+
+    // Дожидаемся автосохранения, иначе финальный запрос может создать второй черновик.
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+      debounceRef.current = null
+    }
+    if (savePromiseRef.current) {
+      try { await savePromiseRef.current } catch {}
+    }
+
+    submittingRef.current = true
     setError('')
     setSubmitting(true)
     try {
@@ -632,13 +682,12 @@ function AddPostPage() {
       selectedTagIds.forEach(id => fd.append('tags', id))
       if (photoFile) fd.append('photo', photoFile)
 
-      console.log('Submitting post:', { title, content_length: content.length, post_type: form.post_type, is_published: form.is_published, cat: form.cat, tags: [...selectedTagIds] })
-
-      const url = isEditing ? `/api/mobile/posts/${slug}/` : '/api/mobile/posts/'
-      const method = isEditing ? 'PATCH' : 'POST'
+      const targetSlug = isEditing ? slug : draftSlugRef.current
+      const url = targetSlug ? `/api/mobile/posts/${targetSlug}/` : '/api/mobile/posts/'
+      const method = targetSlug ? 'PATCH' : 'POST'
       const res = await fetch(url, {
         method,
-        headers: { 'X-CSRFToken': csrfToken() },
+        headers: csrfHeaders(),
         credentials: 'same-origin',
         body: fd,
       })
@@ -659,6 +708,7 @@ function AddPostPage() {
     } catch (err) {
       setError(err.message)
     }
+    submittingRef.current = false
     setSubmitting(false)
   }
 
@@ -1004,7 +1054,12 @@ function AddPostPage() {
                       <i className="fas fa-arrow-left"></i> Назад
                     </button>
                     <button type="submit" className="btn btn-primary" disabled={submitting}>
-                      <i className="fas fa-save"></i> {submitting ? 'Сохранение...' : isEditing ? 'Сохранить' : 'Опубликовать'}
+                      <i className={`fas ${form.is_published === '1' ? 'fa-paper-plane' : 'fa-save'}`}></i>{' '}
+                      {submitting
+                        ? 'Сохранение...'
+                        : form.is_published === '1'
+                          ? (isEditing ? 'Сохранить изменения' : 'Опубликовать')
+                          : 'Сохранить черновик'}
                     </button>
                     <Link to="/" className="btn btn-secondary">
                       <i className="fas fa-times"></i> Отмена

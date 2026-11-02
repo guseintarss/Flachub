@@ -51,23 +51,29 @@ urlpatterns.extend([
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain"), name="robots"),
 ])
 
-frontend_build = settings.BASE_DIR.parent / 'frontend' / 'build'
+frontend_build = settings.FRONTEND_BUILD_DIR
 if frontend_build.exists():
     urlpatterns += [
         re_path(r'^assets/(?P<path>.*)$', static_serve, {'document_root': frontend_build / 'assets'}),
+        # Файлы из корня сборки (favicon, manifest и т.п.)
+        re_path(r'^(?P<path>[^/]+\.[^/]+)$', static_serve, {'document_root': frontend_build}),
     ]
+
+# SPA: все клиентские маршруты, кроме API, админки и служебных путей.
+# Если сборки нет, сработает запасной шаблон templates/index.html.
+urlpatterns += [
+    re_path(
+        r'^(?!api/|admin/|static/|media/|ckeditor5/|users/|health/|rss/|atom/'
+        r'|sitemap\.xml|robots\.txt|upload/|ajax/|ws/|api-auth/|__debug__/)'
+        r'(?!.*\.[a-zA-Z0-9]+$).*$',
+        TemplateView.as_view(template_name='index.html'),
+        name='frontend',
+    ),
+]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static('/ckeditor5/', document_root=settings.BASE_DIR / 'ckeditor5')
-
-# Frontend SPA — отдаёт built React app для всех путей, не найденных выше
-urlpatterns += [
-    re_path(r'^app/.*$', TemplateView.as_view(template_name='index.html'), name='frontend'),
-    re_path(r'^admin-panel/.*$', TemplateView.as_view(template_name='index.html'), name='admin-panel'),
-    re_path(r'^forgot-password/$', TemplateView.as_view(template_name='index.html'), name='forgot-password'),
-    re_path(r'^reset-password/.+', TemplateView.as_view(template_name='index.html'), name='reset-password'),
-]
 
 handler404 = page_not_found
 handler500 = server_error

@@ -33,6 +33,7 @@ import SubscriptionsPage from "./pages/SubscriptionsPage"
 import InboxPage from "./pages/InboxPage"
 import ChatPage from "./pages/ChatPage"
 import AdminPage from "./pages/AdminPage"
+import NotFoundPage from "./pages/NotFoundPage"
 
 const App = () => {
   return(
@@ -60,6 +61,7 @@ const App = () => {
       <Route path="/inbox/" element={<InboxPage />} />
       <Route path="/chat/:id/" element={<ChatPage />} />
       <Route path="/admin-panel/" element={<AdminPage />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
         <Footer />
       </AuthProvider>

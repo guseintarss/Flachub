@@ -1,0 +1,1642 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ФлакХаб — презентация</title>
+<style>
+  @font-face {
+    font-family: 'Manrope';
+    src: url('assets/fonts/Manrope.ttf') format('truetype');
+    font-weight: 200 800;
+    font-display: block;
+  }
+  @font-face {
+    font-family: 'Noto Sans Mono';
+    src: url('assets/fonts/NotoSansMono-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-display: block;
+  }
+
+  :root {
+    --bg: #f4f7fc;
+    --paper: #ffffff;
+    --ink: #0b1526;
+    --muted: #5f6f86;
+    --line: #e2e9f3;
+    --blue: #1f6feb;
+    --blue-deep: #0b3b8c;
+    --cyan: #22d3ee;
+    --violet: #7c3aed;
+    --amber: #f59e0b;
+    --green: #10b981;
+    --navy: #06172e;
+    --navy-2: #0a2244;
+    --mono: 'Noto Sans Mono', ui-monospace, monospace;
+    --sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { background: #050b14; }
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #050b14;
+    font-family: var(--sans);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .icon { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; display: block; }
+  .icon--sm { width: 18px; height: 18px; }
+  .mono { font-family: var(--mono); }
+
+  /* ============ STAGE / SLIDES ============ */
+  .stage {
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    flex: none;
+    transform-origin: center center;
+  }
+  .slide {
+    position: absolute;
+    inset: 0;
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px) scale(.995);
+    transition: opacity .38s ease, transform .38s cubic-bezier(.2,.7,.2,1), visibility .38s;
+    background: var(--bg);
+  }
+  .slide.is-active {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    z-index: 2;
+  }
+  .slide--light {
+    background:
+      radial-gradient(760px 420px at 96% -8%, rgba(31,111,235,.10), transparent 70%),
+      radial-gradient(600px 360px at -6% 104%, rgba(124,58,237,.06), transparent 70%),
+      linear-gradient(180deg, #f9fbfe 0%, #f2f6fc 100%);
+  }
+  .slide--light::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(11,21,38,.075) 1px, transparent 1px);
+    background-size: 26px 26px;
+    opacity: .35;
+    mask-image: linear-gradient(180deg, #000 0%, transparent 62%);
+    pointer-events: none;
+  }
+  .slide--dark {
+    background:
+      radial-gradient(900px 520px at 84% 6%, rgba(34,211,238,.15), transparent 62%),
+      radial-gradient(760px 520px at 2% 100%, rgba(124,58,237,.18), transparent 62%),
+      linear-gradient(145deg, #06172e 0%, #0a2144 52%, #06172e 100%);
+    color: #eaf1fb;
+  }
+  .slide--dark::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(700px 520px at 50% 40%, #000 0%, transparent 78%);
+    pointer-events: none;
+  }
+  .inner {
+    position: relative;
+    z-index: 3;
+    height: 100%;
+    padding: 54px 64px 58px;
+    display: flex;
+    flex-direction: column;
+  }
+  .slide-foot {
+    position: absolute;
+    z-index: 4;
+    left: 64px;
+    right: 64px;
+    bottom: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #8a99ad;
+  }
+  .slide--dark .slide-foot { color: #7187a4; }
+  .slide-foot .page-num { color: #6b7b90; }
+  .slide--dark .slide-foot .page-num { color: #8fa5c2; }
+
+  /* ============ TYPE ============ */
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--blue);
+    font-weight: 400;
+  }
+  .kicker::before { content: ""; width: 28px; height: 1px; background: currentColor; opacity: .75; }
+  .slide--dark .kicker { color: var(--cyan); }
+  h1, h2, h3, p { margin: 0; }
+  h1 {
+    margin: 16px 0 12px;
+    font-size: 56px;
+    line-height: 1.02;
+    letter-spacing: -.042em;
+    font-weight: 800;
+  }
+  h2 {
+    font-size: 34px;
+    line-height: 1.08;
+    letter-spacing: -.03em;
+    font-weight: 800;
+  }
+  .lead {
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--muted);
+    max-width: 760px;
+    font-weight: 450;
+  }
+  .slide--dark .lead { color: #a7b8cf; }
+  .accent { color: var(--blue); }
+  .accent-cyan { color: var(--cyan); }
+  .accent-amber { color: var(--amber); }
+  .accent-violet { color: var(--violet); }
+  .accent-green { color: var(--green); }
+
+  /* ============ COVER ============ */
+  .cover { background: #06172e; color: #fff; }
+  .cover-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(900px 560px at 76% 14%, rgba(34,211,238,.20), transparent 62%),
+      radial-gradient(720px 540px at 8% 96%, rgba(124,58,237,.24), transparent 62%),
+      linear-gradient(135deg, #06172e 0%, #0a2244 54%, #07182e 100%);
+  }
+  .cover-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: radial-gradient(760px 560px at 62% 46%, #000 0%, transparent 76%);
+  }
+  .cover-inner { position: relative; z-index: 3; height: 100%; padding: 56px 64px 52px; }
+  .cover-top { display: flex; align-items: center; justify-content: space-between; }
+  .cover-mark {
+    display: flex; align-items: center; gap: 12px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #9fb4cf;
+  }
+  .cover-mark .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 18px rgba(34,211,238,.8); }
+  .cover-year { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; color: #7f97b5; }
+  .cover-main { display: flex; align-items: center; height: 548px; gap: 30px; }
+  .cover-copy { width: 500px; flex: none; padding-top: 18px; }
+  .cover-copy .kicker { color: #7dd3fc; }
+  .cover-copy .kicker::before { background: #7dd3fc; }
+  .cover-title {
+    margin: 22px 0 20px;
+    font-size: 104px;
+    line-height: .92;
+    letter-spacing: -.065em;
+    font-weight: 800;
+    color: #fff;
+  }
+  .cover-title .glow-dot { color: var(--cyan); text-shadow: 0 0 28px rgba(34,211,238,.8); }
+  .cover-sub {
+    font-size: 21px;
+    line-height: 1.45;
+    color: #b7c7dc;
+    max-width: 420px;
+    font-weight: 450;
+  }
+  .cover-sub strong { color: #fff; font-weight: 650; }
+  .cover-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 11px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.055);
+    color: #c8d6e8;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .05em;
+    white-space: nowrap;
+  }
+  .chip .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); }
+  .cover-bottom {
+    position: absolute; left: 64px; right: 64px; bottom: 26px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #6f88a8;
+  }
+  .cover-bottom .line { width: 160px; height: 1px; background: linear-gradient(90deg, rgba(34,211,238,.6), transparent); }
+
+  /* Browser mockup */
+  .browser {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 40px 90px rgba(0,0,0,.48), 0 0 0 1px rgba(255,255,255,.12);
+  }
+  .browser-bar {
+    height: 34px;
+    background: #eef3f9;
+    border-bottom: 1px solid #dce5f0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+  }
+  .browser-dot { width: 8px; height: 8px; border-radius: 50%; background: #c5d1e0; }
+  .browser-dot:nth-child(1) { background: #f3a6a6; }
+  .browser-dot:nth-child(2) { background: #f5cf8c; }
+  .browser-dot:nth-child(3) { background: #9fd8b0; }
+  .browser-url {
+    margin-left: 10px;
+    flex: 1;
+    height: 18px;
+    border-radius: 6px;
+    background: #fff;
+    border: 1px solid #dce5f0;
+    display: flex;
+    align-items: center;
+    padding: 0 9px;
+    font-family: var(--mono);
+    font-size: 8.5px;
+    color: #7d8da3;
+    letter-spacing: .02em;
+  }
+  .browser-body { position: relative; overflow: hidden; background: #f4f7fc; }
+  .browser-body img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top left; }
+  .cover-browser {
+    position: relative;
+    width: 640px;
+    flex: none;
+    transform: rotate(1.4deg);
+    z-index: 2;
+  }
+  .cover-browser .browser-body { height: 400px; }
+  .cover-browser::after {
+    content: "";
+    position: absolute;
+    inset: -40px -40px -60px -40px;
+    background: radial-gradient(60% 60% at 50% 50%, rgba(34,211,238,.18), transparent 70%);
+    z-index: -1;
+    filter: blur(12px);
+  }
+  .float-card {
+    position: absolute;
+    z-index: 5;
+    left: -26px;
+    bottom: 44px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(8,22,42,.86);
+    border: 1px solid rgba(255,255,255,.14);
+    box-shadow: 0 18px 40px rgba(0,0,0,.35);
+    backdrop-filter: blur(10px);
+  }
+  .float-card .pulse {
+    width: 9px; height: 9px; border-radius: 50%; background: #34d399;
+    box-shadow: 0 0 0 5px rgba(52,211,153,.14), 0 0 18px rgba(52,211,153,.7);
+  }
+  .float-card .fc-title { font-size: 11px; font-weight: 700; color: #fff; letter-spacing: .01em; }
+  .float-card .fc-sub { font-family: var(--mono); font-size: 8.5px; color: #8fa7c4; letter-spacing: .06em; margin-top: 2px; }
+
+  /* ============ GENERIC LAYOUT ============ */
+  .top { flex: none; }
+  .grow { flex: 1; }
+  .two-col { display: flex; gap: 44px; }
+  .two-col--left { align-items: flex-start; }
+  .col-380 { width: 380px; flex: none; }
+  .col-420 { width: 420px; flex: none; }
+  .col-560 { width: 560px; flex: none; }
+
+  /* ============ SLIDE 2: PROBLEM ============ */
+  .pain-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 28px;
+  }
+  .pain-card {
+    position: relative;
+    background: rgba(255,255,255,.86);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 24px 24px 22px;
+    min-height: 238px;
+    box-shadow: 0 14px 34px rgba(15,23,42,.055);
+    overflow: hidden;
+  }
+  .pain-card::before {
+    content: "";
+    position: absolute; left: 0; top: 0; right: 0; height: 3px;
+    background: var(--accent);
+  }
+  .pain-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
+  .icon-box {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: grid; place-items: center;
+    background: color-mix(in srgb, var(--accent) 11%, white);
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 18%, white);
+  }
+  .pain-num { font-family: var(--mono); font-size: 11px; color: #a3b0c2; letter-spacing: .08em; }
+  .pain-card h3 { font-size: 19px; letter-spacing: -.02em; margin-bottom: 8px; }
+  .pain-card p { font-size: 14px; line-height: 1.55; color: var(--muted); }
+  .statement {
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 17px 22px;
+    border-radius: 14px;
+    background: var(--navy);
+    color: #dce7f5;
+    font-size: 15px;
+    line-height: 1.4;
+    box-shadow: 0 16px 34px rgba(6,23,46,.16);
+  }
+  .statement .icon { color: var(--cyan); flex: none; }
+  .statement strong { color: #fff; font-weight: 650; }
+
+  /* ============ SLIDE 3: SOLUTION ============ */
+  .solution-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    flex: 1;
+    align-content: start;
+  }
+  .solution-card {
+    background: rgba(255,255,255,.9);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px 22px 20px;
+    min-height: 204px;
+    box-shadow: 0 12px 30px rgba(15,23,42,.045);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .solution-card .icon-box { width: 42px; height: 42px; }
+  .solution-card h3 { font-size: 18px; letter-spacing: -.015em; }
+  .solution-card p { font-size: 13.5px; line-height: 1.55; color: var(--muted); }
+  .solution-card .tagline {
+    margin-top: auto;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #93a1b5;
+  }
+  .platform-note {
+    display: flex; align-items: center; gap: 10px; margin-top: 18px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #8190a5;
+  }
+  .platform-note .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  .solution-stats {
+    display: flex; gap: 10px; margin-top: 26px;
+  }
+  .solution-stats > div {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 11px;
+    background: rgba(255,255,255,.72);
+    border: 1px solid var(--line);
+  }
+  .solution-stats b { display: block; font-size: 22px; line-height: 1; letter-spacing: -.04em; color: var(--blue); }
+  .solution-stats span { display: block; font-family: var(--mono); font-size: 8.5px; letter-spacing: .08em; text-transform: uppercase; color: #8b9bb0; margin-top: 4px; }
+
+  /* ============ SLIDE 4: LOOP ============ */
+  .flow { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); margin-top: 26px; }
+  .flow::before {
+    content: "";
+    position: absolute;
+    left: 10%; right: 10%; top: 22px; height: 2px;
+    background: linear-gradient(90deg, rgba(31,111,235,.12), var(--blue) 22%, var(--blue) 78%, rgba(31,111,235,.12));
+  }
+  .flow-step { position: relative; z-index: 1; text-align: center; padding: 0 12px; }
+  .flow-num {
+    width: 46px; height: 46px; border-radius: 50%;
+    margin: 0 auto 14px;
+    display: grid; place-items: center;
+    background: #f8fafd;
+    border: 2px solid var(--blue);
+    color: var(--blue);
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    box-shadow: 0 0 0 7px #f6f9fd;
+  }
+  .flow-step h3 { font-size: 16px; letter-spacing: -.01em; margin-bottom: 6px; }
+  .flow-step p { font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+  .level-card {
+    margin-top: 28px;
+    background: rgba(255,255,255,.9);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 18px 26px 16px;
+    box-shadow: 0 12px 30px rgba(15,23,42,.045);
+  }
+  .level-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+  .level-head h3 { font-size: 15px; letter-spacing: -.01em; }
+  .level-head span { font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: #93a1b5; }
+  .level-track { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); }
+  .level-track::before {
+    content: "";
+    position: absolute; left: 6%; right: 6%; top: 18px; height: 3px; border-radius: 3px;
+    background: linear-gradient(90deg, #22c55e 0%, #84cc16 28%, #f59e0b 54%, #f97316 76%, #ef4444 100%);
+    opacity: .8;
+  }
+  .level-item { position: relative; z-index: 1; text-align: center; }
+  .level-emoji {
+    width: 38px; height: 38px; border-radius: 50%;
+    margin: 0 auto 7px;
+    display: grid; place-items: center;
+    background: #fff;
+    border: 2px solid var(--line);
+    font-size: 18px;
+    box-shadow: 0 3px 10px rgba(15,23,42,.05);
+  }
+  .level-item:nth-child(1) .level-emoji { border-color: #86efac; }
+  .level-item:nth-child(2) .level-emoji { border-color: #bef264; }
+  .level-item:nth-child(3) .level-emoji { border-color: #fcd34d; }
+  .level-item:nth-child(4) .level-emoji { border-color: #fdba74; }
+  .level-item:nth-child(5) .level-emoji { border-color: #fca5a5; }
+  .level-name { font-size: 12.5px; font-weight: 700; letter-spacing: -.01em; }
+  .level-min { font-family: var(--mono); font-size: 9.5px; color: #8b9bb0; margin-top: 2px; }
+  .level-perks { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .level-perks-label { font-family: var(--mono); font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; color: #93a1b5; margin-right: 4px; }
+  .perk {
+    padding: 5px 9px; border-radius: 6px;
+    background: rgba(255,255,255,.7);
+    border: 1px solid var(--line);
+    font-size: 10.5px; color: #53657d;
+  }
+  .loop-note {
+    display: flex; align-items: center; gap: 9px;
+    margin-top: auto; padding-top: 15px;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .02em; color: #7f90a6;
+  }
+  .loop-note .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); flex: none; }
+
+  /* ============ SLIDE 5: FEED ============ */
+  .callout { display: flex; gap: 13px; padding: 15px 0; border-bottom: 1px solid var(--line); }
+  .callout:first-of-type { padding-top: 4px; }
+  .callout:last-of-type { border-bottom: none; }
+  .callout .icon-box { width: 36px; height: 36px; border-radius: 10px; flex: none; }
+  .callout h3 { font-size: 14.5px; letter-spacing: -.01em; margin-bottom: 3px; }
+  .callout p { font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+  .feed-browser { position: relative; width: 790px; flex: none; margin-left: auto; transform: rotate(-1deg); }
+  .feed-browser .browser-body { height: 488px; }
+  .feed-browser::after {
+    content: "";
+    position: absolute; inset: -30px -20px -40px -30px;
+    background: radial-gradient(55% 55% at 55% 55%, rgba(31,111,235,.16), transparent 70%);
+    z-index: -1; filter: blur(14px);
+  }
+  .mobile-shot {
+    position: absolute;
+    z-index: 6;
+    right: 22px;
+    bottom: -26px;
+    width: 146px;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 5px solid #0b1526;
+    box-shadow: 0 24px 50px rgba(6,23,46,.35);
+    background: #0b1526;
+    transform: rotate(4deg);
+  }
+  .mobile-shot img { display: block; width: 100%; }
+
+  /* ============ SLIDE 6: PROFILE ============ */
+  .profile-browser { position: relative; width: 640px; flex: none; transform: rotate(-1deg); }
+  .profile-browser .browser-body { height: 560px; }
+  .profile-browser::after {
+    content: "";
+    position: absolute; inset: -30px -20px -40px -30px;
+    background: radial-gradient(55% 55% at 50% 50%, rgba(124,58,237,.14), transparent 70%);
+    z-index: -1; filter: blur(14px);
+  }
+  .privilege-card {
+    margin-top: 20px;
+    border-radius: 16px;
+    background: var(--navy);
+    color: #fff;
+    padding: 18px 20px 16px;
+    box-shadow: 0 18px 36px rgba(6,23,46,.18);
+  }
+  .privilege-head { display: flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: #8fa7c4; margin-bottom: 11px; }
+  .privilege-head .icon { color: var(--cyan); width: 16px; height: 16px; }
+  .privilege-row { display: flex; align-items: center; gap: 9px; padding: 6px 0; font-size: 12.5px; color: #d8e4f3; border-top: 1px solid rgba(255,255,255,.08); }
+  .privilege-row:first-of-type { border-top: none; }
+  .privilege-row .check { width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; background: rgba(16,185,129,.16); color: #34d399; flex: none; }
+  .privilege-row .check .icon { width: 10px; height: 10px; stroke-width: 2.4; }
+  .mini-stats { display: flex; gap: 8px; margin-top: 14px; }
+  .mini-stat { flex: 1; padding: 10px 12px; border-radius: 10px; background: #fff; border: 1px solid var(--line); }
+  .mini-stat b { display: block; font-size: 18px; letter-spacing: -.02em; }
+  .mini-stat span { display: block; font-family: var(--mono); font-size: 8.5px; letter-spacing: .08em; text-transform: uppercase; color: #8b9bb0; margin-top: 2px; }
+  .profile-note {
+    margin-top: 18px;
+    padding-left: 13px;
+    border-left: 2px solid var(--blue);
+    max-width: 390px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+  .profile-note strong { color: var(--ink); font-weight: 650; }
+
+  /* ============ SLIDE 7: COMMUNITY ============ */
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 24px; }
+  .feature-card {
+    background: rgba(255,255,255,.9);
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    padding: 16px 16px 14px;
+    min-height: 130px;
+    box-shadow: 0 10px 24px rgba(15,23,42,.04);
+  }
+  .feature-card .icon-box { width: 34px; height: 34px; border-radius: 9px; margin-bottom: 11px; }
+  .feature-card h3 { font-size: 14px; letter-spacing: -.01em; margin-bottom: 4px; }
+  .feature-card p { font-size: 11.5px; line-height: 1.45; color: var(--muted); }
+  .chat-wrap { position: relative; width: 500px; flex: none; margin-left: auto; }
+  .chat-shot {
+    width: 480px;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #dbe4ef;
+    box-shadow: 0 30px 70px rgba(6,23,46,.22), 0 0 0 8px rgba(255,255,255,.55);
+    background: #fff;
+  }
+  .chat-shot img { display: block; width: 100%; }
+  .live-pill {
+    position: absolute; top: -14px; right: -10px; z-index: 4;
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 11px; border-radius: 999px;
+    background: var(--navy); color: #dff7ff;
+    font-family: var(--mono); font-size: 8.5px; letter-spacing: .12em; text-transform: uppercase;
+    box-shadow: 0 12px 26px rgba(6,23,46,.25);
+  }
+  .live-pill .pulse { width: 7px; height: 7px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 4px rgba(52,211,153,.15); }
+  .chat-caption { margin-top: 14px; text-align: right; font-family: var(--mono); font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; color: #8a99ad; }
+
+  /* ============ SLIDE 8: ARCHITECTURE ============ */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: 82px 600px 1fr;
+    grid-template-rows: auto 18px auto 18px auto 18px auto;
+    column-gap: 22px;
+    margin-top: 26px;
+    flex: 1;
+  }
+  .arch-label {
+    align-self: center;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #7f95b2;
+    writing-mode: horizontal-tb;
+  }
+  .arch-clients { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .arch-box {
+    border: 1px solid rgba(255,255,255,.13);
+    background: rgba(255,255,255,.045);
+    border-radius: 13px;
+    padding: 13px 15px;
+    position: relative;
+    overflow: hidden;
+  }
+  .arch-box::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 2px; background: var(--accent, var(--cyan)); opacity: .85; }
+  .arch-box .ab-top { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: #f2f7ff; letter-spacing: -.01em; }
+  .arch-box .ab-top .icon { width: 16px; height: 16px; color: var(--accent, var(--cyan)); }
+  .arch-box .ab-sub { margin-top: 4px; font-family: var(--mono); font-size: 9px; letter-spacing: .04em; color: #8ea6c3; }
+  .arch-client { min-height: 74px; }
+  .arch-nginx { min-height: 50px; display: flex; align-items: center; gap: 12px; }
+  .arch-nginx .ab-top { font-size: 13px; }
+  .arch-nginx .nginx-tag { margin-left: auto; font-family: var(--mono); font-size: 8.5px; letter-spacing: .08em; color: #8ea6c3; }
+  .arch-app { min-height: 112px; }
+  .arch-app .app-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+  .app-chip {
+    padding: 5px 8px; border-radius: 6px;
+    background: rgba(34,211,238,.09);
+    border: 1px solid rgba(34,211,238,.16);
+    font-family: var(--mono); font-size: 8.5px; letter-spacing: .03em; color: #b9e9f4;
+  }
+  .arch-data { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .arch-data .arch-box { min-height: 72px; }
+  .arch-arrow { justify-self: center; width: 2px; height: 18px; background: rgba(255,255,255,.18); position: relative; }
+  .arch-arrow::after {
+    content: ""; position: absolute; left: 50%; bottom: -1px; transform: translateX(-50%);
+    border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid rgba(255,255,255,.35);
+  }
+  .arch-side {
+    grid-column: 3;
+    grid-row: 1 / span 7;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.035);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+  }
+  .arch-side h4 { font-family: var(--mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: #8fa7c4; margin-bottom: 12px; }
+  .side-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .side-chip {
+    padding: 10px 10px 9px; border-radius: 9px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.09);
+  }
+  .side-chip .icon { width: 16px; height: 16px; color: var(--cyan); margin-bottom: 7px; }
+  .side-chip b { display: block; font-size: 10.5px; color: #e8f1fc; font-weight: 650; }
+  .side-chip span { display: block; font-family: var(--mono); font-size: 8px; color: #8ea6c3; margin-top: 2px; }
+  .arch-side .side-foot { margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.1); font-family: var(--mono); font-size: 9px; line-height: 1.7; color: #9db3cf; }
+  .arch-side .side-foot b { color: #fff; font-weight: 600; }
+  .arch-note {
+    margin-top: 14px;
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .05em; color: #8ea6c3;
+  }
+  .arch-note .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); }
+
+  /* ============ SLIDE 9: QUALITY ============ */
+  .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 24px; }
+  .metric-card {
+    background: rgba(255,255,255,.9);
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    padding: 16px 18px 14px;
+    box-shadow: 0 10px 26px rgba(15,23,42,.045);
+    position: relative;
+    overflow: hidden;
+  }
+  .metric-card::after { content: ""; position: absolute; right: -18px; bottom: -28px; width: 84px; height: 84px; border-radius: 50%; background: color-mix(in srgb, var(--accent) 9%, transparent); }
+  .metric-card b { display: block; font-size: 36px; line-height: 1; letter-spacing: -.05em; color: var(--accent); }
+  .metric-card span { display: block; font-size: 11px; line-height: 1.35; color: var(--muted); margin-top: 7px; }
+  .quality-bottom { display: grid; grid-template-columns: 1fr 350px; gap: 18px; margin-top: 18px; flex: 1; }
+  .pillar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .pillar {
+    background: rgba(255,255,255,.86);
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    padding: 15px 16px;
+    min-height: 138px;
+    box-shadow: 0 8px 22px rgba(15,23,42,.035);
+  }
+  .pillar .icon-box { width: 32px; height: 32px; border-radius: 9px; margin-bottom: 10px; }
+  .pillar h3 { font-size: 13.5px; letter-spacing: -.01em; margin-bottom: 4px; }
+  .pillar p { font-size: 11px; line-height: 1.45; color: var(--muted); }
+  .terminal {
+    border-radius: 15px;
+    background: #08172b;
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 20px 44px rgba(6,23,46,.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .terminal-bar { height: 28px; background: rgba(255,255,255,.05); border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; gap: 5px; padding: 0 10px; }
+  .terminal-bar .browser-dot { width: 6px; height: 6px; }
+  .terminal-bar span { margin-left: 8px; font-family: var(--mono); font-size: 8px; letter-spacing: .08em; color: #7f95b2; }
+  .terminal-body { padding: 14px 15px; font-family: var(--mono); font-size: 10.5px; line-height: 1.85; color: #c8d6e8; flex: 1; }
+  .terminal-body .t-prompt { color: #34d399; }
+  .terminal-body .t-green { color: #34d399; }
+  .terminal-body .t-cyan { color: #67e8f9; }
+  .terminal-body .t-muted { color: #6f88a8; }
+  .terminal-body .t-amber { color: #fbbf24; }
+  .terminal-body .t-line { display: block; }
+  .terminal-body .t-gap { display: block; height: 8px; }
+
+  /* ============ SLIDE 10: FINAL ============ */
+  .final-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 54px; margin-top: 30px; }
+  .final-label { display: flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: #8fa7c4; margin-bottom: 10px; }
+  .final-label .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); }
+  .final-list { list-style: none; margin: 0; padding: 0; }
+  .final-list li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 13px; line-height: 1.35; color: #d5e2f2; }
+  .final-list li:last-child { border-bottom: none; }
+  .final-list .li-icon { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; flex: none; margin-top: 1px; }
+  .final-list .li-icon .icon { width: 10px; height: 10px; stroke-width: 2.6; }
+  .final-list--done .li-icon { background: rgba(16,185,129,.16); color: #34d399; }
+  .final-list--next .li-icon { background: rgba(34,211,238,.13); color: #67e8f9; }
+  .final-list--next .li-icon .icon { width: 11px; height: 11px; }
+  .closing {
+    margin-top: auto;
+    padding-top: 22px;
+    border-top: 1px solid rgba(255,255,255,.12);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 30px;
+  }
+  .closing h2 { font-size: 40px; line-height: 1.06; letter-spacing: -.04em; color: #fff; max-width: 720px; }
+  .closing h2 span { color: var(--cyan); }
+  .closing-right { text-align: right; flex: none; padding-bottom: 4px; }
+  .closing-right .url { font-family: var(--mono); font-size: 13px; letter-spacing: .08em; color: #fff; }
+  .closing-right .thanks { font-family: var(--mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: #8fa7c4; margin-top: 7px; }
+
+  /* ============ NOTES ============ */
+  .notes { display: none; }
+  .notes-panel {
+    position: fixed;
+    z-index: 60;
+    right: 22px;
+    bottom: 76px;
+    width: 380px;
+    max-height: 58vh;
+    overflow: auto;
+    padding: 20px 22px;
+    border-radius: 14px;
+    background: rgba(6,17,33,.93);
+    border: 1px solid rgba(255,255,255,.14);
+    color: #dbe7f5;
+    box-shadow: 0 24px 60px rgba(0,0,0,.45);
+    backdrop-filter: blur(14px);
+    transform: translateY(10px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease, transform .2s ease, visibility .2s;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  body.notes-open .notes-panel { opacity: 1; visibility: visible; transform: none; }
+  .notes-panel .notes-time {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 10px;
+  }
+  .notes-panel p { margin: 0 0 10px; }
+  .notes-panel p:last-child { margin-bottom: 0; }
+  .notes-panel strong { color: #fff; font-weight: 650; }
+
+  /* ============ HUD ============ */
+  .progress { position: fixed; z-index: 70; top: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,.08); }
+  .progress__bar { height: 100%; width: 10%; background: linear-gradient(90deg, var(--blue), var(--cyan)); transition: width .3s ease; box-shadow: 0 0 14px rgba(34,211,238,.45); }
+  .hud {
+    position: fixed;
+    z-index: 70;
+    right: 18px;
+    bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+  }
+  body.hud-visible .hud, .hud:focus-within { opacity: 1; pointer-events: auto; }
+  .hud button {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(6,17,33,.72);
+    color: #dbe7f5;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: background .15s ease, border-color .15s ease, transform .15s ease;
+  }
+  .hud button:hover { background: rgba(31,111,235,.75); border-color: rgba(255,255,255,.25); transform: translateY(-1px); }
+  .hud button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .hud button.is-on { background: rgba(31,111,235,.8); border-color: rgba(34,211,238,.5); }
+  .hud .hud-sep { width: 1px; height: 22px; background: rgba(255,255,255,.14); margin: 0 3px; }
+  .hud .hud-hint { font-family: var(--mono); font-size: 8px; letter-spacing: .08em; color: #8fa7c4; padding: 0 4px; }
+
+  /* ============ ANIMATION ============ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  .slide.is-active .fade-up { animation: fadeUp .6s cubic-bezier(.2,.7,.2,1) both; animation-delay: var(--d, 0s); }
+  @media (prefers-reduced-motion: reduce) {
+    .slide, .hud button, .progress__bar { transition: none !important; }
+    .slide.is-active .fade-up { animation: none !important; }
+  }
+
+  /* ============ PRINT ============ */
+  @media print {
+    @page { size: 13.333in 7.5in; margin: 0; }
+    html, body {
+      width: 1280px;
+      height: auto;
+      min-height: 0;
+      display: block;
+      overflow: visible;
+      background: #fff;
+    }
+    .stage { width: 1280px; height: auto; transform: none !important; position: static; }
+    .slide {
+      position: relative;
+      width: 1280px;
+      height: 720px;
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: none !important;
+      page-break-after: always;
+      break-after: page;
+    }
+    .slide:last-child { page-break-after: auto; break-after: auto; }
+    .progress, .hud, .notes-panel { display: none !important; }
+    .slide.is-active .fade-up { animation: none !important; }
+    .cover-browser, .feed-browser, .profile-browser { transform: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></symbol>
+  <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M8.5 12.5 7 22l5-3 5 3-1.5-9.5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+  <symbol id="i-forum" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H6l-3 2v-6a8 8 0 0 1 8-8h2a8 8 0 0 1 8 4Z"/><path d="M8 10h8"/><path d="M8 14h5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4Z"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h8l-1 8 10-12h-8Z"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 6-6 6 6 6"/><path d="m16 6 6 6-6 6"/></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+  <symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18Z"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-notes" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
+  <symbol id="i-full" viewBox="0 0 24 24"><path d="M8 3H3v5"/><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M16 21h5v-5"/></symbol>
+</svg>
+
+<div class="stage" id="stage">
+
+  <!-- ============ 01 COVER ============ -->
+  <section class="slide cover is-active" data-title="Титул" aria-label="Титульный слайд">
+    <div class="cover-bg"></div>
+    <div class="cover-grid"></div>
+    <div class="cover-inner">
+      <div class="cover-top">
+        <div class="cover-mark"><span class="dot"></span> Full-stack продукт · IT-сообщество</div>
+        <div class="cover-year">2026 · PageGlow 3.0</div>
+      </div>
+
+      <div class="cover-main">
+        <div class="cover-copy">
+          <div class="kicker fade-up" style="--d:.05s">Платформа для публикации и обсуждения</div>
+          <h1 class="cover-title fade-up" style="--d:.12s">ФлакХаб<span class="glow-dot">.</span></h1>
+          <p class="cover-sub fade-up" style="--d:.19s">Место, где IT-знания <strong>превращаются в репутацию</strong>: пиши, обсуждай, расти.</p>
+          <div class="cover-chips fade-up" style="--d:.26s">
+            <span class="chip"><span class="dot"></span>Django 6</span>
+            <span class="chip"><span class="dot"></span>React 19</span>
+            <span class="chip"><span class="dot"></span>WebSocket</span>
+            <span class="chip"><span class="dot"></span>Docker</span>
+          </div>
+        </div>
+
+        <div class="cover-browser fade-up" style="--d:.18s">
+          <div class="browser">
+            <div class="browser-bar">
+              <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+              <div class="browser-url">flachub.ru</div>
+            </div>
+            <div class="browser-body">
+              <img src="assets/img/home.png" alt="Лента ФлакХаб">
+            </div>
+          </div>
+          <div class="float-card">
+            <span class="pulse"></span>
+            <div>
+              <div class="fc-title">Realtime-сообщество</div>
+              <div class="fc-sub">ЧАТЫ · УВЕДОМЛЕНИЯ · WEBSOCKET</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cover-bottom">
+        <span>ФлакХаб · flachub.ru</span>
+        <span class="line"></span>
+        <span>Презентация · 5 минут</span>
+      </div>
+    </div>
+    <aside class="notes" data-time="0:00–0:20">
+      <p><strong>Привет!</strong> Это ФлакХаб — платформа для публикации и обсуждения IT-контента. За пять минут покажу, какую проблему она решает, как устроен продукт и что уже готово к запуску.</p>
+      <p>На экране — реальный интерфейс: лента, публикации, профили и сообщения.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 02 PROBLEM ============ -->
+  <section class="slide slide--light" data-title="Проблема" aria-label="Проблема">
+    <div class="inner">
+      <div class="top fade-up">
+        <div class="kicker">Проблема</div>
+        <h1>Знания есть. Места — нет.</h1>
+        <p class="lead">Автору сложно собрать аудиторию, а читателю — найти один поток качественного контента. Всё разложено по разным форматам, и ни один не решает задачу целиком.</p>
+      </div>
+
+      <div class="pain-grid">
+        <article class="pain-card fade-up" style="--accent:#1f6feb; --d:.08s">
+          <div class="pain-head">
+            <div class="icon-box"><svg class="icon"><use href="#i-megaphone"/></svg></div>
+            <span class="pain-num">01</span>
+          </div>
+          <h3>Соцсети</h3>
+          <p>Короткий формат и алгоритм решают, кто увидит пост. Длинные материалы не доходят до аудитории, а знания не накапливаются.</p>
+        </article>
+
+        <article class="pain-card fade-up" style="--accent:#f59e0b; --d:.15s">
+          <div class="pain-head">
+            <div class="icon-box"><svg class="icon"><use href="#i-file"/></svg></div>
+            <span class="pain-num">02</span>
+          </div>
+          <h3>Личные блоги</h3>
+          <p>Тексты есть, но нет сообщества: комментарии редкие, читатель заходит один раз и не возвращается. Автор не видит роста.</p>
+        </article>
+
+        <article class="pain-card fade-up" style="--accent:#7c3aed; --d:.22s">
+          <div class="pain-head">
+            <div class="icon-box"><svg class="icon"><use href="#i-forum"/></svg></div>
+            <span class="pain-num">03</span>
+          </div>
+          <h3>Форумы и чаты</h3>
+          <p>Обсуждение живёт день. Полезное тонет в потоке сообщений, а найти материал через месяц почти невозможно.</p>
+        </article>
+      </div>
+
+      <div class="statement fade-up" style="--d:.3s">
+        <svg class="icon"><use href="#i-spark"/></svg>
+        <span>Нужна площадка, где <strong>публикация, обсуждение и признание</strong> работают вместе — а не в трёх разных сервисах.</span>
+      </div>
+    </div>
+    <div class="slide-foot"><span>ФлакХаб · PageGlow 3.0</span><span class="page-num"></span></div>
+    <aside class="notes" data-time="0:20–0:55">
+      <p>Начнём с проблемы. Знания у IT-специалистов есть, но места, где они накапливаются, часто нет.</p>
+      <p>В соцсетях побеждает короткий формат и алгоритм: длинный текст просто не доходит до аудитории. В личных блогах есть тексты, но нет сообщества — читатель заходит один раз и не возвращается. В чатах и на форумах обсуждение живёт день, а полезное тонет.</p>
+      <p>Автору нужна площадка, где можно писать, получать отклик и расти. Читателю — один поток качественного контента. ФлакХаб закрывает обе задачи.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 03 SOLUTION ============ -->
+  <section class="slide slide--light" data-title="Решение" aria-label="Решение">
+    <div class="inner">
+      <div class="two-col two-col--left" style="flex:1; gap:52px;">
+        <div class="col-420 fade-up" style="padding-top:6px;">
+          <div class="kicker">Решение</div>
+          <h1 style="font-size:52px;">Одна платформа.<br>Полный цикл.</h1>
+          <p class="lead" style="max-width:400px;">ФлакХаб соединяет редактор, ленту, сообщество и систему репутации. Не набор разрозненных функций, а один сценарий.</p>
+          <div class="platform-note"><span class="dot"></span> Web SPA + Mobile API</div>
+          <div class="solution-stats">
+            <div><b>4</b><span>формата</span></div>
+            <div><b>5</b><span>уровней</span></div>
+            <div><b>48</b><span>API</span></div>
+          </div>
+        </div>
+
+        <div class="solution-grid fade-up" style="--d:.12s; flex:1;">
+          <article class="solution-card" style="--accent:#1f6feb;">
+            <div class="icon-box"><svg class="icon"><use href="#i-pen"/></svg></div>
+            <h3>Публикации</h3>
+            <p>Пост, статья, новость и идея. CKEditor 5, обложки, теги и категории — всё для материала любого масштаба.</p>
+            <span class="tagline">4 формата контента</span>
+          </article>
+
+          <article class="solution-card" style="--accent:#0891b2;">
+            <div class="icon-box"><svg class="icon"><use href="#i-chat"/></svg></div>
+            <h3>Обсуждение</h3>
+            <p>Древовидные комментарии, лайки, подписки и уведомления. Разговор продолжается вокруг материала.</p>
+            <span class="tagline">Диалог, а не реакция</span>
+          </article>
+
+          <article class="solution-card" style="--accent:#f59e0b;">
+            <div class="icon-box"><svg class="icon"><use href="#i-award"/></svg></div>
+            <h3>Репутация</h3>
+            <p>5 уровней, бейджи и привилегии за реальный вклад. Автор видит прогресс и получает новые возможности.</p>
+            <span class="tagline">Вклад → уровень → доступ</span>
+          </article>
+
+          <article class="solution-card" style="--accent:#7c3aed;">
+            <div class="icon-box"><svg class="icon"><use href="#i-users"/></svg></div>
+            <h3>Сообщество</h3>
+            <p>Личные сообщения, закладки, коллекции и публичные профили. Читатель становится частью среды.</p>
+            <span class="tagline">От читателя к участнику</span>
+          </article>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>ФлакХаб · PageGlow 3.0</span><span class="page-num"></span></div>
+    <aside class="notes" data-time="0:55–1:30">
+      <p>Что внутри? Четыре типа публикаций: пост, статья, новость и идея. Полноценный редактор CKEditor 5, обложки, теги и категории.</p>
+      <p>Дальше — социальный слой: древовидные комментарии, лайки, подписки и уведомления.</p>
+      <p>И главное отличие — репутация. Пять уровней, бейджи и привилегии, которые открываются за реальный вклад. Плюс личные сообщения, закладки и коллекции.</p>
+      <p>Всё это работает и в вебе, и через API для мобильного клиента.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 04 LOOP ============ -->
+  <section class="slide slide--light" data-title="Как это работает" aria-label="Как это работает">
+    <div class="inner">
+      <div class="top fade-up">
+        <div class="kicker">Как это работает</div>
+        <h1 style="font-size:50px;">Цикл, который удерживает автора</h1>
+        <p class="lead" style="max-width:780px;">Каждое действие в платформе возвращается автору: откликом, репутацией или новой возможностью. Это не разовая публикация, а повторяющийся сценарий.</p>
+      </div>
+
+      <div class="flow fade-up" style="--d:.1s">
+        <div class="flow-step">
+          <div class="flow-num">01</div>
+          <h3>Написать</h3>
+          <p>4 формата, CKEditor 5, обложки и медиа</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">02</div>
+          <h3>Опубликовать</h3>
+          <p>Лента, теги, категории, поиск и RSS</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">03</div>
+          <h3>Получить отклик</h3>
+          <p>Лайки, комментарии и подписки</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">04</div>
+          <h3>Заработать репутацию</h3>
+          <p>Баллы за посты, лайки и комментарии</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">05</div>
+          <h3>Открыть привилегии</h3>
+          <p>Новый уровень, бейджи и лимиты</p>
+        </div>
+      </div>
+
+      <div class="level-card fade-up" style="--d:.2s">
+        <div class="level-head">
+          <h3>Уровни репутации</h3>
+          <span>Репутация не покупается — она начисляется за действия</span>
+        </div>
+        <div class="level-track">
+          <div class="level-item"><div class="level-emoji">🌱</div><div class="level-name">Новичок</div><div class="level-min">0</div></div>
+          <div class="level-item"><div class="level-emoji">🌿</div><div class="level-name">Любитель</div><div class="level-min">100</div></div>
+          <div class="level-item"><div class="level-emoji">🌳</div><div class="level-name">Эксперт</div><div class="level-min">500</div></div>
+          <div class="level-item"><div class="level-emoji">⭐</div><div class="level-name">Мастер</div><div class="level-min">1500</div></div>
+          <div class="level-item"><div class="level-emoji">🔥</div><div class="level-name">Гуру</div><div class="level-min">5000</div></div>
+        </div>
+        <div class="level-perks">
+          <span class="level-perks-label">Что открывает уровень</span>
+          <span class="perk">Создание тегов</span>
+          <span class="perk">Модерация комментариев</span>
+          <span class="perk">Лимиты загрузок</span>
+        </div>
+      </div>
+
+      <div class="loop-note fade-up" style="--d:.28s;"><span class="dot"></span> Репутация начисляется за публикации, лайки, комментарии и подписки — без покупки и накрутки.</div>
+    </div>
+    <div class="slide-foot"><span>ФлакХаб · PageGlow 3.0</span><span class="page-num"></span></div>
+    <aside class="notes" data-time="1:30–2:00">
+      <p>Ключевая механика — цикл. Автор пишет материал в одном из четырёх форматов, публикует его в общую ленту, получает лайки и комментарии, за действия начисляется репутация.</p>
+      <p>Репутация повышает уровень: от Новичка до Гуру. Уровень даёт привилегии — например, создание тегов, модерацию комментариев и повышенные лимиты загрузок.</p>
+      <p>Автор видит прогресс и возвращается, чтобы двигаться дальше. Это не разовая публикация, а цикл удержания.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 05 FEED ============ -->
+  <section class="slide slide--light" data-title="Лента" aria-label="Лента">
+    <div class="inner">
+      <div class="two-col two-col--left" style="flex:1; gap:30px;">
+        <div class="col-380 fade-up" style="padding-top:8px;">
+          <div class="kicker">Продукт · Лента</div>
+          <h1 style="font-size:48px;">Один поток —<br>четыре формата</h1>
+          <p class="lead" style="font-size:16px; max-width:350px;">Посты, статьи, новости и идеи живут в общей ленте. Читатель выбирает глубину погружения, а не другой сервис.</p>
+
+          <div style="margin-top:22px;">
+            <div class="callout">
+              <div class="icon-box" style="--accent:#1f6feb;"><svg class="icon icon--sm"><use href="#i-layers"/></svg></div>
+              <div><h3>Единая лента</h3><p>Все форматы в одном потоке, без переключения между разделами.</p></div>
+            </div>
+            <div class="callout">
+              <div class="icon-box" style="--accent:#0891b2;"><svg class="icon icon--sm"><use href="#i-search"/></svg></div>
+              <div><h3>Навигация</h3><p>Категории, теги и полнотекстовый поиск по материалам.</p></div>
+            </div>
+            <div class="callout">
+              <div class="icon-box" style="--accent:#f59e0b;"><svg class="icon icon--sm"><use href="#i-eye"/></svg></div>
+              <div><h3>Метаданные</h3><p>Просмотры, лайки, время чтения и комментарии — сразу видны.</p></div>
+            </div>
+            <div class="callout">
+              <div class="icon-box" style="--accent:#7c3aed;"><svg class="icon icon--sm"><use href="#i-globe"/></svg></div>
+              <div><h3>Адаптивность</h3><p>Отдельная мобильная вёрстка: тот же продукт в телефоне.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feed-browser fade-up" style="--d:.12s;">
+          <div class="browser">
+            <div class="browser-bar">
+              <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+              <div class="browser-url">flachub.ru — главная</div>
+            </div>
+            <div class="browser-body">
+              <img src="assets/img/home.png" alt="Лента публикаций ФлакХаб">
+            </div>
+          </div>
+          <div class="mobile-shot">
+            <img src="assets/img/mobile.png" alt="Мобильная версия ленты">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>ФлакХаб · PageGlow 3.0</span><span class="page-num"></span></div>
+    <aside class="notes" data-time="2:00–2:35">
+      <p>Посмотрим на продукт. Это лента: в одном потоке посты, статьи, новости и идеи. Слева — навигация по категориям и тегам, сверху — поиск.</p>
+      <p>У каждой карточки видны просмотры, лайки, время чтения и комментарии. Отдельная мобильная вёрстка: тот же продукт удобно читать с телефона.</p>
+      <p>Всё, что вы видите, — реальные экраны приложения.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 06 PROFILE ============ -->
+  <section class="slide slide--light" data-title="Профиль и репутация" aria-label="Профиль и репутация">
+    <div class="inner">
+      <div class="two-col two-col--left" style="flex:1; gap:44px;">
+        <div class="profile-browser fade-up">
+          <div class="browser">
+            <div class="browser-bar">
+              <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+              <div class="browser-url">flachub.ru — профиль автора</div>
+            </div>
+            <div class="browser-body">
+              <img src="assets/img/profile-crop.png" alt="Профиль автора с репутацией и достижениями">
+            </div>
+          </div>
+        </div>
+
+        <div class="fade-up" style="--d:.12s; padding-top:6px;">
+          <div class="kicker">Продукт · Профиль</div>
+          <h1 style="font-size:48px;">Профиль — это<br>портфолио автора</h1>
+          <p class="lead" style="font-size:16px; max-width:410px;">Репутация, уровень, достижения и аудитория собраны в одном месте. Автор видит, как его вклад превращается в статус.</p>
+
+          <div class="mini-stats">
+            <div class="mini-stat"><b>5</b><span>уровней</span></div>
+            <div class="mini-stat"><b>4</b><span>бейджа</span></div>
+            <div class="mini-stat"><b>1</b><span>профиль</span></div>
+          </div>
+
+          <div class="privilege-card">
+            <div class="privilege-head"><svg class="icon"><use href="#i-award"/></svg> Уровень открывает</div>
+            <div class="privilege-row"><span class="check"><svg class="icon"><use href="#i-check"/></svg></span> Создание тегов</div>
+            <div class="privilege-row"><span class="check"><svg class="icon"><use href="#i-check"/></svg></span> Модерация комментариев</div>
+            <div class="privilege-row"><span class="check"><svg class="icon"><use href="#i-check"/></svg></span> Повышенные лимиты загрузок</div>
+          </div>
+          <p class="profile-note">Профиль показывает не только <strong>кто вы</strong>, но и <strong>что вы сделали</strong>: репутацию, достижения и вклад в сообщество.</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>ФлакХаб · PageGlow 3.0</span><span class="page-num"></span></div>
+    <aside class="notes" data-time="2:35–3:10">
+      <p>Профиль — это портфолио автора. Здесь репутация и текущий уровень, достижения, количество подписчиков и подписок, баннер и настройки приватности.</p>
+      <p>Четыре бейджа — «Первые шаги», «Голос», «Эксперт» и «Популярный автор» — выдаются автоматически.</p>
+      <p>Уровень не просто цифра: он открывает возможности внутри платформы. Поэтому профиль мотивирует писать дальше, а не просто хранит аватар.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 07 COMMUNITY ============ -->
+  <section class="slide slide--light" data-title="Сообщество" aria-label="Сообщество и realtime">
+    <div class="inner">
+      <div class="two-col two-col--left" style="flex:1; gap:36px;">
+        <div class="fade-up" style="padding-top:6px;">
+          <div class="kicker">Продукт · Сообщество</div>
+          <h1 style="font-size:48px;">Общение<br>без задержек</h1>
+          <p class="lead" style="font-size:16px; max-width:420px;">Платформа не заканчивается публикацией. Вокруг неё живёт сообщество: в чатах, уведомлениях и сохранённых коллекциях.</p>
+
+          <div class="feature-grid">
+            <article class="feature-card" style="--accent:#1f6feb;">
+              <div class="icon-box"><svg class="icon icon--sm"><use href="#i-zap"/></svg></div>
+              <h3>WebSocket-чаты</h3>
+              <p>Сообщения приходят мгновенно, без перезагрузки страницы.</p>
+            </article>
+            <article class="feature-card" style="--accent:#f59e0b;">
+              <div class="icon-box"><svg class="icon icon--sm"><use href="#i-bell"/></svg></div>
+              <h3>Уведомления</h3>
+              <p>Лайки, комментарии, подписки и новые статьи авторов.</p>
+            </article>
+            <article class="feature-card" style="--accent:#0891b2;">
+              <div class="icon-box"><svg class="icon icon--sm"><use href="#i-bookmark"/></svg></div>
+              <h3>Закладки и коллекции</h3>
+              <p>Сохранить материал, разложить по папкам и вернуться позже.</p>
+            </article>
+            <article class="feature-card" style="--accent:#7c3aed;">
+              <div class="icon-box"><svg class="icon icon--sm"><use href="#i-users"/></svg></div>
+              <h3>Подписки</h3>
+              <p>Персональная лента из авторов, которых вы выбрали.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="chat-wrap fade-up" style="--d:.14s;">
+          <div class="live-pill"><span class="pulse"></span> Live · WebSocket</div>
+          <div class="chat-shot">
+            <img src="assets/img/chat-crop.png" alt="Личные сообщения в реальном времени">
+          </div>
+          <div class="chat-caption">Личные сообщения · realtime</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>ФлакХаб · PageGlow 3.0</span><span class="page-num"></span></div>
+    <aside class="notes" data-time="3:10–3:40">
+      <p>Социальный слой работает в реальном времени. Личные сообщения идут через WebSocket: сообщение появляется у собеседника сразу, без перезагрузки.</p>
+      <p>Уведомления собирают лайки, комментарии, подписки и новые статьи. Закладки и коллекции помогают сохранить материал и вернуться к нему. Подписки формируют персональную ленту.</p>
+      <p>Это превращает платформу из блога в сообщество.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 08 ARCHITECTURE ============ -->
+  <section class="slide slide--dark" data-title="Архитектура" aria-label="Архитектура">
+    <div class="inner">
+      <div class="top fade-up">
+        <div class="kicker">Архитектура</div>
+        <h1 style="font-size:48px; color:#fff;">Один backend — два клиента</h1>
+        <p class="lead" style="max-width:760px; font-size:16px;">Веб-интерфейс и мобильный клиент используют один REST API. Бизнес-логика, права доступа и данные живут в одном месте.</p>
+      </div>
+
+      <div class="arch-grid fade-up" style="--d:.12s;">
+        <div class="arch-label">Клиенты</div>
+        <div class="arch-clients">
+          <div class="arch-box arch-client" style="--accent:#22d3ee;">
+            <div class="ab-top"><svg class="icon"><use href="#i-globe"/></svg> Web SPA</div>
+            <div class="ab-sub">React 19 · Vite · React Router</div>
+          </div>
+          <div class="arch-box arch-client" style="--accent:#a78bfa;">
+            <div class="ab-top"><svg class="icon"><use href="#i-code"/></svg> Mobile client</div>
+            <div class="ab-sub">REST API · JWT · 48 endpoints</div>
+          </div>
+        </div>
+        <div class="arch-side">
+          <h4>Сквозные слои</h4>
+          <div class="side-chips">
+            <div class="side-chip"><svg class="icon"><use href="#i-lock"/></svg><b>Auth</b><span>Session · JWT · OAuth</span></div>
+            <div class="side-chip"><svg class="icon"><use href="#i-pen"/></svg><b>Editor</b><span>CKEditor 5</span></div>
+            <div class="side-chip"><svg class="icon"><use href="#i-search"/></svg><b>SEO</b><span>OG · sitemap · RSS</span></div>
+            <div class="side-chip"><svg class="icon"><use href="#i-server"/></svg><b>Infra</b><span>Docker · Nginx</span></div>
+          </div>
+          <div class="side-foot">
+            <b>48</b> REST-эндпоинтов<br>
+            <b>17</b> доменных моделей<br>
+            <b>1</b> API для web и mobile
+          </div>
+        </div>
+
+        <div></div>
+        <div class="arch-arrow"></div>
+
+        <div class="arch-label">Вход</div>
+        <div class="arch-box arch-nginx" style="--accent:#38bdf8;">
+          <div class="ab-top"><svg class="icon"><use href="#i-server"/></svg> Nginx</div>
+          <span class="nginx-tag">TLS · STATIC · REVERSE PROXY</span>
+        </div>
+
+        <div></div>
+        <div class="arch-arrow"></div>
+
+        <div class="arch-label">Приложение</div>
+        <div class="arch-box arch-app" style="--accent:#22d3ee;">
+          <div class="ab-top"><svg class="icon"><use href="#i-layers"/></svg> Django 6 · DRF</div>
+          <div class="app-chips">
+            <span class="app-chip">REST API</span>
+            <span class="app-chip">Channels · Daphne</span>
+            <span class="app-chip">Gunicorn</span>
+            <span class="app-chip">WebSocket</span>
+          </div>
+        </div>
+
+        <div></div>
+        <div class="arch-arrow"></div>
+
+        <div class="arch-label">Данные</div>
+        <div class="arch-data">
+          <div class="arch-box" style="--accent:#60a5fa;">
+            <div class="ab-top"><svg class="icon"><use href="#i-db"/></svg> PostgreSQL</div>
+            <div class="ab-sub">17 моделей · индексы · миграции</div>
+          </div>
+          <div class="arch-box" style="--accent:#f472b6;">
+            <div class="ab-top"><svg class="icon"><use href="#i-zap"/></svg> Redis</div>
+            <div class="ab-sub">кэш · каналы · сессии</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arch-note fade-up" style="--d:.22s;"><span class="dot"></span> Один код — два клиента. Mobile API готов к подключению приложения.</div>
+    </div>
+    <div class="slide-foot"><span>ФлакХаб · PageGlow 3.0</span><span class="page-num"></span></div>
+    <aside class="notes" data-time="3:40–4:10">
+      <p>Под капотом — один backend и два клиента. Веб-интерфейс — React 19 и Vite. Мобильный клиент может использовать тот же REST API: 48 эндпоинтов и 17 моделей.</p>
+      <p>Запросы проходят через Nginx, приложение работает на Django 6 и DRF, WebSocket — через Channels и Daphne. Данные — PostgreSQL, кэш и каналы — Redis.</p>
+      <p>Аутентификация — сессии, JWT и социальные провайдеры. Всё упаковано в Docker.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 09 QUALITY ============ -->
+  <section class="slide slide--light" data-title="Качество" aria-label="Качество и эксплуатация">
+    <div class="inner">
+      <div class="top fade-up">
+        <div class="kicker">Качество</div>
+        <h1 style="font-size:48px;">Готово к эксплуатации,<br>а не только к демо</h1>
+      </div>
+
+      <div class="metric-grid fade-up" style="--d:.1s;">
+        <div class="metric-card" style="--accent:#1f6feb;"><b>83</b><span>автотеста в pytest — API, модели и представления</span></div>
+        <div class="metric-card" style="--accent:#7c3aed;"><b>3</b><span>версии Python в матрице GitHub Actions</span></div>
+        <div class="metric-card" style="--accent:#f59e0b;"><b>4</b><span>сервиса в production-стеке Docker Compose</span></div>
+        <div class="metric-card" style="--accent:#10b981;"><b>48</b><span>REST-эндпоинтов для web и mobile</span></div>
+      </div>
+
+      <div class="quality-bottom fade-up" style="--d:.18s;">
+        <div class="pillar-grid">
+          <article class="pillar" style="--accent:#1f6feb;">
+            <div class="icon-box"><svg class="icon icon--sm"><use href="#i-check"/></svg></div>
+            <h3>CI/CD</h3>
+            <p>GitHub Actions: линтеры, тесты и сборка Docker-образа на каждый push.</p>
+          </article>
+          <article class="pillar" style="--accent:#7c3aed;">
+            <div class="icon-box"><svg class="icon icon--sm"><use href="#i-shield"/></svg></div>
+            <h3>Безопасность</h3>
+            <p>CSRF, JWT, права доступа, валидация данных и throttling запросов.</p>
+          </article>
+          <article class="pillar" style="--accent:#f59e0b;">
+            <div class="icon-box"><svg class="icon icon--sm"><use href="#i-zap"/></svg></div>
+            <h3>Производительность</h3>
+            <p>Redis-кэш, индексы в БД и оптимизированные запросы к связанным данным.</p>
+          </article>
+          <article class="pillar" style="--accent:#10b981;">
+            <div class="icon-box"><svg class="icon icon--sm"><use href="#i-search"/></svg></div>
+            <h3>SEO и API</h3>
+            <p>Open Graph, sitemap, RSS/Atom и документированный mobile API.</p>
+          </article>
+        </div>
+
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+            <span>pageglow — terminal</span>
+          </div>
+          <div class="terminal-body">
+            <span class="t-line"><span class="t-prompt">$</span> pytest -q</span>
+            <span class="t-line"><span class="t-green">83 passed</span> <span class="t-muted">in 34.03s</span></span>
+            <span class="t-gap"></span>
+            <span class="t-line"><span class="t-prompt">$</span> docker compose up -d</span>
+            <span class="t-line"><span class="t-cyan">app</span> · <span class="t-cyan">db</span> · <span class="t-cyan">redis</span> · <span class="t-cyan">nginx</span></span>
+            <span class="t-gap"></span>
+            <span class="t-line"><span class="t-muted"># GitHub Actions</span></span>
+            <span class="t-line"><span class="t-green">✓</span> lint <span class="t-green">✓</span> tests <span class="t-green">✓</span> build</span>
+            <span class="t-line"><span class="t-muted">python 3.10 / 3.11 / 3.12</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>ФлакХаб · PageGlow 3.0</span><span class="page-num"></span></div>
+    <aside class="notes" data-time="4:10–4:40">
+      <p>Проект готов не только к демо, но и к эксплуатации. 83 автотеста проходят в CI на трёх версиях Python.</p>
+      <p>GitHub Actions проверяет код, собирает Docker-образ и гоняет тесты. В production-стеке — приложение, PostgreSQL, Redis и Nginx.</p>
+      <p>Добавлены CSRF-защита, права доступа, валидация и throttling. Для скорости — Redis-кэш и индексы в базе. Для поиска — Open Graph, sitemap и RSS/Atom.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 10 FINAL ============ -->
+  <section class="slide slide--dark" data-title="Итоги" aria-label="Итоги и дальнейшее развитие">
+    <div class="inner">
+      <div class="top fade-up">
+        <div class="kicker">Итоги и дальше</div>
+        <h1 style="font-size:48px; color:#fff;">Готовый продукт.<br>Понятный следующий шаг.</h1>
+      </div>
+
+      <div class="final-cols fade-up" style="--d:.1s;">
+        <div>
+          <div class="final-label"><span class="dot"></span> Уже работает</div>
+          <ul class="final-list final-list--done">
+            <li><span class="li-icon"><svg class="icon"><use href="#i-check"/></svg></span> Полный цикл публикации и обсуждения</li>
+            <li><span class="li-icon"><svg class="icon"><use href="#i-check"/></svg></span> Репутация, уровни и достижения</li>
+            <li><span class="li-icon"><svg class="icon"><use href="#i-check"/></svg></span> WebSocket-чаты и уведомления</li>
+            <li><span class="li-icon"><svg class="icon"><use href="#i-check"/></svg></span> Web SPA и Mobile API</li>
+            <li><span class="li-icon"><svg class="icon"><use href="#i-check"/></svg></span> Production-инфраструктура и CI</li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="final-label"><span class="dot" style="background:#67e8f9;"></span> Куда расти</div>
+          <ul class="final-list final-list--next">
+            <li><span class="li-icon"><svg class="icon"><use href="#i-arrow-up"/></svg></span> Мобильное приложение на готовом API</li>
+            <li><span class="li-icon"><svg class="icon"><use href="#i-arrow-up"/></svg></span> Рекомендации и умная лента</li>
+            <li><span class="li-icon"><svg class="icon"><use href="#i-arrow-up"/></svg></span> Инструменты модерации</li>
+            <li><span class="li-icon"><svg class="icon"><use href="#i-arrow-up"/></svg></span> Монетизация авторов</li>
+            <li><span class="li-icon"><svg class="icon"><use href="#i-arrow-up"/></svg></span> Аналитика для авторов</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="closing fade-up" style="--d:.2s;">
+        <h2>Знания превращаются<br>в <span>репутацию.</span></h2>
+        <div class="closing-right">
+          <div class="url">flachub.ru</div>
+          <div class="thanks">Спасибо за внимание</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>ФлакХаб · PageGlow 3.0</span><span class="page-num"></span></div>
+    <aside class="notes" data-time="4:40–5:00">
+      <p>Что в итоге? Уже работает полный цикл публикации и обсуждения, репутация и достижения, чаты и уведомления, веб-интерфейс и mobile API, production-инфраструктура и CI.</p>
+      <p>Дальше — мобильное приложение на готовом API, рекомендации, инструменты модерации, монетизация авторов и аналитика.</p>
+      <p>ФлакХаб — это место, где знания превращаются в репутацию. Спасибо!</p>
+    </aside>
+  </section>
+
+</div>
+
+<div class="progress" aria-hidden="true"><div class="progress__bar" id="progressBar"></div></div>
+
+<aside class="notes-panel" id="notesPanel" aria-live="polite"></aside>
+
+<div class="hud" aria-label="Управление презентацией">
+  <span class="hud-hint">← →</span>
+  <button type="button" data-action="prev" aria-label="Предыдущий слайд" title="Предыдущий слайд (←)"><svg class="icon icon--sm"><use href="#i-left"/></svg></button>
+  <button type="button" data-action="next" aria-label="Следующий слайд" title="Следующий слайд (→)"><svg class="icon icon--sm"><use href="#i-right"/></svg></button>
+  <span class="hud-sep"></span>
+  <button type="button" data-action="notes" aria-label="Заметки докладчика" title="Заметки (S)"><svg class="icon icon--sm"><use href="#i-notes"/></svg></button>
+  <button type="button" data-action="fullscreen" aria-label="Полный экран" title="Полный экран (F)"><svg class="icon icon--sm"><use href="#i-full"/></svg></button>
+</div>
+
+<script>
+(function () {
+  const stage = document.getElementById('stage');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const progressBar = document.getElementById('progressBar');
+  const notesPanel = document.getElementById('notesPanel');
+  const pageNums = Array.from(document.querySelectorAll('.page-num'));
+  const notesBtn = document.querySelector('[data-action="notes"]');
+  let current = 0;
+  let touchStartX = null;
+  let touchStartY = null;
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function renderNotes(slide) {
+    const notes = slide.querySelector('.notes');
+    if (!notes) { notesPanel.innerHTML = ''; return; }
+    notesPanel.innerHTML = '<div class="notes-time">' + (notes.dataset.time || '') + '</div>' + notes.innerHTML;
+  }
+
+  function show(index, updateHash) {
+    current = Math.max(0, Math.min(slides.length - 1, index));
+    slides.forEach(function (slide, i) {
+      const active = i === current;
+      slide.classList.toggle('is-active', active);
+      slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+    });
+    const pct = ((current + 1) / slides.length) * 100;
+    progressBar.style.width = pct + '%';
+    pageNums.forEach(function (el) { el.textContent = pad(current + 1) + ' / ' + pad(slides.length); });
+    renderNotes(slides[current]);
+    if (updateHash !== false) {
+      try { history.replaceState(null, '', '#' + (current + 1)); } catch (e) {}
+    }
+  }
+
+  function next() { show(current + 1); }
+  function prev() { show(current - 1); }
+
+  function resize() {
+    const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = 'scale(' + scale + ')';
+  }
+
+  function toggleNotes() {
+    document.body.classList.toggle('notes-open');
+    notesBtn.classList.toggle('is-on', document.body.classList.contains('notes-open'));
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
+
+  document.addEventListener('keydown', function (e) {
+    const key = e.key;
+    if (key === 'ArrowRight' || key === ' ' || key === 'PageDown' || key === 'n' || key === 'N') {
+      e.preventDefault(); next();
+    } else if (key === 'ArrowLeft' || key === 'PageUp' || key === 'p' || key === 'P') {
+      e.preventDefault(); prev();
+    } else if (key === 'Home') {
+      e.preventDefault(); show(0);
+    } else if (key === 'End') {
+      e.preventDefault(); show(slides.length - 1);
+    } else if (key === 's' || key === 'S') {
+      e.preventDefault(); toggleNotes();
+    } else if (key === 'f' || key === 'F') {
+      e.preventDefault(); toggleFullscreen();
+    }
+  });
+
+  document.querySelectorAll('.hud button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const action = btn.dataset.action;
+      if (action === 'next') next();
+      if (action === 'prev') prev();
+      if (action === 'notes') toggleNotes();
+      if (action === 'fullscreen') toggleFullscreen();
+    });
+  });
+
+  stage.addEventListener('click', function (e) {
+    if (e.target.closest('a, button')) return;
+    const rect = stage.getBoundingClientRect();
+    if (e.clientX - rect.left > rect.width / 2) next(); else prev();
+  });
+
+  stage.addEventListener('touchstart', function (e) {
+    if (!e.changedTouches.length) return;
+    touchStartX = e.changedTouches[0].clientX;
+    touchStartY = e.changedTouches[0].clientY;
+  }, { passive: true });
+
+  stage.addEventListener('touchend', function (e) {
+    if (touchStartX === null || !e.changedTouches.length) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    touchStartX = null; touchStartY = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) next(); else prev();
+    }
+  }, { passive: true });
+
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', resize);
+
+  window.addEventListener('hashchange', function () {
+    const h = parseInt(location.hash.replace('#', ''), 10);
+    if (Number.isFinite(h) && h > 0) show(h - 1, false);
+  });
+
+  let hudTimer = null;
+  function revealHud() {
+    document.body.classList.add('hud-visible');
+    clearTimeout(hudTimer);
+    hudTimer = setTimeout(function () { document.body.classList.remove('hud-visible'); }, 1800);
+  }
+  document.addEventListener('mousemove', revealHud, { passive: true });
+  document.addEventListener('touchstart', revealHud, { passive: true });
+
+  const params = new URLSearchParams(location.search);
+  const printMode = params.has('print');
+  if (printMode) document.body.classList.add('print-mode');
+
+  const hash = parseInt(location.hash.replace('#', ''), 10);
+  show(Number.isFinite(hash) && hash > 0 ? hash - 1 : 0, false);
+  resize();
+})();
+</script>
+</body>
+</html>

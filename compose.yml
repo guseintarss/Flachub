@@ -56,6 +56,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
       - META_SITE_DOMAIN=${META_SITE_DOMAIN:-localhost}
+      - FRONTEND_BUILD_DIR=/frontend/build
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media

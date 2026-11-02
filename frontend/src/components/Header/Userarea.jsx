@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { ensureCSRFToken } from '../../csrf'
 
 const UserArea = () => {
   const { user, loading } = useAuth()
@@ -17,7 +18,7 @@ const UserArea = () => {
     if (Notification.permission === 'granted') {
       const n = new Notification(`✉ ${sender}`, {
         body: text,
-        icon: '/favicon.ico',
+        icon: '/favicon.svg',
         tag: `chat-${chatId}`,
       })
       n.onclick = () => {
@@ -107,8 +108,8 @@ const UserArea = () => {
     if (willOpen) loadNotifications()
   }
 
-  function markAllRead() {
-    const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1]
+  async function markAllRead() {
+    const csrf = await ensureCSRFToken()
     fetch('/api/mobile/notifications/mark_all_read/', {
       method: 'POST',
       credentials: 'same-origin',

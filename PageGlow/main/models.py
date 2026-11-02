@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.template.defaultfilters import slugify
-from django.urls import reverse
 from django_ckeditor_5.fields import CKEditor5Field
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
@@ -171,13 +170,24 @@ class Post(ModelMeta, models.Model):
         ]
 
     def get_absolute_url(self):
-        return reverse('post', kwargs={'post_slug': self.slug})
+        return f'/post/{self.slug}/'
+
+    def _unique_slug(self):
+        """Подобрать свободный slug. Нужен, чтобы одинаковые заголовки не падали с IntegrityError."""
+        base = slugify(translist_to_eng(self.title))[:240] or 'post'
+        slug = base
+        counter = 2
+        while Post.objects.exclude(pk=self.pk).filter(slug=slug).exists():
+            slug = f'{base}-{counter}'
+            counter += 1
+        return slug
 
     def save(self, *args, **kwargs):
         key = make_template_fragment_key("side_cache")
         cache.delete(key)
         cache.delete('sidebar_context_data')  # Очищаем кэш sidebar при сохранении поста
-        self.slug = slugify(translist_to_eng(self.title))
+        if not self.slug:
+            self.slug = self._unique_slug()
         super().save(*args, **kwargs)
 
 
@@ -197,7 +207,7 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse('category', kwargs={'cat_slug': self.slug})
+        return f'/category/{self.slug}/'
 
 class TagPost(models.Model):
     tag = models.CharField(max_length=100, db_index=True)
@@ -208,7 +218,7 @@ class TagPost(models.Model):
         return self.tag
 
     def get_absolute_url(self):
-        return reverse('tag', kwargs={'tag_slug': self.slug})
+        return f'/tag/{self.slug}/'
 
     def save(self, *args, **kwargs):
         key = make_template_fragment_key("side_cache")

@@ -258,9 +258,6 @@ function ProfilePage() {
                   <Link className="btn btn-primary" to="/profile/edit/">
                     <i className="fas fa-cog" />
                   </Link>
-                  <Link className="btn btn-outline-primary" to="/reputation/history/">
-                    <i className="fas fa-history" />
-                  </Link>
                 </div>
               )}
 

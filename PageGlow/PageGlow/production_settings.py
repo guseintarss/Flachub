@@ -74,7 +74,8 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 
 # ===== CSRF =====
-CSRF_COOKIE_HTTPONLY = True
+# React читает csrftoken из cookie и передаёт его в заголовке X-CSRFToken.
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='').split(',')
 

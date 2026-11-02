@@ -30,8 +30,6 @@ function Navigations() {
       <ul className="footer-links">
         <li><a href="/"><i className="fas fa-angle-right"></i> Главная</a></li>
         <li><a href="/search/"><i className="fas fa-angle-right"></i> Поиск</a></li>
-        <li><a href="/popular/"><i className="fas fa-angle-right"></i> Популярное</a></li>
-        <li><a href="/about/"><i className="fas fa-angle-right"></i> О платформе</a></li>
       </ul>
     </div>
   )
@@ -43,7 +41,6 @@ function Users() {
       <h4><i className="fas fa-user"></i> Пользователям</h4>
       <ul className="footer-links">
         <li><a href="/profile/"><i className="fas fa-angle-right"></i> Профиль</a></li>
-        <li><a href="/bookmarks/"><i className="fas fa-angle-right"></i> Закладки</a></li>
         <li><a href="/add-post/"><i className="fas fa-angle-right"></i> Создать статью</a></li>
         <li><a href="/subscriptions/"><i className="fas fa-angle-right"></i> Подписки</a></li>
         <li><a href="/login/"><i className="fas fa-angle-right"></i> Войти</a></li>
@@ -65,15 +62,6 @@ function Contacts() {
         <i className="fas fa-map-marker-alt"></i>
         <span>Черкесск, Россия</span>
       </div>
-      <div className="footer-newsletter">
-        <p><i className="fas fa-bell"></i> Рассылка</p>
-        <form className="newsletter-form" onSubmit={(e) => { e.preventDefault(); alert('Спасибо за подписку!'); }}>
-          <input type="email" className="newsletter-input" placeholder="Email" required />
-          <button type="submit" className="newsletter-btn">
-            <i className="fas fa-paper-plane"></i>
-          </button>
-        </form>
-      </div>
     </div>
   )
 }
@@ -83,12 +71,8 @@ function FooterBottom() {
     <div className="footer-bottom">
       <div className="footer-bottom-content">
         <p className="copyright">
-          &copy; 2026-<span id="currentYear"></span> ФлакХаб. Все права защищены.
+          &copy; {new Date().getFullYear()} ФлакХаб. Все права защищены.
         </p>
-        <div className="footer-bottom-links">
-          <a href="/privacy/">Конфиденциальность</a>
-          <a href="/terms/">Соглашение</a>
-        </div>
       </div>
     </div>
   )

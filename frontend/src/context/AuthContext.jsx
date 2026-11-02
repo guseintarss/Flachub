@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { ensureCSRFToken } from '../csrf'
 
 const AuthContext = createContext(null)
 
@@ -18,16 +19,9 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false))
   }, [])
 
-  function csrfToken() {
-    const meta = document.querySelector('meta[name="csrf-token"]')
-    if (meta) return meta.getAttribute('content')
-    const m = document.cookie.match(/csrftoken=([^;]+)/)
-    return m ? m[1] : ''
-  }
-
   const login = useCallback(async (username, password) => {
     const headers = { 'Content-Type': 'application/json' }
-    const csrf = csrfToken()
+    const csrf = await ensureCSRFToken()
     if (csrf) headers['X-CSRFToken'] = csrf
     const res = await fetch('/api/mobile/auth/login/', {
       method: 'POST',
@@ -49,7 +43,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     const headers = {}
-    const csrf = csrfToken()
+    const csrf = await ensureCSRFToken()
     if (csrf) headers['X-CSRFToken'] = csrf
     await fetch('/api/mobile/auth/logout/', {
       method: 'POST',
@@ -61,7 +55,7 @@ export function AuthProvider({ children }) {
 
   const resetPassword = useCallback(async (email) => {
     const headers = { 'Content-Type': 'application/json' }
-    const csrf = csrfToken()
+    const csrf = await ensureCSRFToken()
     if (csrf) headers['X-CSRFToken'] = csrf
     const res = await fetch('/api/mobile/auth/password-reset/', {
       method: 'POST',
@@ -76,7 +70,7 @@ export function AuthProvider({ children }) {
 
   const confirmPasswordReset = useCallback(async (uidb64, token, new_password1, new_password2) => {
     const headers = { 'Content-Type': 'application/json' }
-    const csrf = csrfToken()
+    const csrf = await ensureCSRFToken()
     if (csrf) headers['X-CSRFToken'] = csrf
     const res = await fetch('/api/mobile/auth/password-reset/confirm/', {
       method: 'POST',
@@ -91,7 +85,7 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async (formData) => {
     const headers = { 'Content-Type': 'application/json' }
-    const csrf = csrfToken()
+    const csrf = await ensureCSRFToken()
     if (csrf) headers['X-CSRFToken'] = csrf
     const res = await fetch('/api/mobile/auth/register/', {
       method: 'POST',

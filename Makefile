@@ -102,11 +102,10 @@ bash: ## Bash в контейнере приложения
 # ===========================================
 
 test: ## Запустить тесты
-	docker compose exec pageglow python manage.py test
+	docker compose exec pageglow pytest
 
 test-coverage: ## Запустить тесты с покрытием
-	docker compose exec pageglow coverage run manage.py test
-	docker compose exec pageglow coverage report
+	docker compose exec pageglow pytest --cov-report=term-missing --cov-report=html
 
 # ===========================================
 # Очистка

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
-  fetchPost, toggleLike, toggleBookmark, toggleFavorite,
+  fetchPost, toggleLike, toggleFavorite,
   toggleSubscribe, addComment, deleteComment, toggleCommentLike,
 } from '../api'
 import '../styles/PostDetail.css'

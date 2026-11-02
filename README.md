@@ -234,11 +234,14 @@ make test
 # Тесты с покрытием
 make test-coverage
 
-# Запуск внутри контейнера
-docker compose exec pageglow pytest
+# Локально, без Docker
+cd PageGlow
+source venv/bin/activate
+pytest --create-db --no-cov
 ```
 
 Тестовый стек: pytest, pytest-django, pytest-cov, pytest-xdist, factory-boy, Faker.
+Перед проверкой SPA-маршрутов соберите фронтенд: `cd frontend && npm run build`.
 
 ---
 

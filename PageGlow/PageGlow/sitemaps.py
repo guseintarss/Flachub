@@ -1,5 +1,4 @@
 from django.contrib.sitemaps import Sitemap
-from django.urls import reverse
 from django.utils import timezone
 from main.models import Post, Category, TagPost
 from users.models import User
@@ -7,21 +6,16 @@ from datetime import timedelta
 
 
 class StaticViewSitemap(Sitemap):
-    """Карта статических страниц"""
+    """Карта статических страниц SPA."""
 
     def items(self):
         return [
-            {'name': 'home', 'priority': 1.0, 'changefreq': 'daily'},
-            {'name': 'search', 'priority': 0.5, 'changefreq': 'daily'},
-            {'name': 'popular', 'priority': 0.7, 'changefreq': 'daily'},
-            {'name': 'about', 'priority': 0.6, 'changefreq': 'monthly'},
-            {'name': 'about_us', 'priority': 0.5, 'changefreq': 'monthly'},
-            {'name': 'terms_of_use', 'priority': 0.3, 'changefreq': 'yearly'},
-            {'name': 'privacy_policy', 'priority': 0.3, 'changefreq': 'yearly'},
+            {'location': '/', 'priority': 1.0, 'changefreq': 'daily'},
+            {'location': '/search/', 'priority': 0.5, 'changefreq': 'daily'},
         ]
 
     def location(self, item):
-        return reverse(item['name'])
+        return item['location']
 
     def priority(self, item):
         return item['priority']
@@ -57,7 +51,7 @@ class CategorySitemap(Sitemap):
     priority = 0.8
 
     def items(self):
-        return Category.objects.all()
+        return Category.objects.order_by('pk')
 
     def lastmod(self, obj):
         # Дата последнего поста в категории
@@ -71,7 +65,7 @@ class TagSitemap(Sitemap):
     priority = 0.7
 
     def items(self):
-        return TagPost.objects.all()
+        return TagPost.objects.order_by('pk')
 
     def lastmod(self, obj):
         # Дата последнего поста с тегом
@@ -85,7 +79,10 @@ class UserSitemap(Sitemap):
     priority = 0.6
 
     def items(self):
-        return User.objects.filter(is_active=True)
+        return User.objects.filter(is_active=True).order_by('pk')
+
+    def location(self, obj):
+        return f'/user/{obj.username}/'
 
     def lastmod(self, obj):
         return obj.updated_at

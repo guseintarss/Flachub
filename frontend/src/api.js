@@ -28,14 +28,6 @@ export function toggleLike(postId) {
   })
 }
 
-export function toggleBookmark(postId) {
-  return request('/bookmarks/toggle/', {
-    method: 'POST',
-    body: new URLSearchParams({ post_id: postId }),
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-  })
-}
-
 export function toggleFavorite(postId) {
   return request(`${BASE}/post-actions/${postId}/toggle_favorite/`, {
     method: 'POST',
@@ -68,10 +60,8 @@ export function deleteComment(commentId) {
 }
 
 export function toggleCommentLike(commentId) {
-  return request('/ajax/toggle-comment-like/', {
+  return request(`${BASE}/comment-actions/${commentId}/toggle_like/`, {
     method: 'POST',
-    body: new URLSearchParams({ comment_id: commentId }),
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   })
 }
 
