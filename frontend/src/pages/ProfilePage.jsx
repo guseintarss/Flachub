@@ -256,6 +256,13 @@ function ProfilePage() {
                     </button>
                   </div>
                 )}
+                {isOwn && (
+                <div className="author-actions">
+                  <Link className="btn btn-primary" to="/profile/edit/">
+                    <i className="fas fa-cog" />
+                  </Link>
+                </div>
+              )}
               </div>
 
               {profile.bio && (
@@ -279,14 +286,6 @@ function ProfilePage() {
                   <div className="author-stat-label">Подписок</div>
                 </div>
               </div>
-
-              {isOwn && (
-                <div className="author-actions">
-                  <Link className="btn btn-primary" to="/profile/edit/">
-                    <i className="fas fa-cog" />
-                  </Link>
-                </div>
-              )}
 
               {profile.achievements && profile.achievements.length > 0 && (
                 <div className="author-achievements">
