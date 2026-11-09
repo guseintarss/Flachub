@@ -192,7 +192,8 @@ class PostListSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'slug', 'photo', 'post_type', 'time_create',
                   'time_update', 'author', 'category', 'likes_count', 
                   'favorites_count', 'comments_count', 'is_liked', 
-                  'is_favorited', 'reading_time_minutes', 'views', 'excerpt')
+                  'is_favorited', 'reading_time_minutes', 'views', 'excerpt',
+                  'code_language', 'review_status')
 
     def get_likes_count(self, obj):
         if hasattr(obj, 'likes_count'):
@@ -233,6 +234,7 @@ class PostListSerializer(serializers.ModelSerializer):
 
 class PostDetailSerializer(serializers.ModelSerializer):
     author = UserPublicSerializer(read_only=True)
+    reviewer = UserPublicSerializer(read_only=True)
     category = CategorySerializer(source='cat', read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     likes_count = serializers.SerializerMethodField()
@@ -245,6 +247,9 @@ class PostDetailSerializer(serializers.ModelSerializer):
     current_user = serializers.SerializerMethodField()
     reading_time_minutes = serializers.SerializerMethodField()
     similar_posts = serializers.SerializerMethodField()
+    is_review_author = serializers.SerializerMethodField()
+    can_claim_review = serializers.SerializerMethodField()
+    can_release_review = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -253,7 +258,10 @@ class PostDetailSerializer(serializers.ModelSerializer):
                   'time_create', 'time_update', 'author', 'category', 'tags',
                   'likes_count', 'favorites_count', 'comments_count', 'comments', 'is_liked',
                   'is_favorited', 'is_subscribed', 'current_user',
-                  'reading_time_minutes', 'views', 'similar_posts')
+                  'reading_time_minutes', 'views', 'similar_posts',
+                  'code_snippet', 'code_language', 'review_focus', 'review_status',
+                  'reviewer', 'review_accepted_at', 'is_review_author',
+                  'can_claim_review', 'can_release_review')
 
     def get_likes_count(self, obj):
         if hasattr(obj, 'likes_count'):
@@ -269,7 +277,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
         return obj.comments.filter(is_active=True).count()
 
     def get_comments(self, obj):
-        qs = obj.comments.filter(parent=None, is_active=True).select_related('author').prefetch_related('likes')
+        qs = obj.comments.filter(parent=None, is_active=True).select_related('author', 'post').prefetch_related('likes')
         return CommentWithRepliesSerializer(qs, many=True, context=self.context).data
 
     def get_is_liked(self, obj):
@@ -306,21 +314,113 @@ class PostDetailSerializer(serializers.ModelSerializer):
         similar = obj.get_similar_posts(limit=4)
         return PostListSerializer(similar, many=True, context=self.context).data
 
+    def get_is_review_author(self, obj):
+        request = self.context.get('request')
+        return bool(
+            request and request.user.is_authenticated
+            and obj.author_id == request.user.id
+        )
+
+    def get_can_claim_review(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+        return (
+            obj.post_type == Post.PostType.REVIEW
+            and obj.is_published == Post.Status.PUBLISHED
+            and obj.review_status == Post.ReviewStatus.OPEN
+            and obj.author_id != request.user.id
+        )
+
+    def get_can_release_review(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+        return (
+            obj.review_status == Post.ReviewStatus.IN_REVIEW
+            and (obj.reviewer_id == request.user.id or request.user.is_staff)
+        )
+
 
 class PostCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'slug', 'title', 'content', 'photo', 'post_type', 'is_published',
-                  'cat', 'tags')
+                  'cat', 'tags', 'code_snippet', 'code_language', 'review_focus')
         read_only_fields = ('slug',)
         extra_kwargs = {
             'cat': {'required': False, 'allow_null': True},
         }
 
+    def validate(self, attrs):
+        instance = self.instance
+        post_type = attrs.get(
+            'post_type',
+            instance.post_type if instance else Post.PostType.POST,
+        )
+
+        if post_type == Post.PostType.REVIEW:
+            code_snippet = attrs.get(
+                'code_snippet',
+                instance.code_snippet if instance else '',
+            )
+            code_language = attrs.get(
+                'code_language',
+                instance.code_language if instance else '',
+            )
+            errors = {}
+            if not (code_snippet or '').strip():
+                errors['code_snippet'] = 'Для разбора нужен код'
+            if not (code_language or '').strip():
+                errors['code_language'] = 'Укажите язык кода'
+            if errors:
+                raise serializers.ValidationError(errors)
+        elif instance and instance.post_type == Post.PostType.REVIEW:
+            # Смена типа с review на другой: чистим состояние разбора.
+            attrs['code_snippet'] = ''
+            attrs['code_language'] = ''
+            attrs['review_focus'] = ''
+            attrs['reviewer'] = None
+            attrs['review_status'] = Post.ReviewStatus.OPEN
+            attrs['review_accepted_at'] = None
+
+        return attrs
+
 
 # ===== Comment Serializers =====
 
-class CommentWithRepliesSerializer(serializers.ModelSerializer):
+class CommentReviewFieldsMixin(serializers.Serializer):
+    """Общие review-поля и флаги действий для комментариев."""
+
+    can_accept = serializers.SerializerMethodField()
+    can_resolve = serializers.SerializerMethodField()
+
+    def get_can_accept(self, obj):
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if not user or not user.is_authenticated:
+            return False
+        post = obj.post
+        return bool(
+            post.post_type == Post.PostType.REVIEW
+            and post.review_status != Post.ReviewStatus.COMPLETED
+            and post.author_id == user.id
+            and obj.author_id != user.id
+            and not obj.is_accepted
+        )
+
+    def get_can_resolve(self, obj):
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if not user or not user.is_authenticated:
+            return False
+        return bool(
+            obj.line_start is not None
+            and (obj.author_id == user.id or obj.post.author_id == user.id)
+        )
+
+
+class CommentWithRepliesSerializer(CommentReviewFieldsMixin, serializers.ModelSerializer):
     author = UserPublicSerializer(read_only=True)
     likes_count = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
@@ -329,7 +429,9 @@ class CommentWithRepliesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'author', 'parent', 'content', 'created_at',
-                  'likes_count', 'is_liked', 'replies')
+                  'likes_count', 'is_liked', 'replies',
+                  'line_start', 'line_end', 'severity', 'is_resolved',
+                  'is_accepted', 'can_accept', 'can_resolve')
 
     def get_likes_count(self, obj):
         return obj.number_of_likes()
@@ -341,11 +443,11 @@ class CommentWithRepliesSerializer(serializers.ModelSerializer):
         return False
 
     def get_replies(self, obj):
-        replies = obj.replies.filter(is_active=True).select_related('author').prefetch_related('likes')
+        replies = obj.replies.filter(is_active=True).select_related('author', 'post').prefetch_related('likes')
         return CommentWithRepliesSerializer(replies, many=True, context=self.context).data
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class CommentSerializer(CommentReviewFieldsMixin, serializers.ModelSerializer):
     author = UserPublicSerializer(read_only=True)
     likes_count = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
@@ -355,7 +457,8 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'post', 'author', 'parent', 'content', 'created_at',
                   'updated_at', 'is_edited', 'likes_count', 'is_liked', 
-                  'replies_count')
+                  'replies_count', 'line_start', 'line_end', 'severity',
+                  'is_resolved', 'is_accepted', 'can_accept', 'can_resolve')
         read_only_fields = ('author', 'is_edited')
 
     def get_likes_count(self, obj):
@@ -374,12 +477,60 @@ class CommentSerializer(serializers.ModelSerializer):
 class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ('content', 'parent')
+        fields = ('content', 'parent', 'line_start', 'line_end', 'severity')
 
     def validate_content(self, value):
         if not value.strip():
             raise serializers.ValidationError("Комментарий не может быть пустым")
         return value
+
+    def validate(self, attrs):
+        instance = self.instance
+        post = self.context.get('post')
+        if post is None and instance is not None:
+            post = instance.post
+
+        line_start = attrs.get(
+            'line_start',
+            instance.line_start if instance else None,
+        )
+        line_end = attrs.get(
+            'line_end',
+            instance.line_end if instance else None,
+        )
+
+        if line_start is None:
+            if line_end is not None:
+                raise serializers.ValidationError(
+                    {'line_end': 'Нельзя указать конец строки без начала'}
+                )
+            return attrs
+
+        if post is None or post.post_type != Post.PostType.REVIEW:
+            raise serializers.ValidationError(
+                {'line_start': 'Строчные замечания доступны только для разборов'}
+            )
+
+        total_lines = len((post.code_snippet or '').splitlines())
+        errors = {}
+        if line_start < 1 or line_start > total_lines:
+            errors['line_start'] = (
+                f'Строка должна быть в диапазоне 1–{total_lines}'
+            )
+
+        if line_end is None:
+            line_end = line_start
+            attrs['line_end'] = line_end
+        elif line_end < line_start:
+            errors['line_end'] = 'Конец строки не может быть раньше начала'
+        elif line_end > total_lines:
+            errors['line_end'] = (
+                f'Строка должна быть в диапазоне 1–{total_lines}'
+            )
+
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
 
 
 # ===== Notification Serializers =====

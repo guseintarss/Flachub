@@ -1,0 +1,796 @@
+/* =====================================================
+   «Разборы» — редактор, страница поста, карточка, профиль
+   ===================================================== */
+
+:root {
+  --review-code-bg: #0f172a;
+  --review-code-surface: #111c33;
+  --review-code-text: #e2e8f0;
+  --review-code-muted: #7c8aa5;
+  --review-accent: #299cf5;
+}
+
+html.dark-mode {
+  --review-code-bg: #141517;
+  --review-code-surface: #1b1c1e;
+  --review-code-text: #e6e8eb;
+  --review-code-muted: #7f8a99;
+}
+
+/* ---------- Редактор: параметры разбора ---------- */
+
+.review-editor-block {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: 14px;
+}
+
+.review-editor-header {
+  margin-bottom: 16px;
+}
+
+.review-editor-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.review-editor-header h3 i {
+  color: var(--primary);
+}
+
+.review-editor-header p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.review-required {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.review-code-input {
+  min-height: 280px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  tab-size: 2;
+  white-space: pre;
+  overflow-x: auto;
+  resize: vertical;
+}
+
+.review-secret-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #92400e;
+  background: #fef3c7;
+  border-radius: 8px;
+}
+
+.review-secret-hint i {
+  margin-top: 2px;
+}
+
+/* ---------- Статусы ---------- */
+
+.review-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.review-status-open {
+  color: #b45309;
+  background: #fef3c7;
+}
+
+.review-status-in_review {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.review-status-completed {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.review-language-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.review-language-badge i {
+  font-size: 0.65rem;
+}
+
+/* ---------- Панель разбора на странице поста ---------- */
+
+.review-panel {
+  margin: 4px 0 28px;
+  padding: 22px;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.review-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.review-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.review-panel-title i {
+  color: var(--primary);
+}
+
+.review-panel-subtitle {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.review-panel .review-status-badge {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  flex-shrink: 0;
+}
+
+.review-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.review-meta-item {
+  min-width: 0;
+}
+
+.review-meta-item dt {
+  margin-bottom: 2px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.review-meta-item dd {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.review-meta-item a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.review-meta-item a:hover {
+  text-decoration: underline;
+}
+
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.review-author-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #1e40af;
+  background: #eff6ff;
+  border-radius: 8px;
+}
+
+.review-author-hint i {
+  margin-top: 2px;
+}
+
+.review-author-hint.is-done {
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.review-panel .comment-error {
+  margin-bottom: 12px;
+}
+
+/* ---------- Код с номерами строк ---------- */
+
+.review-code {
+  max-height: 560px;
+  overflow: auto;
+  background: var(--review-code-bg);
+  border: 1px solid rgba(15, 23, 42, 0.6);
+  border-radius: 10px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+.review-code-line {
+  display: grid;
+  grid-template-columns: 30px 3.4em minmax(0, 1fr);
+  align-items: stretch;
+  min-height: 26px;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.review-code-line:hover {
+  background: rgba(41, 156, 245, 0.1);
+}
+
+.review-code-line.is-selected {
+  background: rgba(41, 156, 245, 0.18);
+  border-left-color: var(--review-accent);
+}
+
+.review-code-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--review-code-muted);
+  font-size: 0.62rem;
+  cursor: pointer;
+  opacity: 0.45;
+  transition: opacity 0.12s ease, color 0.12s ease;
+}
+
+.review-code-line:hover .review-code-add,
+.review-code-add:focus-visible {
+  opacity: 1;
+  color: var(--review-accent);
+}
+
+.review-code-add:focus-visible {
+  outline: 2px solid var(--review-accent);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+
+.review-code-line.is-selected .review-code-add {
+  opacity: 1;
+  color: var(--review-accent);
+}
+
+.review-code-number {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  color: var(--review-code-muted);
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.review-code-line.is-selected .review-code-number {
+  color: var(--review-accent);
+}
+
+.review-code-text {
+  display: block;
+  padding: 2px 12px 2px 4px;
+  color: var(--review-code-text);
+  font-family: inherit;
+  font-size: inherit;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.review-code-empty {
+  margin: 0;
+  padding: 20px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+  background: var(--bg);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+/* ---------- Комментарии-замечания ---------- */
+
+.review-comments-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.review-comment-target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #1e40af;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+}
+
+.review-comment-target i {
+  margin-right: 2px;
+}
+
+.review-target-cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #1e40af;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.review-target-cancel:hover {
+  background: rgba(30, 64, 175, 0.1);
+}
+
+.review-comment-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.review-comment-controls label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.review-severity-select {
+  width: auto;
+  min-width: 180px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  font-size: 0.85rem;
+}
+
+.review-comment-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 4px 0 2px;
+}
+
+.review-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.review-line-badge {
+  color: var(--tags-color);
+  background: var(--tags-bg);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.review-severity-blocker {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.review-severity-major {
+  color: #c2410c;
+  background: #ffedd5;
+}
+
+.review-severity-minor {
+  color: #a16207;
+  background: #fef9c3;
+}
+
+.review-severity-nit {
+  color: #475569;
+  background: #f1f5f9;
+}
+
+.review-badge-accepted {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.review-badge-resolved {
+  color: #3730a3;
+  background: #e0e7ff;
+}
+
+.review-accept-btn {
+  color: #047857;
+  font-weight: 600;
+}
+
+.review-accept-btn:hover {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.review-resolve-btn {
+  color: #4338ca;
+  font-weight: 600;
+}
+
+.review-resolve-btn:hover {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.review-accept-btn:disabled,
+.review-resolve-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---------- Профиль ---------- */
+
+.review-profile-section + .review-profile-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.review-profile-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.review-profile-title > i {
+  color: var(--primary);
+}
+
+.review-profile-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  padding: 1px 8px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: rgba(12, 106, 207, 0.1);
+}
+
+.review-stats-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ---------- Тёмная тема ---------- */
+
+html.dark-mode .review-editor-block {
+  background: var(--dark-bg);
+  border-color: var(--dark-border);
+  border-left-color: var(--dark-primary);
+}
+
+html.dark-mode .review-secret-hint {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+}
+
+html.dark-mode .review-status-open {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.14);
+}
+
+html.dark-mode .review-status-in_review {
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.14);
+}
+
+html.dark-mode .review-status-completed {
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.14);
+}
+
+html.dark-mode .review-language-badge {
+  background: var(--dark-bg);
+  border-color: var(--dark-border);
+}
+
+html.dark-mode .review-panel {
+  background: linear-gradient(180deg, var(--dark-surface) 0%, var(--dark-bg) 100%);
+  border-color: var(--dark-border);
+  box-shadow: var(--dark-shadow);
+}
+
+html.dark-mode .review-meta {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+}
+
+html.dark-mode .review-author-hint {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.12);
+}
+
+html.dark-mode .review-author-hint.is-done {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+html.dark-mode .review-code {
+  border-color: var(--dark-border);
+}
+
+html.dark-mode .review-code-line:hover {
+  background: rgba(41, 156, 245, 0.12);
+}
+
+html.dark-mode .review-comment-target {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.28);
+}
+
+html.dark-mode .review-target-cancel {
+  color: #93c5fd;
+}
+
+html.dark-mode .review-target-cancel:hover {
+  background: rgba(147, 197, 253, 0.12);
+}
+
+html.dark-mode .review-line-badge {
+  color: var(--dark-tags-color);
+  background: var(--dark-tags-bg);
+}
+
+html.dark-mode .review-severity-blocker {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.16);
+}
+
+html.dark-mode .review-severity-major {
+  color: #fdba74;
+  background: rgba(249, 115, 22, 0.16);
+}
+
+html.dark-mode .review-severity-minor {
+  color: #fde047;
+  background: rgba(234, 179, 8, 0.14);
+}
+
+html.dark-mode .review-severity-nit {
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.14);
+}
+
+html.dark-mode .review-badge-accepted {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.14);
+}
+
+html.dark-mode .review-badge-resolved {
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.16);
+}
+
+html.dark-mode .review-accept-btn:hover {
+  background: rgba(16, 185, 129, 0.14);
+  color: #34d399;
+}
+
+html.dark-mode .review-resolve-btn:hover {
+  background: rgba(99, 102, 241, 0.16);
+  color: #a5b4fc;
+}
+
+html.dark-mode .review-profile-count {
+  color: var(--dark-primary);
+  background: rgba(41, 156, 245, 0.14);
+}
+
+/* ---------- Адаптив ---------- */
+
+@media (max-width: 768px) {
+  .review-editor-block {
+    padding: 16px;
+  }
+
+  .review-panel {
+    padding: 16px;
+    margin-bottom: 22px;
+    border-radius: 10px;
+  }
+
+  .review-panel-header {
+    gap: 8px;
+  }
+
+  .review-panel-title {
+    font-size: 1.02rem;
+  }
+
+  .review-panel .review-status-badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+  }
+
+  .review-meta {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .review-code {
+    max-height: 420px;
+    font-size: 0.78rem;
+  }
+
+  .review-code-line {
+    grid-template-columns: 26px 2.8em minmax(0, 1fr);
+  }
+
+  .review-code-number {
+    padding-right: 7px;
+    font-size: 0.68rem;
+  }
+
+  .review-code-text {
+    padding-right: 8px;
+  }
+
+  .review-code-add {
+    opacity: 0.7;
+  }
+
+  .review-comment-controls {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .review-severity-select {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .review-comment-target {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .review-profile-section + .review-profile-section {
+    margin-top: 22px;
+    padding-top: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .review-panel {
+    padding: 13px;
+  }
+
+  .review-panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .review-code {
+    font-size: 0.72rem;
+    border-radius: 8px;
+  }
+
+  .review-code-line {
+    grid-template-columns: 24px 2.5em minmax(0, 1fr);
+  }
+
+  .review-comment-badges {
+    gap: 4px;
+  }
+
+  .review-badge {
+    font-size: 0.66rem;
+    padding: 2px 6px;
+  }
+
+  .review-profile-title {
+    font-size: 0.92rem;
+  }
+
+  .review-stats-row {
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-code-line,
+  .review-code-add,
+  .review-target-cancel {
+    transition: none;
+  }
+}

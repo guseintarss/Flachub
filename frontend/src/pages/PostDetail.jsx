@@ -3,16 +3,21 @@ import { useParams, Link } from 'react-router-dom'
 import {
   fetchPost, toggleLike, toggleFavorite,
   toggleSubscribe, addComment, deleteComment, toggleCommentLike,
+  claimReview, releaseReview, acceptReviewComment, resolveReviewComment,
 } from '../api'
+import {
+  SEVERITY_OPTIONS, severityLabel, formatCommentLine,
+  reviewStatusKey, reviewStatusLabel,
+} from '../reviewMeta'
 import '../styles/PostDetail.css'
 import Sidebar from '../components/Sidebar/Sidebar'
 import { PostDetailSkeleton } from '../components/Skeleton'
 
 const postTypeLabel = {
-  article: 'Статья', news: 'Новость', idea: 'Идея', post: 'Пост',
+  article: 'Статья', news: 'Новость', idea: 'Идея', post: 'Пост', review: 'Разбор',
 }
 const postTypeIcon = {
-  article: 'fa-file-alt', news: 'fa-newspaper', idea: 'fa-lightbulb', post: 'fa-sticky-note',
+  article: 'fa-file-alt', news: 'fa-newspaper', idea: 'fa-lightbulb', post: 'fa-sticky-note', review: 'fa-code',
 }
 
 function ReadingProgress() {
@@ -112,13 +117,163 @@ function getAuthorName(comment) {
   return comment.author?.username || 'Неизвестно'
 }
 
-function CommentItem({ comment, postId, currentUser, onCommentAction }) {
+function ReviewStatusBadge({ status }) {
+  const key = reviewStatusKey(status)
+  const icon = key === 'completed' ? 'fa-check-circle' : key === 'in_review' ? 'fa-hourglass-half' : 'fa-circle'
+  return (
+    <span className={`review-status-badge review-status-${key}`}>
+      <i className={`fas ${icon}`} aria-hidden="true" /> {reviewStatusLabel(status)}
+    </span>
+  )
+}
+
+function ReviewCode({ code, selectedLine, onSelectLine }) {
+  const normalized = String(code || '').replace(/\r\n?/g, '\n')
+  const lines = normalized.split('\n')
+  // Python-бэкенд считает строки через splitlines(): финальный перевод строки
+  // не создаёт новую строку, поэтому не показываем пустую строку в конце.
+  if (lines.length > 1 && lines[lines.length - 1] === '') lines.pop()
+
+  if (!normalized.trim()) {
+    return <p className="review-code-empty">Код для разбора не указан.</p>
+  }
+
+  return (
+    <div className="review-code" aria-label="Код для разбора">
+      {lines.map((line, index) => {
+        const lineNumber = index + 1
+        const isSelected = selectedLine === lineNumber
+        return (
+          <div
+            key={lineNumber}
+            className={`review-code-line${isSelected ? ' is-selected' : ''}`}
+            onClick={() => onSelectLine(lineNumber)}
+          >
+            <button
+              type="button"
+              className="review-code-add"
+              title={`Оставить замечание к строке ${lineNumber}`}
+              aria-label={`Оставить замечание к строке ${lineNumber}`}
+              onClick={e => { e.stopPropagation(); onSelectLine(lineNumber) }}
+            >
+              <i className="fas fa-plus" aria-hidden="true" />
+            </button>
+            <span className="review-code-number" aria-hidden="true">{lineNumber}</span>
+            <code className="review-code-text">{line || ' '}</code>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function ReviewPanel({ post, selectedLine, onSelectLine, onPostChange }) {
+  const [action, setAction] = useState('')
+  const [error, setError] = useState('')
+  const status = post.review_status || 'open'
+  const isAuthor = post.is_review_author ?? false
+
+  async function runAction(kind, request, errorMessage) {
+    if (action) return
+    setAction(kind)
+    setError('')
+    try {
+      const data = await request()
+      onPostChange(data)
+    } catch {
+      setError(errorMessage)
+    }
+    setAction('')
+  }
+
+  function handleClaim() {
+    runAction('claim', () => claimReview(post.slug), 'Не удалось взять разбор. Возможно, его уже взял другой ревьюер.')
+  }
+
+  function handleRelease() {
+    if (!window.confirm('Освободить разбор? Он снова появится в очереди.')) return
+    runAction('release', () => releaseReview(post.slug), 'Не удалось освободить разбор. Обновите страницу и попробуйте снова.')
+  }
+
+  return (
+    <section className="review-panel" aria-labelledby="review-panel-title">
+      <div className="review-panel-header">
+        <div>
+          <h2 className="review-panel-title" id="review-panel-title">
+            <i className="fas fa-code" /> Разбор кода
+          </h2>
+          <p className="review-panel-subtitle">Замечания можно привязать к конкретной строке.</p>
+        </div>
+        <ReviewStatusBadge status={status} />
+      </div>
+
+      <dl className="review-meta">
+        <div className="review-meta-item">
+          <dt>Язык</dt>
+          <dd>{post.code_language || '—'}</dd>
+        </div>
+        <div className="review-meta-item">
+          <dt>Фокус</dt>
+          <dd>{post.review_focus || 'Не указан'}</dd>
+        </div>
+        <div className="review-meta-item">
+          <dt>Ревьюер</dt>
+          <dd>
+            {post.reviewer ? (
+              <Link to={`/user/${post.reviewer.username}/`}>{post.reviewer.username}</Link>
+            ) : 'Не назначен'}
+          </dd>
+        </div>
+      </dl>
+
+      {(post.can_claim_review || post.can_release_review) && (
+        <div className="review-actions">
+          {post.can_claim_review && (
+            <button type="button" className="btn btn-primary" onClick={handleClaim} disabled={!!action}>
+              {action === 'claim'
+                ? <i className="fas fa-spinner fa-spin" />
+                : <i className="fas fa-hand-paper" />}{' '}
+              Взять разбор
+            </button>
+          )}
+          {post.can_release_review && (
+            <button type="button" className="btn btn-secondary" onClick={handleRelease} disabled={!!action}>
+              {action === 'release'
+                ? <i className="fas fa-spinner fa-spin" />
+                : <i className="fas fa-undo" />}{' '}
+              Освободить
+            </button>
+          )}
+        </div>
+      )}
+
+      {isAuthor && status !== 'completed' && (
+        <p className="review-author-hint">
+          <i className="fas fa-info-circle" /> Выберите лучшее замечание и нажмите «Принять», чтобы завершить разбор.
+        </p>
+      )}
+      {isAuthor && status === 'completed' && (
+        <p className="review-author-hint is-done">
+          <i className="fas fa-check-circle" /> Разбор завершён — принятое замечание отмечено в комментариях.
+        </p>
+      )}
+
+      {error && <div className="comment-error" role="alert">{error}</div>}
+
+      <ReviewCode code={post.code_snippet} selectedLine={selectedLine} onSelectLine={onSelectLine} />
+    </section>
+  )
+}
+
+function CommentItem({ comment, postId, currentUser, onCommentAction, onCommentUpdate, onCommentAccepted, reviewCompleted }) {
   const [liked, setLiked] = useState(comment.is_liked || false)
   const [likesCount, setLikesCount] = useState(comment.likes_count || 0)
   const [showReplyForm, setShowReplyForm] = useState(false)
   const [replyContent, setReplyContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [reviewAction, setReviewAction] = useState('')
+  const [reviewError, setReviewError] = useState('')
   const [shareOpen, setShareOpen] = useState(false)
   const shareRef = useRef()
   const url = `${window.location.origin}/post/${postId}/`
@@ -161,10 +316,38 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
     try {
       await deleteComment(comment.id)
       onCommentAction(null, comment.id)
-    } catch {}
+    } catch (e) { console.error('[Comment] delete failed:', e) }
   }, [comment.id, onCommentAction])
 
+  const handleAccept = useCallback(async () => {
+    if (reviewAction) return
+    if (!window.confirm('Принять этот разбор? Статус разбора станет «Завершён», а автор комментария получит награду.')) return
+    setReviewAction('accept')
+    setReviewError('')
+    try {
+      const updated = await acceptReviewComment(comment.id)
+      onCommentAccepted?.(updated)
+    } catch {
+      setReviewError('Не удалось принять комментарий. Возможно, разбор уже завершён.')
+    }
+    setReviewAction('')
+  }, [comment.id, reviewAction, onCommentAccepted])
+
+  const handleResolve = useCallback(async () => {
+    if (reviewAction) return
+    setReviewAction('resolve')
+    setReviewError('')
+    try {
+      const updated = await resolveReviewComment(comment.id)
+      onCommentUpdate?.(updated)
+    } catch {
+      setReviewError('Не удалось изменить статус замечания.')
+    }
+    setReviewAction('')
+  }, [comment.id, reviewAction, onCommentUpdate])
+
   const canDelete = currentUser && getAuthorName(comment) === currentUser
+  const hasReviewBadges = comment.line_start != null || !!comment.severity || comment.is_accepted || comment.is_resolved
 
   return (
     <div className="comment" data-comment-id={comment.id}>
@@ -184,6 +367,30 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
           )}
         </div>
       </div>
+      {hasReviewBadges && (
+        <div className="review-comment-badges">
+          {comment.line_start != null && (
+            <span className="review-badge review-line-badge">
+              <i className="fas fa-code" aria-hidden="true" /> {formatCommentLine(comment.line_start, comment.line_end)}
+            </span>
+          )}
+          {comment.severity && (
+            <span className={`review-badge review-severity review-severity-${comment.severity}`}>
+              {severityLabel(comment.severity)}
+            </span>
+          )}
+          {comment.is_accepted && (
+            <span className="review-badge review-badge-accepted">
+              <i className="fas fa-check" aria-hidden="true" /> Принято
+            </span>
+          )}
+          {comment.is_resolved && (
+            <span className="review-badge review-badge-resolved">
+              <i className="fas fa-check-double" aria-hidden="true" /> Решено
+            </span>
+          )}
+        </div>
+      )}
       <p className="comment-content">{comment.content}</p>
       <div className="comment-actions">
         <button className={`comment-action-btn comment-like-btn ${liked ? 'liked' : ''}`} onClick={handleLike}
@@ -194,6 +401,21 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
         {!comment.parent_id && !comment.parent && (
           <button className="comment-action-btn comment-reply-btn" onClick={() => setShowReplyForm(o => !o)}>
             <i className="fas fa-reply" /> Ответить
+          </button>
+        )}
+        {comment.can_accept && !reviewCompleted && (
+          <button className="comment-action-btn review-accept-btn" onClick={handleAccept} disabled={!!reviewAction}>
+            {reviewAction === 'accept'
+              ? <i className="fas fa-spinner fa-spin" />
+              : <i className="fas fa-check-circle" />} Принять
+          </button>
+        )}
+        {comment.can_resolve && (
+          <button className="comment-action-btn review-resolve-btn" onClick={handleResolve} disabled={!!reviewAction}>
+            {reviewAction === 'resolve'
+              ? <i className="fas fa-spinner fa-spin" />
+              : <i className={`fas ${comment.is_resolved ? 'fa-undo' : 'fa-check-double'}`} />}{' '}
+            {comment.is_resolved ? 'Вернуть' : 'Решено'}
           </button>
         )}
         <div className="comment-share-wrap" ref={shareRef}>
@@ -222,6 +444,7 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
           )}
         </div>
       </div>
+      {reviewError && <div className="comment-error" role="alert">{reviewError}</div>}
       {showReplyForm && !comment.parent && (
         <form className="reply-form" onSubmit={handleReply}>
           <textarea rows={2} className="form-control reply-textarea" placeholder="Напишите ответ..."
@@ -241,13 +464,32 @@ function CommentItem({ comment, postId, currentUser, onCommentAction }) {
   )
 }
 
-function CommentsSection({ comments: initialComments, postId, currentUser }) {
+function CommentsSection({
+  comments: initialComments,
+  postId,
+  currentUser,
+  isReview,
+  selectedLine,
+  onClearLine,
+  reviewCompleted,
+  onPostReviewUpdate,
+}) {
   const [comments, setComments] = useState(initialComments || [])
   const [content, setContent] = useState('')
+  const [severity, setSeverity] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const formRef = useRef(null)
+  const textareaRef = useRef(null)
 
   useEffect(() => { setComments(initialComments || []) }, [initialComments])
+
+  useEffect(() => {
+    if (selectedLine == null) return
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+    formRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' })
+    textareaRef.current?.focus({ preventScroll: true })
+  }, [selectedLine])
 
   const handleAddComment = useCallback(async (e) => {
     e.preventDefault()
@@ -255,14 +497,19 @@ function CommentsSection({ comments: initialComments, postId, currentUser }) {
     setSubmitting(true)
     setError('')
     try {
-      const comment = await addComment(postId, content)
+      const extra = isReview
+        ? { line_start: selectedLine, line_end: selectedLine, severity: severity || undefined }
+        : {}
+      const comment = await addComment(postId, content, '', extra)
       setContent('')
+      setSeverity('')
+      onClearLine?.()
       setComments(prev => [comment, ...prev])
-    } catch (err) {
+    } catch {
       setError('Ошибка при отправке комментария')
     }
     setSubmitting(false)
-  }, [content, postId])
+  }, [content, postId, isReview, selectedLine, severity, onClearLine])
 
   const handleCommentAction = useCallback((newComment, deleteId) => {
     if (deleteId) {
@@ -278,6 +525,31 @@ function CommentsSection({ comments: initialComments, postId, currentUser }) {
     }
   }, [])
 
+  const handleCommentUpdate = useCallback((updated) => {
+    if (!updated) return
+    setComments(prev => prev.map(c => {
+      if (c.id === updated.id) return { ...c, ...updated }
+      if (c.replies?.some(r => r.id === updated.id)) {
+        return { ...c, replies: c.replies.map(r => r.id === updated.id ? { ...r, ...updated } : r) }
+      }
+      return c
+    }))
+  }, [])
+
+  const handleCommentAccepted = useCallback((updated) => {
+    if (!updated) return
+    setComments(prev => prev.map(c => {
+      const marked = c.id === updated.id ? { ...c, ...updated, can_accept: false } : { ...c, can_accept: false }
+      return {
+        ...marked,
+        replies: (marked.replies || []).map(r => (
+          r.id === updated.id ? { ...r, ...updated, can_accept: false } : { ...r, can_accept: false }
+        )),
+      }
+    }))
+    onPostReviewUpdate?.(updated)
+  }, [onPostReviewUpdate])
+
   const topComments = comments.filter(c => !c.parent)
 
   return (
@@ -286,9 +558,45 @@ function CommentsSection({ comments: initialComments, postId, currentUser }) {
         <h3><i className="fas fa-comments" /> Комментарии ({comments.length})</h3>
       </div>
 
-      <form className="comment-form" onSubmit={handleAddComment}>
-        <textarea rows={3} className="form-control" placeholder="Напишите комментарий..."
-          value={content} onChange={e => setContent(e.target.value)} />
+      {isReview && (
+        <p className="review-comments-hint">
+          <i className="fas fa-mouse-pointer" /> Нажмите на строку кода или «+», чтобы оставить замечание к ней.
+        </p>
+      )}
+
+      <form className="comment-form" onSubmit={handleAddComment} ref={formRef}>
+        {isReview && selectedLine != null && (
+          <div className="review-comment-target">
+            <span><i className="fas fa-code" /> Замечание к строке {selectedLine}</span>
+            <button type="button" className="review-target-cancel" onClick={onClearLine}>
+              <i className="fas fa-times" /> Отмена
+            </button>
+          </div>
+        )}
+        <textarea
+          ref={textareaRef}
+          rows={3}
+          className="form-control"
+          aria-label={isReview && selectedLine != null ? `Замечание к строке ${selectedLine}` : 'Комментарий'}
+          placeholder={isReview && selectedLine != null ? `Замечание к строке ${selectedLine}...` : 'Напишите комментарий...'}
+          value={content}
+          onChange={e => setContent(e.target.value)}
+        />
+        {isReview && (
+          <div className="review-comment-controls">
+            <label htmlFor="review-severity">Важность замечания</label>
+            <select
+              id="review-severity"
+              className="form-control review-severity-select"
+              value={severity}
+              onChange={e => setSeverity(e.target.value)}
+            >
+              {SEVERITY_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
         {error && <div className="comment-error">{error}</div>}
         <div className="comment-form-actions">
           <button type="submit" className="btn btn-primary" disabled={submitting || !content.trim()}>
@@ -307,12 +615,18 @@ function CommentsSection({ comments: initialComments, postId, currentUser }) {
         {topComments.map(comment => (
           <div key={comment.id}>
             <CommentItem comment={comment} postId={postId} currentUser={currentUser}
-              onCommentAction={handleCommentAction} />
+              onCommentAction={handleCommentAction}
+              onCommentUpdate={handleCommentUpdate}
+              onCommentAccepted={handleCommentAccepted}
+              reviewCompleted={reviewCompleted} />
             {comment.replies && comment.replies.length > 0 && (
               <div className="comment-replies">
                 {comment.replies.map(reply => (
                   <CommentItem key={reply.id} comment={reply} postId={postId}
-                    currentUser={currentUser} onCommentAction={handleCommentAction} />
+                    currentUser={currentUser} onCommentAction={handleCommentAction}
+                    onCommentUpdate={handleCommentUpdate}
+                    onCommentAccepted={handleCommentAccepted}
+                    reviewCompleted={reviewCompleted} />
                 ))}
               </div>
             )}
@@ -332,6 +646,7 @@ function PostDetail() {
   const [likesCount, setLikesCount] = useState(0)
   const [favorited, setFavorited] = useState(false)
   const [subscribed, setSubscribed] = useState(false)
+  const [selectedLine, setSelectedLine] = useState(null)
 
   useEffect(() => {
     setLoading(true)
@@ -385,8 +700,27 @@ function PostDetail() {
   const handleSubscribe = useCallback(async () => {
     if (!post || isOwnPost) return
     setSubscribed(s => !s)
-    try { await toggleSubscribe(post.author.id) } catch {}
+    try { await toggleSubscribe(post.author.id) } catch (e) { console.error('[Post] subscribe failed:', e) }
   }, [post, isOwnPost])
+
+  const handleReviewPostChange = useCallback((data) => {
+    if (!data) return
+    setPost(prev => prev ? { ...prev, ...data } : prev)
+  }, [])
+
+  const handleReviewAccepted = useCallback((comment) => {
+    setPost(prev => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        review_status: 'completed',
+        reviewer: prev.reviewer || comment.author || null,
+        review_accepted_at: comment.updated_at || new Date().toISOString(),
+        can_claim_review: false,
+        can_release_review: false,
+      }
+    })
+  }, [])
 
   if (loading) return <PostDetailSkeleton />
 
@@ -399,6 +733,9 @@ function PostDetail() {
   )
 
   if (!post) return null
+
+  const isReview = post.post_type === 'review'
+  const reviewCompleted = post.review_status === 'completed'
 
   return (
     <div className="page">
@@ -472,6 +809,15 @@ function PostDetail() {
 
             <div className="article-body" dangerouslySetInnerHTML={{ __html: post.content }} />
 
+            {isReview && (
+              <ReviewPanel
+                post={post}
+                selectedLine={selectedLine}
+                onSelectLine={setSelectedLine}
+                onPostChange={handleReviewPostChange}
+              />
+            )}
+
             {post.tags && post.tags.length > 0 && (
               <div className="article-tags">
                 <span className="tags-label"><i className="fas fa-tags" /> Теги:</span>
@@ -537,7 +883,12 @@ function PostDetail() {
           )}
 
           <CommentsSection comments={post.comments || []} postId={post.id}
-            currentUser={post.current_user} />
+            currentUser={post.current_user}
+            isReview={isReview}
+            selectedLine={selectedLine}
+            onClearLine={() => setSelectedLine(null)}
+            reviewCompleted={reviewCompleted}
+            onPostReviewUpdate={handleReviewAccepted} />
           </div>
         </div>
         <aside className="sidebar" aria-label="Боковая панель">

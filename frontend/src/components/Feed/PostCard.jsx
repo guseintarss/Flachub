@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { toggleLike } from '../../api'
+import { reviewStatusKey, reviewStatusLabel } from '../../reviewMeta'
 import UserAvatar from '../UserAvatar'
 
 const PostCard = ({ post, extra, badge, noReadMore }) => {
@@ -20,6 +21,7 @@ const PostCard = ({ post, extra, badge, noReadMore }) => {
     news: "fa-newspaper",
     idea: "fa-lightbulb",
     post: "fa-sticky-note",
+    review: "fa-code",
   }
 
   const postTypeLabel = {
@@ -27,6 +29,7 @@ const PostCard = ({ post, extra, badge, noReadMore }) => {
     news: "Новость",
     idea: "Идея",
     post: "Пост",
+    review: "Разбор",
   }
 
   return (
@@ -47,10 +50,20 @@ const PostCard = ({ post, extra, badge, noReadMore }) => {
             </div>
           </a>
         </div>
-        <div className="post-meta-badges" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+        <div className="post-meta-badges" style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
           <span className="post-type-badge" style={{ fontSize: "0.75rem", opacity: 0.7 }}>
             <i className={`fas ${postTypeIcon[post.post_type] || "fa-sticky-note"}`}></i> {postTypeLabel[post.post_type] || "Пост"}
           </span>
+          {post.post_type === "review" && (
+            <span className={`review-status-badge review-status-${reviewStatusKey(post.review_status)}`}>
+              {reviewStatusLabel(post.review_status)}
+            </span>
+          )}
+          {post.post_type === "review" && post.code_language && (
+            <span className="review-language-badge">
+              <i className="fas fa-code"></i> {post.code_language}
+            </span>
+          )}
           {post.category && (
             <span className="category-badge" style={{ fontSize: "0.75rem", padding: "2px 8px", borderRadius: 10, background: "var(--tags-bg)", color: "var(--tags-color)" }}>
               {post.category.name}

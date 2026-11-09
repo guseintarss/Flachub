@@ -42,14 +42,46 @@ export function toggleSubscribe(authorId) {
   })
 }
 
-export function addComment(postId, content, parentId = '') {
+export function addComment(postId, content, parentId = '', extra = {}) {
+  const payload = {
+    post_id: postId,
+    content,
+    parent: parentId || undefined,
+  }
+  if (extra.line_start != null) {
+    payload.line_start = extra.line_start
+    payload.line_end = extra.line_end ?? extra.line_start
+  }
+  if (extra.severity) {
+    payload.severity = extra.severity
+  }
   return request(`${BASE}/comments/`, {
     method: 'POST',
-    body: JSON.stringify({
-      post_id: postId,
-      content,
-      parent: parentId || undefined,
-    }),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function claimReview(slug) {
+  return request(`${BASE}/posts/${slug}/claim_review/`, {
+    method: 'POST',
+  })
+}
+
+export function releaseReview(slug) {
+  return request(`${BASE}/posts/${slug}/release_review/`, {
+    method: 'POST',
+  })
+}
+
+export function acceptReviewComment(commentId) {
+  return request(`${BASE}/comments/${commentId}/accept/`, {
+    method: 'POST',
+  })
+}
+
+export function resolveReviewComment(commentId) {
+  return request(`${BASE}/comments/${commentId}/resolve/`, {
+    method: 'POST',
   })
 }
 

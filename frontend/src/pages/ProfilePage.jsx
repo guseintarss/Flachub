@@ -22,6 +22,8 @@ function ProfilePage() {
   const [subscribing, setSubscribing] = useState(false)
   const [userStats, setUserStats] = useState(null)
   const [recentUserPosts, setRecentUserPosts] = useState([])
+  const [reviews, setReviews] = useState({ given: [], requested: [] })
+  const [reviewsLoading, setReviewsLoading] = useState(true)
 
   const isOwn = !username
 
@@ -111,11 +113,31 @@ function ProfilePage() {
       } catch {}
     }
 
+    async function loadReviews() {
+      setReviewsLoading(true)
+      try {
+        const [givenRes, requestedRes] = await Promise.all([
+          fetch(`/api/mobile/users/${profile.id}/reviews/?role=given&page_size=50`),
+          fetch(`/api/mobile/users/${profile.id}/reviews/?role=requested&page_size=50`),
+        ])
+        const given = givenRes.ok ? await givenRes.json() : null
+        const requested = requestedRes.ok ? await requestedRes.json() : null
+        setReviews({
+          given: given?.results || (Array.isArray(given) ? given : []),
+          requested: requested?.results || (Array.isArray(requested) ? requested : []),
+        })
+      } catch (e) {
+        console.error('[Profile] reviews load failed:', e)
+      }
+      setReviewsLoading(false)
+    }
+
     loadPosts()
     loadDrafts()
     loadFavorites()
     loadStats()
     loadRecentPosts()
+    loadReviews()
   }, [profile, isOwn])
 
   async function handleSubscribe() {
@@ -143,6 +165,10 @@ function ProfilePage() {
       await deletePost(post.slug)
       setPosts(prev => prev.filter(p => p.id !== post.id))
       setDrafts(prev => prev.filter(p => p.id !== post.id))
+      setReviews(prev => ({
+        given: prev.given.filter(p => p.id !== post.id),
+        requested: prev.requested.filter(p => p.id !== post.id),
+      }))
     } catch {
       alert('Ошибка при удалении статьи')
     }
@@ -170,6 +196,7 @@ function ProfilePage() {
 
   const tabs = [
     { key: 'published', label: 'Опубликованные', icon: 'fa-check-circle' },
+    { key: 'reviews', label: 'Разборы', icon: 'fa-code' },
   ]
   if (isOwn) {
     tabs.push({ key: 'drafts', label: 'Черновики', icon: 'fa-file' })
@@ -401,6 +428,64 @@ function ProfilePage() {
                     </div>
                   </div>
                 )}
+
+                <div id="reviews" className={`content-tab ${activeTab === 'reviews' ? 'active' : ''}`}>
+                  {reviewsLoading ? (
+                    <div className="empty-state">
+                      <i className="fas fa-spinner fa-spin" />
+                      <p>Загрузка разборов...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <section className="review-profile-section" aria-labelledby="reviews-given-title">
+                        <h3 className="review-profile-title" id="reviews-given-title">
+                          <i className="fas fa-code" /> Проведённые разборы
+                          <span className="review-profile-count">{reviews.given.length}</span>
+                        </h3>
+                        <div className="posts-grid">
+                          {reviews.given.length === 0 && (
+                            <div className="empty-state">
+                              <i className="fas fa-code" />
+                              <p>Проведённых разборов пока нет</p>
+                            </div>
+                          )}
+                          {reviews.given.map(post => (
+                            <PostCard key={post.id} post={post} />
+                          ))}
+                        </div>
+                      </section>
+
+                      <section className="review-profile-section" aria-labelledby="reviews-requested-title">
+                        <h3 className="review-profile-title" id="reviews-requested-title">
+                          <i className="fas fa-paper-plane" /> Запрошенные разборы
+                          <span className="review-profile-count">{reviews.requested.length}</span>
+                        </h3>
+                        <div className="posts-grid">
+                          {reviews.requested.length === 0 && (
+                            <div className="empty-state">
+                              <i className="fas fa-code" />
+                              <p>Запрошенных разборов пока нет</p>
+                              {isOwn && (
+                                <Link to="/add-post/"
+                                  style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                                    fontSize: '0.9rem', fontWeight: 500,
+                                    color: 'var(--primary)', textDecoration: 'none',
+                                    transition: 'opacity 0.2s',
+                                  }}>
+                                  <i className="fas fa-plus" style={{ fontSize: '0.8rem' }} /> Создать разбор
+                                </Link>
+                              )}
+                            </div>
+                          )}
+                          {reviews.requested.map(post => (
+                            <PostCard key={post.id} post={post} />
+                          ))}
+                        </div>
+                      </section>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -453,6 +538,16 @@ function ProfilePage() {
                     <div className="stat-block">
                       <div className="stat-block-value">{userStats?.likes_received ?? '—'}</div>
                       <div className="stat-block-label">Лайков</div>
+                    </div>
+                  </div>
+                  <div className="review-stats-row">
+                    <div className="stat-block">
+                      <div className="stat-block-value">{userStats?.reviews_given ?? '—'}</div>
+                      <div className="stat-block-label">Разборов провёл</div>
+                    </div>
+                    <div className="stat-block">
+                      <div className="stat-block-value">{userStats?.reviews_received ?? '—'}</div>
+                      <div className="stat-block-label">Разборов получил</div>
                     </div>
                   </div>
                 </div>

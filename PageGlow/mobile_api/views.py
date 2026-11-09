@@ -1,4 +1,6 @@
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+from django.db import transaction
+from django.utils import timezone
 from rest_framework import viewsets, status, permissions, mixins
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.decorators import action, api_view, permission_classes
@@ -63,10 +65,16 @@ class PostViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     lookup_field = 'slug'
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['post_type', 'is_published', 'author']
+    filterset_fields = ['post_type', 'is_published', 'author', 'review_status']
     search_fields = ['title', 'content', 'author__username', 'author__first_name', 'author__last_name']
     ordering_fields = ['time_create', 'time_update', 'views', 'title']
     ordering = ['-time_create']
+
+    def get_permissions(self):
+        # claim/release проверяют права внутри действия по правилам разбора.
+        if self.action in ('claim_review', 'release_review'):
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     def get_queryset(self):
         is_published_param = self.request.query_params.get('is_published', None)
@@ -91,7 +99,7 @@ class PostViewSet(viewsets.ModelViewSet):
         if self.action == 'destroy' and self.request.user.is_authenticated:
             queryset = Post.objects.filter(author=self.request.user)
 
-        queryset = queryset.select_related('cat', 'author').prefetch_related('tags')
+        queryset = queryset.select_related('cat', 'author', 'reviewer').prefetch_related('tags')
         
         # Фильтр по тегам
         tag_slug = self.request.query_params.get('tag', None)
@@ -171,6 +179,59 @@ class PostViewSet(viewsets.ModelViewSet):
         cache.clear()
         instance.delete()
 
+    # ===== Review actions =====
+
+    def _get_review_for_update(self, slug):
+        return get_object_or_404(
+            Post.objects.select_for_update(),
+            slug=slug,
+            post_type=Post.PostType.REVIEW,
+            is_published=Post.Status.PUBLISHED,
+        )
+
+    @action(detail=True, methods=['post'])
+    def claim_review(self, request, slug=None):
+        """Взять разбор из очереди. Атомарно закрепляет ревьюера."""
+        with transaction.atomic():
+            post = self._get_review_for_update(slug)
+
+            if post.author_id == request.user.id:
+                raise PermissionDenied('Автор не может взять свой разбор')
+            if post.review_status != Post.ReviewStatus.OPEN:
+                raise ValidationError({'detail': 'Разбор уже взят или завершён'})
+
+            post.reviewer = request.user
+            post.review_status = Post.ReviewStatus.IN_REVIEW
+            post.save(update_fields=['reviewer', 'review_status'])
+
+            if post.author_id:
+                Notification.objects.create(
+                    recipient=post.author,
+                    sender=request.user,
+                    notification_type=Notification.NotificationType.REVIEW_CLAIMED,
+                    post=post,
+                    message=f'{request.user.username} взял ваш разбор «{post.title[:100]}»',
+                )
+
+        return Response(self.get_serializer(post).data)
+
+    @action(detail=True, methods=['post'])
+    def release_review(self, request, slug=None):
+        """Освободить разбор: доступно назначенному ревьюеру или staff."""
+        with transaction.atomic():
+            post = self._get_review_for_update(slug)
+
+            if post.reviewer_id != request.user.id and not request.user.is_staff:
+                raise PermissionDenied('Освободить разбор может ревьюер или модератор')
+            if post.review_status != Post.ReviewStatus.IN_REVIEW:
+                raise ValidationError({'detail': 'Разбор не в работе'})
+
+            post.reviewer = None
+            post.review_status = Post.ReviewStatus.OPEN
+            post.save(update_fields=['reviewer', 'review_status'])
+
+        return Response(self.get_serializer(post).data)
+
 
 # ===== Category ViewSet =====
 
@@ -220,6 +281,12 @@ class CommentViewSet(viewsets.ModelViewSet):
             qs = qs.filter(post_id=post_id)
         return qs
 
+    def get_permissions(self):
+        # accept/resolve проверяют права внутри действия по правилам разбора.
+        if self.action in ('accept', 'resolve'):
+            return [IsAuthenticated()]
+        return super().get_permissions()
+
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
             return CommentCreateSerializer
@@ -245,7 +312,9 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         post = self._get_comment_post(request)
-        serializer = self.get_serializer(data=request.data)
+        context = self.get_serializer_context()
+        context['post'] = post
+        serializer = self.get_serializer(data=request.data, context=context)
         serializer.is_valid(raise_exception=True)
 
         parent = serializer.validated_data.get('parent')
@@ -267,6 +336,83 @@ class CommentViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("У вас нет прав для удаления этого комментария")
         instance.is_active = False
         instance.save(update_fields=['is_active'])
+
+    # ===== Review actions =====
+
+    @action(detail=True, methods=['post'])
+    def accept(self, request, pk=None):
+        """Принять лучший разбор. Доступно только автору review-поста."""
+        with transaction.atomic():
+            comment = get_object_or_404(
+                Comment.objects.select_for_update().select_related('post', 'author'),
+                pk=pk,
+                is_active=True,
+            )
+            post = comment.post
+
+            if post.post_type != Post.PostType.REVIEW:
+                raise ValidationError({'detail': 'Принять можно только комментарий к разбору'})
+            if post.author_id != request.user.id:
+                raise PermissionDenied('Принять разбор может только автор публикации')
+            if comment.author_id == request.user.id:
+                raise ValidationError({'detail': 'Нельзя принять собственный комментарий'})
+            if comment.is_accepted:
+                raise ValidationError({'detail': 'Комментарий уже принят'})
+            if post.review_status == Post.ReviewStatus.COMPLETED:
+                raise ValidationError({'detail': 'Разбор уже завершён'})
+
+            comment.is_accepted = True
+            comment.save(update_fields=['is_accepted'])
+
+            post.review_status = Post.ReviewStatus.COMPLETED
+            post.review_accepted_at = timezone.now()
+            if post.reviewer_id is None:
+                post.reviewer = comment.author
+            post.save(update_fields=['review_status', 'review_accepted_at', 'reviewer'])
+
+            already_awarded = UserReputationLog.objects.filter(
+                user=comment.author,
+                reason=UserReputationLog.ReasonType.ANSWER_ACCEPTED,
+                comment=comment,
+            ).exists()
+            if not already_awarded:
+                comment.author.add_reputation(
+                    amount=15,
+                    reason=UserReputationLog.ReasonType.ANSWER_ACCEPTED,
+                    post=post,
+                    comment=comment,
+                )
+
+            Notification.objects.create(
+                recipient=comment.author,
+                sender=request.user,
+                notification_type=Notification.NotificationType.REVIEW_ACCEPTED,
+                post=post,
+                comment=comment,
+                message=f'Ваш разбор принят: «{post.title[:100]}»',
+            )
+
+        return Response(CommentSerializer(comment, context=self.get_serializer_context()).data)
+
+    @action(detail=True, methods=['post'])
+    def resolve(self, request, pk=None):
+        """Переключить «решено» у строчного замечания."""
+        comment = self.get_object()
+
+        if comment.line_start is None:
+            raise ValidationError({'detail': 'Решить можно только строчное замечание'})
+
+        can_resolve = (
+            comment.author_id == request.user.id
+            or comment.post.author_id == request.user.id
+            or request.user.is_staff
+        )
+        if not can_resolve:
+            raise PermissionDenied('Решить замечание может автор комментария, автор разбора или модератор')
+
+        comment.is_resolved = not comment.is_resolved
+        comment.save(update_fields=['is_resolved'])
+        return Response(CommentSerializer(comment, context=self.get_serializer_context()).data)
 
 
 # ===== Comment Like Action =====
@@ -386,6 +532,7 @@ class UserStatsViewSet(viewsets.ReadOnlyModelViewSet):
     """
     permission_classes = [AllowAny]
     serializer_class = UserPublicSerializer
+    pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['username', 'first_name', 'last_name', 'about_me']
     ordering_fields = ['date_joined', 'username', 'posts_count']
@@ -457,6 +604,19 @@ class UserStatsViewSet(viewsets.ReadOnlyModelViewSet):
         likes_received = Post.objects.filter(author=user).aggregate(
             total_likes=Count('likes')
         )['total_likes'] or 0
+
+        review_posts = Post.objects.filter(post_type=Post.PostType.REVIEW)
+        completed_reviews = review_posts.filter(
+            review_status=Post.ReviewStatus.COMPLETED
+        )
+
+        review_languages = list(
+            completed_reviews.filter(reviewer=user)
+            .exclude(code_language='')
+            .values_list('code_language', flat=True)
+            .distinct()
+            .order_by('code_language')
+        )
         
         return Response({
             'posts_count': posts_count,
@@ -464,7 +624,51 @@ class UserStatsViewSet(viewsets.ReadOnlyModelViewSet):
             'likes_received': likes_received,
             'followers_count': Subscription.objects.filter(author=user).count(),
             'following_count': Subscription.objects.filter(subscriber=user).count(),
+            'reviews_given': completed_reviews.filter(reviewer=user).count(),
+            'reviews_received': completed_reviews.filter(author=user).count(),
+            'reviews_requested': review_posts.filter(
+                author=user,
+                is_published=Post.Status.PUBLISHED,
+            ).count(),
+            'review_languages': review_languages,
         })
+
+    @action(detail=True, methods=['get'])
+    def reviews(self, request, pk=None):
+        """Разборы пользователя: given (default), received или requested."""
+        user = self.get_object()
+        role = request.query_params.get('role', 'given')
+
+        queryset = Post.objects.filter(
+            post_type=Post.PostType.REVIEW
+        ).select_related('cat', 'author', 'reviewer')
+
+        if role == 'given':
+            queryset = queryset.filter(
+                reviewer=user,
+                review_status=Post.ReviewStatus.COMPLETED,
+            )
+        elif role == 'received':
+            queryset = queryset.filter(
+                author=user,
+                review_status=Post.ReviewStatus.COMPLETED,
+            )
+        elif role == 'requested':
+            # Посты других пользователей не должны раскрывать чужие черновики.
+            queryset = queryset.filter(
+                author=user,
+                is_published=Post.Status.PUBLISHED,
+            )
+        else:
+            raise ValidationError({'role': 'Допустимо: given, received, requested'})
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = PostListSerializer(page, many=True, context={'request': request})
+            return self.get_paginated_response(serializer.data)
+
+        serializer = PostListSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def achievements(self, request, pk=None):

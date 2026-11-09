@@ -31,6 +31,12 @@ class Post(ModelMeta, models.Model):
         ARTICLE = 'article', 'Статья'
         NEWS = 'news', 'Новость'
         IDEA = 'idea', 'Идея'
+        REVIEW = 'review', 'Разбор'
+
+    class ReviewStatus(models.TextChoices):
+        OPEN = 'open', 'Открыт'
+        IN_REVIEW = 'in_review', 'В работе'
+        COMPLETED = 'completed', 'Завершён'
 
     title = models.CharField(max_length=255, verbose_name='Заголовок')
     slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name='slug')
@@ -59,6 +65,26 @@ class Post(ModelMeta, models.Model):
 
     # Просмотры
     views = models.PositiveIntegerField(default=0, verbose_name='Просмотры')
+
+    # Разбор кода (post_type='review')
+    code_snippet = models.TextField(blank=True, default='', verbose_name='Код')
+    code_language = models.CharField(max_length=50, blank=True, default='', verbose_name='Язык кода')
+    review_focus = models.CharField(max_length=255, blank=True, default='', verbose_name='Фокус разбора')
+    review_status = models.CharField(
+        max_length=20,
+        choices=ReviewStatus.choices,
+        default=ReviewStatus.OPEN,
+        verbose_name='Статус разбора',
+    )
+    reviewer = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_reviews',
+        verbose_name='Ревьюер',
+    )
+    review_accepted_at = models.DateTimeField(null=True, blank=True, verbose_name='Разбор принят')
 
     def number_of_likes(self):
         """Возвращает количество лайков. Использует кэш если доступен."""
@@ -167,6 +193,7 @@ class Post(ModelMeta, models.Model):
             models.Index(fields=['is_published', '-time_create']),
             models.Index(fields=['author']),
             models.Index(fields=['cat']),
+            models.Index(fields=['post_type', 'review_status']),
         ]
 
     def get_absolute_url(self):
@@ -230,6 +257,12 @@ class UploadFiles(models.Model):
     file = models.FileField(upload_to='uploads_model')
 
 class Comment(models.Model):
+    class Severity(models.TextChoices):
+        BLOCKER = 'blocker', 'Блокер'
+        MAJOR = 'major', 'Серьёзное'
+        MINOR = 'minor', 'Незначительное'
+        NIT = 'nit', 'Придирка'
+
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
@@ -239,6 +272,19 @@ class Comment(models.Model):
     is_edited = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     likes = models.ManyToManyField(User, related_name='comment_likes', blank=True)
+
+    # Строчное замечание к разбору кода
+    line_start = models.PositiveIntegerField(null=True, blank=True, verbose_name='Строка с')
+    line_end = models.PositiveIntegerField(null=True, blank=True, verbose_name='Строка по')
+    severity = models.CharField(
+        max_length=10,
+        choices=Severity.choices,
+        blank=True,
+        default='',
+        verbose_name='Важность',
+    )
+    is_resolved = models.BooleanField(default=False, verbose_name='Решено')
+    is_accepted = models.BooleanField(default=False, verbose_name='Принято')
 
     class Meta:
         ordering = ['-created_at']
@@ -290,6 +336,8 @@ class Notification(models.Model):
         NEW_POST = 'new_post', 'Новая статья'
         ACHIEVEMENT = 'achievement', 'Достижение'
         CHAT_MESSAGE = 'chat_message', 'Сообщение'
+        REVIEW_CLAIMED = 'review_claimed', 'Разбор взят'
+        REVIEW_ACCEPTED = 'review_accepted', 'Разбор принят'
 
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications', null=True)

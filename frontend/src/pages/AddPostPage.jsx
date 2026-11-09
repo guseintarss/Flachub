@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { getCSRFToken } from '../csrf'
 import Sidebar from '../components/Sidebar/Sidebar'
 import { AddPostSkeleton } from '../components/Skeleton'
+import { CODE_LANGUAGES } from '../reviewMeta'
 import { CKEditor } from '@ckeditor/ckeditor5-react'
 import {
   BalloonEditor, Essentials, Paragraph, Heading, Title,
@@ -197,6 +198,13 @@ const POST_TYPES = [
       'Предложите конкретное решение или подход',
       'Оцените примерные ресурсы и сроки реализации',
       'Приведите примеры, аналогии или прототипы',
+    ] },
+  { value: 'review',    icon: 'fa-code',          title: 'Разбор',  desc: 'Запрос на разбор кода',
+    rules: [
+      'Вставьте фрагмент кода, который хотите разобрать',
+      'Укажите язык и фокус — так разбор будет точнее',
+      'Не вставляйте секреты: токены, пароли и приватные ключи',
+      'Один разбор — один цельный фрагмент кода',
     ] },
 ]
 
@@ -398,6 +406,15 @@ function AddPostPage() {
     post_type: 'post',
     is_published: '1',
     cat: '',
+    code_snippet: '',
+    code_language: '',
+    review_focus: '',
+  })
+
+  const lastSavedReviewRef = useRef({
+    code_snippet: '',
+    code_language: '',
+    review_focus: '',
   })
 
   // Снимок сохраняемых данных: нужен, чтобы не потерять правки, сделанные
@@ -408,6 +425,9 @@ function AddPostPage() {
       form.post_type,
       form.is_published,
       form.cat,
+      form.code_snippet,
+      form.code_language,
+      form.review_focus,
       [...selectedTagIds].sort((a, b) => a - b),
     ])
   }, [form, selectedTagIds])
@@ -449,7 +469,15 @@ function AddPostPage() {
           post_type: data.post_type || 'post',
           is_published: String(data.is_published ?? '1'),
           cat: data.category?.id || '',
+          code_snippet: data.code_snippet || '',
+          code_language: data.code_language || '',
+          review_focus: data.review_focus || '',
         })
+        lastSavedReviewRef.current = {
+          code_snippet: data.code_snippet || '',
+          code_language: data.code_language || '',
+          review_focus: data.review_focus || '',
+        }
         setSelectedTagIds(new Set(data.tags?.map(t => t.id) || []))
         if (data.photo) {
           setPhotoPreview(data.photo)
@@ -472,12 +500,16 @@ function AddPostPage() {
   }, [])
 
   useEffect(() => {
-    if (lastLoadedContentRef.current !== null) {
-      dirtyRef.current = form.content !== lastLoadedContentRef.current
-      return
-    }
-    dirtyRef.current = form.content.trim().length > 0
-  }, [form.content])
+    const contentDirty = lastLoadedContentRef.current !== null
+      ? form.content !== lastLoadedContentRef.current
+      : form.content.trim().length > 0
+    const savedReview = lastSavedReviewRef.current
+    const reviewDirty =
+      form.code_snippet !== savedReview.code_snippet ||
+      form.code_language !== savedReview.code_language ||
+      form.review_focus !== savedReview.review_focus
+    dirtyRef.current = contentDirty || reviewDirty
+  }, [form.content, form.code_snippet, form.code_language, form.review_focus])
 
   const debounceRef = useRef(null)
   useEffect(() => {
@@ -491,7 +523,7 @@ function AddPostPage() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-  }, [form.content, step])
+  }, [form.content, form.code_snippet, form.code_language, form.review_focus, form.post_type, step])
 
   autoSaveRef.current = autoSaveDraft
 
@@ -540,6 +572,7 @@ function AddPostPage() {
     const title = extractTitle(form.content)
     const content = stripTitleFromContent(form.content)
     if (!title || !content.trim()) return
+    if (form.post_type === 'review' && (!form.code_snippet.trim() || !form.code_language.trim())) return
 
     const fd = new FormData()
     fd.append('title', title)
@@ -548,6 +581,11 @@ function AddPostPage() {
     // При редактировании сохраняем текущий статус, иначе автосохранение снимало бы публикацию.
     fd.append('is_published', isEditing ? form.is_published : '0')
     if (form.cat) fd.append('cat', form.cat)
+    if (form.post_type === 'review') {
+      fd.append('code_snippet', form.code_snippet)
+      fd.append('code_language', form.code_language.trim())
+      fd.append('review_focus', form.review_focus.trim())
+    }
     selectedTagIds.forEach(id => fd.append('tags', id))
 
     const targetSlug = isEditing ? slug : draftSlugRef.current
@@ -585,6 +623,11 @@ function AddPostPage() {
 
     if (!saved) return
     if (draftSnapshotRef.current === snapshot) {
+      lastSavedReviewRef.current = {
+        code_snippet: form.code_snippet,
+        code_language: form.code_language,
+        review_focus: form.review_focus,
+      }
       dirtyRef.current = false
       setSaved()
       return
@@ -652,6 +695,20 @@ function AddPostPage() {
     return true
   })
 
+  function validateReviewFields() {
+    if (form.post_type !== 'review') return ''
+    if (!form.code_snippet.trim()) return 'Вставьте код для разбора'
+    if (!form.code_language.trim()) return 'Укажите язык кода'
+    return ''
+  }
+
+  function handleEditorContinue() {
+    const reviewError = validateReviewFields()
+    if (reviewError) { setError(reviewError); return }
+    setError('')
+    goTo(3)
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     const fullHtml = form.content
@@ -659,6 +716,8 @@ function AddPostPage() {
     const content = stripTitleFromContent(fullHtml)
     if (!title) { setError('Введите заголовок'); return }
     if (!content.trim()) { setError('Введите содержание'); return }
+    const reviewError = validateReviewFields()
+    if (reviewError) { setError(reviewError); return }
 
     // Дожидаемся автосохранения, иначе финальный запрос может создать второй черновик.
     if (debounceRef.current) {
@@ -679,6 +738,11 @@ function AddPostPage() {
       fd.append('post_type', form.post_type)
       fd.append('is_published', form.is_published)
       if (form.cat) fd.append('cat', form.cat)
+      if (form.post_type === 'review') {
+        fd.append('code_snippet', form.code_snippet)
+        fd.append('code_language', form.code_language.trim())
+        fd.append('review_focus', form.review_focus.trim())
+      }
       selectedTagIds.forEach(id => fd.append('tags', id))
       if (photoFile) fd.append('photo', photoFile)
 
@@ -869,6 +933,72 @@ function AddPostPage() {
                     )}
                     </div>
                   </div>
+
+                  {form.post_type === 'review' && (
+                    <div className="review-editor-block">
+                      <div className="review-editor-header">
+                        <h3><i className="fas fa-code" /> Параметры разбора</h3>
+                        <p>Укажите язык и фокус, чтобы ревьюер понимал задачу. Код и язык обязательны.</p>
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label htmlFor="review-language">
+                            <i className="fas fa-language" /> Язык кода <span className="review-required">*</span>
+                          </label>
+                          <input
+                            id="review-language"
+                            type="text"
+                            className="form-control"
+                            list="review-language-options"
+                            value={form.code_language}
+                            maxLength={50}
+                            autoComplete="off"
+                            placeholder="Например, JavaScript"
+                            onChange={e => f('code_language', e.target.value)}
+                          />
+                          <datalist id="review-language-options">
+                            {CODE_LANGUAGES.map(lang => (
+                              <option key={lang} value={lang} />
+                            ))}
+                          </datalist>
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="review-focus">
+                            <i className="fas fa-crosshairs" /> Фокус разбора
+                          </label>
+                          <input
+                            id="review-focus"
+                            type="text"
+                            className="form-control"
+                            value={form.review_focus}
+                            maxLength={255}
+                            placeholder="Например, безопасность и обработка ошибок"
+                            onChange={e => f('review_focus', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="review-code">
+                          <i className="fas fa-terminal" /> Код <span className="review-required">*</span>
+                        </label>
+                        <textarea
+                          id="review-code"
+                          className="form-control review-code-input"
+                          rows={16}
+                          value={form.code_snippet}
+                          spellCheck={false}
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          placeholder={'function example() {\n  // вставьте фрагмент кода\n}'}
+                          onChange={e => f('code_snippet', e.target.value)}
+                        />
+                      </div>
+                      <p className="review-secret-hint">
+                        <i className="fas fa-shield-alt" /> Не вставляйте секреты: токены, пароли и приватные ключи. Замените их заглушками.
+                      </p>
+                    </div>
+                  )}
+
                   <div className="step-rules">
                     <div className="step-rules-header" onClick={() => setShowRules(s => !s)}>
                       <div className="step-rules-toggle">
@@ -894,7 +1024,7 @@ function AddPostPage() {
                     <button type="button" className="btn btn-secondary" onClick={() => goTo(1)}>
                       <i className="fas fa-arrow-left"></i> Назад
                     </button>
-                    <button type="button" className="btn btn-primary" onClick={() => goTo(3)}>
+                    <button type="button" className="btn btn-primary" onClick={handleEditorContinue}>
                       Продолжить <i className="fas fa-arrow-right"></i>
                     </button>
                   </div>
