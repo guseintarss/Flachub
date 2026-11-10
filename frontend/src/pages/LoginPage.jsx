@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { DEMO_CREDENTIALS } from '../demo/credentials'
+
+const isDemo = import.meta.env.VITE_DEMO === 'true'
 
 function LoginPage() {
   const { login } = useAuth()
@@ -11,6 +14,7 @@ function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [demoLoading, setDemoLoading] = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -23,6 +27,21 @@ function LoginPage() {
       setError(err.message)
     }
     setLoading(false)
+  }
+
+  async function handleDemoLogin(account) {
+    const credentials = DEMO_CREDENTIALS[account]
+    setError('')
+    setDemoLoading(account)
+    setUsername(credentials.username)
+    setPassword(credentials.password)
+    try {
+      await login(credentials.username, credentials.password)
+      navigate('/')
+    } catch (err) {
+      setError(err.message)
+    }
+    setDemoLoading('')
   }
 
   return (
@@ -122,6 +141,42 @@ function LoginPage() {
                 </Link>
               </div>
             </form>
+
+            {isDemo && (
+              <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px dashed var(--border)' }}>
+                <div style={{
+                  textAlign: 'center',
+                  fontSize: '0.85rem',
+                  color: 'var(--muted)',
+                  marginBottom: 12,
+                }}>
+                  Демо-стенд: данные хранятся только в вашем браузере
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ flex: 1, justifyContent: 'center' }}
+                    onClick={() => handleDemoLogin('user')}
+                    disabled={!!demoLoading}
+                  >
+                    {demoLoading === 'user' ? 'Вход...' : 'Войти как читатель'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ flex: 1, justifyContent: 'center' }}
+                    onClick={() => handleDemoLogin('admin')}
+                    disabled={!!demoLoading}
+                  >
+                    {demoLoading === 'admin' ? 'Вход...' : 'Войти как админ'}
+                  </button>
+                </div>
+                <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--muted)', marginTop: 10 }}>
+                  demo / demo1234 · admin / admin1234
+                </div>
+              </div>
+            )}
 
             <div style={{ textAlign: 'center', marginTop: 20, fontSize: '0.9rem', color: 'var(--muted)' }}>
               Нет аккаунта?{' '}

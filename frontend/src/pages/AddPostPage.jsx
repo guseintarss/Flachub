@@ -23,14 +23,13 @@ function csrfHeaders() {
 }
 
 function extractTitle(html) {
-  const m = html.match(/<h[1-3][^>]*>([^<]+)<\/h[1-3]>/)
-  if (m) return m[1].trim()
-  const m2 = html.match(/<p>([^<]+)<\/p>/)
-  if (m2) return m2[1].trim()
   const div = document.createElement('div')
   div.innerHTML = html
-  const text = div.textContent.trim()
-  return text.split('\n')[0].trim() || text.slice(0, 100)
+  const block = div.querySelector('h1, h2, h3, p')
+  const text = (block?.textContent || div.textContent || '')
+    .replace(/\u00a0/g, ' ')
+    .trim()
+  return text.split('\n')[0].trim().slice(0, 200)
 }
 
 function stripTitleFromContent(html) {
@@ -467,7 +466,7 @@ function AddPostPage() {
         setForm({
           content: loadedContent,
           post_type: data.post_type || 'post',
-          is_published: String(data.is_published ?? '1'),
+          is_published: data.is_published ? '1' : '0',
           cat: data.category?.id || '',
           code_snippet: data.code_snippet || '',
           code_language: data.code_language || '',

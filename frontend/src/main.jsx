@@ -10,8 +10,19 @@ import './styles/mobile.css'
 import 'ckeditor5/ckeditor5.css'
 import App from './App.jsx'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+async function bootstrap() {
+  // Статический демо-стенд: подменяем серверный API до первого запроса приложения.
+  // В обычной сборке флаг не выставлен, поэтому демо-код не загружается вовсе.
+  if (import.meta.env.VITE_DEMO === 'true') {
+    const { installDemo } = await import('./demo/installDemo')
+    installDemo()
+  }
+
+  createRoot(document.getElementById('root')).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  )
+}
+
+bootstrap()

@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import UserAvatar from '../components/UserAvatar'
 import '../styles/admin.css'
 
+const isDemo = import.meta.env.VITE_DEMO === 'true'
+
 function BarChart({ data, label, color }) {
   const max = Math.max(...data.map(d => d.count), 1)
   return (
@@ -345,7 +347,7 @@ function AdminPage() {
                 <button className={`admin-tab${tab === 'users' ? ' active' : ''}`} onClick={() => setTab('users')}>
                   <i className="fas fa-users"></i> Пользователи
                 </button>
-                {user.is_superuser && (
+                {user.is_superuser && !isDemo && (
                   <a href="/admin/" className="admin-tab" target="_blank" rel="noopener noreferrer">
                     <i className="fas fa-database"></i> Django Admin
                   </a>

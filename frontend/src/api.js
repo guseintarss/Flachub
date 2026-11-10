@@ -130,5 +130,7 @@ export function createChat(participantId) {
 }
 
 export function markChatRead(chatId) {
-  return request(`${BASE}/chats/${chatId}/mark_read/`)
+  return request(`${BASE}/chats/${chatId}/mark_read/`, {
+    method: 'POST',
+  })
 }
