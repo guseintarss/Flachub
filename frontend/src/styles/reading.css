@@ -1,0 +1,333 @@
+/* =====================================================
+   Комфортное чтение: TOC, настройки, подсветка кода
+   ===================================================== */
+
+.article-container {
+  position: relative;
+}
+
+.article-container.reading-wide {
+  max-width: 1100px;
+}
+
+/* ---------- Содержание ---------- */
+
+.article-toc {
+  margin: 0 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.article-toc-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.article-toc-toggle > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+}
+
+.article-toc-toggle .fa-list-ul {
+  color: var(--primary);
+}
+
+.article-toc-count {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--tags-bg);
+  color: var(--tags-color);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.article-toc-list {
+  margin: 0;
+  padding: 4px 10px 12px;
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+
+.article-toc-item a {
+  display: block;
+  padding: 7px 10px;
+  border-radius: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1.4;
+  border-left: 2px solid transparent;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.article-toc-item.level-3 a {
+  padding-left: 26px;
+  font-size: 13px;
+}
+
+.article-toc-item a:hover {
+  color: var(--primary);
+  background: var(--bg);
+}
+
+.article-toc-item a.is-active {
+  color: var(--primary);
+  background: var(--tags-bg);
+  border-left-color: var(--primary);
+  font-weight: 600;
+}
+
+html.dark-mode .article-toc-item a:hover {
+  color: var(--dark-primary);
+  background: var(--dark-bg2);
+}
+
+html.dark-mode .article-toc-item a.is-active {
+  color: var(--dark-primary);
+  background: var(--dark-tags-bg);
+  border-left-color: var(--dark-primary);
+}
+
+/* ---------- Настройки чтения ---------- */
+
+.reading-settings {
+  position: relative;
+}
+
+.reading-settings-toggle {
+  font-weight: 700;
+}
+
+.reading-settings-toggle.is-open {
+  background: var(--tags-bg);
+  color: var(--primary);
+}
+
+.reading-settings-aa {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 17px;
+  letter-spacing: -0.5px;
+}
+
+.reading-settings-popover {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  z-index: 120;
+  width: min(320px, calc(100vw - 32px));
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.2);
+}
+
+.reading-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.reading-settings-row > span {
+  font-weight: 600;
+}
+
+.reading-stepper,
+.reading-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--bg2);
+}
+
+.reading-stepper button,
+.reading-segmented button {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.reading-stepper output {
+  min-width: 38px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.reading-stepper button:hover,
+.reading-segmented button:hover {
+  color: var(--primary);
+}
+
+.reading-segmented button.is-active {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+  font-weight: 600;
+}
+
+.reading-settings-hint {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+html.dark-mode .reading-settings-popover {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+}
+
+html.dark-mode .reading-stepper,
+html.dark-mode .reading-segmented {
+  background: var(--dark-bg2);
+}
+
+html.dark-mode .reading-segmented button.is-active {
+  background: var(--dark-surface);
+  color: var(--dark-primary);
+}
+
+/* ---------- Типографика чтения ---------- */
+
+.article-body {
+  font-size: 19px;
+  line-height: 1.78;
+  transition: font-size 0.15s ease;
+}
+
+.article-body.reading-font-serif {
+  font-family: 'Literata', Georgia, 'Times New Roman', serif;
+}
+
+.article-body.reading-font-sans {
+  font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.article-body h2,
+.article-body h3,
+.article-body h4 {
+  scroll-margin-top: 92px;
+}
+
+/* ---------- Подсветка кода ---------- */
+
+.article-body pre {
+  position: relative;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: #111827;
+  color: #e5e7eb;
+  overflow-x: auto;
+  font-size: 0.82em;
+  line-height: 1.65;
+}
+
+.article-body pre code,
+.review-code-text {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.article-body pre code {
+  display: block;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  white-space: pre;
+}
+
+.article-body :not(pre) > code {
+  padding: 0.15em 0.4em;
+  border-radius: 5px;
+  background: rgba(12, 106, 207, 0.1);
+  color: var(--primary);
+  font-size: 0.86em;
+}
+
+html.dark-mode .article-body :not(pre) > code {
+  background: rgba(41, 156, 245, 0.14);
+  color: var(--dark-primary);
+}
+
+/* Палитра highlight.js — общая для светлой и тёмной темы */
+.hljs-comment,
+.hljs-quote { color: #8b949e; font-style: italic; }
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-type { color: #ff7b72; }
+.hljs-string,
+.hljs-attr,
+.hljs-template-tag { color: #a5d6ff; }
+.hljs-number,
+.hljs-literal { color: #79c0ff; }
+.hljs-title,
+.hljs-title.function_,
+.hljs-section { color: #d2a8ff; }
+.hljs-variable,
+.hljs-params { color: #ffa657; }
+.hljs-built_in,
+.hljs-symbol { color: #ffa657; }
+.hljs-meta,
+.hljs-doctag { color: #8b949e; }
+.hljs-tag { color: #7ee787; }
+.hljs-name { color: #7ee787; }
+.hljs-attribute { color: #79c0ff; }
+.hljs-regexp,
+.hljs-link { color: #a5d6ff; }
+.hljs-deletion { color: #ffdcd7; background: #67060c; }
+.hljs-addition { color: #aff5b4; background: #033a16; }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: 700; }
+
+/* Строчный разбор: подсветка не ломает кликабельные строки */
+.review-code-text .hljs {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+@media (max-width: 700px) {
+  .article-body {
+    font-size: 17px;
+  }
+  .article-toc {
+    border-radius: 12px;
+  }
+  .reading-settings-popover {
+    position: fixed;
+    right: 16px;
+    left: 16px;
+    bottom: 80px;
+    width: auto;
+  }
+}

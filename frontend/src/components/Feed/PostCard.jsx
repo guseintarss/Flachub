@@ -1,9 +1,26 @@
 import { useState, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { toggleLike } from '../../api'
 import { reviewStatusKey, reviewStatusLabel } from '../../reviewMeta'
 import UserAvatar from '../UserAvatar'
 
-const PostCard = ({ post, extra, badge, noReadMore }) => {
+const POST_TYPE_ICONS = {
+  article: 'fa-file-alt',
+  news: 'fa-newspaper',
+  idea: 'fa-lightbulb',
+  post: 'fa-sticky-note',
+  review: 'fa-code',
+}
+
+const POST_TYPE_LABELS = {
+  article: 'Статья',
+  news: 'Новость',
+  idea: 'Идея',
+  post: 'Пост',
+  review: 'Разбор',
+}
+
+const PostCard = ({ post, extra, badge, noReadMore, featured = false }) => {
   const [liked, setLiked] = useState(post.is_liked || false)
   const [likesCount, setLikesCount] = useState(post.likes_count || 0)
 
@@ -16,109 +33,101 @@ const PostCard = ({ post, extra, badge, noReadMore }) => {
     try { await toggleLike(post.id) } catch {}
   }, [liked, post.id])
 
-  const postTypeIcon = {
-    article: "fa-file-alt",
-    news: "fa-newspaper",
-    idea: "fa-lightbulb",
-    post: "fa-sticky-note",
-    review: "fa-code",
-  }
-
-  const postTypeLabel = {
-    article: "Статья",
-    news: "Новость",
-    idea: "Идея",
-    post: "Пост",
-    review: "Разбор",
-  }
+  const type = post.post_type || 'post'
+  const author = post.author || {}
+  const authorName = author.username || 'Неизвестно'
+  const date = new Date(post.time_create).toLocaleDateString('ru-RU', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  })
 
   return (
-    <article className={`post ${post.post_type ? `post-type-${post.post_type}` : ""}`}>
-      <div className="post-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-        <div className="post-author" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <a href={`/user/${post.author?.username || ""}/`} style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "8px", color: "inherit" }}>
-            <UserAvatar user={post.author} size={32} />
+    <article className={`post post-type-${type}${featured ? ' post--featured' : ''}`}>
+      <div className="post-header">
+        <div className="post-author">
+          <Link to={`/user/${author.username || ''}/`} className="post-author-link">
+            <UserAvatar user={author} size={featured ? 40 : 30} />
             <div className="author-info">
-              <span className="author-name" style={{ fontWeight: 600, fontSize: "0.85rem" }}>
-                {post.author?.username || "Неизвестно"}
-              </span>
-              <span className="post-time" style={{ fontSize: "0.75rem", opacity: 0.7, display: "block" }}>
-                {new Date(post.time_create).toLocaleDateString("ru-RU", {
-                  day: "numeric", month: "long", year: "numeric",
-                })}
-              </span>
+              <span className="author-name">{authorName}</span>
+              <span className="post-time">{date}</span>
             </div>
-          </a>
+          </Link>
         </div>
-        <div className="post-meta-badges" style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
-          <span className="post-type-badge" style={{ fontSize: "0.75rem", opacity: 0.7 }}>
-            <i className={`fas ${postTypeIcon[post.post_type] || "fa-sticky-note"}`}></i> {postTypeLabel[post.post_type] || "Пост"}
+        <div className="post-meta-badges">
+          <span className={`post-type-badge post-type-badge--${type}`}>
+            <i className={`fas ${POST_TYPE_ICONS[type] || 'fa-sticky-note'}`} aria-hidden="true" />
+            {POST_TYPE_LABELS[type] || 'Пост'}
           </span>
-          {post.post_type === "review" && (
+          {type === 'review' && (
             <span className={`review-status-badge review-status-${reviewStatusKey(post.review_status)}`}>
               {reviewStatusLabel(post.review_status)}
             </span>
           )}
-          {post.post_type === "review" && post.code_language && (
+          {type === 'review' && post.code_language && (
             <span className="review-language-badge">
-              <i className="fas fa-code"></i> {post.code_language}
+              <i className="fas fa-code" aria-hidden="true" /> {post.code_language}
             </span>
           )}
           {post.category && (
-            <span className="category-badge" style={{ fontSize: "0.75rem", padding: "2px 8px", borderRadius: 10, background: "var(--tags-bg)", color: "var(--tags-color)" }}>
+            <Link to={`/category/${post.category.slug}/`} className="category-badge">
               {post.category.name}
-            </span>
+            </Link>
           )}
         </div>
       </div>
 
       <div className="post-body">
-        <h2 className="post-title" style={{ margin: "0 0 8px 0", fontSize: "1.15rem" }}>
-          <a href={`/post/${post.slug}/`} style={{ textDecoration: "none", color: "inherit" }}>
-            {post.title}
-          </a>
+        <h2 className="post-title">
+          <Link to={`/post/${post.slug}/`}>{post.title}</Link>
         </h2>
 
         {post.photo && (
-          <div className="post-cover" style={{ marginBottom: 10 }}>
-            <a href={`/post/${post.slug}/`}>
-              <img className="cover-image" src={post.photo} alt={post.title} style={{ width: "100%", maxHeight: 220, objectFit: "cover", borderRadius: 8 }} />
-            </a>
-          </div>
+          <Link to={`/post/${post.slug}/`} className="post-cover" tabIndex={-1} aria-hidden="true">
+            <img
+              className="cover-image"
+              src={post.photo}
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
+          </Link>
         )}
 
-        {badge}
-
-        {post.excerpt && (
-          <div className="post-excerpt" style={{ opacity: 0.85, lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: post.excerpt }} />
-        )}
-      </div>
-
-      <div className="post-footer" style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid var(--border)" }}>
-        <div className="post-stats-and-btn" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div className="post-stats" style={{ display: "flex", gap: 12, fontSize: "0.78rem", opacity: 0.7 }}>
-            <span className="stat-item" title="Просмотры">
-              <i className="fas fa-eye"></i> {post.views || 0}
-            </span>
-            <button className={`stat-item like-btn ${liked ? 'liked' : ''}`}
-              title="Лайки" onClick={handleLike}>
-              <i className={`fas fa-heart ${liked ? 'fa-bounce' : ''}`}></i> {likesCount}
-            </button>
-            <span className="stat-item" title="Время чтения">
-              <i className="fas fa-clock"></i> {post.reading_time_minutes || 1} мин
-            </span>
-            <span className="stat-item" title="Комментарии">
-              <i className="fas fa-comment"></i> {post.comments_count || 0}
-            </span>
-          </div>
-          {!noReadMore && (
-            <a className="read-more" href={`/post/${post.slug}/`} style={{ textDecoration: "none" }}>
-              Читать далее <i className="fas fa-arrow-right"></i>
-            </a>
+        <div className="post-text">
+          {badge}
+          {post.excerpt && (
+            <div className="post-excerpt" dangerouslySetInnerHTML={{ __html: post.excerpt }} />
           )}
         </div>
-        {extra}
       </div>
+
+      <div className="post-footer">
+        <div className="post-stats">
+          <span className="stat-item" title="Просмотры">
+            <i className="far fa-eye" aria-hidden="true" /> {post.views || 0}
+          </span>
+          <button
+            type="button"
+            className={`stat-item like-btn${liked ? ' is-liked' : ''}`}
+            title={liked ? 'Убрать лайк' : 'Поставить лайк'}
+            aria-pressed={liked}
+            onClick={handleLike}
+          >
+            <i className={`${liked ? 'fas' : 'far'} fa-heart`} aria-hidden="true" /> {likesCount}
+          </button>
+          <span className="stat-item" title="Время чтения">
+            <i className="far fa-clock" aria-hidden="true" /> {post.reading_time_minutes || 1} мин
+          </span>
+          <span className="stat-item" title="Комментарии">
+            <i className="far fa-comment" aria-hidden="true" /> {post.comments_count || 0}
+          </span>
+        </div>
+        {!noReadMore && (
+          <Link className="read-more" to={`/post/${post.slug}/`}>
+            Читать <i className="fas fa-chevron-right" aria-hidden="true" />
+          </Link>
+        )}
+      </div>
+      {extra}
     </article>
   )
 }

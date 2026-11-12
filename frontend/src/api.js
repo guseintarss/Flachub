@@ -134,3 +134,31 @@ export function markChatRead(chatId) {
     method: 'POST',
   })
 }
+
+export function trackRead(slug, payload = {}) {
+  const body = JSON.stringify({
+    referrer: document.referrer || '',
+    ...payload,
+  })
+  const headers = { 'Content-Type': 'application/json' }
+  const csrf = getCSRFToken()
+  if (csrf) headers['X-CSRFToken'] = csrf
+  return fetch(`${BASE}/posts/${slug}/read/`, {
+    method: 'POST',
+    headers,
+    credentials: 'same-origin',
+    keepalive: true,
+    body,
+  }).catch(() => null)
+}
+
+export function fetchAuthorDashboard(days = 30) {
+  return request(`${BASE}/author/dashboard/?days=${days}`)
+}
+
+export function importFromHabr(url) {
+  return request(`${BASE}/import/habr/`, {
+    method: 'POST',
+    body: JSON.stringify({ url }),
+  })
+}

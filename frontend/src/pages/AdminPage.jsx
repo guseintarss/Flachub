@@ -33,9 +33,9 @@ function AdminCharts({ stats }) {
         <h2><i className="fas fa-chart-bar"></i> Аналитика за 14 дней</h2>
       </div>
       <div className="admin-charts-grid">
-        <BarChart data={stats.daily_registrations} label="Регистрации" color="#3b82f6" />
-        <BarChart data={stats.daily_posts} label="Публикации" color="#10b981" />
-        <BarChart data={stats.daily_comments} label="Комментарии" color="#f59e0b" />
+        <BarChart data={stats.daily_registrations} label="Регистрации" color="#3f5a66" />
+        <BarChart data={stats.daily_posts} label="Публикации" color="#2f5d48" />
+        <BarChart data={stats.daily_comments} label="Комментарии" color="#8a641f" />
       </div>
     </div>
   )
@@ -43,12 +43,12 @@ function AdminCharts({ stats }) {
 
 function AdminStats({ stats }) {
   const cards = [
-    { label: 'Пользователей', value: stats.total_users, icon: 'fa-users', color: '#3b82f6' },
-    { label: 'Публикаций', value: stats.total_posts, icon: 'fa-file-alt', color: '#10b981' },
-    { label: 'Опубликовано', value: stats.published_posts, icon: 'fa-check-circle', color: '#22c55e' },
-    { label: 'Комментариев', value: stats.total_comments, icon: 'fa-comments', color: '#f59e0b' },
-    { label: 'Администраторов', value: stats.total_admins, icon: 'fa-crown', color: '#ef4444' },
-    { label: 'Модераторов', value: stats.total_moderators, icon: 'fa-shield-alt', color: '#8b5cf6' },
+    { label: 'Пользователей', value: stats.total_users, icon: 'fa-users', color: '#3f5a66' },
+    { label: 'Публикаций', value: stats.total_posts, icon: 'fa-file-alt', color: '#2f5d48' },
+    { label: 'Опубликовано', value: stats.published_posts, icon: 'fa-check-circle', color: '#2f5d48' },
+    { label: 'Комментариев', value: stats.total_comments, icon: 'fa-comments', color: '#8a641f' },
+    { label: 'Администраторов', value: stats.total_admins, icon: 'fa-crown', color: '#a9502b' },
+    { label: 'Модераторов', value: stats.total_moderators, icon: 'fa-shield-alt', color: '#6d5427' },
   ]
 
   return (

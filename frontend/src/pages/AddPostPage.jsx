@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getCSRFToken } from '../csrf'
+import { importFromHabr } from '../api'
 import Sidebar from '../components/Sidebar/Sidebar'
 import { AddPostSkeleton } from '../components/Skeleton'
 import { CODE_LANGUAGES } from '../reviewMeta'
@@ -226,6 +227,9 @@ function AddPostPage() {
   const [fileName, setFileName] = useState('Файл не выбран')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [importUrl, setImportUrl] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importStatus, setImportStatus] = useState(null)
   const searchRef = useRef(null)
   const editorRef = useRef(null)
 
@@ -261,6 +265,8 @@ function AddPostPage() {
 
   useEffect(() => {
     if (slashMenu.visible) {
+      // Сброс выбранного пункта при новом запросе слеш-меню.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSlashIndex(0)
     }
   }, [slashMenu.visible, slashMenu.query])
@@ -438,9 +444,11 @@ function AddPostPage() {
       .then(r => r.json()).then(d => setCategories(d.results || d)).catch(() => {})
     fetch('/api/mobile/tags/', { credentials: 'same-origin' })
       .then(r => r.json()).then(d => setAllTags(d.results || d)).catch(() => {})
-  }, [user, loading])
+  }, [user, loading, navigate])
 
   useEffect(() => {
+    // Результаты поиска тегов — производное состояние от запроса.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (searchQuery.length < 2) { setShowSearch(false); return }
     const q = searchQuery.toLowerCase()
     const filtered = allTags.filter(t =>
@@ -452,6 +460,8 @@ function AddPostPage() {
 
   useEffect(() => {
     if (!slug || !user) return
+    // Загрузка существующего черновика в редактор.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingPost(true)
     fetch(`/api/mobile/posts/${slug}/`, { credentials: 'same-origin' })
       .then(async r => {
@@ -538,7 +548,7 @@ function AddPostPage() {
     return () => {
       if (draftTimerRef.current) clearInterval(draftTimerRef.current)
     }
-  }, [step])
+  }, [step, form.content])
 
   useEffect(() => {
     function onBeforeUnload(e) {
@@ -668,6 +678,63 @@ function AddPostPage() {
     reader.readAsDataURL(file)
   }
 
+  async function handleHabrImport(event) {
+    event.preventDefault()
+    if (importing) return
+    const url = importUrl.trim()
+    if (!url) {
+      setImportStatus({ type: 'error', text: 'Вставьте ссылку на статью Хабра.' })
+      return
+    }
+    setImporting(true)
+    setImportStatus({ type: 'info', text: 'Загружаем статью, картинки и теги…' })
+    try {
+      const draft = await importFromHabr(url)
+      const safeTitle = String(draft.title || '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      const html = `<h1>${safeTitle}</h1>${draft.content || ''}`
+      setForm(prev => ({ ...prev, content: html }))
+      editorRef.current?.setData(html)
+
+      if (Array.isArray(draft.tags) && draft.tags.length && allTags.length) {
+        const ids = new Set()
+        for (const name of draft.tags) {
+          const found = allTags.find(tag => tag.tag.toLowerCase() === String(name).toLowerCase())
+          if (found) ids.add(found.id)
+        }
+        if (ids.size) setSelectedTagIds(ids)
+      }
+
+      if (draft.cover_url) {
+        setPhotoPreview(draft.cover_url)
+        setFileName('Обложка с Хабра')
+        try {
+          const response = await fetch(draft.cover_url, { credentials: 'same-origin' })
+          if (response.ok) {
+            const blob = await response.blob()
+            const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg')
+            setPhotoFile(new File([blob], `habr-cover.${ext}`, { type: blob.type || 'image/jpeg' }))
+          }
+        } catch {
+          // Обложку можно выбрать вручную — импорт текста уже удался.
+        }
+      }
+
+      setImportStatus({
+        type: 'success',
+        text: `Готово: «${draft.title}». Проверьте заголовок, теги и обложку перед публикацией.`,
+      })
+    } catch (err) {
+      setImportStatus({
+        type: 'error',
+        text: err.message && !err.message.startsWith('HTTP')
+          ? err.message
+          : 'Не удалось импортировать статью. Проверьте ссылку и попробуйте ещё раз.',
+      })
+    }
+    setImporting(false)
+  }
+
   function addTag(tagId) {
     if (selectedTagIds.has(tagId)) return
     const newSet = new Set(selectedTagIds)
@@ -724,7 +791,7 @@ function AddPostPage() {
       debounceRef.current = null
     }
     if (savePromiseRef.current) {
-      try { await savePromiseRef.current } catch {}
+      try { await savePromiseRef.current } catch { /* сохраним повторно при отправке */ }
     }
 
     submittingRef.current = true
@@ -847,6 +914,40 @@ function AddPostPage() {
               {/* Шаг 2: Редактор */}
               <div className={`wizard-step${step === 2 ? ' active' : ''}`} id="step-2">
                 <div className="editor-container">
+                  {!isEditing && (
+                    <section className="habr-import" aria-label="Импорт статьи с Хабра">
+                      <div className="habr-import-icon" aria-hidden="true">
+                        <i className="fas fa-file-import" />
+                      </div>
+                      <div className="habr-import-body">
+                        <h3>Переезжаете с Хабра?</h3>
+                        <p>Вставьте ссылку на статью — перенесём текст, картинки и теги в черновик. Оригинал останется на Хабре.</p>
+                        <form className="habr-import-form" onSubmit={handleHabrImport}>
+                          <label htmlFor="habr-import-url" className="visually-hidden">Ссылка на статью Хабра</label>
+                          <input
+                            id="habr-import-url"
+                            type="url"
+                            className="form-control"
+                            placeholder="https://habr.com/ru/articles/123456/"
+                            value={importUrl}
+                            onChange={e => setImportUrl(e.target.value)}
+                            disabled={importing}
+                          />
+                          <button type="submit" className="btn btn-primary" disabled={importing || !importUrl.trim()}>
+                            {importing
+                              ? <><i className="fas fa-spinner fa-spin" /> Импортируем…</>
+                              : <><i className="fas fa-download" /> Импортировать</>}
+                          </button>
+                        </form>
+                        {importStatus && (
+                          <div className={`habr-import-status is-${importStatus.type}`} role="status">
+                            <i className={`fas ${importStatus.type === 'success' ? 'fa-check-circle' : importStatus.type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}`} />
+                            {importStatus.text}
+                          </div>
+                        )}
+                      </div>
+                    </section>
+                  )}
                   <div className="form-group full-width">
                     {step === 2 && (
 <CKEditor

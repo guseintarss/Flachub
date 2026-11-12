@@ -16,6 +16,10 @@ async function bootstrap() {
   if (import.meta.env.VITE_DEMO === 'true') {
     const { installDemo } = await import('./demo/installDemo')
     installDemo()
+  } else if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js').catch(() => {})
+    })
   }
 
   createRoot(document.getElementById('root')).render(

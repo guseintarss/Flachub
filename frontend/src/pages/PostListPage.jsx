@@ -4,7 +4,7 @@ import PostCard from '../components/Feed/PostCard'
 import Sidebar from '../components/Sidebar/Sidebar'
 import { PostListSkeleton } from '../components/Skeleton'
 
-function PostListPage({ endpoint }) {
+function PostListPage({ endpoint, title, eyebrow }) {
   const { slug } = useParams()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -44,11 +44,21 @@ function PostListPage({ endpoint }) {
     <main className="page">
       <div className="pg-container layout">
         <div className="content">
+          {title && (
+            <div className="feed-header">
+              <div>
+                <p className="feed-kicker">{eyebrow}</p>
+                <h1 className="feed-title">{title}</h1>
+                <p className="feed-subtitle">Материалы сообщества по этой теме.</p>
+              </div>
+            </div>
+          )}
+
           {!loading && posts.length === 0 && (
-            <div style={{ textAlign: 'center', padding: 60, color: 'var(--muted)' }}>
-              <i className="fas fa-tag" style={{ fontSize: 48, marginBottom: 16 }}></i>
-              <h3>Постов не найдено</h3>
-              <p>По этому тегу пока нет публикаций.</p>
+            <div className="feed-empty">
+              <span className="feed-empty-mark"><i className="fas fa-tag" /></span>
+              <h3>Публикаций не найдено</h3>
+              <p>По этому тегу пока нет материалов. Загляните позже или выберите другой раздел.</p>
             </div>
           )}
 
@@ -59,23 +69,21 @@ function PostListPage({ endpoint }) {
               </div>
 
               {totalPages > 1 && (
-                <div className="pagination" style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 24 }}>
+                <div className="pagination">
                   <button
+                    className="pagination-btn"
                     disabled={page <= 1}
                     onClick={() => setPage(p => Math.max(1, p - 1))}
-                    style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', cursor: page > 1 ? 'pointer' : 'not-allowed', opacity: page > 1 ? 1 : 0.5 }}
                   >
-                    ← Назад
+                    <i className="fas fa-arrow-left" /> Назад
                   </button>
-                  <span style={{ display: 'flex', alignItems: 'center', padding: '0 12px', fontSize: '0.9rem', color: 'var(--muted)' }}>
-                    {page} / {totalPages}
-                  </span>
+                  <span className="pagination-status">{page} / {totalPages}</span>
                   <button
+                    className="pagination-btn"
                     disabled={page >= totalPages}
                     onClick={() => setPage(p => p + 1)}
-                    style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', cursor: page < totalPages ? 'pointer' : 'not-allowed', opacity: page < totalPages ? 1 : 0.5 }}
                   >
-                    Далее →
+                    Далее <i className="fas fa-arrow-right" />
                   </button>
                 </div>
               )}
@@ -91,13 +99,16 @@ function PostListPage({ endpoint }) {
 }
 
 export function TagPosts() {
-  const endpoint = (slug, page) => `/api/mobile/posts/?tag=${slug}&page=${page}`
-  return <PostListPage endpoint={endpoint} />
+  const { slug } = useParams()
+  const endpoint = (tagSlug, page) => `/api/mobile/posts/?tag=${tagSlug}&page=${page}`
+  return <PostListPage endpoint={endpoint} eyebrow="Тег" title={`#${slug}`} />
 }
 
 export function CategoryPosts() {
-  const endpoint = (slug, page) => `/api/mobile/posts/?cat=${slug}&page=${page}`
-  return <PostListPage endpoint={endpoint} />
+  const { slug } = useParams()
+  const endpoint = (catSlug, page) => `/api/mobile/posts/?cat=${catSlug}&page=${page}`
+  const title = slug ? slug.replace(/-/g, ' ') : 'Категория'
+  return <PostListPage endpoint={endpoint} eyebrow="Категория" title={title} />
 }
 
 export default PostListPage

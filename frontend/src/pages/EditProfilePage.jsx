@@ -44,8 +44,8 @@ function EditProfilePage() {
           last_name: data.last_name || '',
           email: data.email || '',
           about_me: data.bio || '',
-          banner_gradient_start: data.banner_gradient_start || '#0c6acf',
-          banner_gradient_end: data.banner_gradient_end || '#764ba2',
+          banner_gradient_start: data.banner_gradient_start || '#2c5d48',
+          banner_gradient_end: data.banner_gradient_end || '#7a8f63',
           data_birth: data.data_birth || '',
           phone_namber: formatPhone(data.phone_namber || ''),
           show_email: data.show_email ?? true,
@@ -220,29 +220,29 @@ function EditProfilePage() {
     : { background: `linear-gradient(135deg, ${form.banner_gradient_start} 0%, ${form.banner_gradient_end} 100%)` }
 
   const presets = [
-    { start: '#0c6acf', end: '#764ba2' },
-    { start: '#10b981', end: '#34d399' },
-    { start: '#f59e0b', end: '#ef4444' },
-    { start: '#8b5cf6', end: '#ec4899' },
-    { start: '#06b6d4', end: '#3b82f6' },
-    { start: '#1f2937', end: '#4b5563' },
-    { start: '#dc2626', end: '#f97316' },
-    { start: '#0f172a', end: '#1e3a5f' },
+    { start: '#2c5d48', end: '#7a8f63' },
+    { start: '#6d5427', end: '#b39a5f' },
+    { start: '#6b4a3a', end: '#b0836a' },
+    { start: '#3d5560', end: '#7d95a0' },
+    { start: '#544a63', end: '#928aa8' },
+    { start: '#22302a', end: '#4c6355' },
+    { start: '#7a3f2f', end: '#c07a55' },
+    { start: '#1e2d26', end: '#3f5a4a' },
   ]
 
   return (
     <main className="page">
       <div className="pg-container">
         <div className="post edit-profile-page">
-          <h1>🛠 Редактирование профиля</h1>
+          <h1>Редактирование профиля</h1>
 
           {error && (
-            <div className="alert alert-danger" style={{ padding: '12px 16px', background: '#fee2e2', color: '#dc2626', borderRadius: 8, marginBottom: 16 }}>
+            <div className="alert alert-danger" role="alert">
               {error}
             </div>
           )}
           {success && (
-            <div className="alert alert-success" style={{ padding: '12px 16px', background: '#d1fae5', color: '#065f46', borderRadius: 8, marginBottom: 16 }}>
+            <div className="alert alert-success" role="status">
               Профиль успешно сохранён!
             </div>
           )}
@@ -256,7 +256,7 @@ function EditProfilePage() {
                 ) : (
                   <div id="avatar-preview" className="user-img-article"
                     style={{
-                      background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                      background: 'linear-gradient(135deg, #2f5d48, #7a8f63)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '3rem', fontWeight: 700, color: '#fff',
                     }}>
@@ -490,182 +490,6 @@ function EditProfilePage() {
         </div>
       </div>
 
-      <style>{`
-        .edit-profile-page { max-width: 800px; margin: 0 auto; }
-        .edit-profile-page h1 { margin-bottom: 30px; color: var(--text); }
-
-        .avatar-preview-container {
-          text-align: center; margin-bottom: 30px; padding: 20px;
-          background: var(--bg); border-radius: var(--radius);
-        }
-        .avatar-wrappers {
-          position: relative; display: inline-block; margin-bottom: 15px;
-        }
-        .avatar-wrappers .user-img-article {
-          width: 150px; height: 150px; border-radius: 50%; object-fit: cover;
-          border: 4px solid var(--border); transition: all 0.3s ease;
-        }
-        .avatar-overlay {
-          position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-          background: rgba(0,0,0,0.6); border-radius: 50%;
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          color: white; cursor: pointer; opacity: 0; transition: opacity 0.3s ease;
-        }
-        .avatar-overlay i { font-size: 24px; margin-bottom: 5px; }
-        .avatar-overlay span { font-size: 14px; font-weight: 600; }
-        .avatar-wrappers:hover .avatar-overlay { opacity: 1; }
-        .avatar-wrappers:hover .user-img-article { transform: scale(1.05); border-color: var(--primary); }
-
-        .avatar-actions {
-          display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px;
-        }
-        .avatar-actions input[type="file"] { display: none; }
-        .avatar-help { color: var(--muted); font-size: 0.9rem; margin: 0; }
-
-        .form-sections { margin-bottom: 30px; }
-        .form-section {
-          background: var(--bg); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;
-        }
-        .form-section h3 {
-          margin-bottom: 20px; color: var(--text); font-size: 1.2rem;
-          display: flex; align-items: center; gap: 10px;
-        }
-        .form-section h3 i { color: var(--primary); }
-
-        .form-row {
-          display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 20px; margin-bottom: 20px;
-        }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label {
-          font-weight: 600; margin-bottom: 8px; color: var(--text);
-          display: flex; align-items: center; gap: 8px;
-        }
-        .form-group label i { color: var(--primary); font-size: 14px; }
-        .form-group input, .form-group textarea, .form-group select {
-          padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px;
-          font-size: 1rem; background: var(--surface); color: var(--text);
-          transition: all 0.3s ease;
-        }
-        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-          outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(12,106,207,0.1);
-        }
-        .form-group input:disabled { opacity: 0.6; cursor: not-allowed; }
-        .form-group textarea { min-height: 100px; resize: vertical; }
-
-        .form-group input[type="color"] { width: 100%; height: 60px; padding: 5px; cursor: pointer; }
-        .form-group input[type="color"]:hover { border-color: var(--primary); }
-
-        .form-text { color: var(--muted); font-size: 0.85rem; margin-top: 5px; }
-        .form-error { color: #dc3545; font-size: 0.85rem; margin-top: 5px; }
-
-        .live-banner-preview { margin-bottom: 20px; position: relative; }
-        .preview-label {
-          display: inline-flex; align-items: center; gap: 6px;
-          margin-top: 8px; font-size: 0.8rem; color: var(--muted);
-        }
-
-        .color-row { gap: 16px; }
-        .color-input-wrapper {
-          position: relative; display: flex; align-items: center; gap: 12px;
-        }
-        .color-input-wrapper input[type="color"] { width: 60px; height: 50px; flex-shrink: 0; }
-        .color-value {
-          font-family: 'JetBrains Mono', 'Consolas', monospace;
-          font-size: 0.95rem; color: var(--muted); background: var(--bg);
-          padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border); flex: 1;
-        }
-
-        .gradient-presets { margin-top: 16px; }
-        .presets-label {
-          display: block; font-size: 0.85rem; color: var(--muted);
-          margin-bottom: 10px; font-weight: 500;
-        }
-        .presets-grid { display: flex; gap: 8px; flex-wrap: wrap; }
-        .preset-btn {
-          width: 44px; height: 44px; border: 2px solid var(--border);
-          border-radius: 10px; padding: 0; cursor: pointer;
-          overflow: hidden; transition: all 0.2s ease; background: none;
-        }
-        .preset-btn span { display: block; width: 100%; height: 100%; }
-        .preset-btn:hover { transform: scale(1.1); border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .preset-btn.active { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(12,106,207,0.2); }
-
-        .image-upload-group input[type="file"]:hover { border-color: var(--primary); background: rgba(12,106,207,0.03); }
-
-        .current-banner-info {
-          display: flex; align-items: center; gap: 16px; padding: 12px;
-          background: var(--bg); border: 1px solid var(--border);
-          border-radius: 10px; margin-bottom: 12px;
-        }
-        .current-banner-preview { flex-shrink: 0; width: 120px; height: 50px; border-radius: 8px; overflow: hidden; }
-        .current-banner-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .current-banner-actions {
-          display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1;
-        }
-        .clear-banner-checkbox { display: inline-flex; align-items: center; cursor: pointer; user-select: none; }
-        .clear-banner-checkbox input[type="checkbox"] { display: none; }
-        .clear-banner-label {
-          display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
-          font-size: 0.85rem; font-weight: 600; border-radius: 8px; white-space: nowrap;
-          border: 2px solid #dc3545; color: #dc3545; background: transparent;
-          transition: all 0.2s ease; cursor: pointer;
-        }
-        .clear-banner-label:hover { background: #dc3545; color: #fff; }
-        .clear-banner-checkbox input[type="checkbox"]:checked + .clear-banner-label { background: #dc3545; color: #fff; }
-        .current-banner-text {
-          display: inline-flex; align-items: center; gap: 6px;
-          font-size: 0.85rem; color: #10b981; font-weight: 500;
-        }
-
-        .privacy-toggles { display: flex; flex-direction: column; gap: 14px; }
-        .privacy-toggle {
-          display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none;
-        }
-        .privacy-toggle input { display: none; }
-        .toggle-track {
-          width: 44px; height: 24px; border-radius: 12px; background: var(--border);
-          position: relative; transition: background 0.25s ease; flex-shrink: 0;
-        }
-        .toggle-thumb {
-          width: 20px; height: 20px; border-radius: 50%; background: #fff;
-          position: absolute; top: 2px; left: 2px; transition: transform 0.25s ease;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .privacy-toggle input:checked + .toggle-track { background: var(--primary); }
-        .privacy-toggle input:checked + .toggle-track .toggle-thumb { transform: translateX(20px); }
-        .toggle-label {
-          display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: var(--text);
-        }
-        .toggle-label i { color: var(--primary); font-size: 0.9rem; }
-
-        .form-actions {
-          display: flex; gap: 15px; justify-content: flex-start;
-          margin-top: 30px; padding-top: 30px; border-top: 1px solid var(--border);
-        }
-        .form-actions .btn {
-          display: inline-flex; align-items: center; gap: 8px;
-          padding: 12px 24px; font-weight: 600;
-        }
-
-        @media (max-width: 768px) {
-          .form-row { grid-template-columns: 1fr; }
-          .form-actions { flex-direction: column; }
-          .form-actions .btn { width: 100%; justify-content: center; }
-          .avatar-wrappers .user-img-article { width: 120px; height: 120px; }
-          #live-banner-bg { height: 120px !important; }
-          .presets-grid { gap: 6px; }
-          .preset-btn { width: 38px; height: 38px; }
-          .color-input-wrapper { flex-direction: column; align-items: stretch; }
-          .color-input-wrapper input[type="color"] { width: 100%; height: 45px; }
-          .color-value { text-align: center; }
-          .current-banner-info { flex-direction: column; align-items: stretch; gap: 10px; }
-          .current-banner-preview { width: 100%; height: 60px; }
-          .current-banner-actions { flex-direction: column; align-items: stretch; }
-          .clear-banner-label { width: 100%; justify-content: center; }
-          .current-banner-text { justify-content: center; }
-        }
-      `}</style>
     </main>
   )
 }

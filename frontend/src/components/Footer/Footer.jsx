@@ -1,9 +1,13 @@
+import { Link } from 'react-router-dom'
+import BrandMark from '../BrandMark'
+
 function BrandSocials() {
   return (
     <div className="footer-brand">
-      <a href="/" className="footer-logo">
+      <Link to="/" className="footer-logo">
+        <BrandMark />
         <span>ФлакХаб</span>
-      </a>
+      </Link>
       <p className="footer-description">
         Платформа для IT-специалистов: делитесь знаниями,
         находите возможности и развивайтесь вместе с нами.
@@ -28,8 +32,8 @@ function Navigations() {
     <div className="footer-section">
       <h4><i className="fas fa-compass"></i> Навигация</h4>
       <ul className="footer-links">
-        <li><a href="/"><i className="fas fa-angle-right"></i> Главная</a></li>
-        <li><a href="/search/"><i className="fas fa-angle-right"></i> Поиск</a></li>
+        <li><Link to="/"><i className="fas fa-angle-right"></i> Главная</Link></li>
+        <li><Link to="/search/"><i className="fas fa-angle-right"></i> Поиск</Link></li>
       </ul>
     </div>
   )
@@ -40,11 +44,11 @@ function Users() {
     <div className="footer-section">
       <h4><i className="fas fa-user"></i> Пользователям</h4>
       <ul className="footer-links">
-        <li><a href="/profile/"><i className="fas fa-angle-right"></i> Профиль</a></li>
-        <li><a href="/add-post/"><i className="fas fa-angle-right"></i> Создать статью</a></li>
-        <li><a href="/subscriptions/"><i className="fas fa-angle-right"></i> Подписки</a></li>
-        <li><a href="/login/"><i className="fas fa-angle-right"></i> Войти</a></li>
-        <li><a href="/register/"><i className="fas fa-angle-right"></i> Регистрация</a></li>
+        <li><Link to="/profile/"><i className="fas fa-angle-right"></i> Профиль</Link></li>
+        <li><Link to="/add-post/"><i className="fas fa-angle-right"></i> Создать статью</Link></li>
+        <li><Link to="/subscriptions/"><i className="fas fa-angle-right"></i> Подписки</Link></li>
+        <li><Link to="/login/"><i className="fas fa-angle-right"></i> Войти</Link></li>
+        <li><Link to="/register/"><i className="fas fa-angle-right"></i> Регистрация</Link></li>
       </ul>
     </div>
   )

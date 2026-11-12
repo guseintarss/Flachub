@@ -1,8 +1,8 @@
-# 📋 CHANGELOG - Версия 3.0.1
+# 📋 CHANGELOG — ФлакХаб 3.0.1
 
 ## Общее описание
 
-Полная переработка проекта PageGlow для production-ready развертывания.  
+Полная переработка проекта ФлакХаб (Flachub) для production-ready развертывания.  
 Все ошибки исправлены, добавлена полная Docker поддержка и подробная документация.
 
 ---
@@ -46,7 +46,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt gunicorn
 ```python
 # ❌ БЫЛО:
 DEBUG = config('DEBUG')  # String вместо Boolean
-ALLOWED_HOSTS=["pageglow.ru", "www.pageglow.ru", '127.0.0.1']
+ALLOWED_HOSTS=["flachub.ru", "www.flachub.ru", '127.0.0.1']
 STATIC_ROOT = BASE_DIR / '/Users/Темирлан/PycharmProjects/PageGlow3.0.1/PageGlow/static'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -239,7 +239,7 @@ if (toggleButton) {
 ```ini
 DEBUG=False
 SECRET_KEY=your-super-secret-key
-ALLOWED_HOSTS=localhost,127.0.0.1,pageglow.ru
+ALLOWED_HOSTS=localhost,127.0.0.1,flachub.ru
 DATABASE_HOST=postgres
 DATABASE_NAME=pageglow_db
 EMAIL_HOST_USER=your-email@gmail.com

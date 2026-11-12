@@ -1,0 +1,197 @@
+/* Тур по демо-стенду */
+
+.demo-tour-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10010;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(10, 15, 30, 0.55);
+  backdrop-filter: blur(5px);
+}
+
+.demo-tour-intro {
+  width: min(520px, 100%);
+  padding: 28px;
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.35);
+}
+
+.demo-tour-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(12, 106, 207, 0.1);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.demo-tour-intro h2 {
+  margin: 0 0 8px;
+  font-size: 25px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.demo-tour-intro > p {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.demo-tour-list {
+  margin: 0 0 20px;
+  padding-left: 20px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.demo-tour-list strong {
+  color: var(--text);
+}
+
+.demo-tour-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.demo-tour-error {
+  margin-bottom: 12px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+.demo-tour-panel {
+  position: fixed;
+  right: 18px;
+  bottom: 76px;
+  z-index: 10012;
+  width: min(360px, calc(100vw - 36px));
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: #111827;
+  color: #f9fafb;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
+  font-family: 'Golos Text', system-ui, sans-serif;
+}
+
+.demo-tour-progress {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.demo-tour-progress span {
+  flex: 1;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.demo-tour-progress span.is-done {
+  background: #34d399;
+}
+
+.demo-tour-progress span.is-active {
+  background: #60a5fa;
+}
+
+.demo-tour-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.demo-tour-step-label {
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.demo-tour-skip {
+  border: 0;
+  background: transparent;
+  color: #9ca3af;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.demo-tour-panel h3 {
+  margin: 0 0 5px;
+  font-size: 18px;
+}
+
+.demo-tour-panel p {
+  margin: 0 0 14px;
+  color: #d1d5db;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.demo-tour-panel .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.demo-tour-wait {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #93c5fd;
+  font-size: 13px;
+}
+
+.tour-pulse {
+  animation: tour-pulse 1.5s ease-in-out infinite;
+  outline: 3px solid rgba(96, 165, 250, 0.55);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
+@keyframes tour-pulse {
+  0%, 100% { outline-color: rgba(96, 165, 250, 0.25); }
+  50% { outline-color: rgba(96, 165, 250, 0.8); }
+}
+
+html.dark-mode .demo-tour-intro {
+  background: var(--dark-surface);
+}
+
+html.dark-mode .demo-tour-intro h2,
+html.dark-mode .demo-tour-list,
+html.dark-mode .demo-tour-list strong {
+  color: var(--dark-text);
+}
+
+@media (max-width: 640px) {
+  .demo-tour-panel {
+    right: 10px;
+    left: 10px;
+    bottom: 64px;
+    width: auto;
+  }
+  .demo-tour-intro {
+    padding: 20px;
+  }
+}

@@ -10,6 +10,7 @@ from .views import (
     register_view, password_change_view,
     password_reset_view, password_reset_confirm_view,
     subscription_feed_view,
+    author_dashboard_view, import_habr_view,
     admin_stats_view, admin_users_view, admin_update_role_view,
     admin_ban_view,
 )
@@ -55,6 +56,8 @@ urlpatterns = [
     path('auth/password-reset/', password_reset_view, name='password-reset'),
     path('auth/password-reset/confirm/', password_reset_confirm_view, name='password-reset-confirm'),
     path('subscriptions/feed/', subscription_feed_view, name='subscription-feed'),
+    path('author/dashboard/', author_dashboard_view, name='author-dashboard'),
+    path('import/habr/', import_habr_view, name='import-habr'),
     path('admin/stats/', admin_stats_view, name='admin-stats'),
     path('admin/users/', admin_users_view, name='admin-users'),
     path('admin/users/<int:user_id>/role/', admin_update_role_view, name='admin-update-role'),

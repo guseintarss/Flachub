@@ -21,6 +21,8 @@ from main.models import (
     Chat, Message
 )
 from users.models import UserReputationLog
+from main.analytics import build_author_dashboard, record_post_read
+from main.habr_import import HabrImportError, import_habr_article
 from .serializers import (
     PostListSerializer, PostDetailSerializer, PostCreateUpdateSerializer,
     CategorySerializer, TagSerializer,
@@ -137,6 +139,21 @@ class PostViewSet(viewsets.ModelViewSet):
             instance.refresh_from_db(fields=['views'])
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], permission_classes=[AllowAny])
+    def read(self, request, slug=None):
+        """Зафиксировать чтение: глубину, время и источник.
+
+        Не увеличивает Post.views — это делает retrieve. Здесь только
+        аналитика для дашборда автора.
+        """
+        post = self.get_object()
+        view = record_post_read(post, request, request.data or {})
+        return Response({
+            'ok': True,
+            'scroll_depth': view.scroll_depth,
+            'is_read_complete': view.is_read_complete,
+        })
 
     def _award_post_created(self, post):
         """Начислить репутацию за первую публикацию, без повторов при переопубликации."""
@@ -323,8 +340,51 @@ class CommentViewSet(viewsets.ModelViewSet):
 
         comment = serializer.save(author=request.user, post=post)
         output = CommentSerializer(comment, context=self.get_serializer_context())
+        self._broadcast_comment(post, output.data)
+        self._notify_parent_author(post, comment, parent, request.user)
         headers = self.get_success_headers(output.data)
         return Response(output.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @staticmethod
+    def _broadcast_comment(post, payload):
+        """Отправить комментарий подписчикам WebSocket-канала статьи."""
+        try:
+            from asgiref.sync import async_to_sync
+            from channels.layers import get_channel_layer
+
+            layer = get_channel_layer()
+            if layer:
+                async_to_sync(layer.group_send)(
+                    f'comments_{post.id}',
+                    {'type': 'comment_created', 'comment': payload},
+                )
+        except Exception:
+            # Realtime — улучшение, а не условие сохранения комментария.
+            import logging
+            logging.getLogger(__name__).exception('comment broadcast failed')
+
+    @staticmethod
+    def _notify_parent_author(post, comment, parent, sender):
+        if not parent or parent.author_id == sender.id:
+            return
+        notification = Notification.objects.create(
+            recipient=parent.author,
+            sender=sender,
+            notification_type=Notification.NotificationType.COMMENT,
+            post=post,
+            comment=comment,
+            message=f'{sender.username} ответил на ваш комментарий: «{post.title[:80]}»',
+        )
+        try:
+            from main.consumers import send_notification_to_user
+            from .serializers import NotificationSerializer
+            send_notification_to_user(
+                parent.author_id,
+                NotificationSerializer(notification).data,
+            )
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception('comment notification push failed')
 
     def perform_update(self, serializer):
         comment = serializer.save()
@@ -1218,6 +1278,36 @@ def password_reset_confirm_view(request):
     user.save(update_fields=['password'])
 
     return Response({'status': 'ok', 'detail': 'Пароль успешно сброшен'})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def author_dashboard_view(request):
+    """Дашборд автора: дочитывания, источники, подписчики."""
+    try:
+        days = int(request.query_params.get('days', 30))
+    except (TypeError, ValueError):
+        days = 30
+    return Response(build_author_dashboard(request.user, days=days))
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def import_habr_view(request):
+    """Импортировать статью с Хабра в черновик редактора."""
+    url = (request.data or {}).get('url', '')
+    try:
+        draft = import_habr_article(url)
+    except HabrImportError as exc:
+        return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception('habr import failed')
+        return Response(
+            {'detail': 'Не удалось импортировать статью. Попробуйте другую ссылку.'},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+    return Response(draft)
 
 
 @api_view(['GET'])

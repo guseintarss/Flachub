@@ -130,3 +130,69 @@ def toggle_subscribe(request):
         'subscribed': subscribed,
         'subscribers_count': target_user.subscribers.count(),
     })
+
+
+def post_ssr(request, slug):
+    """SSR-страница статьи: HTML, мета-теги и начальные данные для React."""
+    from django.conf import settings as django_settings
+    from django.shortcuts import get_object_or_404
+    from django.utils.html import strip_tags
+    from main.models import Post
+    from main.ssr import absolute_media_url, get_vite_assets
+    from mobile_api.serializers import PostDetailSerializer
+
+    post = get_object_or_404(
+        Post.published.select_related('cat', 'author', 'reviewer').prefetch_related('tags', 'comments'),
+        slug=slug,
+    )
+
+    initial_post = PostDetailSerializer(post, context={'request': request}).data
+    canonical = request.build_absolute_uri(post.get_absolute_url())
+    site_url = request.build_absolute_uri('/')
+    description = ' '.join(strip_tags(post.content or '').split())
+    if len(description) > 180:
+        description = description[:177].rsplit(' ', 1)[0] + '…'
+    if not description:
+        description = f'Статья «{post.title}» на ФлакХабе.'
+
+    cover = absolute_media_url(request, post.photo.url) if post.photo else request.build_absolute_uri('/static/images/og-default.jpg')
+    logo = request.build_absolute_uri('/static/images/og-default.jpg')
+    author_name = post.author.username if post.author else 'ФлакХаб'
+    tags = [tag.tag for tag in post.tags.all()]
+
+    json_ld = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        'headline': post.title,
+        'description': description,
+        'image': [cover],
+        'datePublished': post.time_create.isoformat(),
+        'dateModified': post.time_update.isoformat(),
+        'author': {'@type': 'Person', 'name': author_name},
+        'publisher': {
+            '@type': 'Organization',
+            'name': 'ФлакХаб',
+            'url': site_url,
+            'logo': {'@type': 'ImageObject', 'url': logo},
+        },
+        'mainEntityOfPage': {'@type': 'WebPage', '@id': canonical},
+        'keywords': ', '.join(tags),
+        'inLanguage': 'ru',
+    }
+
+    context = {
+        'post': post,
+        'initial_post': initial_post,
+        'canonical': canonical,
+        'meta_title': f'{post.title} — ФлакХаб',
+        'meta_description': description,
+        'meta_image': cover,
+        'meta_keywords': ', '.join(tags),
+        'meta_author': author_name,
+        'json_ld': json.dumps(json_ld, ensure_ascii=False),
+        'vite_js': get_vite_assets()['js'],
+        'vite_css': get_vite_assets()['css'],
+        'site_name': 'ФлакХаб',
+        'site_domain': getattr(django_settings, 'SITE_DOMAIN', 'flachub.ru'),
+    }
+    return render(request, 'post_ssr.html', context)

@@ -600,7 +600,7 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 META_SITE_PROTOCOL = 'https' if not DEBUG else 'http'
-META_SITE_DOMAIN = config('META_SITE_DOMAIN', default='flakhub.ru')
+META_SITE_DOMAIN = config('META_SITE_DOMAIN', default='flachub.ru')
 META_SITE_TYPE = 'website'
 META_SITE_NAME = 'ФлакХаб'
 META_INCLUDE_KEYWORDS = ['статьи', 'информация', 'рекомендации', 'руководства']

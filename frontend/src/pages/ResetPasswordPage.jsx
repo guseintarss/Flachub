@@ -25,92 +25,53 @@ function ResetPasswordPage() {
   }
 
   return (
-    <main className="page">
+    <main className="page auth-page">
       <div className="pg-container">
-        <div className="con">
-          <div style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            boxShadow: 'var(--shadow)',
-            padding: 40,
-            maxWidth: 400,
-            margin: '0 auto',
-          }}>
-            <h2 style={{ margin: '0 0 24px', textAlign: 'center', fontSize: '1.5rem' }}>Новый пароль</h2>
+        <div className="auth-card">
+          <header className="auth-card-head">
+            <span className="auth-kicker">ФлакХаб · доступ</span>
+            <h1 className="auth-title">Новый пароль</h1>
+            <p className="auth-subtitle">Придумайте пароль, который сложно угадать.</p>
+          </header>
 
-            {error && (
-              <div style={{
-                padding: '12px 16px',
-                background: '#fee2e2',
-                color: '#dc2626',
-                borderRadius: 8,
-                marginBottom: 16,
-                fontSize: '0.9rem',
-              }}>
-                {error}
-              </div>
-            )}
+          {error && <div className="form-message is-error" role="alert">{error}</div>}
 
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: 16 }}>
-                <label className="form-label">Новый пароль</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  value={newPassword1}
-                  onChange={e => setNewPassword1(e.target.value)}
-                  required
-                  minLength={8}
-                  style={{
-                    width: '100%',
-                    padding: '12px 14px',
-                    border: '2px solid var(--border)',
-                    borderRadius: 10,
-                    fontSize: '1rem',
-                    background: 'var(--bg)',
-                    color: 'var(--text)',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: 20 }}>
-                <label className="form-label">Подтвердите пароль</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  value={newPassword2}
-                  onChange={e => setNewPassword2(e.target.value)}
-                  required
-                  minLength={8}
-                  style={{
-                    width: '100%',
-                    padding: '12px 14px',
-                    border: '2px solid var(--border)',
-                    borderRadius: 10,
-                    fontSize: '1rem',
-                    background: 'var(--bg)',
-                    color: 'var(--text)',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={loading}
-                style={{ width: '100%', justifyContent: 'center', padding: '12px 20px' }}
-              >
-                {loading ? 'Сохранение...' : 'Сохранить пароль'}
-              </button>
-            </form>
-
-            <div style={{ textAlign: 'center', marginTop: 20, fontSize: '0.9rem', color: 'var(--muted)' }}>
-              <Link to="/login/" style={{ color: 'var(--primary)' }}>Вернуться к входу</Link>
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-field">
+              <label className="form-label" htmlFor="reset-password1">Новый пароль</label>
+              <input
+                id="reset-password1"
+                type="password"
+                className="form-control"
+                value={newPassword1}
+                onChange={e => setNewPassword1(e.target.value)}
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
             </div>
-          </div>
+            <div className="form-field">
+              <label className="form-label" htmlFor="reset-password2">Подтвердите пароль</label>
+              <input
+                id="reset-password2"
+                type="password"
+                className="form-control"
+                value={newPassword2}
+                onChange={e => setNewPassword2(e.target.value)}
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
+            </div>
+
+            <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>
+              {loading ? 'Сохранение…' : 'Сохранить пароль'}
+            </button>
+          </form>
+
+          <p className="auth-footer">
+            <Link to="/login/">Вернуться к входу</Link>
+          </p>
         </div>
       </div>
     </main>

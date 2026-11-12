@@ -1,6 +1,8 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.template.defaultfilters import slugify
+from django.utils import timezone
 from django_ckeditor_5.fields import CKEditor5Field
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
@@ -134,7 +136,7 @@ class Post(ModelMeta, models.Model):
 
     def get_meta_title(self):
         """Оптимизированный meta title"""
-        return f'{self.title} | PageGlow'
+        return f'{self.title} | ФлакХаб'
 
     def get_meta_description(self):
         """Оптимизированный meta description (150-160 символов)"""
@@ -169,7 +171,7 @@ class Post(ModelMeta, models.Model):
 
     def get_author_name(self):
         """Имя автора"""
-        return self.author.username if self.author else 'PageGlow'
+        return self.author.username if self.author else 'ФлакХаб'
 
     def get_category_name(self):
         """Название категории"""
@@ -509,3 +511,61 @@ class UserAchievement(models.Model):
 
     def __str__(self):
         return f'{self.user.username} → {self.badge.name}'
+
+class PostView(models.Model):
+    """Событие чтения статьи: одна запись на пост, сессию и день.
+
+    Нужна для дашборда автора: дочитывания, источники трафика и время чтения.
+    Хранится отдельно от Post.views, чтобы не терять историю при простом
+    счётчике просмотров.
+    """
+
+    class Source(models.TextChoices):
+        DIRECT = 'direct', 'Прямой заход'
+        INTERNAL = 'internal', 'Внутри ФлакХаба'
+        SEARCH = 'search', 'Поиск'
+        SOCIAL = 'social', 'Соцсети'
+        HABR = 'habr', 'Хабр'
+        EXTERNAL = 'external', 'Другие сайты'
+
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='view_events',
+        verbose_name='Пост',
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='post_views',
+        verbose_name='Пользователь',
+    )
+    session_key = models.CharField(max_length=64, blank=True, verbose_name='Сессия')
+    source = models.CharField(
+        max_length=20,
+        choices=Source.choices,
+        default=Source.DIRECT,
+        verbose_name='Источник',
+    )
+    referrer_host = models.CharField(max_length=255, blank=True, verbose_name='Домен-источник')
+    scroll_depth = models.PositiveSmallIntegerField(default=0, verbose_name='Глубина прокрутки, %')
+    read_seconds = models.PositiveIntegerField(default=0, verbose_name='Время чтения, сек')
+    is_read_complete = models.BooleanField(default=False, verbose_name='Дочитано')
+    view_date = models.DateField(default=timezone.localdate, db_index=True, verbose_name='Дата')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Просмотр статьи'
+        verbose_name_plural = 'Просмотры статей'
+        ordering = ['-created_at']
+        unique_together = ('post', 'session_key', 'view_date')
+        indexes = [
+            models.Index(fields=['post', 'view_date']),
+            models.Index(fields=['view_date', 'source']),
+        ]
+
+    def __str__(self):
+        return f'{self.post_id} · {self.view_date} · {self.get_source_display()}'

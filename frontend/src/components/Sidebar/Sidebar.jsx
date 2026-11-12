@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react"
-import "../../styles/Sidebar.css"
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import '../../styles/Sidebar.css'
 
 const Sidebar = ({ compact }) => {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    fetch("/api/mobile/sidebar/")
+    fetch('/api/mobile/sidebar/')
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         return res.json()
@@ -15,12 +16,54 @@ const Sidebar = ({ compact }) => {
       .catch((e) => setError(e.message))
   }, [])
 
-  if (error) return <div className="modern-sidebar"><p className="no-posts">Ошибка загрузки: {error}</p></div>
+  if (error) return (
+    <div className="modern-sidebar">
+      <p className="no-posts">Не удалось загрузить сайдбар: {error}</p>
+    </div>
+  )
+
   if (!data) return (
     <div className="modern-sidebar">
-      <div className="skeleton-line" style={{ width: '100%', height: 200, borderRadius: 12, marginBottom: 16 }} />
-      <div className="skeleton-line" style={{ width: '100%', height: 150, borderRadius: 12, marginBottom: 16 }} />
-      <div className="skeleton-line" style={{ width: '100%', height: 180, borderRadius: 12 }} />
+      <div className="sidebar-widget">
+        <div className="skeleton-line" style={{ width: '100%', height: 200, borderRadius: 12 }} />
+      </div>
+    </div>
+  )
+
+  const recentPosts = (
+    <div className="recent-posts">
+      {data.recent_posts.length === 0 && (
+        <p className="no-posts">Публикаций пока нет</p>
+      )}
+      {data.recent_posts.map((post) => (
+        <Link key={post.id} to={`/post/${post.slug}/`} className="recent-post-card">
+          {post.photo && (
+            <div className="recent-post-img">
+              <img src={post.photo} alt="" loading="lazy" decoding="async" />
+            </div>
+          )}
+          <div className="recent-post-content">
+            <h5 className="recent-post-title">{post.title}</h5>
+            <div className="recent-post-meta">
+              <span className="post-author">{post.author}</span>
+              <span className="post-time">
+                {new Date(post.time_create).toLocaleDateString('ru-RU')}
+              </span>
+            </div>
+            <div className="recent-post-stats">
+              <span className="stat" title="Просмотры">
+                <i className="far fa-eye" aria-hidden="true" /> {post.views}
+              </span>
+              <span className="stat" title="Лайки">
+                <i className="far fa-heart" aria-hidden="true" /> {post.likes_count}
+              </span>
+            </div>
+          </div>
+        </Link>
+      ))}
+      <Link to="/" className="view-all-link">
+        Все публикации <i className="fas fa-chevron-right" aria-hidden="true" />
+      </Link>
     </div>
   )
 
@@ -28,54 +71,8 @@ const Sidebar = ({ compact }) => {
     return (
       <div className="modern-sidebar">
         <div className="sidebar-widget">
-          <h4 className="widget-title">
-            <i className="fas fa-clock"></i> Свежие статьи
-          </h4>
-          <div className="recent-posts">
-            {data.recent_posts.length === 0 && (
-              <p className="no-posts">Статей пока нет</p>
-            )}
-            {data.recent_posts.map((post) => (
-              <a
-                key={post.id}
-                href={`/post/${post.slug}/`}
-                className="text-decoration-none recent-post-card"
-              >
-                {post.photo && (
-                  <div className="recent-post-img">
-                    <img src={post.photo} alt={post.title} />
-                  </div>
-                )}
-                <div className="recent-post-content">
-                  <h5 className="recent-post-title">
-                    {post.title.length > 50
-                      ? post.title.slice(0, 50) + "..."
-                      : post.title}
-                  </h5>
-                  <div className="recent-post-meta">
-                    <span className="post-author">
-                      <i className="fas fa-user"></i> {post.author}
-                    </span>
-                    <span className="post-time" title={post.time_create}>
-                      <i className="fas fa-clock"></i>{" "}
-                      {new Date(post.time_create).toLocaleDateString("ru-RU")}
-                    </span>
-                  </div>
-                  <div className="recent-post-stats">
-                    <span className="stat" title="Просмотры">
-                      <i className="fas fa-eye"></i> {post.views}
-                    </span>
-                    <span className="stat" title="Лайки">
-                      <i className="fas fa-heart"></i> {post.likes_count}
-                    </span>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-          <a href="/" className="text-decoration-none view-all-link">
-            Смотреть все статьи <i className="fas fa-arrow-right"></i>
-          </a>
+          <h4 className="widget-title">Что читают</h4>
+          {recentPosts}
         </div>
       </div>
     )
@@ -83,114 +80,51 @@ const Sidebar = ({ compact }) => {
 
   return (
     <div className="modern-sidebar">
-      {/* Свежие статьи */}
       <div className="sidebar-widget">
-        <h4 className="widget-title">
-          <i className="fas fa-clock"></i> Свежие статьи
-        </h4>
-        <div className="recent-posts">
-          {data.recent_posts.length === 0 && (
-            <p className="no-posts">Статей пока нет</p>
-          )}
-          {data.recent_posts.map((post) => (
-            <a
-              key={post.id}
-              href={`/post/${post.slug}/`}
-              className="text-decoration-none recent-post-card"
-            >
-              {post.photo && (
-                <div className="recent-post-img">
-                  <img src={post.photo} alt={post.title} />
-                </div>
-              )}
-              <div className="recent-post-content">
-                <h5 className="recent-post-title">
-                  {post.title.length > 50
-                    ? post.title.slice(0, 50) + "..."
-                    : post.title}
-                </h5>
-                <div className="recent-post-meta">
-                  <span className="post-author">
-                    <i className="fas fa-user"></i> {post.author}
-                  </span>
-                  <span className="post-time" title={post.time_create}>
-                    <i className="fas fa-clock"></i>{" "}
-                    {new Date(post.time_create).toLocaleDateString("ru-RU")}
-                  </span>
-                </div>
-                <div className="recent-post-stats">
-                  <span className="stat" title="Просмотры">
-                    <i className="fas fa-eye"></i> {post.views}
-                  </span>
-                  <span className="stat" title="Лайки">
-                    <i className="fas fa-heart"></i> {post.likes_count}
-                  </span>
-                </div>
-              </div>
-            </a>
-          ))}
-        </div>
-        <a href="/" className="text-decoration-none view-all-link">
-          Смотреть все статьи <i className="fas fa-arrow-right"></i>
-        </a>
+        <h4 className="widget-title">Что читают</h4>
+        {recentPosts}
       </div>
 
-      {/* Теги */}
       <div className="sidebar-widget">
-        <h4 className="widget-title">
-          <i className="fas fa-tags"></i> Теги
-        </h4>
+        <h4 className="widget-title">Теги</h4>
         <div className="tags-list">
           {data.tags.map((tag) => (
-            <a
-              key={tag.id}
-              href={`/tag/${tag.slug}/`}
-              className="tag"
-            >
+            <Link key={tag.id} to={`/tag/${tag.slug}/`} className="tag">
               {tag.name}
-            </a>
+            </Link>
           ))}
         </div>
       </div>
 
-      {/* Категории */}
       <div className="sidebar-widget categories-widget">
-        <h4 className="widget-title">
-          <i className="fas fa-folder"></i> Категории
-        </h4>
+        <h4 className="widget-title">Категории</h4>
         <div className="category-list">
           {data.categories.map((cat) => (
-            <a
-              key={cat.id}
-              href={`/category/${cat.slug}/`}
-              className="text-decoration-none category-item"
-            >
+            <Link key={cat.id} to={`/category/${cat.slug}/`} className="category-item">
               <span className="category-name">{cat.name}</span>
               <span className="category-count">{cat.posts_count}</span>
-            </a>
+            </Link>
           ))}
         </div>
       </div>
 
-      {/* Статистика */}
       <div className="sidebar-widget stats-widget">
-        <h4 className="widget-title">
-          <i className="fas fa-chart-bar"></i> Статистика
-        </h4>
+        <h4 className="widget-title">Сообщество</h4>
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-value">{data.stats.total_posts}</div>
-            <div className="stat-label">Статей</div>
+            <div className="stat-label">публикаций</div>
           </div>
           <div className="stat-card">
             <div className="stat-value">{data.stats.total_users}</div>
-            <div className="stat-label">Авторов</div>
+            <div className="stat-label">авторов</div>
           </div>
           <div className="stat-card">
             <div className="stat-value">{data.stats.total_comments}</div>
-            <div className="stat-label">Комментариев</div>
+            <div className="stat-label">комментариев</div>
           </div>
         </div>
+        <p className="sidebar-note">Место, где практики делятся опытом без лишнего шума.</p>
       </div>
     </div>
   )

@@ -1,0 +1,103 @@
+{% load static %}<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{{ meta_title }}</title>
+  <meta name="description" content="{{ meta_description }}">
+  <meta name="keywords" content="{{ meta_keywords }}">
+  <meta name="author" content="{{ meta_author }}">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <link rel="canonical" href="{{ canonical }}">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="{{ site_name }}">
+  <meta property="og:title" content="{{ meta_title }}">
+  <meta property="og:description" content="{{ meta_description }}">
+  <meta property="og:url" content="{{ canonical }}">
+  <meta property="og:image" content="{{ meta_image }}">
+  <meta property="article:published_time" content="{{ post.time_create|date:'c' }}">
+  <meta property="article:modified_time" content="{{ post.time_update|date:'c' }}">
+  <meta property="article:author" content="{{ meta_author }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ meta_title }}">
+  <meta name="twitter:description" content="{{ meta_description }}">
+  <meta name="twitter:image" content="{{ meta_image }}">
+
+  <meta name="theme-color" content="#1f5c45">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="apple-mobile-web-app-title" content="ФлакХаб">
+  <meta name="application-name" content="ФлакХаб">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..700&family=JetBrains+Mono:wght@400..600&family=Literata:opsz,wght@7..72,400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+  {% for href in vite_css %}<link rel="stylesheet" href="{{ href }}">{% endfor %}
+
+  <script type="application/ld+json">{{ json_ld|safe }}</script>
+  <script>
+    (function () {
+      var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark-mode', isDark);
+    })();
+  </script>
+  <style>
+    html { background: #f3f4ef; }
+    html.dark-mode { background: #101713; }
+    body { margin: 0; }
+    .ssr-shell { max-width: 900px; margin: 0 auto; padding: 24px 20px 64px; font-family: 'Golos Text', system-ui, sans-serif; color: #1f2937; }
+    html.dark-mode .ssr-shell { color: #f3f4f6; }
+    .ssr-brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 20px; color: inherit; text-decoration: none; margin-bottom: 28px; }
+    .ssr-brand span { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: #fff; background: linear-gradient(135deg, #667eea, #764ba2); }
+    .ssr-title { font-size: clamp(28px, 4vw, 42px); line-height: 1.15; margin: 0 0 14px; letter-spacing: -0.02em; }
+    .ssr-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; color: #6b7280; font-size: 14px; margin-bottom: 24px; }
+    .ssr-cover { width: 100%; border-radius: 16px; margin-bottom: 24px; }
+    .ssr-content { font-family: 'Literata', Georgia, serif; font-size: 19px; line-height: 1.75; overflow-wrap: anywhere; }
+    .ssr-content h2, .ssr-content h3 { font-family: 'Golos Text', system-ui, sans-serif; line-height: 1.25; margin: 1.6em 0 0.6em; }
+    .ssr-content img { max-width: 100%; height: auto; border-radius: 12px; }
+    .ssr-content pre { overflow-x: auto; padding: 16px; border-radius: 12px; background: #111827; color: #e5e7eb; font: 14px/1.6 'JetBrains Mono', monospace; }
+    .ssr-content blockquote { margin: 1.2em 0; padding: 4px 0 4px 18px; border-left: 4px solid #1f5c45; color: #4b5563; }
+    .ssr-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 32px; }
+    .ssr-tag { padding: 5px 10px; border-radius: 999px; background: rgba(31, 92, 69, 0.1); color: #1f5c45; text-decoration: none; font-size: 13px; }
+    .ssr-noscript { max-width: 760px; margin: 0 auto; padding: 24px; }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <main class="ssr-shell">
+      <a class="ssr-brand" href="/"><span>F</span> ФлакХаб</a>
+      <article>
+        <h1 class="ssr-title">{{ post.title }}</h1>
+        <div class="ssr-meta">
+          <span>{{ meta_author }}</span>
+          <time datetime="{{ post.time_create|date:'c' }}">{{ post.time_create|date:'j E Y' }}</time>
+          <span>{{ post.reading_time }} мин чтения</span>
+          {% if post.category %}<span>{{ post.category.name }}</span>{% endif %}
+          <span>{{ post.views }} просмотров</span>
+        </div>
+        {% if post.photo %}<img class="ssr-cover" src="{{ post.photo.url }}" alt="{{ post.title }}">{% endif %}
+        <div class="ssr-content">{{ post.content|safe }}</div>
+        {% if post.tags.all %}
+        <div class="ssr-tags">
+          {% for tag in post.tags.all %}<a class="ssr-tag" href="/tag/{{ tag.slug }}/">{{ tag.tag }}</a>{% endfor %}
+        </div>
+        {% endif %}
+      </article>
+    </main>
+  </div>
+  <noscript>
+    <p class="ssr-noscript">Для комментариев и интерактивных функций включите JavaScript.</p>
+  </noscript>
+
+  {{ initial_post|json_script:"initial-post-data" }}
+
+  {% for src in vite_js %}<script type="module" src="{{ src }}"></script>{% endfor %}
+  {% if not vite_js %}
+  <script type="module" src="/src/main.jsx"></script>
+  {% endif %}
+</body>
+</html>

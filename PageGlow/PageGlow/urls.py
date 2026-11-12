@@ -4,7 +4,7 @@ from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from django.views.static import serve as static_serve
 from PageGlow import settings
-from main.views import page_not_found, CKEditorUploadView, server_error, bad_gateway, service_unavailable, permission_denied
+from main.views import page_not_found, CKEditorUploadView, server_error, bad_gateway, service_unavailable, permission_denied, post_ssr
 from .sitemaps import (
     PostSitemap, StaticViewSitemap, CategorySitemap,
     TagSitemap, UserSitemap
@@ -28,6 +28,8 @@ sitemaps = {
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # SSR статьи должен идти до SPA catch-all, но не мешает API.
+    path('post/<slug:slug>/', post_ssr, name='post-ssr'),
     path('', include("main.urls")),
     path('users/', include("users.urls", namespace='users')),
     path('api/mobile/', include('mobile_api.urls')),

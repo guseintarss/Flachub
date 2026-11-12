@@ -23,6 +23,7 @@ const TRANSLIT = {
 }
 
 const liveSockets = new Set()
+const commentSockets = new Map()
 let state = loadState()
 let toastTimer = 0
 let quotaWarned = false
@@ -61,6 +62,7 @@ function normalizeState(data) {
     if (!Array.isArray(data[key])) data[key] = []
   }
   if (!Array.isArray(data.subscriptions)) data.subscriptions = []
+  if (!Array.isArray(data.reads)) data.reads = []
 
   const maxId = list => list.reduce((max, item) => Math.max(max, Number(item.id) || 0), 0)
   const counterKeys = {
@@ -431,8 +433,8 @@ function publicUser(user) {
     is_superuser: !!user.is_superuser,
     is_active: user.is_active !== false,
     date_joined: user.date_joined,
-    banner_gradient_start: user.banner_gradient_start || '#0c6acf',
-    banner_gradient_end: user.banner_gradient_end || '#764ba2',
+    banner_gradient_start: user.banner_gradient_start || '#2c5d48',
+    banner_gradient_end: user.banner_gradient_end || '#7a8f63',
     banner_image: user.banner_image || null,
     phone: user.show_phone && user.phone_namber ? user.phone_namber : null,
     birth_date: user.show_birth_date && user.data_birth ? user.data_birth : null,
@@ -461,8 +463,8 @@ function profileUser(user) {
     is_staff: !!user.is_staff,
     is_superuser: !!user.is_superuser,
     date_joined: user.date_joined,
-    banner_gradient_start: user.banner_gradient_start || '#0c6acf',
-    banner_gradient_end: user.banner_gradient_end || '#764ba2',
+    banner_gradient_start: user.banner_gradient_start || '#2c5d48',
+    banner_gradient_end: user.banner_gradient_end || '#7a8f63',
     banner_image: user.banner_image || null,
     followers_count: state.subscriptions.filter(item => item.authorId === user.id).length,
     following_count: state.subscriptions.filter(item => item.subscriberId === user.id).length,
@@ -787,6 +789,16 @@ function broadcastNotificationCount() {
   for (const socket of liveSockets) {
     if (socket.url.includes('/ws/notifications/') && socket.readyState === 1) {
       socket.emit({ type: 'count', count: unreadNotifications() })
+    }
+  }
+}
+
+function broadcastComment(postId, comment) {
+  const sockets = commentSockets.get(String(postId))
+  if (!sockets) return
+  for (const socket of sockets) {
+    if (socket.readyState === 1) {
+      socket.emit({ type: 'comment_created', comment })
     }
   }
 }
@@ -1127,7 +1139,57 @@ function createComment(init) {
       { postId: post.id },
     )
     persist()
-    return jsonResponse(serializeCommentFull(comment), 201)
+
+    const payload = serializeCommentFull(comment)
+    broadcastComment(post.id, payload)
+
+    // Во время демо-тура ревьюер отвечает сам: так сценарий
+    // «замечание → ответ по WebSocket» укладывается в 90 секунд.
+    if (window.__flachubTourActive && lineStart !== null && post.post_type === 'review') {
+      window.setTimeout(() => {
+        const reviewer = state.users.find(candidate => candidate.username === 'maria_coder')
+          || state.users.find(candidate => candidate.id !== user.id && candidate.is_active !== false)
+        if (!reviewer) return
+
+        const replyAt = new Date().toISOString()
+        const reply = {
+          id: nextId('comment'),
+          postId: post.id,
+          authorId: reviewer.id,
+          parentId: comment.id,
+          content: 'Согласен: без проверки email форма уходит в API с пустым значением. Добавьте валидацию до fetch и блокируйте кнопку на время запроса — замечание по делу.',
+          created_at: replyAt,
+          updated_at: replyAt,
+          is_edited: false,
+          is_active: true,
+          likes: [],
+          line_start: null,
+          line_end: null,
+          severity: '',
+          is_resolved: false,
+          is_accepted: false,
+        }
+        state.comments.push(reply)
+        createNotification(
+          comment.authorId,
+          reviewer.id,
+          'comment',
+          `${reviewer.username} ответил на ваше замечание в «${post.title.slice(0, 100)}»`,
+          { postId: post.id },
+        )
+        if (post.review_status === 'open') {
+          post.review_status = 'in_review'
+          post.reviewerId = reviewer.id
+        }
+        persist()
+
+        const replyPayload = serializeCommentFull(reply)
+        broadcastComment(post.id, replyPayload)
+        window.dispatchEvent(new CustomEvent('flachub:demo-reply', { detail: replyPayload }))
+      }, 1500)
+    }
+
+    return jsonResponse(payload, 201)
   })
 }
 
@@ -1212,6 +1274,179 @@ function resolveComment(commentId) {
   return jsonResponse(serializeCommentFull(comment))
 }
 
+// ===== Чтение, дашборд автора и импорт с Хабра =====
+
+function recordDemoRead(slug, init) {
+  return readBody(init).then(({ data }) => {
+    const post = postBySlug(slug)
+    if (!post) throw httpError(404, { detail: 'Не найдено' })
+
+    const depth = clamp(asInt(data.scroll_depth, 0) || 0, 0, 100)
+    const readSeconds = clamp(asInt(data.read_seconds, 0) || 0, 0, 86400)
+    const complete = depth >= 90 || Boolean(data.is_read_complete)
+    const session = String(data.session_key || 'demo-session').slice(0, 64)
+    const viewDate = localDateKey(new Date())
+
+    state.reads = state.reads || []
+    let view = state.reads.find(item => (
+      item.postId === post.id && item.session === session && item.view_date === viewDate
+    ))
+    if (!view) {
+      view = {
+        postId: post.id,
+        session,
+        scroll_depth: 0,
+        read_seconds: 0,
+        is_read_complete: false,
+        view_date: viewDate,
+        source: 'internal',
+      }
+      state.reads.push(view)
+    }
+    view.scroll_depth = Math.max(view.scroll_depth, depth)
+    view.read_seconds = Math.max(view.read_seconds, readSeconds)
+    view.is_read_complete = view.is_read_complete || complete
+    persist()
+
+    return jsonResponse({
+      ok: true,
+      scroll_depth: view.scroll_depth,
+      is_read_complete: view.is_read_complete,
+    })
+  })
+}
+
+function authorDashboard(searchParams) {
+  const user = requireUser()
+  const days = clamp(asInt(searchParams.get('days'), 30) || 30, 1, 365)
+  const posts = state.posts.filter(post => post.authorId === user.id)
+  const published = posts.filter(post => post.is_published)
+  const ratio = Math.min(1, days / 90)
+
+  // В демо нет серверных PostView, поэтому берём реальные просмотры постов
+  // и масштабируем их на выбранный период. Так график остаётся правдоподобным
+  // и реагирует на переключение 7/30/90 дней.
+  const totalViews = posts.reduce((sum, post) => sum + (Number(post.views) || 0), 0)
+  const trackedViews = (state.reads || []).filter(view => (
+    view.view_date >= localDateKey(new Date(Date.now() - (days - 1) * 24 * 60 * 60 * 1000))
+  )).length
+  const viewsCount = Math.max(trackedViews, Math.round(totalViews * ratio))
+  const completionRate = viewsCount ? Math.round(clamp(44 + (viewsCount % 10), 0, 100)) : 0
+  const completed = Math.round(viewsCount * completionRate / 100)
+  const readers = Math.round(viewsCount * 0.62)
+  const avgReadSeconds = viewsCount ? (180 + (viewsCount % 120)) : 0
+  const subscribers = state.subscriptions.filter(item => item.authorId === user.id).length
+
+  const today = new Date()
+  const daily = []
+  for (let offset = days - 1; offset >= 0; offset -= 1) {
+    const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - offset)
+    const key = localDateKey(date)
+    const wave = 0.72 + Math.sin((offset + 2) * 1.35) * 0.28
+    const weekend = date.getDay() === 0 || date.getDay() === 6 ? 0.8 : 1
+    const weight = Math.max(0.15, wave * weekend)
+    const dayViews = Math.round(viewsCount / days * weight)
+    const dayTracked = (state.reads || []).filter(view => view.view_date === key).length
+    const dayCompleted = (state.reads || []).filter(view => (
+      view.view_date === key && view.is_read_complete
+    )).length
+    daily.push({
+      date: key,
+      label: date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }),
+      views: Math.max(dayViews, dayTracked),
+      completed: Math.max(Math.round(dayViews * completionRate / 100), dayCompleted),
+      readers: Math.max(Math.round(dayViews * 0.62), dayTracked),
+    })
+  }
+
+  const sourceWeights = [
+    ['internal', 'Внутри ФлакХаба', 0.36],
+    ['direct', 'Прямой заход', 0.27],
+    ['search', 'Поиск', 0.18],
+    ['social', 'Соцсети', 0.11],
+    ['habr', 'Хабр', 0.08],
+  ]
+  const sources = sourceWeights
+    .map(([source, label, weight]) => ({
+      source,
+      label,
+      count: Math.round(viewsCount * weight),
+      percent: Math.round(weight * 100),
+    }))
+    .filter(item => item.count > 0)
+
+  const topPosts = posts
+    .slice()
+    .sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0))
+    .slice(0, 10)
+    .map(post => {
+      const periodViews = Math.round((Number(post.views) || 0) * ratio)
+      const rate = periodViews ? Math.min(96, 42 + (post.id * 7) % 38) : 0
+      return {
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        post_type: post.post_type,
+        is_published: !!post.is_published,
+        views_total: Number(post.views) || 0,
+        views: periodViews,
+        completed: Math.round(periodViews * rate / 100),
+        completion_rate: rate,
+        avg_read_seconds: periodViews ? 150 + (post.id * 37) % 240 : 0,
+      }
+    })
+
+  return {
+    period_days: days,
+    date_from: localDateKey(new Date(Date.now() - (days - 1) * 24 * 60 * 60 * 1000)),
+    date_to: localDateKey(today),
+    kpi: {
+      views: viewsCount,
+      readers,
+      completed,
+      completion_rate: completionRate,
+      avg_read_seconds: avgReadSeconds,
+      subscribers_total: subscribers,
+      subscribers_new: Math.min(subscribers, Math.max(0, Math.round(subscribers * Math.min(1, days / 120)))),
+      posts_total: posts.length,
+      posts_published: published.length,
+    },
+    daily,
+    sources,
+    top_posts: topPosts,
+  }
+}
+
+function importHabrDemo(init) {
+  return readBody(init).then(({ data }) => {
+    requireUser()
+    const url = String(data.url || '').trim()
+    if (!/^https?:\/\/(www\.)?habr\.(com|ru)\/(ru\/)?(articles|post)\/\d+/i.test(url)) {
+      throw httpError(400, { detail: 'Нужна ссылка на статью Хабра вида https://habr.com/ru/articles/123456/' })
+    }
+
+    const id = (url.match(/\/(\d+)\/?$/) || [])[1] || 'demo'
+    return jsonResponse({
+      title: `Импортированная статья Хабра №${id}`,
+      content: `
+        <h2>Что разберём</h2>
+        <p>Это демонстрационный импорт: на реальном сервере ФлакХаб скачает статью, очистит HTML и перенесёт картинки в медиахранилище. Здесь текст подставлен локально, чтобы можно было пройти сценарий без сети.</p>
+        <h2>Пример кода</h2>
+        <pre><code class="language-javascript">function greet(name) {
+  return \`Привет, \${name}!\`
+}</code></pre>
+        <p>Проверьте заголовок, обложку и теги — их можно отредактировать перед публикацией.</p>
+      `.trim(),
+      tags: ['Импорт', 'Хабр', 'Демо'],
+      cover_url: null,
+      source_url: url,
+      source: 'habr',
+      author: 'Автор Хабра',
+      description: 'Демонстрационный черновик, импортированный с Хабра.',
+    })
+  })
+}
+
 // ===== Роутер демо-API =====
 
 async function handleRequest(pathname, searchParams, init, input) {
@@ -1247,12 +1482,25 @@ async function handleRequest(pathname, searchParams, init, input) {
     return changePassword(init)
   }
 
+  // Кабинет автора и импорт
+  if (pathname === '/api/mobile/author/dashboard/' && method === 'GET') {
+    return jsonResponse(authorDashboard(searchParams))
+  }
+  if (pathname === '/api/mobile/import/habr/' && method === 'POST') {
+    return importHabrDemo(init)
+  }
+
   // Посты
   if (pathname === '/api/mobile/posts/' && method === 'GET') {
     return jsonResponse(paginate(filterPosts(searchParams).map(serializePostList), searchParams))
   }
   if (pathname === '/api/mobile/posts/' && method === 'POST') {
     return createPost(init)
+  }
+
+  const readMatch = pathname.match(/^\/api\/mobile\/posts\/([^/]+)\/read\/$/)
+  if (readMatch && method === 'POST') {
+    return recordDemoRead(decodeURIComponent(readMatch[1]), init)
   }
 
   let match = pathname.match(/^\/api\/mobile\/posts\/([^/]+)\/(claim_review|release_review)\/$/)
@@ -1711,8 +1959,8 @@ async function register(init) {
     about_me: '',
     avatar: null,
     banner_image: null,
-    banner_gradient_start: '#0c6acf',
-    banner_gradient_end: '#764ba2',
+    banner_gradient_start: '#2c5d48',
+    banner_gradient_end: '#7a8f63',
     data_birth: '',
     phone_namber: '',
     show_email: true,
@@ -2053,6 +2301,13 @@ function installWebSocket() {
       this.timers = []
       liveSockets.add(this)
 
+      const commentsMatch = raw.match(/\/ws\/comments\/([^/?#]+)\//)
+      if (commentsMatch) {
+        const key = commentsMatch[1]
+        if (!commentSockets.has(key)) commentSockets.set(key, new Set())
+        commentSockets.get(key).add(this)
+      }
+
       this.timers.push(window.setTimeout(() => {
         if (this.readyState !== DemoWebSocket.CONNECTING) return
         this.readyState = DemoWebSocket.OPEN
@@ -2088,6 +2343,14 @@ function installWebSocket() {
       for (const timer of this.timers) window.clearTimeout(timer)
       this.timers = []
       liveSockets.delete(this)
+      const commentsMatch = String(this.url).match(/\/ws\/comments\/([^/?#]+)\//)
+      if (commentsMatch) {
+        const sockets = commentSockets.get(commentsMatch[1])
+        if (sockets) {
+          sockets.delete(this)
+          if (!sockets.size) commentSockets.delete(commentsMatch[1])
+        }
+      }
       this.onclose?.({ type: 'close', wasClean: true })
     }
 
@@ -2140,6 +2403,10 @@ function installBadge() {
       font: inherit; transition: background 0.15s ease;
     }
     #flachub-demo-badge button:hover { background: rgba(255, 255, 255, 0.25); }
+    #flachub-demo-badge .flachub-demo-tour {
+      background: #34d399; color: #052e1b; font-weight: 700;
+    }
+    #flachub-demo-badge .flachub-demo-tour:hover { background: #6ee7b7; }
     #flachub-demo-toast {
       position: fixed; left: 50%; bottom: 24px; z-index: 10001;
       transform: translate(-50%, 20px); max-width: min(460px, calc(100vw - 32px));
@@ -2164,9 +2431,13 @@ function installBadge() {
   badge.innerHTML = `
     <span class="flachub-demo-dot"></span>
     <span><strong>Демо</strong><span class="flachub-demo-note"> · данные в браузере</span></span>
-    <button type="button">Сбросить</button>
+    <button type="button" class="flachub-demo-tour">Тур 90 секунд</button>
+    <button type="button" class="flachub-demo-reset">Сбросить</button>
   `
-  badge.querySelector('button').addEventListener('click', () => {
+  badge.querySelector('.flachub-demo-tour').addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('flachub:demo-tour'))
+  })
+  badge.querySelector('.flachub-demo-reset').addEventListener('click', () => {
     const confirmed = window.confirm(
       'Сбросить демо-данные? Все созданные записи, сообщения и загруженные файлы будут удалены.',
     )

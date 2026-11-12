@@ -1446,3 +1446,94 @@ html.dark-mode .slash-menu-item-icon {
     background: rgba(41, 156, 245, 0.15);
     color: var(--dark-primary);
 }
+
+/* ---------- Импорт статьи с Хабра ---------- */
+
+.habr-import {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 18px;
+  border: 1px solid rgba(12, 106, 207, 0.22);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(12, 106, 207, 0.07), rgba(118, 75, 162, 0.07)),
+    var(--surface);
+}
+
+.habr-import-icon {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 19px;
+}
+
+.habr-import-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.habr-import-body h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  color: var(--text);
+}
+
+.habr-import-body p {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.habr-import-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.habr-import-form .form-control {
+  flex: 1;
+  min-width: 0;
+}
+
+.habr-import-form .btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.habr-import-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.habr-import-status.is-success { color: #15803d; }
+.habr-import-status.is-error { color: #dc2626; }
+.habr-import-status.is-info { color: var(--primary); }
+
+html.dark-mode .habr-import {
+  border-color: rgba(41, 156, 245, 0.28);
+  background:
+    linear-gradient(135deg, rgba(41, 156, 245, 0.08), rgba(118, 75, 162, 0.08)),
+    var(--dark-surface);
+}
+
+html.dark-mode .habr-import-status.is-success { color: #4ade80; }
+html.dark-mode .habr-import-status.is-error { color: #f87171; }
+html.dark-mode .habr-import-status.is-info { color: var(--dark-primary); }
+
+@media (max-width: 640px) {
+  .habr-import { flex-direction: column; gap: 10px; padding: 14px; }
+  .habr-import-form { flex-direction: column; align-items: stretch; }
+  .habr-import-form .btn { width: 100%; }
+}

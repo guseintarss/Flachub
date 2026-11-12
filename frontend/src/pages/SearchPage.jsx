@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import PostCard from '../components/Feed/PostCard'
 import UserAvatar from '../components/UserAvatar'
 import Sidebar from '../components/Sidebar/Sidebar'
@@ -10,10 +10,12 @@ const POST_TYPES = [
   { value: 'news', label: 'Новости' },
   { value: 'idea', label: 'Идеи' },
   { value: 'post', label: 'Посты' },
+  { value: 'review', label: 'Разборы' },
 ]
 
 function SearchPage() {
-  const [query, setQuery] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [query, setQuery] = useState(searchParams.get('q') || '')
   const [tab, setTab] = useState('articles')
   const [results, setResults] = useState([])
   const [count, setCount] = useState(0)
@@ -23,7 +25,7 @@ function SearchPage() {
   const [totalPages, setTotalPages] = useState(1)
   const [filters, setFilters] = useState({
     cat: '',
-    post_type: '',
+    post_type: searchParams.get('post_type') || '',
     ordering: '-time_create',
   })
   const inputRef = useRef(null)
@@ -40,25 +42,30 @@ function SearchPage() {
   }, [])
 
   useEffect(() => {
-    doSearch(1)
-  }, [])
+    const q = searchParams.get('q') || ''
+    const type = searchParams.get('post_type') || ''
+    setQuery(q)
+    setFilters(prev => ({ ...prev, post_type: type }))
+    doSearch(1, 'articles', q, { ...filters, post_type: type })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
-  async function doSearch(p, overrideTab) {
-    const currentPage = p ?? page
-    const currentTab = overrideTab ?? tab
+  async function doSearch(p = 1, overrideTab = tab, overrideQuery = query, overrideFilters = filters) {
+    const currentPage = p
+    const currentTab = overrideTab
     setLoading(true)
     try {
       let url
       if (currentTab === 'articles') {
         url = `/api/mobile/posts/?page=${currentPage}&page_size=20`
-        if (query) url += `&search=${encodeURIComponent(query)}`
-        if (filters.cat) url += `&cat=${filters.cat}`
-        if (filters.post_type) url += `&post_type=${filters.post_type}`
-        if (filters.ordering) url += `&ordering=${filters.ordering}`
+        if (overrideQuery) url += `&search=${encodeURIComponent(overrideQuery)}`
+        if (overrideFilters.cat) url += `&cat=${overrideFilters.cat}`
+        if (overrideFilters.post_type) url += `&post_type=${overrideFilters.post_type}`
+        if (overrideFilters.ordering) url += `&ordering=${overrideFilters.ordering}`
       } else {
         url = `/api/mobile/users/?page=${currentPage}&page_size=20`
-        if (query) url += `&search=${encodeURIComponent(query)}`
-        if (filters.ordering) url += `&ordering=${filters.ordering}`
+        if (overrideQuery) url += `&search=${encodeURIComponent(overrideQuery)}`
+        if (overrideFilters.ordering) url += `&ordering=${overrideFilters.ordering}`
       }
       const res = await fetch(url, { credentials: 'same-origin' })
       const data = await res.json()
@@ -69,6 +76,7 @@ function SearchPage() {
     } catch {
       setResults([])
       setCount(0)
+      setTotalPages(1)
     }
     setLoading(false)
   }
@@ -76,215 +84,223 @@ function SearchPage() {
   function handleSubmit(e) {
     e.preventDefault()
     setPage(1)
-    doSearch(1)
+    const params = new URLSearchParams()
+    if (query.trim()) params.set('q', query.trim())
+    if (filters.post_type) params.set('post_type', filters.post_type)
+    setSearchParams(params)
   }
 
-  function switchTab(t) {
-    setTab(t)
+  function switchTab(nextTab) {
+    setTab(nextTab)
     setPage(1)
-    doSearch(1, t)
+    doSearch(1, nextTab, query, filters)
   }
 
   function setFilter(key, value) {
-    setFilters(f => ({ ...f, [key]: value }))
+    const nextFilters = { ...filters, [key]: value }
+    setFilters(nextFilters)
     setPage(1)
-    setTimeout(() => doSearch(1), 0)
+    if (key === 'post_type') {
+      const params = new URLSearchParams(searchParams)
+      if (value) params.set('post_type', value)
+      else params.delete('post_type')
+      if (query.trim()) params.set('q', query.trim())
+      else params.delete('q')
+      setSearchParams(params)
+    } else {
+      doSearch(1, tab, query, nextFilters)
+    }
   }
 
-  function goToPage(p) {
-    setPage(p)
-    doSearch(p)
+  function goToPage(nextPage) {
+    setPage(nextPage)
+    doSearch(nextPage, tab, query, filters)
   }
+
+  const hasQuery = query.trim() || filters.cat || filters.post_type
 
   return (
     <main className="page">
       <div className="pg-container layout">
-        <div className="content">
-          <div className="search-form-wrapper" style={{ marginBottom: 24 }}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 10 }}>
+        <div className="content search-page">
+          <header className="search-header">
+            <p className="feed-kicker">Поиск</p>
+            <h1 className="search-title">Найдите материал или автора</h1>
+            <p className="search-subtitle">Ищите по заголовкам, текстам, категориям и людям.</p>
+          </header>
+
+          <form onSubmit={handleSubmit} className="search-bar" role="search">
+            <label htmlFor="search-query" className="visually-hidden">Поисковый запрос</label>
             <input
               ref={inputRef}
-              type="text"
+              id="search-query"
+              type="search"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSubmit(e) } }}
-              placeholder="Поиск статей и авторов..."
+              placeholder="Например: React, Django, PostgreSQL"
               className="form-control"
-              style={{ flex: 1, padding: '14px 18px', fontSize: '1.05rem', borderRadius: 12, border: '2px solid var(--border)', background: 'var(--card-bg)', color: 'var(--text)' }}
+              autoComplete="off"
             />
-            <button type="submit" className="btn btn-primary" style={{ padding: '14px 28px', borderRadius: 12, fontSize: '1rem' }}>
-              <i className="fas fa-search" /> Поиск
-            </button>
+            <button type="submit" className="btn btn-primary">Найти</button>
           </form>
-        </div>
 
-        <div style={{ display: 'flex', gap: 2, marginBottom: 20, borderBottom: '2px solid var(--border)' }}>
-          <button
-            onClick={() => switchTab('articles')}
-            style={{
-              flex: 1, padding: '10px 20px', border: 'none', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600,
-              background: tab === 'articles' ? 'var(--primary)' : 'transparent',
-              color: tab === 'articles' ? '#fff' : 'var(--text)',
-              borderRadius: '10px 10px 0 0', transition: '0.2s',
-            }}>
-            <i className="fas fa-file-alt" /> Статьи
-          </button>
-          <button
-            onClick={() => switchTab('authors')}
-            style={{
-              flex: 1, padding: '10px 20px', border: 'none', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600,
-              background: tab === 'authors' ? 'var(--primary)' : 'transparent',
-              color: tab === 'authors' ? '#fff' : 'var(--text)',
-              borderRadius: '10px 10px 0 0', transition: '0.2s',
-            }}>
-            <i className="fas fa-users" /> Авторы
-          </button>
-        </div>
-
-        {tab === 'articles' && (
-          <div className="search-filters" style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-            <select
-              value={filters.cat}
-              onChange={e => setFilter('cat', e.target.value)}
-              className="form-select"
-              style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card-bg)', color: 'var(--text)', fontSize: '0.9rem' }}>
-              <option value="">Все категории</option>
-              {categories.map(c => (
-                <option key={c.id} value={c.slug}>{c.name}</option>
-              ))}
-            </select>
-            <select
-              value={filters.post_type}
-              onChange={e => setFilter('post_type', e.target.value)}
-              className="form-select"
-              style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card-bg)', color: 'var(--text)', fontSize: '0.9rem' }}>
-              {POST_TYPES.map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-            <select
-              value={filters.ordering}
-              onChange={e => setFilter('ordering', e.target.value)}
-              className="form-select"
-              style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card-bg)', color: 'var(--text)', fontSize: '0.9rem' }}>
-              <option value="-time_create">Сначала новые</option>
-              <option value="time_create">Сначала старые</option>
-              <option value="-views">По просмотрам</option>
-              <option value="-time_update">Недавно обновлённые</option>
-            </select>
+          <div className="search-tabs" role="tablist" aria-label="Тип результатов">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'articles'}
+              className={tab === 'articles' ? 'is-active' : ''}
+              onClick={() => switchTab('articles')}
+            >
+              Публикации
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'authors'}
+              className={tab === 'authors' ? 'is-active' : ''}
+              onClick={() => switchTab('authors')}
+            >
+              Авторы
+            </button>
           </div>
-        )}
 
-        {tab === 'authors' && (
-          <div className="search-filters" style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-            <select
-              value={filters.ordering}
-              onChange={e => setFilter('ordering', e.target.value)}
-              className="form-select"
-              style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card-bg)', color: 'var(--text)', fontSize: '0.9rem' }}>
-              <option value="-date_joined">Новые пользователи</option>
-              <option value="date_joined">Старые пользователи</option>
-              <option value="posts_count">По количеству статей</option>
-            </select>
-          </div>
-        )}
-
-        {loading && (
-          <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>
-            <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem' }} />
-            <p style={{ marginTop: 12 }}>Поиск...</p>
-          </div>
-        )}
-
-        {!loading && results.length === 0 && (query || filters.cat || filters.post_type) && (
-          <div className="empty-state" style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <i className="fas fa-search-minus" style={{ fontSize: '3rem', opacity: 0.3 }} />
-            <p style={{ marginTop: 16, fontSize: '1.1rem' }}>Ничего не найдено</p>
-            <p style={{ fontSize: '0.9rem', opacity: 0.6 }}>Попробуйте изменить запрос или фильтры</p>
-          </div>
-        )}
-
-        {!loading && !query && results.length === 0 && (
-          <div className="empty-state" style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <i className="fas fa-search" style={{ fontSize: '3rem', opacity: 0.3 }} />
-            <p style={{ marginTop: 16, fontSize: '1.1rem' }}>Начните поиск</p>
-            <p style={{ fontSize: '0.9rem', opacity: 0.6 }}>Введите запрос выше или выберите фильтры</p>
-          </div>
-        )}
-
-        {!loading && results.length > 0 && (
-          <>
-            <p style={{ marginBottom: 16, fontSize: '0.9rem', opacity: 0.6 }}>
-              Найдено: {count}
-            </p>
-
-            {tab === 'articles' && (
-              <div className="posts-grid" style={{ display: 'grid', gap: 16 }}>
-                {results.map(post => (
-                  <PostCard key={post.id} post={post} />
+          {tab === 'articles' && (
+            <div className="search-filters">
+              <label className="visually-hidden" htmlFor="search-category">Категория</label>
+              <select
+                id="search-category"
+                value={filters.cat}
+                onChange={e => setFilter('cat', e.target.value)}
+                className="form-select"
+              >
+                <option value="">Все категории</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.slug}>{c.name}</option>
                 ))}
-              </div>
-            )}
+              </select>
+              <label className="visually-hidden" htmlFor="search-type">Тип публикации</label>
+              <select
+                id="search-type"
+                value={filters.post_type}
+                onChange={e => setFilter('post_type', e.target.value)}
+                className="form-select"
+              >
+                {POST_TYPES.map(t => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+              <label className="visually-hidden" htmlFor="search-order">Сортировка</label>
+              <select
+                id="search-order"
+                value={filters.ordering}
+                onChange={e => setFilter('ordering', e.target.value)}
+                className="form-select"
+              >
+                <option value="-time_create">Сначала новые</option>
+                <option value="time_create">Сначала старые</option>
+                <option value="-views">По просмотрам</option>
+                <option value="-time_update">Недавно обновлённые</option>
+              </select>
+            </div>
+          )}
 
-            {tab === 'authors' && (
-              <div style={{ display: 'grid', gap: 12 }}>
-                {results.map(user => (
-                  <Link
-                    key={user.id}
-                    to={`/user/${user.username}/`}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 16, padding: 16,
-                      background: 'var(--card-bg)', borderRadius: 12, textDecoration: 'none',
-                      color: 'var(--text)', border: '1px solid var(--border)', transition: '0.2s',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
-                    <UserAvatar user={user} size={56} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: '1.05rem' }}>
-                        {user.first_name || user.last_name
-                          ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
-                          : user.username}
-                      </div>
-                      <div style={{ fontSize: '0.85rem', opacity: 0.6 }}>@{user.username}</div>
-                      {user.bio && (
-                        <div style={{ fontSize: '0.85rem', opacity: 0.7, marginTop: 4, lineHeight: 1.3 }}>
-                          {user.bio.length > 100 ? user.bio.slice(0, 100) + '...' : user.bio}
+          {tab === 'authors' && (
+            <div className="search-filters">
+              <label className="visually-hidden" htmlFor="search-authors-order">Сортировка авторов</label>
+              <select
+                id="search-authors-order"
+                value={filters.ordering}
+                onChange={e => setFilter('ordering', e.target.value)}
+                className="form-select"
+              >
+                <option value="-date_joined">Новые пользователи</option>
+                <option value="date_joined">Старые пользователи</option>
+                <option value="posts_count">По количеству статей</option>
+              </select>
+            </div>
+          )}
+
+          {loading && (
+            <div className="search-loading" role="status">
+              <span className="search-spinner" aria-hidden="true" />
+              <p>Ищем подходящее…</p>
+            </div>
+          )}
+
+          {!loading && results.length === 0 && hasQuery && (
+            <div className="search-empty">
+              <h2>Ничего не нашлось</h2>
+              <p>Попробуйте изменить запрос или снять фильтры.</p>
+            </div>
+          )}
+
+          {!loading && !hasQuery && results.length === 0 && (
+            <div className="search-empty">
+              <h2>С чего начать</h2>
+              <p>Введите запрос выше или выберите категорию и тип публикации.</p>
+            </div>
+          )}
+
+          {!loading && results.length > 0 && (
+            <>
+              <p className="search-results-meta">
+                Найдено: <strong>{count}</strong>
+              </p>
+
+              {tab === 'articles' && (
+                <div className="feed-container">
+                  {results.map(post => (
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                </div>
+              )}
+
+              {tab === 'authors' && (
+                <div className="search-authors">
+                  {results.map(user => (
+                    <Link key={user.id} to={`/user/${user.username}/`} className="search-author-card">
+                      <UserAvatar user={user} size={52} />
+                      <div className="search-author-info">
+                        <div className="search-author-name">
+                          {user.first_name || user.last_name
+                            ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                            : user.username}
                         </div>
-                      )}
-                    </div>
-                    <div style={{ textAlign: 'right', fontSize: '0.85rem', opacity: 0.6, whiteSpace: 'nowrap' }}>
-                      {user.posts_count ?? '—'} ст.
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
+                        <div className="search-author-handle">@{user.username}</div>
+                        {user.bio && <p className="search-author-bio">{user.bio}</p>}
+                      </div>
+                      <div className="search-author-count">
+                        {user.posts_count ?? '—'} <span>публикаций</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
 
-            {totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 24 }}>
-                <button
-                  disabled={page <= 1}
-                  onClick={() => goToPage(Math.max(1, page - 1))}
-                  className="btn btn-outline-secondary"
-                  style={{ padding: '8px 16px', borderRadius: 8 }}>
-                  <i className="fas fa-chevron-left" /> Назад
-                </button>
-                <span style={{ display: 'flex', alignItems: 'center', padding: '0 12px', fontSize: '0.9rem' }}>
-                  {page} / {totalPages}
-                </span>
-                <button
-                  disabled={page >= totalPages}
-                  onClick={() => goToPage(Math.min(totalPages, page + 1))}
-                  className="btn btn-outline-secondary"
-                  style={{ padding: '8px 16px', borderRadius: 8 }}>
-                  Вперёд <i className="fas fa-chevron-right" />
-                </button>
-              </div>
-            )}
-          </>
-        )}
+              {totalPages > 1 && (
+                <nav className="pagination" aria-label="Страницы поиска">
+                  <button
+                    className="pagination-btn"
+                    disabled={page <= 1}
+                    onClick={() => goToPage(Math.max(1, page - 1))}
+                  >
+                    ← Назад
+                  </button>
+                  <span className="pagination-status">{page} / {totalPages}</span>
+                  <button
+                    className="pagination-btn"
+                    disabled={page >= totalPages}
+                    onClick={() => goToPage(Math.min(totalPages, page + 1))}
+                  >
+                    Далее →
+                  </button>
+                </nav>
+              )}
+            </>
+          )}
         </div>
+
         <aside className="sidebar" aria-label="Боковая панель">
           <Sidebar />
         </aside>

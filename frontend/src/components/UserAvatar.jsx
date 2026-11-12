@@ -1,19 +1,15 @@
 function getColorFromName(name) {
   const colors = [
-    ['#667eea', '#764ba2'],
-    ['#f093fb', '#f5576c'],
-    ['#4facfe', '#00f2fe'],
-    ['#43e97b', '#38f9d7'],
-    ['#fa709a', '#fee140'],
-    ['#a18cd1', '#fbc2eb'],
-    ['#fccb90', '#d57eeb'],
-    ['#e0c3fc', '#8ec5fc'],
-    ['#f5576c', '#ff6f91'],
-    ['#00b4db', '#0083b0'],
-    ['#11998e', '#38ef7d'],
-    ['#fc5c7d', '#6a82fb'],
-    ['#c471f5', '#fa71cd'],
-    ['#48c6ef', '#6f86d6'],
+    ['#2f5d48', '#7d9a6f'],
+    ['#7a4a2f', '#c08a5e'],
+    ['#3f5a66', '#7e9aa3'],
+    ['#5a5340', '#a39a6f'],
+    ['#6b3f4a', '#a97882'],
+    ['#37504a', '#84a094'],
+    ['#6d5427', '#b39a5f'],
+    ['#46543a', '#8fa077'],
+    ['#544a63', '#928aa8'],
+    ['#5d3f35', '#9c7a68'],
   ]
   let hash = 0
   for (let i = 0; i < name.length; i++) {
@@ -28,7 +24,7 @@ function UserAvatar({ user, size = 36, style }) {
       <img
         src={user.avatar}
         alt={user.username || 'avatar'}
-        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: '8px solid var(--dark-surface)', ...style }}
+        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border)', ...style }}
       />
     )
   }

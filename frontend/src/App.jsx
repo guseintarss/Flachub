@@ -33,7 +33,10 @@ import SubscriptionsPage from "./pages/SubscriptionsPage"
 import InboxPage from "./pages/InboxPage"
 import ChatPage from "./pages/ChatPage"
 import AdminPage from "./pages/AdminPage"
+import AuthorDashboardPage from "./pages/AuthorDashboardPage"
 import NotFoundPage from "./pages/NotFoundPage"
+import DemoTour from "./components/DemoTour"
+import "./styles/redesign.css"
 
 const App = () => {
   return(
@@ -51,6 +54,7 @@ const App = () => {
           <Route path="/add-post/" element={<AddPostPage />} />
           <Route path="/edit/:slug/" element={<AddPostPage />} />
           <Route path="/profile/" element={<ProfilePage />} />
+          <Route path="/dashboard/" element={<AuthorDashboardPage />} />
           <Route path="/profile/edit/" element={<EditProfilePage />} />
           <Route path="/search/" element={<SearchPage />} />
           <Route path="/user/:username/" element={<ProfilePage />} />
@@ -63,6 +67,7 @@ const App = () => {
       <Route path="/admin-panel/" element={<AdminPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+        <DemoTour />
         <Footer />
       </AuthProvider>
     </BrowserRouter>
