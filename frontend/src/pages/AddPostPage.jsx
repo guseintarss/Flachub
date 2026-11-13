@@ -7,6 +7,7 @@ import Sidebar from '../components/Sidebar/Sidebar'
 import { AddPostSkeleton } from '../components/Skeleton'
 import { CODE_LANGUAGES } from '../reviewMeta'
 import { CKEditor } from '@ckeditor/ckeditor5-react'
+import 'ckeditor5/ckeditor5.css'
 import {
   BalloonEditor, Essentials, Paragraph, Heading, Title,
   Bold, Italic, Underline, Strikethrough, Code,

@@ -7,7 +7,6 @@ import './styles/footer.css'
 import './styles/add-article.css'
 import './styles/review.css'
 import './styles/mobile.css'
-import 'ckeditor5/ckeditor5.css'
 import App from './App.jsx'
 
 async function bootstrap() {
