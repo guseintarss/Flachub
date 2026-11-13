@@ -65,18 +65,20 @@ export default function ArticleToc({ containerRef, contentKey }) {
         className="article-toc-toggle"
         onClick={() => setOpen(value => !value)}
         aria-expanded={open}
+        aria-controls="article-toc-list"
       >
         <span><i className="fas fa-list-ul" aria-hidden="true" /> Содержание</span>
         <span className="article-toc-count">{items.length}</span>
         <i className={`fas fa-chevron-${open ? 'up' : 'down'}`} aria-hidden="true" />
       </button>
       {open && (
-        <ol className="article-toc-list">
+        <ol className="article-toc-list" id="article-toc-list">
           {items.map(item => (
             <li key={item.id} className={`article-toc-item level-${item.level}`}>
               <a
                 href={`#${item.id}`}
                 className={activeId === item.id ? 'is-active' : ''}
+                aria-current={activeId === item.id ? 'location' : undefined}
                 onClick={event => {
                   event.preventDefault()
                   const el = document.getElementById(item.id)
