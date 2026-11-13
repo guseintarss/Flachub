@@ -33,6 +33,8 @@ const Feed = () => {
   const [totalPages, setTotalPages] = useState(1)
 
   useEffect(() => {
+    // Загрузка страницы ленты при смене пагинации.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     fetch(`/api/mobile/posts/?page=${page}`)
       .then((res) => {

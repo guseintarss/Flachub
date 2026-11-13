@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 function ChangePasswordPage() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword1, setNewPassword1] = useState('')
   const [newPassword2, setNewPassword2] = useState('')

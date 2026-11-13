@@ -44,6 +44,8 @@ function SearchPage() {
   useEffect(() => {
     const q = searchParams.get('q') || ''
     const type = searchParams.get('post_type') || ''
+    // Синхронизация поиска с URL.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setQuery(q)
     setFilters(prev => ({ ...prev, post_type: type }))
     doSearch(1, 'articles', q, { ...filters, post_type: type })

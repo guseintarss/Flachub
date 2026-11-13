@@ -13,6 +13,7 @@ function PostListPage({ endpoint, title, eyebrow }) {
   const [totalPages, setTotalPages] = useState(1)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     setPosts([])
     fetch(endpoint(slug, page))

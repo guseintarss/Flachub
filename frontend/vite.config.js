@@ -58,7 +58,6 @@ export default defineConfig({
       '/edit': backendProxy(),
       '/upload': backendProxy(),
       '/ckeditor5': backendProxy(),
-      '/dashboard': backendProxy(),
       '/app': backendProxy(),
     },
   },

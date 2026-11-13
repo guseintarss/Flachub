@@ -55,7 +55,7 @@ function EditProfilePage() {
         setAvatarPreview(data.avatar || null)
         setBannerPreview(data.avatar ? null : 'gradient')
       }
-    } catch (e) {
+    } catch {
       setError('Ошибка загрузки профиля')
     }
     setLoading(false)
@@ -67,6 +67,8 @@ function EditProfilePage() {
         navigate('/login/', { replace: true })
         return
       }
+      // Профиль загружается один раз после восстановления сессии.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchProfile()
     }
   }, [authLoading, user, navigate, fetchProfile])
@@ -79,20 +81,14 @@ function EditProfilePage() {
     setForm(f => ({ ...f, phone_namber: formatPhone(e.target.value) }))
   }
 
-  function updateBannerPreview() {
-    if (bannerImageFile) {
-      const reader = new FileReader()
-      reader.onload = e => setBannerPreview(e.target.result)
-      reader.readAsDataURL(bannerImageFile)
-    } else if (!clearBanner) {
-      setBannerPreview('gradient')
-    }
-  }
-
   useEffect(() => {
     if (bannerPreview === 'gradient' && form) {
+      // Сбрасываем устаревший превью-градиент после загрузки формы.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBannerPreview(null)
     }
+    // bannerPreview используется только как условие сброса.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form?.banner_gradient_start, form?.banner_gradient_end])
 
   function handleAvatarChange(e) {

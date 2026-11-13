@@ -127,8 +127,26 @@ class TestPostSSR:
         assert 'application/ld+json' in html
         assert 'og:title' in html
         assert post.content in html
+        assert 'Тестовая категория' in html
 
     def test_draft_is_not_rendered(self, draft_post):
         response = Client().get(f'/post/{draft_post.slug}/')
+
+        assert response.status_code == 404
+
+    def test_author_can_preview_own_draft(self, draft_post):
+        client = Client()
+        client.force_login(draft_post.author)
+
+        response = client.get(f'/post/{draft_post.slug}/')
+
+        assert response.status_code == 200
+        assert b'<div id="root"></div>' in response.content
+
+    def test_other_user_cannot_preview_draft(self, draft_post, another_user):
+        client = Client()
+        client.force_login(another_user)
+
+        response = client.get(f'/post/{draft_post.slug}/')
 
         assert response.status_code == 404

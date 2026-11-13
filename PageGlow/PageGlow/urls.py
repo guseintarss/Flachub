@@ -57,8 +57,8 @@ frontend_build = settings.FRONTEND_BUILD_DIR
 if frontend_build.exists():
     urlpatterns += [
         re_path(r'^assets/(?P<path>.*)$', static_serve, {'document_root': frontend_build / 'assets'}),
-        # Файлы из корня сборки (favicon, manifest и т.п.)
-        re_path(r'^(?P<path>[^/]+\.[^/]+)$', static_serve, {'document_root': frontend_build}),
+        # Файлы из сборки: корневые и вложенные (icons/, demo/ и т.п.).
+        re_path(r'^(?P<path>.+\.[^/]+)$', static_serve, {'document_root': frontend_build}),
     ]
 
 # SPA: все клиентские маршруты, кроме API, админки и служебных путей.

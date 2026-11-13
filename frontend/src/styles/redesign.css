@@ -3905,6 +3905,8 @@ html.dark-mode .menu_link:hover .category-count {
 .dashboard-chart-bar.completed { background: var(--accent); opacity: 0.9; }
 .dashboard-chart-label { font-family: var(--font-mono); font-size: 8px; }
 
+.dashboard-chart { overflow-x: auto; overflow-y: hidden; padding-bottom: 6px; }
+
 .dashboard-source-row { font-size: 12.5px; }
 .dashboard-source-row strong { font-family: var(--font-mono); font-size: 10px; }
 .dashboard-source-track { height: 5px; border-radius: 1px; background: var(--surface-sunken); }
@@ -3943,6 +3945,70 @@ html.dark-mode .dashboard-card,
 html.dark-mode .dashboard-periods,
 html.dark-mode .dashboard-loading { background: transparent; border-color: var(--border); }
 html.dark-mode .dashboard-kpi { background: transparent; }
+
+/* ---------------------------------------------------------
+   19d. Final consistency pass
+   --------------------------------------------------------- */
+/* Dark primary buttons stay grounded instead of pale mint. */
+html.dark-mode .btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #f6f7ee;
+}
+
+html.dark-mode .btn-primary:hover {
+  background: var(--primary-700);
+  border-color: var(--primary-700);
+  color: #f6f7ee;
+}
+
+html.dark-mode .btn-outline-primary { border-color: var(--primary); color: var(--link); }
+html.dark-mode .btn-outline-primary:hover { background: var(--primary); border-color: var(--primary); color: #f6f7ee; }
+html.dark-mode .btn-outline-danger { border-color: rgba(212, 122, 109, 0.5); color: var(--danger); }
+html.dark-mode .btn-outline-danger:hover { background: var(--danger); border-color: var(--danger); color: #21110e; }
+
+/* Achievements: neutral frames, the emoji carries the colour. */
+.badge-card,
+html.dark-mode .badge-card { border-left-color: var(--border-strong) !important; }
+.badge-icon,
+html.dark-mode .badge-icon { background: var(--surface-sunken) !important; }
+
+/* Admin tabs in dark mode used to stay blue. */
+html.dark-mode .admin-tab { color: var(--muted); }
+html.dark-mode .admin-tab:hover { background: var(--surface-sunken); color: var(--text); }
+html.dark-mode .admin-tab.active { background: var(--primary-soft); color: var(--link); }
+
+/* Three charts fit on one row on desktop, no lonely card. */
+.admin-charts-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* Demo badge: a quiet bench note instead of a glossy floating pill. */
+#flachub-demo-badge {
+  padding: 7px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  background: var(--surface-raised);
+  color: var(--text-soft);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+#flachub-demo-badge .flachub-demo-dot { width: 6px; height: 6px; background: var(--success); box-shadow: none; }
+#flachub-demo-badge strong { color: var(--text); font-weight: 600; }
+#flachub-demo-badge button {
+  padding: 4px 7px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.02em;
+}
+#flachub-demo-badge button:hover { background: var(--surface-sunken); color: var(--text); }
+#flachub-demo-badge .flachub-demo-tour { border-color: var(--primary); background: transparent; color: var(--primary); font-weight: 500; }
+#flachub-demo-badge .flachub-demo-tour:hover { background: var(--primary-soft); color: var(--primary); }
 
 /* Scroll to top */
 .scroll-to-top {

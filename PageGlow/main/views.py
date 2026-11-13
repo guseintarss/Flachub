@@ -135,6 +135,7 @@ def toggle_subscribe(request):
 def post_ssr(request, slug):
     """SSR-страница статьи: HTML, мета-теги и начальные данные для React."""
     from django.conf import settings as django_settings
+    from django.http import Http404
     from django.shortcuts import get_object_or_404
     from django.utils.html import strip_tags
     from main.models import Post
@@ -142,9 +143,17 @@ def post_ssr(request, slug):
     from mobile_api.serializers import PostDetailSerializer
 
     post = get_object_or_404(
-        Post.published.select_related('cat', 'author', 'reviewer').prefetch_related('tags', 'comments'),
+        Post.objects.select_related('cat', 'author', 'reviewer').prefetch_related('tags', 'comments'),
         slug=slug,
     )
+
+    if not post.is_published:
+        # Черновик доступен только автору и персоналу. Отдаём обычную SPA-оболочку,
+        # чтобы React показал предпросмотр через API.
+        is_owner = request.user.is_authenticated and post.author_id == request.user.id
+        if not (is_owner or request.user.is_staff):
+            raise Http404
+        return render(request, 'index.html')
 
     initial_post = PostDetailSerializer(post, context={'request': request}).data
     canonical = request.build_absolute_uri(post.get_absolute_url())

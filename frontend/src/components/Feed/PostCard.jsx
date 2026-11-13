@@ -30,7 +30,7 @@ const PostCard = ({ post, extra, badge, noReadMore, featured = false }) => {
     const newLiked = !liked
     setLiked(newLiked)
     setLikesCount(c => newLiked ? c + 1 : Math.max(0, c - 1))
-    try { await toggleLike(post.id) } catch {}
+    try { await toggleLike(post.id) } catch { /* лайк не критичен */ }
   }, [liked, post.id])
 
   const type = post.post_type || 'post'

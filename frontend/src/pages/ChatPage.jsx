@@ -41,6 +41,7 @@ function ChatPage() {
   }, [isNearBottom])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     Promise.all([getChat(id), getChatMessages(id)])
       .then(([chatData, msgsData]) => {
@@ -90,7 +91,7 @@ function ChatPage() {
             return m
           }))
         }
-      } catch {}
+      } catch { /* сообщение сокета может быть служебным */ }
     }
 
     return () => {
@@ -128,6 +129,8 @@ function ChatPage() {
       setMessages(prev => prev.filter(m => m.id !== tempId))
     }
     setSending(false)
+    // scrollToBottom не влияет на отправку, зависимость не нужна.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text, sending, id, user])
 
   const other = chat?.participants?.find(p => p.id !== user?.id) || chat?.participants?.[0]

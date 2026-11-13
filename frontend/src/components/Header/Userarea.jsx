@@ -62,9 +62,11 @@ const UserArea = () => {
           setTimeout(() => setNewMsgToast(null), 5000)
           showBrowserNotifRef.current(data.chat_id, data.sender, data.text)
         }
-      } catch {}
+      } catch { /* служебное сообщение сокета */ }
     }
     return () => ws.close()
+    // showBrowserNotifRef — ref, его значение не требует переподписки.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   const handleToastClick = useCallback(() => {

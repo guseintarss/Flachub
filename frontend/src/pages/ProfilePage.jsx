@@ -55,6 +55,8 @@ function ProfilePage() {
         navigate('/login/', { replace: true })
         return
       }
+      // Профиль загружается после восстановления сессии.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchProfile()
     }
   }, [authLoading, isOwn, currentUser, navigate, fetchProfile])
@@ -70,7 +72,7 @@ function ProfilePage() {
           const data = await res.json()
           setPosts(data.results || [])
         }
-      } catch {}
+      } catch { /* блок профиля не критичен */ }
       setPostsLoading(false)
     }
 
@@ -82,7 +84,7 @@ function ProfilePage() {
           const data = await res.json()
           setDrafts(data.results || [])
         }
-      } catch {}
+      } catch { /* блок профиля не критичен */ }
     }
 
     async function loadFavorites() {
@@ -93,14 +95,14 @@ function ProfilePage() {
           const data = await res.json()
           setFavorites(data.results || data || [])
         }
-      } catch {}
+      } catch { /* блок профиля не критичен */ }
     }
 
     async function loadStats() {
       try {
         const res = await fetch(`/api/mobile/users/${profile.id}/stats/`)
         if (res.ok) setUserStats(await res.json())
-      } catch {}
+      } catch { /* блок профиля не критичен */ }
     }
 
     async function loadRecentPosts() {
@@ -110,7 +112,7 @@ function ProfilePage() {
           const data = await res.json()
           setRecentUserPosts(data.results || [])
         }
-      } catch {}
+      } catch { /* блок профиля не критичен */ }
     }
 
     async function loadReviews() {
@@ -155,7 +157,7 @@ function ProfilePage() {
           followers_count: data.subscribers_count,
         }))
       }
-    } catch {}
+    } catch { /* подписка не критична */ }
     setSubscribing(false)
   }
 
@@ -365,7 +367,7 @@ function ProfilePage() {
                           <Link to={`/edit/${post.slug}/`} className="btn btn-sm btn-primary">
                             <i className="fas fa-edit" /> Редактировать
                           </Link>
-                          <button onClick={() => handleDelete(post)} className="btn btn-sm btn-danger">
+                          <button onClick={() => handleDelete(post)} className="btn btn-sm btn-outline-danger">
                             <i className="fas fa-trash" /> Удалить
                           </button>
                         </div>}
@@ -390,7 +392,7 @@ function ProfilePage() {
                             <Link to={`/edit/${post.slug}/`} className="btn btn-sm btn-primary">
                               <i className="fas fa-edit" /> Редактировать
                             </Link>
-                            <button onClick={() => handleDelete(post)} className="btn btn-sm btn-danger"
+                            <button onClick={() => handleDelete(post)} className="btn btn-sm btn-outline-danger"
                               style={{ background: 'var(--danger, #ef4444)', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: 8, fontSize: '0.8rem', cursor: 'pointer' }}>
                               <i className="fas fa-trash" /> Удалить
                             </button>

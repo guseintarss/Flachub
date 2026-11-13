@@ -118,7 +118,12 @@ function AdminUsers({ onError, currentUser }) {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { fetchUsers() }, [page, role])
+  // Список пользователей перезагружается при смене страницы или роли.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchUsers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, role])
 
   function handleSearch(e) {
     e.preventDefault()
@@ -271,13 +276,13 @@ function AdminUsers({ onError, currentUser }) {
                                   {updating === u.id ? '...' : 'Снять модератора'}
                                 </button>
                               ) : (
-                                <button className="btn btn-sm btn-primary" disabled={updating === u.id}
+                                <button className="btn btn-sm btn-outline-primary" disabled={updating === u.id}
                                   onClick={() => changeRole(u.id, 'moderator')}>
                                   {updating === u.id ? '...' : 'Назначить модератором'}
                                 </button>
                               )}
                               {currentUser?.is_superuser && (
-                                <button className={`btn btn-sm ${u.is_active === false ? 'btn-success' : 'btn-danger'}`}
+                                <button className={`btn btn-sm ${u.is_active === false ? 'btn-outline-primary' : 'btn-outline-danger'}`}
                                   disabled={updating === u.id}
                                   onClick={() => toggleBan(u.id)}>
                                   {updating === u.id ? '...' : u.is_active === false ? 'Разблокировать' : 'Заблокировать'}

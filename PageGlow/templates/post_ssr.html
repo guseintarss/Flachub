@@ -76,7 +76,7 @@
           <span>{{ meta_author }}</span>
           <time datetime="{{ post.time_create|date:'c' }}">{{ post.time_create|date:'j E Y' }}</time>
           <span>{{ post.reading_time }} мин чтения</span>
-          {% if post.category %}<span>{{ post.category.name }}</span>{% endif %}
+          {% if post.cat %}<span>{{ post.cat.name }}</span>{% endif %}
           <span>{{ post.views }} просмотров</span>
         </div>
         {% if post.photo %}<img class="ssr-cover" src="{{ post.photo.url }}" alt="{{ post.title }}">{% endif %}
