@@ -1,14 +1,35 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.utils import timezone
 from main.models import (
     Post, Category, TagPost, Comment, 
     Notification, Bookmark, Collection, 
     UserBadge, UserAchievement, Subscription,
-    Chat, Message
+    Chat, Message, ReviewRequest, ReviewOffer
 )
 
 User = get_user_model()
+
+_MISSING = object()
+
+
+class BlankableDateTimeField(serializers.DateTimeField):
+    """Пустая строка из FormData очищает дедлайн."""
+
+    def to_internal_value(self, value):
+        if value in ('', None):
+            return None
+        return super().to_internal_value(value)
+
+
+class BlankableIntegerField(serializers.IntegerField):
+    """Пустая строка из FormData очищает бюджет."""
+
+    def to_internal_value(self, value):
+        if value in ('', None):
+            return None
+        return super().to_internal_value(value)
 
 
 # ===== User Serializers =====
@@ -186,6 +207,9 @@ class PostListSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField()
     reading_time_minutes = serializers.SerializerMethodField()
     excerpt = serializers.SerializerMethodField()
+    review_deadline = serializers.SerializerMethodField()
+    review_budget = serializers.SerializerMethodField()
+    review_offers_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -193,7 +217,8 @@ class PostListSerializer(serializers.ModelSerializer):
                   'time_update', 'author', 'category', 'likes_count', 
                   'favorites_count', 'comments_count', 'is_liked', 
                   'is_favorited', 'reading_time_minutes', 'views', 'excerpt',
-                  'code_language', 'review_status')
+                  'code_language', 'review_status', 'review_focus',
+                  'review_deadline', 'review_budget', 'review_offers_count')
 
     def get_likes_count(self, obj):
         if hasattr(obj, 'likes_count'):
@@ -231,6 +256,151 @@ class PostListSerializer(serializers.ModelSerializer):
             return ' '.join(words[:40]) + '...'
         return text
 
+    def _review_request(self, obj):
+        return getattr(obj, 'review_request', None)
+
+    def get_review_deadline(self, obj):
+        review_request = self._review_request(obj)
+        return review_request.deadline.isoformat() if review_request and review_request.deadline else None
+
+    def get_review_budget(self, obj):
+        review_request = self._review_request(obj)
+        return review_request.budget if review_request else None
+
+    def get_review_offers_count(self, obj):
+        review_request = self._review_request(obj)
+        if not review_request:
+            return 0
+        if not hasattr(review_request, '_pending_offers_count'):
+            review_request._pending_offers_count = review_request.offers.filter(
+                status=ReviewOffer.Status.PENDING
+            ).count()
+        return review_request._pending_offers_count
+
+
+class ReviewOfferSerializer(serializers.ModelSerializer):
+    reviewer = UserPublicSerializer(read_only=True)
+    can_withdraw = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ReviewOffer
+        fields = ('id', 'reviewer', 'message', 'price', 'deadline_days',
+                  'status', 'created_at', 'can_withdraw')
+
+    def get_can_withdraw(self, obj):
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        return bool(
+            user
+            and user.is_authenticated
+            and obj.reviewer_id == user.id
+            and obj.status == ReviewOffer.Status.PENDING
+            and obj.request.status == ReviewRequest.Status.OPEN
+        )
+
+
+class ReviewRequestPostSerializer(serializers.ModelSerializer):
+    author = UserPublicSerializer(read_only=True)
+    category = CategorySerializer(source='cat', read_only=True)
+    comments_count = serializers.SerializerMethodField()
+    excerpt = serializers.SerializerMethodField()
+    code_preview = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Post
+        fields = ('id', 'title', 'slug', 'photo', 'post_type', 'time_create',
+                  'author', 'category', 'comments_count', 'views', 'excerpt',
+                  'code_language', 'review_focus', 'review_status', 'code_preview')
+
+    def get_comments_count(self, obj):
+        return obj.comments.filter(is_active=True).count()
+
+    def get_excerpt(self, obj):
+        import re
+        text = re.sub(r'<[^>]+>', '', obj.content or '')
+        words = text.split()
+        return ' '.join(words[:30]) + ('...' if len(words) > 30 else '')
+
+    def get_code_preview(self, obj):
+        lines = (obj.code_snippet or '').splitlines()[:8]
+        return '\n'.join(lines)
+
+
+class ReviewRequestSerializer(serializers.ModelSerializer):
+    post = ReviewRequestPostSerializer(read_only=True)
+    selected_offer = ReviewOfferSerializer(read_only=True)
+    offers = serializers.SerializerMethodField()
+    offers_count = serializers.SerializerMethodField()
+    my_offer = serializers.SerializerMethodField()
+    can_offer = serializers.SerializerMethodField()
+    can_select_offer = serializers.SerializerMethodField()
+    can_cancel = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ReviewRequest
+        fields = ('id', 'post', 'deadline', 'budget', 'status',
+                  'selected_offer', 'offers', 'offers_count', 'my_offer',
+                  'can_offer', 'can_select_offer', 'can_cancel',
+                  'created_at', 'updated_at')
+
+    def _user(self):
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        return user if user and user.is_authenticated else None
+
+    def _is_author(self, obj):
+        user = self._user()
+        return bool(user and (obj.post.author_id == user.id or user.is_staff))
+
+    def get_offers(self, obj):
+        user = self._user()
+        if not user:
+            return []
+        queryset = obj.offers.select_related('reviewer')
+        if self._is_author(obj):
+            queryset = queryset.exclude(status=ReviewOffer.Status.WITHDRAWN)
+        else:
+            queryset = queryset.filter(reviewer=user)
+        return ReviewOfferSerializer(queryset, many=True, context=self.context).data
+
+    def get_offers_count(self, obj):
+        if not hasattr(obj, '_pending_offers_count'):
+            obj._pending_offers_count = obj.offers.filter(
+                status=ReviewOffer.Status.PENDING
+            ).count()
+        return obj._pending_offers_count
+
+    def get_my_offer(self, obj):
+        user = self._user()
+        if not user:
+            return None
+        offer = obj.offers.filter(reviewer=user).first()
+        return ReviewOfferSerializer(offer, context=self.context).data if offer else None
+
+    def get_can_offer(self, obj):
+        user = self._user()
+        return bool(
+            user
+            and obj.post.author_id != user.id
+            and obj.post.is_published
+            and obj.status == ReviewRequest.Status.OPEN
+            and obj.post.review_status == Post.ReviewStatus.OPEN
+            and (obj.deadline is None or obj.deadline > timezone.now())
+        )
+
+    def get_can_select_offer(self, obj):
+        return bool(
+            self._is_author(obj)
+            and obj.status == ReviewRequest.Status.OPEN
+            and obj.offers.filter(status=ReviewOffer.Status.PENDING).exists()
+        )
+
+    def get_can_cancel(self, obj):
+        return bool(
+            self._is_author(obj)
+            and obj.status in (ReviewRequest.Status.OPEN, ReviewRequest.Status.IN_REVIEW)
+        )
+
 
 class PostDetailSerializer(serializers.ModelSerializer):
     author = UserPublicSerializer(read_only=True)
@@ -250,6 +420,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
     is_review_author = serializers.SerializerMethodField()
     can_claim_review = serializers.SerializerMethodField()
     can_release_review = serializers.SerializerMethodField()
+    review_request = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -261,7 +432,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
                   'reading_time_minutes', 'views', 'similar_posts',
                   'code_snippet', 'code_language', 'review_focus', 'review_status',
                   'reviewer', 'review_accepted_at', 'is_review_author',
-                  'can_claim_review', 'can_release_review')
+                  'can_claim_review', 'can_release_review', 'review_request')
 
     def get_likes_count(self, obj):
         if hasattr(obj, 'likes_count'):
@@ -341,12 +512,27 @@ class PostDetailSerializer(serializers.ModelSerializer):
             and (obj.reviewer_id == request.user.id or request.user.is_staff)
         )
 
+    def get_review_request(self, obj):
+        review_request = getattr(obj, 'review_request', None)
+        if not review_request:
+            return None
+        return ReviewRequestSerializer(review_request, context=self.context).data
+
 
 class PostCreateUpdateSerializer(serializers.ModelSerializer):
+    review_deadline = BlankableDateTimeField(
+        required=False, allow_null=True, write_only=True,
+    )
+    review_budget = BlankableIntegerField(
+        required=False, allow_null=True, min_value=0, max_value=10_000_000,
+        write_only=True,
+    )
+
     class Meta:
         model = Post
         fields = ('id', 'slug', 'title', 'content', 'photo', 'post_type', 'is_published',
-                  'cat', 'tags', 'code_snippet', 'code_language', 'review_focus')
+                  'cat', 'tags', 'code_snippet', 'code_language', 'review_focus',
+                  'review_deadline', 'review_budget')
         read_only_fields = ('slug',)
         extra_kwargs = {
             'cat': {'required': False, 'allow_null': True},
@@ -373,6 +559,9 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
                 errors['code_snippet'] = 'Для разбора нужен код'
             if not (code_language or '').strip():
                 errors['code_language'] = 'Укажите язык кода'
+            deadline = attrs.get('review_deadline', _MISSING)
+            if deadline is not _MISSING and deadline is not None and deadline <= timezone.now():
+                errors['review_deadline'] = 'Дедлайн должен быть в будущем'
             if errors:
                 raise serializers.ValidationError(errors)
         elif instance and instance.post_type == Post.PostType.REVIEW:
@@ -385,6 +574,36 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
             attrs['review_accepted_at'] = None
 
         return attrs
+
+    def _apply_review_request(self, post, deadline=_MISSING, budget=_MISSING):
+        if post.post_type != Post.PostType.REVIEW:
+            ReviewRequest.objects.filter(post=post).delete()
+            return
+        review_request, _ = ReviewRequest.objects.get_or_create(post=post)
+        update_fields = []
+        if deadline is not _MISSING:
+            review_request.deadline = deadline
+            update_fields.append('deadline')
+        if budget is not _MISSING:
+            review_request.budget = budget
+            update_fields.append('budget')
+        if update_fields:
+            update_fields.append('updated_at')
+            review_request.save(update_fields=update_fields)
+
+    def create(self, validated_data):
+        deadline = validated_data.pop('review_deadline', _MISSING)
+        budget = validated_data.pop('review_budget', _MISSING)
+        post = super().create(validated_data)
+        self._apply_review_request(post, deadline, budget)
+        return post
+
+    def update(self, instance, validated_data):
+        deadline = validated_data.pop('review_deadline', _MISSING)
+        budget = validated_data.pop('review_budget', _MISSING)
+        post = super().update(instance, validated_data)
+        self._apply_review_request(post, deadline, budget)
+        return post
 
 
 # ===== Comment Serializers =====

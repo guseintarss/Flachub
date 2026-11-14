@@ -18,11 +18,12 @@ from main.models import (
     Post, Category, TagPost, Comment, 
     Notification, Bookmark, Collection,
     UserAchievement, Subscription,
-    Chat, Message
+    Chat, Message, ReviewRequest, ReviewOffer
 )
 from users.models import UserReputationLog
 from main.analytics import build_author_dashboard, record_post_read
 from main.habr_import import HabrImportError, import_habr_article
+from main.github_import import GitHubImportError, import_github_source
 from .serializers import (
     PostListSerializer, PostDetailSerializer, PostCreateUpdateSerializer,
     CategorySerializer, TagSerializer,
@@ -32,6 +33,7 @@ from .serializers import (
     CollectionSerializer,
     UserAchievementSerializer,
     UserPublicSerializer, UserProfileSerializer,
+    ReviewOfferSerializer, ReviewRequestSerializer,
     ChatListSerializer, ChatDetailSerializer, ChatCreateSerializer,
     MessageSerializer, MessageCreateSerializer,
 )
@@ -221,6 +223,14 @@ class PostViewSet(viewsets.ModelViewSet):
             post.review_status = Post.ReviewStatus.IN_REVIEW
             post.save(update_fields=['reviewer', 'review_status'])
 
+            review_request, _ = ReviewRequest.objects.get_or_create(post=post)
+            review_request.status = ReviewRequest.Status.IN_REVIEW
+            review_request.selected_offer = None
+            review_request.save(update_fields=['status', 'selected_offer', 'updated_at'])
+            review_request.offers.filter(status=ReviewOffer.Status.PENDING).update(
+                status=ReviewOffer.Status.DECLINED
+            )
+
             if post.author_id:
                 Notification.objects.create(
                     recipient=post.author,
@@ -247,7 +257,228 @@ class PostViewSet(viewsets.ModelViewSet):
             post.review_status = Post.ReviewStatus.OPEN
             post.save(update_fields=['reviewer', 'review_status'])
 
+            review_request, _ = ReviewRequest.objects.get_or_create(post=post)
+            review_request.status = ReviewRequest.Status.OPEN
+            review_request.selected_offer = None
+            review_request.save(update_fields=['status', 'selected_offer', 'updated_at'])
+            review_request.offers.filter(status=ReviewOffer.Status.SELECTED).update(
+                status=ReviewOffer.Status.WITHDRAWN
+            )
+
         return Response(self.get_serializer(post).data)
+
+
+# ===== Review Marketplace =====
+
+class ReviewRequestViewSet(viewsets.ReadOnlyModelViewSet):
+    """Маркетплейс разборов: открытые запросы и отклики ревьюеров."""
+
+    serializer_class = ReviewRequestSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = StandardResultsSetPagination
+
+    def get_permissions(self):
+        if self.action in ('offer', 'select_offer', 'withdraw_offer', 'cancel'):
+            return [IsAuthenticated()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        queryset = ReviewRequest.objects.select_related(
+            'post', 'post__author', 'post__cat', 'selected_offer',
+        ).prefetch_related('offers__reviewer')
+
+        user = self.request.user
+        if user.is_authenticated:
+            queryset = queryset.filter(
+                Q(post__is_published=Post.Status.PUBLISHED) | Q(post__author=user)
+            )
+        else:
+            queryset = queryset.filter(post__is_published=Post.Status.PUBLISHED)
+
+        status_param = self.request.query_params.get('status', ReviewRequest.Status.OPEN)
+        if status_param != 'all':
+            if status_param not in ReviewRequest.Status.values:
+                raise ValidationError({'status': 'Неизвестный статус запроса'})
+            queryset = queryset.filter(status=status_param)
+
+        if self.request.query_params.get('mine') == '1':
+            if not user.is_authenticated:
+                return queryset.none()
+            queryset = queryset.filter(post__author=user)
+
+        if self.request.query_params.get('reviewer') == 'me':
+            if not user.is_authenticated:
+                return queryset.none()
+            queryset = queryset.filter(offers__reviewer=user).distinct()
+
+        return queryset.order_by(F('deadline').asc(nulls_last=True), '-created_at')
+
+    def _locked_request(self, pk):
+        visibility = Q(post__is_published=Post.Status.PUBLISHED)
+        user = self.request.user
+        if user.is_authenticated:
+            visibility |= Q(post__author=user)
+            if user.is_staff:
+                visibility = Q()
+        return get_object_or_404(
+            ReviewRequest.objects.select_for_update().select_related('post'),
+            visibility,
+            pk=pk,
+        )
+
+    def _author_only(self, review_request):
+        if review_request.post.author_id != self.request.user.id and not self.request.user.is_staff:
+            raise PermissionDenied('Управлять запросом может только автор разбора')
+
+    @action(detail=True, methods=['post'])
+    def offer(self, request, pk=None):
+        """Оставить отклик. Повторный отклик обновляет предыдущий."""
+        message = str((request.data or {}).get('message') or '').strip()
+        price = (request.data or {}).get('price')
+        deadline_days = (request.data or {}).get('deadline_days')
+
+        if len(message) > 1000:
+            raise ValidationError({'message': 'Сообщение не должно превышать 1000 символов'})
+        if price in ('', None):
+            price = None
+        else:
+            try:
+                price = int(price)
+            except (TypeError, ValueError):
+                raise ValidationError({'price': 'Ставка должна быть числом'})
+            if price < 0 or price > 10_000_000:
+                raise ValidationError({'price': 'Ставка должна быть от 0 до 10 000 000 ₽'})
+        if deadline_days in ('', None):
+            deadline_days = None
+        else:
+            try:
+                deadline_days = int(deadline_days)
+            except (TypeError, ValueError):
+                raise ValidationError({'deadline_days': 'Срок должен быть числом дней'})
+            if deadline_days < 1 or deadline_days > 365:
+                raise ValidationError({'deadline_days': 'Срок должен быть от 1 до 365 дней'})
+
+        with transaction.atomic():
+            review_request = self._locked_request(pk)
+            if review_request.post.author_id == request.user.id:
+                raise PermissionDenied('Автор не может откликнуться на свой разбор')
+            if (
+                review_request.status != ReviewRequest.Status.OPEN
+                or review_request.post.review_status != Post.ReviewStatus.OPEN
+            ):
+                raise ValidationError({'detail': 'Запрос уже закрыт или взят в работу'})
+            if review_request.deadline and review_request.deadline <= timezone.now():
+                raise ValidationError({'detail': 'Срок приёма откликов истёк'})
+
+            offer, created = ReviewOffer.objects.update_or_create(
+                request=review_request,
+                reviewer=request.user,
+                defaults={
+                    'message': message,
+                    'price': price,
+                    'deadline_days': deadline_days,
+                    'status': ReviewOffer.Status.PENDING,
+                },
+            )
+            if created and review_request.post.author_id:
+                Notification.objects.create(
+                    recipient=review_request.post.author,
+                    sender=request.user,
+                    notification_type=Notification.NotificationType.REVIEW_OFFER,
+                    post=review_request.post,
+                    message=f'{request.user.username} откликнулся на разбор «{review_request.post.title[:90]}»',
+                )
+
+        return Response(ReviewRequestSerializer(review_request, context={'request': request}).data)
+
+    @action(detail=True, methods=['post'])
+    def select_offer(self, request, pk=None):
+        """Автор выбирает отклик: ревьюер закрепляется за разбором."""
+        offer_id = (request.data or {}).get('offer_id')
+        if not offer_id:
+            raise ValidationError({'offer_id': 'Укажите отклик'})
+
+        with transaction.atomic():
+            review_request = self._locked_request(pk)
+            self._author_only(review_request)
+            if review_request.status != ReviewRequest.Status.OPEN:
+                raise ValidationError({'detail': 'Запрос уже закрыт или взят в работу'})
+
+            offer = get_object_or_404(
+                ReviewOffer.objects.select_for_update().select_related('reviewer'),
+                pk=offer_id,
+                request=review_request,
+            )
+            if offer.status != ReviewOffer.Status.PENDING:
+                raise ValidationError({'detail': 'Этот отклик больше недоступен'})
+
+            review_request.offers.filter(status=ReviewOffer.Status.PENDING).exclude(
+                pk=offer.pk
+            ).update(status=ReviewOffer.Status.DECLINED)
+            offer.status = ReviewOffer.Status.SELECTED
+            offer.save(update_fields=['status', 'updated_at'])
+
+            review_request.selected_offer = offer
+            review_request.status = ReviewRequest.Status.IN_REVIEW
+            review_request.save(update_fields=['selected_offer', 'status', 'updated_at'])
+
+            post = review_request.post
+            post.reviewer = offer.reviewer
+            post.review_status = Post.ReviewStatus.IN_REVIEW
+            post.save(update_fields=['reviewer', 'review_status'])
+
+            Notification.objects.create(
+                recipient=offer.reviewer,
+                sender=request.user,
+                notification_type=Notification.NotificationType.REVIEW_OFFER,
+                post=post,
+                message=f'Ваш отклик выбран: «{post.title[:100]}»',
+            )
+
+        return Response(ReviewRequestSerializer(review_request, context={'request': request}).data)
+
+    @action(detail=True, methods=['post'])
+    def withdraw_offer(self, request, pk=None):
+        """Ревьюер отзывает свой отклик, пока его не выбрали."""
+        with transaction.atomic():
+            review_request = self._locked_request(pk)
+            offer = get_object_or_404(
+                ReviewOffer.objects.select_for_update(),
+                request=review_request,
+                reviewer=request.user,
+            )
+            if offer.status != ReviewOffer.Status.PENDING:
+                raise ValidationError({'detail': 'Отозвать можно только отклик, ожидающий выбора'})
+            offer.status = ReviewOffer.Status.WITHDRAWN
+            offer.save(update_fields=['status', 'updated_at'])
+
+        return Response(ReviewRequestSerializer(review_request, context={'request': request}).data)
+
+    @action(detail=True, methods=['post'])
+    def cancel(self, request, pk=None):
+        """Автор закрывает запрос, не выбирая ревьюера."""
+        with transaction.atomic():
+            review_request = self._locked_request(pk)
+            self._author_only(review_request)
+            if review_request.status not in (
+                ReviewRequest.Status.OPEN,
+                ReviewRequest.Status.IN_REVIEW,
+            ):
+                raise ValidationError({'detail': 'Этот запрос уже завершён'})
+
+            review_request.offers.exclude(
+                status=ReviewOffer.Status.WITHDRAWN
+            ).update(status=ReviewOffer.Status.DECLINED)
+            review_request.selected_offer = None
+            review_request.status = ReviewRequest.Status.CANCELLED
+            review_request.save(update_fields=['selected_offer', 'status', 'updated_at'])
+
+            post = review_request.post
+            post.reviewer = None
+            post.review_status = Post.ReviewStatus.CANCELLED
+            post.save(update_fields=['reviewer', 'review_status'])
+
+        return Response(ReviewRequestSerializer(review_request, context={'request': request}).data)
 
 
 # ===== Category ViewSet =====
@@ -677,7 +908,17 @@ class UserStatsViewSet(viewsets.ReadOnlyModelViewSet):
             .distinct()
             .order_by('code_language')
         )
-        
+
+        line_comments = Comment.objects.filter(
+            author=user,
+            is_active=True,
+            line_start__isnull=False,
+            post__post_type=Post.PostType.REVIEW,
+            post__is_published=Post.Status.PUBLISHED,
+        )
+        line_comments_total = line_comments.count()
+        line_comments_accepted = line_comments.filter(is_accepted=True).count()
+
         return Response({
             'posts_count': posts_count,
             'comments_count': comments_count,
@@ -691,6 +932,13 @@ class UserStatsViewSet(viewsets.ReadOnlyModelViewSet):
                 is_published=Post.Status.PUBLISHED,
             ).count(),
             'review_languages': review_languages,
+            'review_comments_count': line_comments_total,
+            'review_comments_accepted': line_comments_accepted,
+            'review_acceptance_rate': (
+                round(line_comments_accepted / line_comments_total * 100)
+                if line_comments_total else 0
+            ),
+            'review_offers_count': ReviewOffer.objects.filter(reviewer=user).count(),
         })
 
     @action(detail=True, methods=['get'])
@@ -1308,6 +1556,71 @@ def import_habr_view(request):
             status=status.HTTP_502_BAD_GATEWAY,
         )
     return Response(draft)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def import_github_view(request):
+    """Импортировать код из публичного репозитория, файла или PR."""
+    url = (request.data or {}).get('url', '')
+    try:
+        draft = import_github_source(url)
+    except GitHubImportError as exc:
+        return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception('github import failed')
+        return Response(
+            {'detail': 'Не удалось импортировать код из GitHub. Попробуйте другую ссылку.'},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+    return Response(draft)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def review_spotlight_view(request):
+    """«Разбор дня» и «Запрос недели» для главной."""
+    completed = Post.published.filter(
+        post_type=Post.PostType.REVIEW,
+        review_status=Post.ReviewStatus.COMPLETED,
+    ).select_related('author', 'cat', 'reviewer').prefetch_related('tags')
+
+    completed_count = completed.count()
+    review_of_day = None
+    if completed_count:
+        day_index = timezone.localdate().toordinal() % completed_count
+        post = completed.order_by('-review_accepted_at', '-time_create')[day_index]
+        review_of_day = PostListSerializer(post, context={'request': request}).data
+
+    requests = Post.published.filter(
+        post_type=Post.PostType.REVIEW,
+        review_status=Post.ReviewStatus.OPEN,
+        review_request__status=ReviewRequest.Status.OPEN,
+    ).select_related('author', 'cat', 'review_request').annotate(
+        pending_offers=Count(
+            'review_request__offers',
+            filter=Q(review_request__offers__status=ReviewOffer.Status.PENDING),
+            distinct=True,
+        )
+    ).order_by('-pending_offers', '-views', '-time_create')
+
+    request_of_week = None
+    if review_of_day:
+        requests = requests.exclude(pk=review_of_day['id'])
+    post = requests.first()
+    if not post and not review_of_day:
+        post = Post.published.filter(
+            post_type=Post.PostType.REVIEW,
+            review_status=Post.ReviewStatus.OPEN,
+        ).select_related('author', 'cat').first()
+    if post:
+        request_of_week = PostListSerializer(post, context={'request': request}).data
+
+    return Response({
+        'review_of_day': review_of_day,
+        'request_of_week': request_of_week,
+    })
 
 
 @api_view(['GET'])

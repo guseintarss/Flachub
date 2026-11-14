@@ -5,11 +5,13 @@ import {
   fetchPost, toggleLike, toggleFavorite,
   toggleSubscribe, addComment, deleteComment, toggleCommentLike,
   claimReview, releaseReview, acceptReviewComment, resolveReviewComment,
+  createReviewOffer, selectReviewOffer, withdrawReviewOffer, cancelReviewRequest,
   trackRead,
 } from '../api'
 import {
   SEVERITY_OPTIONS, severityLabel, formatCommentLine,
   reviewStatusKey, reviewStatusLabel,
+  OFFER_STATUS_LABELS, formatMoney, formatDeadline,
 } from '../reviewMeta'
 import '../styles/PostDetail.css'
 import '../styles/reading.css'
@@ -161,7 +163,13 @@ function getAuthorName(comment) {
 
 function ReviewStatusBadge({ status }) {
   const key = reviewStatusKey(status)
-  const icon = key === 'completed' ? 'fa-check-circle' : key === 'in_review' ? 'fa-hourglass-half' : 'fa-circle'
+  const icon = key === 'completed'
+    ? 'fa-check-circle'
+    : key === 'in_review'
+      ? 'fa-hourglass-half'
+      : key === 'cancelled'
+        ? 'fa-ban'
+        : 'fa-circle'
   return (
     <span className={`review-status-badge review-status-${key}`}>
       <i className={`fas ${icon}`} aria-hidden="true" /> {reviewStatusLabel(status)}
@@ -171,6 +179,8 @@ function ReviewStatusBadge({ status }) {
 
 function ReviewCode({ code, language, selectedLine, onSelectLine }) {
   const normalized = String(code || '').replace(/\r\n?/g, '\n')
+  const [collapsed, setCollapsed] = useState(false)
+  const [copyState, setCopyState] = useState('idle')
   const lines = useMemo(() => {
     const next = normalized.split('\n')
     // Python-бэкенд считает строки через splitlines(): финальный перевод строки
@@ -184,45 +194,295 @@ function ReviewCode({ code, language, selectedLine, onSelectLine }) {
     [lines, language],
   )
 
+  async function copyCode() {
+    try {
+      await navigator.clipboard.writeText(normalized)
+      setCopyState('copied')
+    } catch {
+      setCopyState('error')
+    }
+    window.setTimeout(() => setCopyState('idle'), 2000)
+  }
+
   if (!normalized.trim()) {
     return <p className="review-code-empty">Код для разбора не указан.</p>
   }
 
   return (
-    <div className="review-code" aria-label="Код для разбора">
-      {lines.map((line, index) => {
-        const lineNumber = index + 1
-        const isSelected = selectedLine === lineNumber
-        const html = highlighted[index]
-        return (
-          <div
-            key={lineNumber}
-            className={`review-code-line${isSelected ? ' is-selected' : ''}`}
-            onClick={() => onSelectLine(lineNumber)}
-          >
-            <button
-              type="button"
-              className="review-code-add"
-              title={`Оставить замечание к строке ${lineNumber}`}
-              aria-label={`Оставить замечание к строке ${lineNumber}`}
-              onClick={e => { e.stopPropagation(); onSelectLine(lineNumber) }}
-            >
-              <i className="fas fa-plus" aria-hidden="true" />
+    <div className="review-code-block">
+      <div className="review-code-toolbar">
+        <span className="review-code-caption">
+          <i className="fas fa-code" aria-hidden="true" />{' '}
+          {language || 'Код'} · {lines.length} {lines.length === 1 ? 'строка' : 'строк'}
+        </span>
+        <div className="review-code-tools">
+          <button type="button" className="review-code-tool" onClick={copyCode}>
+            <i className={`fas ${copyState === 'copied' ? 'fa-check' : copyState === 'error' ? 'fa-exclamation' : 'fa-copy'}`} aria-hidden="true" />{' '}
+            {copyState === 'copied' ? 'Скопировано' : copyState === 'error' ? 'Не вышло' : 'Копировать'}
+          </button>
+          {lines.length > 12 && (
+            <button type="button" className="review-code-tool" onClick={() => setCollapsed(value => !value)}>
+              <i className={`fas ${collapsed ? 'fa-expand-alt' : 'fa-compress-alt'}`} aria-hidden="true" />{' '}
+              {collapsed ? 'Развернуть' : 'Свернуть'}
             </button>
-            <span className="review-code-number" aria-hidden="true">{lineNumber}</span>
-            {html != null ? (
-              <code className="review-code-text hljs" dangerouslySetInnerHTML={{ __html: html }} />
-            ) : (
-              <code className="review-code-text">{line || ' '}</code>
-            )}
-          </div>
-        )
-      })}
+          )}
+        </div>
+      </div>
+      <div
+        className={`review-code${collapsed ? ' is-collapsed' : ''}`}
+        aria-label="Код для разбора"
+      >
+        {lines.map((line, index) => {
+          const lineNumber = index + 1
+          const isSelected = selectedLine === lineNumber
+          const html = highlighted[index]
+          return (
+            <div
+              key={lineNumber}
+              className={`review-code-line${isSelected ? ' is-selected' : ''}`}
+              onClick={() => onSelectLine(lineNumber)}
+            >
+              <button
+                type="button"
+                className="review-code-add"
+                title={`Оставить замечание к строке ${lineNumber}`}
+                aria-label={`Оставить замечание к строке ${lineNumber}`}
+                onClick={e => { e.stopPropagation(); onSelectLine(lineNumber) }}
+              >
+                <i className="fas fa-plus" aria-hidden="true" />
+              </button>
+              <span className="review-code-number" aria-hidden="true">{lineNumber}</span>
+              {html != null ? (
+                <code className="review-code-text hljs" dangerouslySetInnerHTML={{ __html: html }} />
+              ) : (
+                <code className="review-code-text">{line || ' '}</code>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
 
-function ReviewPanel({ post, selectedLine, onSelectLine, onPostChange }) {
+function ReviewOfferForm({ requestId, onRefresh }) {
+  const [open, setOpen] = useState(false)
+  const [form, setForm] = useState({ message: '', price: '', deadline_days: '' })
+  const [action, setAction] = useState(false)
+  const [error, setError] = useState('')
+
+  async function submit(event) {
+    event.preventDefault()
+    if (action) return
+    setAction(true)
+    setError('')
+    try {
+      await createReviewOffer(requestId, {
+        message: form.message.trim(),
+        price: form.price === '' ? null : Number(form.price),
+        deadline_days: form.deadline_days === '' ? null : Number(form.deadline_days),
+      })
+      setForm({ message: '', price: '', deadline_days: '' })
+      setOpen(false)
+      await onRefresh()
+    } catch {
+      setError('Не удалось отправить отклик. Проверьте данные и попробуйте снова.')
+    }
+    setAction(false)
+  }
+
+  if (!open) {
+    return (
+      <button type="button" className="btn btn-primary review-offer-toggle" onClick={() => setOpen(true)}>
+        <i className="fas fa-hand-paper" /> Откликнуться на разбор
+      </button>
+    )
+  }
+
+  return (
+    <form className="review-offer-form" onSubmit={submit}>
+      <label htmlFor="review-offer-message">Сообщение автору</label>
+      <textarea
+        id="review-offer-message"
+        className="form-control"
+        rows={3}
+        maxLength={1000}
+        placeholder="Что проверите и в какие сроки"
+        value={form.message}
+        onChange={event => setForm(prev => ({ ...prev, message: event.target.value }))}
+      />
+      <div className="review-offer-grid">
+        <div>
+          <label htmlFor="review-offer-price">Ставка, ₽</label>
+          <input
+            id="review-offer-price"
+            type="number"
+            min="0"
+            max="10000000"
+            className="form-control"
+            placeholder="Необязательно"
+            value={form.price}
+            onChange={event => setForm(prev => ({ ...prev, price: event.target.value }))}
+          />
+        </div>
+        <div>
+          <label htmlFor="review-offer-days">Срок, дней</label>
+          <input
+            id="review-offer-days"
+            type="number"
+            min="1"
+            max="365"
+            className="form-control"
+            placeholder="Необязательно"
+            value={form.deadline_days}
+            onChange={event => setForm(prev => ({ ...prev, deadline_days: event.target.value }))}
+          />
+        </div>
+      </div>
+      {error && <div className="comment-error" role="alert">{error}</div>}
+      <div className="review-offer-actions">
+        <button type="submit" className="btn btn-primary" disabled={action}>
+          {action ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-paper-plane" />} Отправить отклик
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)} disabled={action}>
+          Отмена
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function ReviewRequestPanel({ post, onRefresh }) {
+  const [action, setAction] = useState('')
+  const [error, setError] = useState('')
+  const reviewRequest = post.review_request
+  if (!reviewRequest) return null
+
+  const isAuthor = post.is_review_author ?? false
+  const offers = reviewRequest.offers || []
+  const myOffer = reviewRequest.my_offer
+  const pending = reviewRequest.status === 'open'
+
+  async function run(key, request, errorMessage) {
+    if (action) return
+    setAction(key)
+    setError('')
+    try {
+      await request()
+      await onRefresh()
+    } catch {
+      setError(errorMessage)
+    }
+    setAction('')
+  }
+
+  function selectOffer(offer) {
+    if (!window.confirm(`Выбрать ревьюером @${offer.reviewer?.username}? Остальные отклики будут отклонены.`)) return
+    run(
+      `select-${offer.id}`,
+      () => selectReviewOffer(reviewRequest.id, offer.id),
+      'Не удалось выбрать отклик. Возможно, запрос уже изменился.',
+    )
+  }
+
+  function cancelRequest() {
+    if (!window.confirm('Отменить запрос на разбор? Отклики будут отклонены.')) return
+    run('cancel', () => cancelReviewRequest(reviewRequest.id), 'Не удалось отменить запрос.')
+  }
+
+  function withdraw() {
+    run('withdraw', () => withdrawReviewOffer(reviewRequest.id), 'Не удалось отозвать отклик.')
+  }
+
+  return (
+    <section className="review-offers" aria-labelledby="review-offers-title">
+      <div className="review-offers-head">
+        <h3 id="review-offers-title">
+          <i className="fas fa-briefcase" /> Отклики ревьюеров
+          <span className="review-offers-count">{reviewRequest.offers_count || 0}</span>
+        </h3>
+        <div className="review-offers-meta">
+          {reviewRequest.budget != null && <span><i className="fas fa-wallet" /> {formatMoney(reviewRequest.budget)}</span>}
+          {reviewRequest.deadline && <span><i className="fas fa-hourglass-half" /> до {formatDeadline(reviewRequest.deadline)}</span>}
+        </div>
+      </div>
+
+      {isAuthor && (
+        <div className="review-offer-list">
+          {offers.length === 0 && (
+            <p className="review-offers-empty">
+              {pending ? 'Откликов пока нет. Запрос виден ревьюерам в разделе «Разборы».' : 'По этому запросу нет активных откликов.'}
+            </p>
+          )}
+          {offers.map(offer => (
+            <article key={offer.id} className={`review-offer-card is-${offer.status}`}>
+              <header className="review-offer-card-head">
+                <Link to={`/user/${offer.reviewer?.username}/`} className="review-offer-author">
+                  {offer.reviewer?.username || 'Ревьюер'}
+                </Link>
+                <span className={`review-offer-status is-${offer.status}`}>
+                  {OFFER_STATUS_LABELS[offer.status] || offer.status}
+                </span>
+              </header>
+              <p className="review-offer-price">
+                {formatMoney(offer.price)}
+                {offer.deadline_days ? ` · ${offer.deadline_days} дн.` : ''}
+              </p>
+              {offer.message && <p className="review-offer-message">{offer.message}</p>}
+              {offer.status === 'pending' && pending && (
+                <button
+                  type="button"
+                  className="btn btn-primary review-offer-select"
+                  onClick={() => selectOffer(offer)}
+                  disabled={!!action}
+                >
+                  {action === `select-${offer.id}`
+                    ? <i className="fas fa-spinner fa-spin" />
+                    : <i className="fas fa-check" />} Выбрать ревьюера
+                </button>
+              )}
+            </article>
+          ))}
+        </div>
+      )}
+
+      {!isAuthor && myOffer && (
+        <div className={`review-my-offer is-${myOffer.status}`}>
+          <p>
+            <i className="fas fa-paper-plane" /> Ваш отклик: <strong>{OFFER_STATUS_LABELS[myOffer.status] || myOffer.status}</strong>
+            {myOffer.price != null && <> · {formatMoney(myOffer.price)}</>}
+            {myOffer.deadline_days ? ` · ${myOffer.deadline_days} дн.` : ''}
+          </p>
+          {myOffer.can_withdraw && (
+            <button type="button" className="btn btn-secondary" onClick={withdraw} disabled={!!action}>
+              {action === 'withdraw' ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-undo" />} Отозвать
+            </button>
+          )}
+        </div>
+      )}
+
+      {!isAuthor && !myOffer && reviewRequest.can_offer && (
+        <ReviewOfferForm requestId={reviewRequest.id} onRefresh={onRefresh} />
+      )}
+
+      {!isAuthor && !reviewRequest.can_offer && !myOffer && pending && (
+        <p className="review-offers-empty">
+          <i className="fas fa-lock" /> Приём откликов закрыт.
+        </p>
+      )}
+
+      {error && <div className="comment-error" role="alert">{error}</div>}
+
+      {isAuthor && reviewRequest.can_cancel && (
+        <button type="button" className="review-request-cancel" onClick={cancelRequest} disabled={!!action}>
+          {action === 'cancel' ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-times" />} Отменить запрос
+        </button>
+      )}
+    </section>
+  )
+}
+
+function ReviewPanel({ post, selectedLine, onSelectLine, onPostChange, onRefresh }) {
   const [action, setAction] = useState('')
   const [error, setError] = useState('')
   const status = post.review_status || 'open'
@@ -279,6 +539,18 @@ function ReviewPanel({ post, selectedLine, onSelectLine, onPostChange }) {
             ) : 'Не назначен'}
           </dd>
         </div>
+        {post.review_request?.budget != null && (
+          <div className="review-meta-item">
+            <dt>Бюджет</dt>
+            <dd>{formatMoney(post.review_request.budget)}</dd>
+          </div>
+        )}
+        {post.review_request?.deadline && (
+          <div className="review-meta-item">
+            <dt>Дедлайн</dt>
+            <dd>{formatDeadline(post.review_request.deadline)}</dd>
+          </div>
+        )}
       </dl>
 
       {(post.can_claim_review || post.can_release_review) && (
@@ -314,6 +586,10 @@ function ReviewPanel({ post, selectedLine, onSelectLine, onPostChange }) {
       )}
 
       {error && <div className="comment-error" role="alert">{error}</div>}
+
+      {post.review_request && (
+        <ReviewRequestPanel post={post} onRefresh={onRefresh} />
+      )}
 
       <ReviewCode code={post.code_snippet} language={post.code_language} selectedLine={selectedLine} onSelectLine={onSelectLine} />
     </section>
@@ -922,6 +1198,15 @@ function PostDetail() {
     setPost(prev => prev ? { ...prev, ...data } : prev)
   }, [])
 
+  const refreshPost = useCallback(async () => {
+    try {
+      const data = await fetchPost(slug)
+      applyPost(data)
+    } catch {
+      // Следующая навигация или ручное обновление покажет актуальное состояние.
+    }
+  }, [slug, applyPost])
+
   const handleReviewAccepted = useCallback((comment) => {
     setPost(prev => {
       if (!prev) return prev
@@ -1035,6 +1320,7 @@ function PostDetail() {
                 selectedLine={selectedLine}
                 onSelectLine={setSelectedLine}
                 onPostChange={handleReviewPostChange}
+                onRefresh={refreshPost}
               />
             )}
 

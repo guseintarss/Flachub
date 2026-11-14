@@ -40,6 +40,9 @@ for directory in ['logs', 'cache', 'media']:
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
 
+# Необязательный токен GitHub повышает лимит API при импорте кода.
+GITHUB_TOKEN = config('GITHUB_TOKEN', default='')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
 

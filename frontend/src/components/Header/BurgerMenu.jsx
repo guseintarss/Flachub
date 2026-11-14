@@ -51,6 +51,9 @@ function BurgerMenu() {
           <Link to="/" className="menu_link">
             <i className="fas fa-home"></i> Главная
           </Link>
+          <Link to="/reviews/" className="menu_link">
+            <i className="fas fa-code-branch"></i> Разборы кода
+          </Link>
         </li>
 
         <hr className="menu-divider" />

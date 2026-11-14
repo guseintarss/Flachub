@@ -8,7 +8,7 @@ import { useBurgerMenu } from './useBurgerMenu'
 const NAV_ITEMS = [
   { label: 'Лента', to: '/', type: null },
   { label: 'Статьи', to: '/search/?post_type=article', type: 'article' },
-  { label: 'Разборы', to: '/search/?post_type=review', type: 'review' },
+  { label: 'Разборы', to: '/reviews/', type: 'review' },
   { label: 'Новости', to: '/search/?post_type=news', type: 'news' },
   { label: 'Идеи', to: '/search/?post_type=idea', type: 'idea' },
 ]
@@ -39,7 +39,7 @@ const Header = () => {
         <nav className="header-nav" aria-label="Разделы сообщества">
           {NAV_ITEMS.map((item) => {
             const active = item.type
-              ? isSearchPage && currentType === item.type
+              ? location.pathname === item.to || (isSearchPage && currentType === item.type)
               : location.pathname === '/'
             return (
               <Link key={item.label} to={item.to} className={active ? 'is-active' : ''}>

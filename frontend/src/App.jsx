@@ -37,6 +37,7 @@ const AddPostPage = lazy(() => import('./pages/AddPostPage'))
 const ChatPage = lazy(() => import('./pages/ChatPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 const AuthorDashboardPage = lazy(() => import('./pages/AuthorDashboardPage'))
+const ReviewMarketplacePage = lazy(() => import('./pages/ReviewMarketplacePage'))
 import DemoTour from "./components/DemoTour"
 import "./styles/redesign.css"
 
@@ -58,6 +59,7 @@ const App = () => {
             <Route path="/edit/:slug/" element={<AddPostPage />} />
             <Route path="/profile/" element={<ProfilePage />} />
             <Route path="/dashboard/" element={<AuthorDashboardPage />} />
+            <Route path="/reviews/" element={<ReviewMarketplacePage />} />
             <Route path="/profile/edit/" element={<EditProfilePage />} />
             <Route path="/search/" element={<SearchPage />} />
             <Route path="/user/:username/" element={<ProfilePage />} />

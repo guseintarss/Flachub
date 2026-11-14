@@ -115,6 +115,11 @@ html.dark-mode {
   background: #d1fae5;
 }
 
+.review-status-cancelled {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
 .review-language-badge {
   display: inline-flex;
   align-items: center;
@@ -791,6 +796,732 @@ html.dark-mode .review-profile-count {
   .review-code-line,
   .review-code-add,
   .review-target-cancel {
+    transition: none;
+  }
+}
+
+/* ---------- Код: панель инструментов ---------- */
+
+.review-code-block {
+  margin-top: 4px;
+}
+
+.review-code-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.review-code-caption {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+.review-code-tools {
+  display: flex;
+  gap: 6px;
+}
+
+.review-code-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  color: var(--text, #1f2937);
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.review-code-tool:hover {
+  border-color: var(--review-accent);
+  color: var(--review-accent);
+}
+
+.review-code.is-collapsed {
+  max-height: 320px;
+}
+
+/* ---------- Отклики на разбор ---------- */
+
+.review-offers {
+  margin: 18px 0 6px;
+  padding: 16px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--surface-soft, #f8fafc);
+}
+
+.review-offers-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.review-offers-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.review-offers-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--review-accent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.review-offers-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748b);
+}
+
+.review-offer-list {
+  display: grid;
+  gap: 10px;
+}
+
+.review-offers-empty {
+  margin: 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface, #fff);
+  border: 1px dashed var(--border, #e5e7eb);
+  color: var(--text-muted, #64748b);
+  font-size: 0.84rem;
+}
+
+.review-offer-card {
+  padding: 12px 14px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-left: 3px solid var(--review-accent);
+  border-radius: 10px;
+  background: var(--surface, #fff);
+}
+
+.review-offer-card.is-selected {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.review-offer-card.is-declined {
+  opacity: 0.72;
+  border-left-color: #94a3b8;
+}
+
+.review-offer-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.review-offer-author {
+  font-weight: 700;
+  color: var(--text, #1f2937);
+  text-decoration: none;
+}
+
+.review-offer-author:hover {
+  color: var(--review-accent);
+}
+
+.review-offer-status {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.review-offer-status.is-selected {
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+}
+
+.review-offer-price {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text, #1f2937);
+}
+
+.review-offer-message {
+  margin: 6px 0 0;
+  font-size: 0.84rem;
+  color: var(--text-muted, #64748b);
+  white-space: pre-line;
+}
+
+.review-offer-select {
+  margin-top: 10px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+}
+
+.review-offer-toggle {
+  margin-top: 4px;
+}
+
+.review-offer-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 14px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--surface, #fff);
+}
+
+.review-offer-form label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.review-offer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.review-offer-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.review-my-offer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+}
+
+.review-my-offer p {
+  margin: 0;
+  font-size: 0.86rem;
+}
+
+.review-my-offer.is-selected {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.07);
+}
+
+.review-request-cancel {
+  margin-top: 12px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.review-request-cancel:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Импорт из GitHub ---------- */
+
+.github-import {
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--surface-soft, #f8fafc);
+}
+
+.github-import-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.github-import-head > i {
+  font-size: 1.2rem;
+}
+
+.github-import-head strong {
+  display: block;
+  font-size: 0.86rem;
+}
+
+.github-import-head span {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--text-muted, #64748b);
+}
+
+.github-import-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.github-import-form input {
+  flex: 1 1 260px;
+}
+
+.github-import-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.78rem;
+}
+
+.github-import-status.is-success { color: #047857; }
+.github-import-status.is-error { color: #b91c1c; }
+.github-import-status.is-info { color: #1d4ed8; }
+
+.github-import-files {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.github-import-file {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  max-width: 260px;
+  padding: 6px 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  cursor: pointer;
+  text-align: left;
+}
+
+.github-import-file:hover,
+.github-import-file.is-active {
+  border-color: var(--review-accent);
+  color: var(--review-accent);
+}
+
+.github-import-file-path {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.github-import-file-meta {
+  font-size: 0.68rem;
+  color: var(--text-muted, #64748b);
+}
+
+.review-field-hint {
+  margin: 4px 0 0;
+  font-size: 0.72rem;
+  color: var(--text-muted, #64748b);
+}
+
+/* ---------- Маркетплейс ---------- */
+
+.marketplace {
+  padding: 8px 0 40px;
+}
+
+.marketplace-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin: 18px 0 22px;
+}
+
+.marketplace-kicker {
+  margin: 0 0 4px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--review-accent);
+}
+
+.marketplace-hero h1 {
+  margin: 0 0 6px;
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+}
+
+.marketplace-subtitle {
+  margin: 0;
+  max-width: 680px;
+  color: var(--text-muted, #64748b);
+  font-size: 0.9rem;
+}
+
+.marketplace-cta {
+  white-space: nowrap;
+}
+
+.marketplace-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  padding-bottom: 8px;
+}
+
+.marketplace-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.marketplace-tab:hover {
+  color: var(--text, #1f2937);
+  background: var(--surface-soft, #f8fafc);
+}
+
+.marketplace-tab.is-active {
+  background: var(--review-accent);
+  border-color: var(--review-accent);
+  color: #fff;
+}
+
+.marketplace-list {
+  display: grid;
+  gap: 14px;
+}
+
+.marketplace-card {
+  padding: 18px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 14px;
+  background: var(--surface, #fff);
+}
+
+.marketplace-card-skeleton {
+  min-height: 180px;
+}
+
+.marketplace-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.marketplace-card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text, #1f2937);
+  text-decoration: none;
+}
+
+.marketplace-card-title:hover {
+  color: var(--review-accent);
+}
+
+.marketplace-card-author {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748b);
+}
+
+.marketplace-card-author a {
+  color: inherit;
+  font-weight: 600;
+}
+
+.marketplace-card-category {
+  opacity: 0.8;
+}
+
+.marketplace-card-excerpt {
+  margin: 12px 0 0;
+  font-size: 0.86rem;
+  color: var(--text-muted, #64748b);
+}
+
+.marketplace-card-code {
+  max-height: 168px;
+  overflow: hidden;
+  margin: 12px 0 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--review-code-bg);
+  color: var(--review-code-text);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.76rem;
+  line-height: 1.55;
+  white-space: pre;
+}
+
+.marketplace-card-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.marketplace-card-meta dt {
+  margin: 0 0 2px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #64748b);
+}
+
+.marketplace-card-meta dd {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.marketplace-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border, #e5e7eb);
+}
+
+.marketplace-card-offers {
+  margin-right: auto;
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748b);
+}
+
+.marketplace-card-my-offer {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(41, 156, 245, 0.1);
+  color: var(--review-accent);
+}
+
+.marketplace-card-my-offer.is-selected {
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+}
+
+.marketplace-card-foot .btn {
+  padding: 6px 14px;
+  font-size: 0.78rem;
+}
+
+.marketplace-empty {
+  padding: 48px 20px;
+  border: 1px dashed var(--border, #e5e7eb);
+  border-radius: 16px;
+  text-align: center;
+  background: var(--surface-soft, #f8fafc);
+}
+
+.marketplace-empty > i {
+  font-size: 2rem;
+  color: var(--review-accent);
+  margin-bottom: 10px;
+}
+
+.marketplace-empty h2 {
+  margin: 0 0 6px;
+  font-size: 1.2rem;
+}
+
+.marketplace-empty p {
+  margin: 0 auto 16px;
+  max-width: 460px;
+  color: var(--text-muted, #64748b);
+  font-size: 0.86rem;
+}
+
+/* ---------- Блок на главной ---------- */
+
+.review-spotlight {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0 22px;
+}
+
+.spotlight-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at top right, rgba(41, 156, 245, 0.12), transparent 58%),
+    var(--surface, #fff);
+  overflow: hidden;
+}
+
+.spotlight-request {
+  background:
+    radial-gradient(circle at top right, rgba(139, 92, 246, 0.14), transparent 58%),
+    var(--surface, #fff);
+}
+
+.spotlight-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--review-accent);
+}
+
+.spotlight-request .spotlight-kicker {
+  color: #7c3aed;
+}
+
+.spotlight-title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text, #1f2937);
+  text-decoration: none;
+}
+
+.spotlight-title:hover {
+  color: var(--review-accent);
+}
+
+.spotlight-author {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-muted, #64748b);
+}
+
+.spotlight-language {
+  margin-left: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.spotlight-focus {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.spotlight-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.spotlight-extra {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+.spotlight-link {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--review-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.spotlight-request .spotlight-link {
+  color: #7c3aed;
+}
+
+.spotlight-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+  .review-spotlight {
+    grid-template-columns: 1fr;
+  }
+
+  .marketplace-card-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .review-offer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .review-offers {
+    padding: 12px;
+  }
+
+  .marketplace-card {
+    padding: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-code-tool {
     transition: none;
   }
 }

@@ -553,6 +553,18 @@ function ProfilePage() {
                       <div className="stat-block-label">Разборов получил</div>
                     </div>
                   </div>
+                  <div className="review-stats-row review-stats-row-quality">
+                    <div className="stat-block">
+                      <div className="stat-block-value">{userStats?.review_comments_count ?? '—'}</div>
+                      <div className="stat-block-label">Фрагментов разобрал</div>
+                    </div>
+                    <div className="stat-block">
+                      <div className="stat-block-value">
+                        {userStats ? `${userStats.review_acceptance_rate ?? 0}%` : '—'}
+                      </div>
+                      <div className="stat-block-label">Замечаний принято</div>
+                    </div>
+                  </div>
                 </div>
 
                 {profile.current_level && (

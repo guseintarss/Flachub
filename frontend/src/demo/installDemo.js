@@ -525,6 +525,7 @@ function tagWithCountPayload(tag) {
 }
 
 function serializePostList(post) {
+  ensureReviewData(post)
   const user = currentUser()
   const author = userById(post.authorId)
   const category = state.categories.find(item => item.id === post.categoryId)
@@ -548,6 +549,132 @@ function serializePostList(post) {
     excerpt: excerpt(post.content),
     code_language: post.code_language || '',
     review_status: post.review_status || 'open',
+    review_focus: post.review_focus || '',
+    review_deadline: post.review_deadline || null,
+    review_budget: post.review_budget ?? null,
+    review_offers_count: Array.isArray(post.reviewOffers)
+      ? post.reviewOffers.filter(offer => offer.status === 'pending').length
+      : 0,
+  }
+}
+
+function ensureReviewData(post) {
+  if (post.post_type !== 'review') return
+  if (post.review_deadline === undefined) {
+    const status = post.review_status || 'open'
+    if (status === 'open') {
+      const base = new Date(post.time_create || Date.now()).getTime()
+      const deadline = Math.max(Date.now() + 2 * 24 * 60 * 60 * 1000, base + 7 * 24 * 60 * 60 * 1000)
+      post.review_deadline = new Date(deadline).toISOString()
+    } else {
+      post.review_deadline = null
+    }
+  }
+  if (post.review_budget === undefined) {
+    post.review_budget = post.review_status === 'completed' ? 6000 : 2500 + (post.id % 4) * 500
+  }
+  if (!Array.isArray(post.reviewOffers)) {
+    post.reviewOffers = []
+  }
+  if (post.reviewOffers.length === 0 && (post.review_status || 'open') === 'open') {
+    if (post.id === 16) {
+      post.reviewOffers = [
+        {
+          id: 1161,
+          reviewerId: 3,
+          message: 'Посмотрю вечером: доступность, состояния формы и ошибки сети.',
+          price: 3500,
+          deadline_days: 2,
+          status: 'pending',
+          created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+        },
+        {
+          id: 1162,
+          reviewerId: 7,
+          message: 'Возьму на выходных. Интересует именно UX валидации.',
+          price: 2500,
+          deadline_days: 4,
+          status: 'pending',
+          created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        },
+      ]
+    } else if (post.id === 6) {
+      post.reviewOffers = [
+        {
+          id: 1061,
+          reviewerId: 3,
+          message: 'Разберу обработку ошибок и предложу обёртку над fetch.',
+          price: 3000,
+          deadline_days: 3,
+          status: 'pending',
+          created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+        },
+      ]
+    }
+  }
+}
+
+function serializeReviewOffer(offer, post = null) {
+  const user = currentUser()
+  return {
+    id: offer.id,
+    reviewer: publicUser(userById(offer.reviewerId)),
+    message: offer.message || '',
+    price: offer.price ?? null,
+    deadline_days: offer.deadline_days ?? null,
+    status: offer.status,
+    created_at: offer.created_at,
+    can_withdraw: Boolean(
+      user
+      && offer.reviewerId === user.id
+      && offer.status === 'pending'
+      && (post?.review_status || 'open') === 'open'
+    ),
+  }
+}
+
+function serializeReviewRequest(post) {
+  ensureReviewData(post)
+  const user = currentUser()
+  const isAuthor = Boolean(user && (post.authorId === user.id || user.is_staff))
+  const offers = post.reviewOffers || []
+  const visibleOffers = isAuthor
+    ? offers.filter(offer => offer.status !== 'withdrawn')
+    : offers.filter(offer => user && offer.reviewerId === user.id)
+  const myOffer = user ? offers.find(offer => offer.reviewerId === user.id) || null : null
+  const status = post.review_status || 'open'
+  const deadline = post.review_deadline ? new Date(post.review_deadline) : null
+  const canOffer = Boolean(
+    user
+    && post.authorId !== user.id
+    && post.is_published
+    && status === 'open'
+    && (!deadline || deadline.getTime() > Date.now()),
+  )
+  const selected = offers.find(offer => offer.status === 'selected') || null
+
+  return {
+    id: post.id,
+    post: {
+      ...serializePostList(post),
+      code_preview: String(post.code_snippet || '').split('\n').slice(0, 8).join('\n'),
+    },
+    deadline: post.review_deadline,
+    budget: post.review_budget ?? null,
+    status,
+    selected_offer: selected ? serializeReviewOffer(selected, post) : null,
+    offers: visibleOffers.map(offer => serializeReviewOffer(offer, post)),
+    offers_count: offers.filter(offer => offer.status === 'pending').length,
+    my_offer: myOffer && !isAuthor ? serializeReviewOffer(myOffer, post) : null,
+    can_offer: canOffer,
+    can_select_offer: Boolean(
+      isAuthor
+      && status === 'open'
+      && offers.some(offer => offer.status === 'pending'),
+    ),
+    can_cancel: Boolean(isAuthor && ['open', 'in_review'].includes(status)),
+    created_at: post.time_create,
+    updated_at: post.time_update || post.time_create,
   }
 }
 
@@ -605,6 +732,7 @@ function serializeCommentFull(comment) {
 }
 
 function serializePostDetail(post, { bumpViews = false } = {}) {
+  ensureReviewData(post)
   const user = currentUser()
   const author = userById(post.authorId)
   const reviewer = userById(post.reviewerId)
@@ -660,6 +788,7 @@ function serializePostDetail(post, { bumpViews = false } = {}) {
     is_review_author: isReviewAuthor,
     can_claim_review: canClaim,
     can_release_review: canRelease,
+    review_request: post.post_type === 'review' ? serializeReviewRequest(post) : null,
     is_liked: isLiked,
     is_favorited: isFavorited,
   }
@@ -932,6 +1061,11 @@ async function createPost(init) {
     code_snippet: postType === 'review' ? codeSnippet : '',
     code_language: postType === 'review' ? codeLanguage : '',
     review_focus: postType === 'review' ? String(data.review_focus || '').trim() : '',
+    review_deadline: postType === 'review' && data.review_deadline ? String(data.review_deadline) : null,
+    review_budget: postType === 'review' && data.review_budget !== undefined && data.review_budget !== ''
+      ? asInt(data.review_budget, null)
+      : null,
+    reviewOffers: [],
     review_status: 'open',
     reviewerId: null,
     review_accepted_at: null,
@@ -954,6 +1088,7 @@ async function updatePost(slug, init) {
 
   const { data, form } = await readBody(init)
   const nextType = data.post_type !== undefined ? String(data.post_type) : post.post_type
+  const wasReview = post.post_type === 'review'
   const nextSnippet = data.code_snippet !== undefined ? String(data.code_snippet) : post.code_snippet
   const nextLanguage = data.code_language !== undefined ? String(data.code_language).trim() : post.code_language
   if (nextType === 'review') {
@@ -971,14 +1106,24 @@ async function updatePost(slug, init) {
   if (data.code_snippet !== undefined) post.code_snippet = nextSnippet
   if (data.code_language !== undefined) post.code_language = nextLanguage
   if (data.review_focus !== undefined) post.review_focus = String(data.review_focus || '').trim()
+  if (data.review_deadline !== undefined) {
+    post.review_deadline = data.review_deadline ? String(data.review_deadline) : null
+  }
+  if (data.review_budget !== undefined) {
+    post.review_budget = data.review_budget === '' ? null : asInt(data.review_budget, null)
+  }
 
   if (nextType === 'review') {
     post.code_snippet = nextSnippet
     post.code_language = nextLanguage
-  } else if (post.post_type === 'review') {
+    if (!Array.isArray(post.reviewOffers)) post.reviewOffers = []
+  } else if (wasReview) {
     post.code_snippet = ''
     post.code_language = ''
     post.review_focus = ''
+    post.review_deadline = null
+    post.review_budget = null
+    post.reviewOffers = []
     post.reviewerId = null
     post.review_status = 'open'
     post.review_accepted_at = null
@@ -1034,6 +1179,10 @@ function claimReview(slug) {
   }
   post.reviewerId = user.id
   post.review_status = 'in_review'
+  ensureReviewData(post)
+  post.reviewOffers.forEach(offer => {
+    if (offer.status === 'pending') offer.status = 'declined'
+  })
   createNotification(
     post.authorId,
     user.id,
@@ -1057,6 +1206,10 @@ function releaseReview(slug) {
   }
   post.reviewerId = null
   post.review_status = 'open'
+  ensureReviewData(post)
+  post.reviewOffers.forEach(offer => {
+    if (offer.status === 'selected') offer.status = 'withdrawn'
+  })
   persist()
   return jsonResponse(serializePostDetail(post))
 }
@@ -1447,6 +1600,259 @@ function importHabrDemo(init) {
   })
 }
 
+function importGithubDemo(init) {
+  return readBody(init).then(({ data }) => {
+    requireUser()
+    const url = String(data.url || '').trim()
+    if (!/^https?:\/\/(www\.)?github\.com\/[^/\s]+\/[^/\s]+/i.test(url)) {
+      throw httpError(400, { detail: 'Нужна ссылка на репозиторий, файл или pull request GitHub.' })
+    }
+    const pullMatch = url.match(/\/pull\/(\d+)/)
+    const fileMatch = url.match(/\/blob\/[^/]+\/(.+)$/)
+    const demoFile = {
+      path: fileMatch ? decodeURIComponent(fileMatch[1]) : 'src/api/client.js',
+      language: 'JavaScript',
+      content: [
+        'export async function loadUser(id, signal) {',
+        '  const response = await fetch(`/api/users/${id}`, { signal })',
+        '  if (!response.ok) {',
+        '    throw new Error(`HTTP ${response.status}`)',
+        '  }',
+        '  return response.json()',
+        '}',
+        '',
+        'export async function loadDashboard(ids, signal) {',
+        '  const users = await Promise.all(',
+        '    ids.map(id => loadUser(id, signal)),',
+        '  )',
+        '  return users',
+        '}',
+      ].join('\n'),
+      size: 320,
+      lines: 14,
+    }
+    const files = [
+      demoFile,
+      {
+        path: 'src/components/UserCard.jsx',
+        language: 'JavaScript',
+        content: [
+          'export function UserCard({ user }) {',
+          '  if (!user) return null',
+          '  return (',
+          '    <article className="user-card">',
+          '      <h3>{user.name}</h3>',
+          '      <p>{user.email}</p>',
+          '    </article>',
+          '  )',
+          '}',
+        ].join('\n'),
+        size: 190,
+        lines: 9,
+      },
+    ]
+    const title = pullMatch
+      ? `Pull request #${pullMatch[1]}: обработка ошибок загрузки`
+      : 'Импорт из GitHub: загрузка пользователей'
+
+    return jsonResponse({
+      source: 'github',
+      kind: pullMatch ? 'pr' : fileMatch ? 'file' : 'repo',
+      source_url: url,
+      title,
+      description: 'Демонстрационный импорт: файлы подставлены локально, без обращения к GitHub.',
+      content: `<h1>${title}</h1><p>Демонстрационный импорт кода из GitHub. Проверьте файлы и параметры разбора перед публикацией.</p>`,
+      files,
+      code_snippet: demoFile.content,
+      code_language: demoFile.language,
+      truncated: false,
+      repository: (url.match(/github\.com\/([^/]+\/[^/?#]+)/i) || [])[1] || 'demo/repo',
+      ...(pullMatch ? { pr_number: Number(pullMatch[1]) } : {}),
+    })
+  })
+}
+
+// ===== Маркетплейс разборов в демо =====
+
+function demoReviewPosts(searchParams) {
+  const user = currentUser()
+  let posts = state.posts.filter(post => post.post_type === 'review')
+  if (!user || !user.is_staff) {
+    posts = posts.filter(post => post.is_published || (user && post.authorId === user.id))
+  }
+  const status = searchParams.get('status') || 'open'
+  if (status !== 'all') {
+    if (!['open', 'in_review', 'completed', 'cancelled'].includes(status)) {
+      throw httpError(400, { status: 'Неизвестный статус запроса' })
+    }
+    posts = posts.filter(post => (post.review_status || 'open') === status)
+  }
+  if (searchParams.get('mine') === '1') {
+    if (!user) return []
+    posts = posts.filter(post => post.authorId === user.id)
+  }
+  if (searchParams.get('reviewer') === 'me') {
+    if (!user) return []
+    posts = posts.filter(post => (post.reviewOffers || []).some(offer => offer.reviewerId === user.id))
+  }
+  ensureReviewDataAll(posts)
+  return posts.slice().sort((a, b) => {
+    const deadlineA = a.review_deadline ? new Date(a.review_deadline).getTime() : Number.MAX_SAFE_INTEGER
+    const deadlineB = b.review_deadline ? new Date(b.review_deadline).getTime() : Number.MAX_SAFE_INTEGER
+    return (deadlineA - deadlineB) || String(b.time_create).localeCompare(String(a.time_create))
+  })
+}
+
+function ensureReviewDataAll(posts) {
+  posts.forEach(ensureReviewData)
+}
+
+function listReviewRequests(searchParams) {
+  const items = demoReviewPosts(searchParams).map(serializeReviewRequest)
+  return jsonResponse(paginate(items, searchParams))
+}
+
+function reviewSpotlight() {
+  const published = state.posts.filter(post => post.post_type === 'review' && post.is_published)
+  ensureReviewDataAll(published)
+
+  const completed = published
+    .filter(post => post.review_status === 'completed')
+    .sort((a, b) => String(b.review_accepted_at || b.time_create).localeCompare(String(a.review_accepted_at || a.time_create)))
+  let review = null
+  if (completed.length) {
+    const dayIndex = Math.floor(Date.now() / 86400000) % completed.length
+    review = serializePostList(completed[dayIndex])
+  }
+
+  const open = published
+    .filter(post => (post.review_status || 'open') === 'open' && (!review || post.id !== review.id))
+    .sort((a, b) => {
+      const offersA = (a.reviewOffers || []).filter(offer => offer.status === 'pending').length
+      const offersB = (b.reviewOffers || []).filter(offer => offer.status === 'pending').length
+      return (offersB - offersA) || ((b.views || 0) - (a.views || 0))
+    })
+  const request = open.length ? serializePostList(open[0]) : null
+
+  return jsonResponse({ review_of_day: review, request_of_week: request })
+}
+
+function reviewRequestAction(postId, action, init) {
+  const user = requireUser()
+  const post = state.posts.find(item => item.id === Number(postId) && item.post_type === 'review')
+  if (!post) throw httpError(404, { detail: 'Запрос на разбор не найден' })
+  ensureReviewData(post)
+  const isAuthor = post.authorId === user.id || user.is_staff
+
+  if (action === 'offer') {
+    return readBody(init).then(({ data }) => {
+      if (post.authorId === user.id) throw httpError(403, { detail: 'Автор не может откликнуться на свой разбор' })
+      if ((post.review_status || 'open') !== 'open') {
+        throw httpError(400, { detail: 'Запрос уже закрыт или взят в работу' })
+      }
+      if (post.review_deadline && new Date(post.review_deadline).getTime() <= Date.now()) {
+        throw httpError(400, { detail: 'Срок приёма откликов истёк' })
+      }
+      const message = String(data.message || '').trim().slice(0, 1000)
+      const price = data.price === '' || data.price == null ? null : asInt(data.price, null)
+      const deadlineDays = data.deadline_days === '' || data.deadline_days == null
+        ? null
+        : asInt(data.deadline_days, null)
+      if (price != null && (price < 0 || price > 10000000)) {
+        throw httpError(400, { price: 'Ставка должна быть от 0 до 10 000 000 ₽' })
+      }
+      if (deadlineDays != null && (deadlineDays < 1 || deadlineDays > 365)) {
+        throw httpError(400, { deadline_days: 'Срок должен быть от 1 до 365 дней' })
+      }
+
+      let offer = post.reviewOffers.find(item => item.reviewerId === user.id)
+      const created = !offer
+      if (!offer) {
+        offer = {
+          id: nextId('reviewOffer'),
+          reviewerId: user.id,
+          created_at: new Date().toISOString(),
+        }
+        post.reviewOffers.push(offer)
+      }
+      offer.message = message
+      offer.price = price
+      offer.deadline_days = deadlineDays
+      offer.status = 'pending'
+      offer.updated_at = new Date().toISOString()
+
+      if (created) {
+        createNotification(
+          post.authorId,
+          user.id,
+          'review_offer',
+          `${user.username} откликнулся на разбор «${post.title.slice(0, 90)}»`,
+          { postId: post.id },
+        )
+      }
+      persist()
+      return jsonResponse(serializeReviewRequest(post))
+    })
+  }
+
+  if (action === 'select_offer') {
+    return readBody(init).then(({ data }) => {
+      if (!isAuthor) throw httpError(403, { detail: 'Управлять запросом может только автор разбора' })
+      if ((post.review_status || 'open') !== 'open') {
+        throw httpError(400, { detail: 'Запрос уже закрыт или взят в работу' })
+      }
+      const offer = post.reviewOffers.find(item => item.id === Number(data.offer_id))
+      if (!offer || offer.status !== 'pending') {
+        throw httpError(400, { detail: 'Этот отклик больше недоступен' })
+      }
+      post.reviewOffers.forEach(item => {
+        if (item.status === 'pending' && item.id !== offer.id) item.status = 'declined'
+      })
+      offer.status = 'selected'
+      offer.updated_at = new Date().toISOString()
+      post.reviewerId = offer.reviewerId
+      post.review_status = 'in_review'
+      createNotification(
+        offer.reviewerId,
+        user.id,
+        'review_offer',
+        `Ваш отклик выбран: «${post.title.slice(0, 100)}»`,
+        { postId: post.id },
+      )
+      persist()
+      return jsonResponse(serializeReviewRequest(post))
+    })
+  }
+
+  if (action === 'withdraw_offer') {
+    const offer = post.reviewOffers.find(item => item.reviewerId === user.id)
+    if (!offer) throw httpError(404, { detail: 'Отклик не найден' })
+    if (offer.status !== 'pending') {
+      throw httpError(400, { detail: 'Отозвать можно только отклик, ожидающий выбора' })
+    }
+    offer.status = 'withdrawn'
+    offer.updated_at = new Date().toISOString()
+    persist()
+    return jsonResponse(serializeReviewRequest(post))
+  }
+
+  if (action === 'cancel') {
+    if (!isAuthor) throw httpError(403, { detail: 'Управлять запросом может только автор разбора' })
+    if (!['open', 'in_review'].includes(post.review_status || 'open')) {
+      throw httpError(400, { detail: 'Этот запрос уже завершён' })
+    }
+    post.reviewOffers.forEach(item => {
+      if (item.status !== 'withdrawn') item.status = 'declined'
+    })
+    post.reviewerId = null
+    post.review_status = 'cancelled'
+    persist()
+    return jsonResponse(serializeReviewRequest(post))
+  }
+
+  throw httpError(405, { detail: 'Метод не поддерживается' })
+}
+
 // ===== Роутер демо-API =====
 
 async function handleRequest(pathname, searchParams, init, input) {
@@ -1488,6 +1894,30 @@ async function handleRequest(pathname, searchParams, init, input) {
   }
   if (pathname === '/api/mobile/import/habr/' && method === 'POST') {
     return importHabrDemo(init)
+  }
+  if (pathname === '/api/mobile/import/github/' && method === 'POST') {
+    return importGithubDemo(init)
+  }
+  if (pathname === '/api/mobile/review-spotlight/' && method === 'GET') {
+    return reviewSpotlight()
+  }
+  if (pathname === '/api/mobile/review-requests/' && method === 'GET') {
+    return listReviewRequests(searchParams)
+  }
+
+  let reviewMatch = pathname.match(/^\/api\/mobile\/review-requests\/(\d+)\/(offer|select_offer|withdraw_offer|cancel)\/$/)
+  if (reviewMatch) {
+    if (method !== 'POST') throw httpError(405, { detail: 'Метод не поддерживается' })
+    return reviewRequestAction(reviewMatch[1], reviewMatch[2], init)
+  }
+  reviewMatch = pathname.match(/^\/api\/mobile\/review-requests\/(\d+)\/$/)
+  if (reviewMatch) {
+    if (method !== 'GET') throw httpError(405, { detail: 'Метод не поддерживается' })
+    const post = state.posts.find(
+      item => item.id === Number(reviewMatch[1]) && item.post_type === 'review',
+    )
+    if (!post) throw httpError(404, { detail: 'Запрос на разбор не найден' })
+    return jsonResponse(serializeReviewRequest(post))
   }
 
   // Посты
@@ -2087,6 +2517,16 @@ function userAction(target, action, searchParams) {
     const completedReviews = state.posts.filter(
       post => post.post_type === 'review' && post.review_status === 'completed',
     )
+    const lineComments = state.comments.filter(
+      comment => comment.authorId === target.id
+        && comment.is_active !== false
+        && comment.line_start != null
+        && state.posts.some(
+          post => post.id === comment.postId
+            && post.post_type === 'review'
+            && post.is_published,
+        ),
+    )
     return jsonResponse({
       posts_count: posts.filter(post => post.is_published).length,
       comments_count: state.comments.filter(
@@ -2105,6 +2545,15 @@ function userAction(target, action, searchParams) {
           .filter(post => post.reviewerId === target.id && post.code_language)
           .map(post => post.code_language),
       )].sort((a, b) => a.localeCompare(b)),
+      review_comments_count: lineComments.length,
+      review_comments_accepted: lineComments.filter(comment => comment.is_accepted).length,
+      review_acceptance_rate: lineComments.length
+        ? Math.round(lineComments.filter(comment => comment.is_accepted).length / lineComments.length * 100)
+        : 0,
+      review_offers_count: state.posts.reduce(
+        (total, post) => total + (post.reviewOffers || []).filter(offer => offer.reviewerId === target.id).length,
+        0,
+      ),
     })
   }
 

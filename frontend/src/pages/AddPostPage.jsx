@@ -2,10 +2,10 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getCSRFToken } from '../csrf'
-import { importFromHabr } from '../api'
+import { importFromHabr, importFromGithub } from '../api'
 import Sidebar from '../components/Sidebar/Sidebar'
 import { AddPostSkeleton } from '../components/Skeleton'
-import { CODE_LANGUAGES } from '../reviewMeta'
+import { CODE_LANGUAGES, toDatetimeLocal } from '../reviewMeta'
 import { CKEditor } from '@ckeditor/ckeditor5-react'
 import 'ckeditor5/ckeditor5.css'
 import {
@@ -231,6 +231,10 @@ function AddPostPage() {
   const [importUrl, setImportUrl] = useState('')
   const [importing, setImporting] = useState(false)
   const [importStatus, setImportStatus] = useState(null)
+  const [githubUrl, setGithubUrl] = useState('')
+  const [importingGithub, setImportingGithub] = useState(false)
+  const [githubStatus, setGithubStatus] = useState(null)
+  const [githubFiles, setGithubFiles] = useState([])
   const searchRef = useRef(null)
   const editorRef = useRef(null)
 
@@ -415,6 +419,8 @@ function AddPostPage() {
     code_snippet: '',
     code_language: '',
     review_focus: '',
+    review_deadline: '',
+    review_budget: '',
   })
 
   const lastSavedReviewRef = useRef({
@@ -434,6 +440,8 @@ function AddPostPage() {
       form.code_snippet,
       form.code_language,
       form.review_focus,
+      form.review_deadline,
+      form.review_budget,
       [...selectedTagIds].sort((a, b) => a - b),
     ])
   }, [form, selectedTagIds])
@@ -474,6 +482,9 @@ function AddPostPage() {
         const loadedContent = `<h1>${data.title}</h1>${data.content || ''}`
         lastLoadedContentRef.current = loadedContent
         dirtyRef.current = false
+        const reviewRequest = data.review_request || {}
+        const reviewDeadline = reviewRequest.deadline || data.review_deadline || ''
+        const reviewBudget = reviewRequest.budget ?? data.review_budget ?? ''
         setForm({
           content: loadedContent,
           post_type: data.post_type || 'post',
@@ -482,11 +493,15 @@ function AddPostPage() {
           code_snippet: data.code_snippet || '',
           code_language: data.code_language || '',
           review_focus: data.review_focus || '',
+          review_deadline: toDatetimeLocal(reviewDeadline),
+          review_budget: reviewBudget === null || reviewBudget === undefined ? '' : String(reviewBudget),
         })
         lastSavedReviewRef.current = {
           code_snippet: data.code_snippet || '',
           code_language: data.code_language || '',
           review_focus: data.review_focus || '',
+          review_deadline: toDatetimeLocal(reviewDeadline),
+          review_budget: reviewBudget === null || reviewBudget === undefined ? '' : String(reviewBudget),
         }
         setSelectedTagIds(new Set(data.tags?.map(t => t.id) || []))
         if (data.photo) {
@@ -517,9 +532,11 @@ function AddPostPage() {
     const reviewDirty =
       form.code_snippet !== savedReview.code_snippet ||
       form.code_language !== savedReview.code_language ||
-      form.review_focus !== savedReview.review_focus
+      form.review_focus !== savedReview.review_focus ||
+      form.review_deadline !== savedReview.review_deadline ||
+      form.review_budget !== savedReview.review_budget
     dirtyRef.current = contentDirty || reviewDirty
-  }, [form.content, form.code_snippet, form.code_language, form.review_focus])
+  }, [form.content, form.code_snippet, form.code_language, form.review_focus, form.review_deadline, form.review_budget])
 
   const debounceRef = useRef(null)
   useEffect(() => {
@@ -595,6 +612,8 @@ function AddPostPage() {
       fd.append('code_snippet', form.code_snippet)
       fd.append('code_language', form.code_language.trim())
       fd.append('review_focus', form.review_focus.trim())
+      fd.append('review_deadline', form.review_deadline || '')
+      fd.append('review_budget', form.review_budget === '' ? '' : String(form.review_budget))
     }
     selectedTagIds.forEach(id => fd.append('tags', id))
 
@@ -637,6 +656,8 @@ function AddPostPage() {
         code_snippet: form.code_snippet,
         code_language: form.code_language,
         review_focus: form.review_focus,
+        review_deadline: form.review_deadline,
+        review_budget: form.review_budget,
       }
       dirtyRef.current = false
       setSaved()
@@ -680,7 +701,7 @@ function AddPostPage() {
   }
 
   async function handleHabrImport(event) {
-    event.preventDefault()
+    event?.preventDefault?.()
     if (importing) return
     const url = importUrl.trim()
     if (!url) {
@@ -736,6 +757,62 @@ function AddPostPage() {
     setImporting(false)
   }
 
+  async function handleGithubImport(event) {
+    event?.preventDefault?.()
+    if (importingGithub) return
+    const url = githubUrl.trim()
+    if (!url) {
+      setGithubStatus({ type: 'error', text: 'Вставьте ссылку на репозиторий, файл или pull request.' })
+      return
+    }
+    setImportingGithub(true)
+    setGithubStatus({ type: 'info', text: 'Загружаем файлы из GitHub…' })
+    try {
+      const draft = await importFromGithub(url)
+      const files = Array.isArray(draft.files) ? draft.files : []
+      setGithubFiles(files)
+      const first = files[0]
+      setForm(prev => ({
+        ...prev,
+        code_snippet: first?.content || draft.code_snippet || '',
+        code_language: first?.language || draft.code_language || prev.code_language,
+        review_focus: prev.review_focus || (draft.description || '').slice(0, 255),
+      }))
+
+      const currentHtml = editorRef.current?.getData() || form.content
+      if (!extractTitle(currentHtml)) {
+        const html = draft.content || `<h1>${String(draft.title || 'Импорт из GitHub')
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h1>`
+        setForm(prev => ({ ...prev, content: html }))
+        editorRef.current?.setData(html)
+      }
+
+      setGithubStatus({
+        type: 'success',
+        text: files.length > 1
+          ? `Загружено файлов: ${files.length}. Выберите нужный — код подставится в редактор.`
+          : `Готово: ${first?.path || draft.title}. Проверьте код и параметры разбора.`,
+      })
+    } catch (err) {
+      setGithubStatus({
+        type: 'error',
+        text: err.message && !err.message.startsWith('HTTP')
+          ? err.message
+          : 'Не удалось импортировать код. Проверьте ссылку и что репозиторий публичный.',
+      })
+    }
+    setImportingGithub(false)
+  }
+
+  function applyGithubFile(file) {
+    setForm(prev => ({
+      ...prev,
+      code_snippet: file.content || '',
+      code_language: file.language || prev.code_language,
+    }))
+    setGithubStatus({ type: 'success', text: `В редактор подставлен файл ${file.path}.` })
+  }
+
   function addTag(tagId) {
     if (selectedTagIds.has(tagId)) return
     const newSet = new Set(selectedTagIds)
@@ -766,6 +843,11 @@ function AddPostPage() {
     if (form.post_type !== 'review') return ''
     if (!form.code_snippet.trim()) return 'Вставьте код для разбора'
     if (!form.code_language.trim()) return 'Укажите язык кода'
+    if (form.review_deadline) {
+      const deadline = new Date(form.review_deadline)
+      if (Number.isNaN(deadline.getTime())) return 'Проверьте дату дедлайна'
+      if (deadline.getTime() <= Date.now()) return 'Дедлайн должен быть в будущем'
+    }
     return ''
   }
 
@@ -809,6 +891,8 @@ function AddPostPage() {
         fd.append('code_snippet', form.code_snippet)
         fd.append('code_language', form.code_language.trim())
         fd.append('review_focus', form.review_focus.trim())
+        fd.append('review_deadline', form.review_deadline || '')
+        fd.append('review_budget', form.review_budget === '' ? '' : String(form.review_budget))
       }
       selectedTagIds.forEach(id => fd.append('tags', id))
       if (photoFile) fd.append('photo', photoFile)
@@ -923,7 +1007,7 @@ function AddPostPage() {
                       <div className="habr-import-body">
                         <h3>Переезжаете с Хабра?</h3>
                         <p>Вставьте ссылку на статью — перенесём текст, картинки и теги в черновик. Оригинал останется на Хабре.</p>
-                        <form className="habr-import-form" onSubmit={handleHabrImport}>
+                        <div className="habr-import-form">
                           <label htmlFor="habr-import-url" className="visually-hidden">Ссылка на статью Хабра</label>
                           <input
                             id="habr-import-url"
@@ -932,14 +1016,15 @@ function AddPostPage() {
                             placeholder="https://habr.com/ru/articles/123456/"
                             value={importUrl}
                             onChange={e => setImportUrl(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') handleHabrImport(e) }}
                             disabled={importing}
                           />
-                          <button type="submit" className="btn btn-primary" disabled={importing || !importUrl.trim()}>
+                          <button type="button" className="btn btn-primary" onClick={handleHabrImport} disabled={importing || !importUrl.trim()}>
                             {importing
                               ? <><i className="fas fa-spinner fa-spin" /> Импортируем…</>
                               : <><i className="fas fa-download" /> Импортировать</>}
                           </button>
-                        </form>
+                        </div>
                         {importStatus && (
                           <div className={`habr-import-status is-${importStatus.type}`} role="status">
                             <i className={`fas ${importStatus.type === 'success' ? 'fa-check-circle' : importStatus.type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}`} />
@@ -1041,6 +1126,58 @@ function AddPostPage() {
                         <h3><i className="fas fa-code" /> Параметры разбора</h3>
                         <p>Укажите язык и фокус, чтобы ревьюер понимал задачу. Код и язык обязательны.</p>
                       </div>
+                      <div className="github-import">
+                        <div className="github-import-head">
+                          <i className="fab fa-github" aria-hidden="true" />
+                          <div>
+                            <strong>Импорт из GitHub</strong>
+                            <span>Репозиторий, отдельный файл или pull request</span>
+                          </div>
+                        </div>
+                        <div className="github-import-form">
+                          <label htmlFor="github-import-url" className="visually-hidden">Ссылка на GitHub</label>
+                          <input
+                            id="github-import-url"
+                            type="url"
+                            className="form-control"
+                            placeholder="https://github.com/owner/repo/pull/42"
+                            value={githubUrl}
+                            onChange={e => setGithubUrl(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') handleGithubImport(e) }}
+                            disabled={importingGithub}
+                          />
+                          <button type="button" className="btn btn-primary" onClick={handleGithubImport} disabled={importingGithub || !githubUrl.trim()}>
+                            {importingGithub
+                              ? <><i className="fas fa-spinner fa-spin" /> Загружаем…</>
+                              : <><i className="fas fa-download" /> Импортировать</>}
+                          </button>
+                        </div>
+                        {githubStatus && (
+                          <div className={`github-import-status is-${githubStatus.type}`} role="status">
+                            <i className={`fas ${githubStatus.type === 'success' ? 'fa-check-circle' : githubStatus.type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}`} />
+                            {githubStatus.text}
+                          </div>
+                        )}
+                        {githubFiles.length > 1 && (
+                          <div className="github-import-files" aria-label="Файлы из GitHub">
+                            {githubFiles.map(file => (
+                              <button
+                                key={file.path}
+                                type="button"
+                                className={`github-import-file${form.code_snippet === file.content ? ' is-active' : ''}`}
+                                onClick={() => applyGithubFile(file)}
+                                title={file.path}
+                              >
+                                <span className="github-import-file-path">{file.path}</span>
+                                <span className="github-import-file-meta">
+                                  {file.lines} стр.
+                                  {file.additions != null && ` · +${file.additions}/−${file.deletions}`}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       <div className="form-row">
                         <div className="form-group">
                           <label htmlFor="review-language">
@@ -1076,6 +1213,38 @@ function AddPostPage() {
                             placeholder="Например, безопасность и обработка ошибок"
                             onChange={e => f('review_focus', e.target.value)}
                           />
+                        </div>
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label htmlFor="review-deadline">
+                            <i className="fas fa-hourglass-half" /> Дедлайн откликов
+                          </label>
+                          <input
+                            id="review-deadline"
+                            type="datetime-local"
+                            className="form-control"
+                            value={form.review_deadline}
+                            onChange={e => f('review_deadline', e.target.value)}
+                          />
+                          <p className="review-field-hint">После этого времени новые отклики не принимаются.</p>
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="review-budget">
+                            <i className="fas fa-wallet" /> Бюджет, ₽
+                          </label>
+                          <input
+                            id="review-budget"
+                            type="number"
+                            min="0"
+                            max="10000000"
+                            step="100"
+                            className="form-control"
+                            placeholder="Необязательно"
+                            value={form.review_budget}
+                            onChange={e => f('review_budget', e.target.value)}
+                          />
+                          <p className="review-field-hint">Ориентир для ревьюеров. Ставку можно обсудить в отклике.</p>
                         </div>
                       </div>
                       <div className="form-group">

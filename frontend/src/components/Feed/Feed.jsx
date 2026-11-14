@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import PostCard from './PostCard'
+import ReviewSpotlight from './ReviewSpotlight'
 
 function FeedSkeleton() {
   return (
@@ -90,6 +91,8 @@ const Feed = () => {
           <p className="feed-subtitle">Статьи, разборы и заметки от людей, которые делают продукт.</p>
         </div>
       </header>
+
+      <ReviewSpotlight />
 
       <PostCard post={featured} featured />
 

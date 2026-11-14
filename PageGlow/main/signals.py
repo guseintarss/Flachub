@@ -5,7 +5,10 @@ from django.db.models import Count, Q, Sum
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete, m2m_changed
 from django.core.cache import cache
-from main.models import Post, Comment, Bookmark, UserBadge, UserAchievement, Notification
+from main.models import (
+    Post, Comment, Bookmark, UserBadge, UserAchievement, Notification,
+    ReviewRequest,
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -209,6 +212,67 @@ def check_bookmark_badge(sender, instance, created, **kwargs):
                 badge_color='#3f51b5',
                 reason='50 закладок'
             )
+
+
+# ===== СИГНАЛЫ ДЛЯ РАЗБОРОВ =====
+
+@receiver(post_save, sender=Post)
+def sync_review_request(sender, instance, **kwargs):
+    """Держать запрос на разбор в согласии с постом.
+
+    Запрос создаётся для любого review-поста, включая опубликованные
+    до появления маркетплейса. Статус повторяет Post.review_status.
+    """
+    if instance.post_type != Post.PostType.REVIEW:
+        return
+
+    request_obj, _ = ReviewRequest.objects.get_or_create(post=instance)
+    if request_obj.status == instance.review_status:
+        return
+
+    request_obj.status = instance.review_status
+    update_fields = ['status', 'updated_at']
+    if instance.review_status == Post.ReviewStatus.OPEN:
+        request_obj.selected_offer = None
+        update_fields.append('selected_offer')
+    request_obj.save(update_fields=update_fields)
+
+
+@receiver(post_save, sender=Post)
+def check_reviewer_badges(sender, instance, **kwargs):
+    """Бейджи за первый и десятый завершённый разбор."""
+    if (
+        instance.post_type != Post.PostType.REVIEW
+        or instance.review_status != Post.ReviewStatus.COMPLETED
+        or not instance.reviewer_id
+    ):
+        return
+
+    check_and_award_badge(
+        user=instance.reviewer,
+        badge_key='reviewer',
+        badge_name='Ревьюер',
+        badge_description='Проведён первый разбор кода',
+        badge_icon='🔍',
+        badge_color='#8b5cf6',
+        reason='Первый завершённый разбор кода',
+    )
+
+    completed = Post.objects.filter(
+        reviewer=instance.reviewer,
+        post_type=Post.PostType.REVIEW,
+        review_status=Post.ReviewStatus.COMPLETED,
+    ).count()
+    if completed >= 10:
+        check_and_award_badge(
+            user=instance.reviewer,
+            badge_key='review_master',
+            badge_name='Мастер разбора',
+            badge_description='Проведено 10 разборов кода',
+            badge_icon='🧭',
+            badge_color='#0ea5e9',
+            reason='10 завершённых разборов кода',
+        )
 
 
 # ===== СИГНАЛЫ ДЛЯ ОБНОВЛЕНИЯ SIDEBAR =====

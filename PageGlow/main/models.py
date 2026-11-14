@@ -39,6 +39,7 @@ class Post(ModelMeta, models.Model):
         OPEN = 'open', 'Открыт'
         IN_REVIEW = 'in_review', 'В работе'
         COMPLETED = 'completed', 'Завершён'
+        CANCELLED = 'cancelled', 'Отменён'
 
     title = models.CharField(max_length=255, verbose_name='Заголовок')
     slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name='slug')
@@ -309,6 +310,110 @@ class Comment(models.Model):
         return self.likes.filter(id=user.id).exists()
 
 
+class ReviewRequest(models.Model):
+    """Маркетплейс разборов: дедлайн, бюджет и выбранный отклик.
+
+    Создаётся автоматически для каждого review-поста. Статус повторяет
+    Post.review_status, но хранится отдельно, чтобы запрос можно было
+    отменить и закрыть без изменения типа публикации.
+    """
+
+    class Status(models.TextChoices):
+        OPEN = 'open', 'Открыт'
+        IN_REVIEW = 'in_review', 'В работе'
+        COMPLETED = 'completed', 'Завершён'
+        CANCELLED = 'cancelled', 'Отменён'
+
+    post = models.OneToOneField(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='review_request',
+        verbose_name='Разбор',
+    )
+    deadline = models.DateTimeField(null=True, blank=True, verbose_name='Дедлайн')
+    budget = models.PositiveIntegerField(null=True, blank=True, verbose_name='Бюджет, ₽')
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.OPEN,
+        verbose_name='Статус запроса',
+    )
+    selected_offer = models.OneToOneField(
+        'ReviewOffer',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='selected_request',
+        verbose_name='Выбранный отклик',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Запрос на разбор'
+        verbose_name_plural = 'Запросы на разбор'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'deadline']),
+            models.Index(fields=['-created_at']),
+        ]
+
+    def __str__(self):
+        return f'Запрос на разбор: {self.post.title}'
+
+
+class ReviewOffer(models.Model):
+    """Отклик ревьюера на запрос разбора."""
+
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Ожидает выбора'
+        SELECTED = 'selected', 'Выбран'
+        DECLINED = 'declined', 'Отклонён'
+        WITHDRAWN = 'withdrawn', 'Отозван'
+
+    request = models.ForeignKey(
+        ReviewRequest,
+        on_delete=models.CASCADE,
+        related_name='offers',
+        verbose_name='Запрос',
+    )
+    reviewer = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='review_offers',
+        verbose_name='Ревьюер',
+    )
+    message = models.TextField(max_length=1000, blank=True, default='', verbose_name='Сообщение')
+    price = models.PositiveIntegerField(null=True, blank=True, verbose_name='Ставка, ₽')
+    deadline_days = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name='Срок, дней')
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+        verbose_name='Статус',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Отклик на разбор'
+        verbose_name_plural = 'Отклики на разбор'
+        ordering = ['created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['request', 'reviewer'],
+                name='unique_review_offer_per_reviewer',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['request', 'status']),
+            models.Index(fields=['reviewer', 'status']),
+        ]
+
+    def __str__(self):
+        return f'Отклик {self.reviewer} на {self.request}'
+
+
 class Subscription(models.Model):
     """Подписки на авторов"""
     subscriber = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
@@ -340,6 +445,7 @@ class Notification(models.Model):
         CHAT_MESSAGE = 'chat_message', 'Сообщение'
         REVIEW_CLAIMED = 'review_claimed', 'Разбор взят'
         REVIEW_ACCEPTED = 'review_accepted', 'Разбор принят'
+        REVIEW_OFFER = 'review_offer', 'Отклик на разбор'
 
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications', null=True)

@@ -5,12 +5,14 @@ from .views import (
     CommentViewSet, CommentLikeViewSet,
     NotificationViewSet, BookmarkViewSet, CollectionViewSet,
     UserStatsViewSet, PostLikeViewSet, MediaUploadViewSet,
+    ReviewRequestViewSet,
     ChatViewSet,
     current_user, sidebar_data, login_view, logout_view,
     register_view, password_change_view,
     password_reset_view, password_reset_confirm_view,
     subscription_feed_view,
-    author_dashboard_view, import_habr_view,
+    author_dashboard_view, import_habr_view, import_github_view,
+    review_spotlight_view,
     admin_stats_view, admin_users_view, admin_update_role_view,
     admin_ban_view,
 )
@@ -35,6 +37,9 @@ router.register(r'collections', CollectionViewSet, basename='collection')
 # Пользователи и статистика
 router.register(r'users', UserStatsViewSet, basename='user-stats')
 
+# Маркетплейс разборов
+router.register(r'review-requests', ReviewRequestViewSet, basename='review-request')
+
 # Действия (лайки, избранное)
 router.register(r'post-actions', PostLikeViewSet, basename='post-actions')
 router.register(r'comment-actions', CommentLikeViewSet, basename='comment-actions')
@@ -58,6 +63,8 @@ urlpatterns = [
     path('subscriptions/feed/', subscription_feed_view, name='subscription-feed'),
     path('author/dashboard/', author_dashboard_view, name='author-dashboard'),
     path('import/habr/', import_habr_view, name='import-habr'),
+    path('import/github/', import_github_view, name='import-github'),
+    path('review-spotlight/', review_spotlight_view, name='review-spotlight'),
     path('admin/stats/', admin_stats_view, name='admin-stats'),
     path('admin/users/', admin_users_view, name='admin-users'),
     path('admin/users/<int:user_id>/role/', admin_update_role_view, name='admin-update-role'),
