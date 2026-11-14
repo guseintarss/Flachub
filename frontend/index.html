@@ -15,7 +15,7 @@
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#1f5c45" />
+    <meta name="theme-color" content="#07080a" />
     <meta name="description" content="ФлакХаб — IT-сообщество: статьи, разборы кода, новости и обсуждения. Читайте, пишите и получайте обратную связь." />
     <link rel="canonical" href="https://flachub.ru/" />
     <meta property="og:type" content="website" />
@@ -35,18 +35,10 @@
     <meta name="application-name" content="ФлакХаб" />
     <title>ФлакХаб — IT-сообщество</title>
     <style>
-      html { background-color: #f3f4ef; }
-      html.dark-mode { background-color: #101713; }
+      html { background-color: #07080a; color-scheme: dark; }
     </style>
     <script>
-        (function() {
-            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (isDark) {
-                document.documentElement.classList.add('dark-mode');
-            } else {
-                document.documentElement.classList.remove('dark-mode');
-            }
-        })();
+        document.documentElement.classList.add('dark-mode');
     </script>
   </head>
   <body>

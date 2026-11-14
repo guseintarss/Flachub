@@ -1270,7 +1270,7 @@ function AddPostPage() {
                   )}
 
                   <div className="step-rules">
-                    <div className="step-rules-header" onClick={() => setShowRules(s => !s)}>
+                    <button type="button" className="step-rules-header" onClick={() => setShowRules(s => !s)} aria-expanded={showRules}>
                       <div className="step-rules-toggle">
                         <i className={`fas ${showRules ? 'fa-chevron-down' : 'fa-chevron-right'}`}></i>
                         <i className="fas fa-clipboard-list"></i>
@@ -1279,7 +1279,7 @@ function AddPostPage() {
                       {!showRules && (
                         <span className="step-rules-hint">Нажмите, чтобы посмотреть</span>
                       )}
-                    </div>
+                    </button>
                     {showRules && (
                       <div className="step-rules-body">
                         <ul className="step-rules-list">

@@ -515,9 +515,9 @@ body.dark-mode .ck,
   --ck-color-border: #3c3c3c;
   --ck-color-button-default-background: #2d2d2d;
   --ck-color-button-default-hover-background: #3c3c3c;
-  --ck-color-button-action-background: #299cf5;
-  --ck-color-button-action-hover-background: #0e62a7;
-  --ck-color-selection-background: rgba(41, 156, 245, 0.3);
+  --ck-color-button-action-background: #4ecf94;
+  --ck-color-button-action-hover-background: #3bbb82;
+  --ck-color-selection-background: rgba(78, 207, 148, 0.28);
 }
 
 html.dark-mode .ck.ck-editor__main,
@@ -2247,10 +2247,6 @@ html.dark-mode #like-btn.btn-outline-danger:hover {
   margin-bottom: 15px;
   flex-wrap: wrap;
   gap: 10px;
-}
-.author-info {
-  display: flex;
-  gap: 12px;
 }
 .author-avatar {
   width: 48px;

@@ -194,7 +194,7 @@ function ProfilePage() {
 
   const bannerStyle = profile.banner_image
     ? { background: `url(${profile.banner_image}) center/cover no-repeat` }
-    : { background: `linear-gradient(135deg, ${profile.banner_gradient_start || '#2c5d48'} 0%, ${profile.banner_gradient_end || '#7a8f63'} 100%)` }
+    : { background: `linear-gradient(135deg, ${profile.banner_gradient_start || '#0c1f18'} 0%, ${profile.banner_gradient_end || '#2f7d5a'} 100%)` }
 
   const tabs = [
     { key: 'published', label: 'Опубликованные', icon: 'fa-check-circle' },

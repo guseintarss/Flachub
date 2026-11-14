@@ -14,7 +14,7 @@ const NAV_ITEMS = [
 ]
 
 const Header = () => {
-  useBurgerMenu()
+  const { closeMenu } = useBurgerMenu()
   const location = useLocation()
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
@@ -68,7 +68,7 @@ const Header = () => {
         </form>
 
         <div className="menu-overlay" id="menu-overlay"></div>
-        <BurgerMenu />
+        <BurgerMenu onClose={closeMenu} />
         <UserArea />
       </div>
     </header>

@@ -7,11 +7,11 @@
 import { createDemoState, DEMO_SEED_VERSION, DEMO_STORAGE_KEY } from './seed'
 
 const LEVELS = [
-  { name: 'Новичок', slug: 'novice', min_reputation: 0, icon: '🌱', color: '#10b981' },
-  { name: 'Любитель', slug: 'amateur', min_reputation: 100, icon: '🔥', color: '#f59e0b' },
-  { name: 'Эксперт', slug: 'expert', min_reputation: 500, icon: '🌳', color: '#2196f3' },
-  { name: 'Мастер', slug: 'master', min_reputation: 1500, icon: '⚡', color: '#8b5cf6' },
-  { name: 'Гуру', slug: 'guru', min_reputation: 5000, icon: '👑', color: '#ef4444' },
+  { name: 'Новичок', slug: 'novice', min_reputation: 0, icon: '🌱', color: '#6b8f71' },
+  { name: 'Любитель', slug: 'amateur', min_reputation: 100, icon: '🔥', color: '#a9822f' },
+  { name: 'Эксперт', slug: 'expert', min_reputation: 500, icon: '🌳', color: '#5b7480' },
+  { name: 'Мастер', slug: 'master', min_reputation: 1500, icon: '⚡', color: '#8c6a7a' },
+  { name: 'Гуру', slug: 'guru', min_reputation: 5000, icon: '👑', color: '#a9502b' },
 ]
 
 const TRANSLIT = {
@@ -433,8 +433,8 @@ function publicUser(user) {
     is_superuser: !!user.is_superuser,
     is_active: user.is_active !== false,
     date_joined: user.date_joined,
-    banner_gradient_start: user.banner_gradient_start || '#2c5d48',
-    banner_gradient_end: user.banner_gradient_end || '#7a8f63',
+    banner_gradient_start: user.banner_gradient_start || '#0c1f18',
+    banner_gradient_end: user.banner_gradient_end || '#2f7d5a',
     banner_image: user.banner_image || null,
     phone: user.show_phone && user.phone_namber ? user.phone_namber : null,
     birth_date: user.show_birth_date && user.data_birth ? user.data_birth : null,
@@ -463,8 +463,8 @@ function profileUser(user) {
     is_staff: !!user.is_staff,
     is_superuser: !!user.is_superuser,
     date_joined: user.date_joined,
-    banner_gradient_start: user.banner_gradient_start || '#2c5d48',
-    banner_gradient_end: user.banner_gradient_end || '#7a8f63',
+    banner_gradient_start: user.banner_gradient_start || '#0c1f18',
+    banner_gradient_end: user.banner_gradient_end || '#2f7d5a',
     banner_image: user.banner_image || null,
     followers_count: state.subscriptions.filter(item => item.authorId === user.id).length,
     following_count: state.subscriptions.filter(item => item.subscriberId === user.id).length,
@@ -2389,8 +2389,8 @@ async function register(init) {
     about_me: '',
     avatar: null,
     banner_image: null,
-    banner_gradient_start: '#2c5d48',
-    banner_gradient_end: '#7a8f63',
+    banner_gradient_start: '#0c1f18',
+    banner_gradient_end: '#2f7d5a',
     data_birth: '',
     phone_namber: '',
     show_email: true,

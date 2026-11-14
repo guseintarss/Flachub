@@ -4,17 +4,17 @@
    ===================================================== */
 
 :root {
-  --auth-primary: #0c6acf;
-  --auth-primary-light: #299cf5;
-  --auth-primary-dark: #0852a1;
-  --auth-bg: #f7f8fb;
-  --auth-surface: #ffffff;
-  --auth-text: #1f2937;
-  --auth-text-secondary: #6b7280;
-  --auth-border: #e5e7eb;
-  --auth-shadow: 0 10px 30px rgba(12, 106, 207, 0.15);
-  --auth-error: #ef4444;
-  --auth-success: #10b981;
+  --auth-primary: #4ecf94;
+  --auth-primary-light: #7fe0b3;
+  --auth-primary-dark: #3bbb82;
+  --auth-bg: #07080a;
+  --auth-surface: #0e1013;
+  --auth-text: #e8eaed;
+  --auth-text-secondary: #8f96a0;
+  --auth-border: #20252b;
+  --auth-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --auth-error: #e06c5f;
+  --auth-success: #79d19f;
 }
 
 .dark-mode {
@@ -47,7 +47,7 @@
 
 .auth:hover {
   border-color: var(--auth-primary);
-  box-shadow: 0 15px 40px rgba(12, 106, 207, 0.2);
+  box-shadow: 0 15px 40px rgba(78, 207, 148, 0.18);
 }
 
 /* Heading Styles */
@@ -57,7 +57,7 @@
   font-weight: 700;
   margin-bottom: 30px;
   text-align: center;
-  background: linear-gradient(135deg, #0c6acf 0%, #0852a1 100%);
+  background: linear-gradient(135deg, #7fe0b3 0%, #4ecf94 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -151,21 +151,21 @@
 }
 
 .auth .btn-primary {
-  background: linear-gradient(135deg, #0c6acf 0%, #0852a1 100%);
-  color: white;
-  box-shadow: 0 4px 15px rgba(12, 106, 207, 0.3);
+  background: linear-gradient(135deg, #4ecf94 0%, #3bbb82 100%);
+  color: var(--on-primary);
+  box-shadow: 0 4px 15px rgba(78, 207, 148, 0.24);
 }
 
 .auth .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(12, 106, 207, 0.4);
-  color: white;
+  box-shadow: 0 6px 20px rgba(78, 207, 148, 0.3);
+  color: var(--on-primary);
   text-decoration: none;
 }
 
 .auth .btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 2px 10px rgba(12, 106, 207, 0.3);
+  box-shadow: 0 2px 10px rgba(78, 207, 148, 0.24);
 }
 
 /* Error Message Styles */

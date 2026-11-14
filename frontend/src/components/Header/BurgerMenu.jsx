@@ -32,13 +32,14 @@ function CategoryList() {
   )
 }
 
-function BurgerMenu() {
+function BurgerMenu({ onClose }) {
   const { user, loading, logout } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
     await logout()
     navigate('/')
+    onClose?.()
   }
 
   return (

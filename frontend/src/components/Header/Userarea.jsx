@@ -4,13 +4,14 @@ import { useAuth } from '../../context/AuthContext'
 import { ensureCSRFToken } from '../../csrf'
 
 const UserArea = () => {
-  const { user, loading } = useAuth()
+  const { user, loading, logout } = useAuth()
   const navigate = useNavigate()
   const notifRef = useRef()
   const [notifOpen, setNotifOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const [notifications, setNotifications] = useState([])
   const [newMsgToast, setNewMsgToast] = useState(null)
+  const [loggingOut, setLoggingOut] = useState(false)
 
   const showBrowserNotifRef = useRef(null)
   const showBrowserNotif = useCallback((chatId, sender, text) => {
@@ -75,6 +76,17 @@ const UserArea = () => {
       navigate(`/chat/${newMsgToast.chat_id}/`)
     }
   }, [newMsgToast, navigate])
+
+  async function handleLogout() {
+    if (loggingOut) return
+    setLoggingOut(true)
+    try {
+      await logout()
+      navigate('/')
+    } finally {
+      setLoggingOut(false)
+    }
+  }
 
   function loadNotifications() {
     fetch('/api/mobile/notifications/')
@@ -204,6 +216,19 @@ const UserArea = () => {
 
       {!loading && !user && (
         <Link className="login-pill" to="/login/">Войти</Link>
+      )}
+
+      {user && (
+        <button
+          type="button"
+          className="user-logout-btn"
+          onClick={handleLogout}
+          disabled={loggingOut}
+          aria-label="Выйти из аккаунта"
+          title="Выйти"
+        >
+          <i className={`fas ${loggingOut ? 'fa-spinner fa-spin' : 'fa-sign-out-alt'}`} aria-hidden="true" />
+        </button>
       )}
 
       {user && (

@@ -7,7 +7,7 @@
   --review-code-surface: #111c33;
   --review-code-text: #e2e8f0;
   --review-code-muted: #7c8aa5;
-  --review-accent: #299cf5;
+  --review-accent: #e0a15f;
 }
 
 html.dark-mode {
@@ -380,9 +380,9 @@ html.dark-mode {
   padding: 8px 12px;
   font-size: 0.84rem;
   font-weight: 600;
-  color: #1e40af;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  color: var(--link);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-strong);
   border-radius: 8px;
 }
 
@@ -398,7 +398,7 @@ html.dark-mode {
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #1e40af;
+  color: var(--link);
   font-family: inherit;
   font-size: 0.78rem;
   font-weight: 600;
@@ -406,7 +406,7 @@ html.dark-mode {
 }
 
 .review-target-cancel:hover {
-  background: rgba(30, 64, 175, 0.1);
+  background: var(--primary-soft);
 }
 
 .review-comment-controls {
@@ -857,7 +857,6 @@ html.dark-mode .review-profile-count {
   padding: 16px;
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 12px;
-  background: var(--surface-soft, #f8fafc);
 }
 
 .review-offers-head {
@@ -1104,9 +1103,9 @@ html.dark-mode .review-profile-count {
   font-size: 0.78rem;
 }
 
-.github-import-status.is-success { color: #047857; }
-.github-import-status.is-error { color: #b91c1c; }
-.github-import-status.is-info { color: #1d4ed8; }
+.github-import-status.is-success { color: var(--success); }
+.github-import-status.is-error { color: var(--danger); }
+.github-import-status.is-info { color: var(--link); }
 
 .github-import-files {
   display: flex;

@@ -13,7 +13,7 @@ function ago(days = 0, hours = 0, minutes = 0) {
 }
 
 export const DEMO_STORAGE_KEY = 'flachub-demo-state'
-export const DEMO_SEED_VERSION = 3
+export const DEMO_SEED_VERSION = 4
 export { DEMO_CREDENTIALS }
 
 const users = [
@@ -27,8 +27,8 @@ const users = [
     about_me: 'Тестирую ФлакХаб и собираю обратную связь. Пишу про фронтенд, инструменты и пет-проекты.',
     avatar: null,
     banner_image: null,
-    banner_gradient_start: '#2c5d48',
-    banner_gradient_end: '#7a8f63',
+    banner_gradient_start: '#0c1f18',
+    banner_gradient_end: '#2f7d5a',
     data_birth: '1998-04-12',
     phone_namber: '79990000001',
     show_email: true,
@@ -50,8 +50,8 @@ const users = [
     about_me: 'Слежу за порядком, модерирую публикации и помогаю сообществу расти.',
     avatar: null,
     banner_image: asset('mountain.webp'),
-    banner_gradient_start: '#1e2d26',
-    banner_gradient_end: '#3f5a4a',
+    banner_gradient_start: '#0c1210',
+    banner_gradient_end: '#3e5a4b',
     data_birth: '',
     phone_namber: '',
     show_email: true,
@@ -73,8 +73,8 @@ const users = [
     about_me: 'Backend-разработчик. Django, DRF, PostgreSQL. Люблю простые решения сложных задач.',
     avatar: asset('alex.webp'),
     banner_image: asset('mountain.webp'),
-    banner_gradient_start: '#2c5d48',
-    banner_gradient_end: '#7a8f63',
+    banner_gradient_start: '#0c1f18',
+    banner_gradient_end: '#2f7d5a',
     data_birth: '1992-09-03',
     phone_namber: '',
     show_email: true,
@@ -96,8 +96,8 @@ const users = [
     about_me: 'Frontend-разработчица. React, TypeScript и доступные интерфейсы. Верю, что хороший UI незаметен.',
     avatar: asset('maria.webp'),
     banner_image: null,
-    banner_gradient_start: '#6b4a3a',
-    banner_gradient_end: '#b0836a',
+    banner_gradient_start: '#1e0f0b',
+    banner_gradient_end: '#b05a3c',
     data_birth: '1996-01-27',
     phone_namber: '',
     show_email: true,
@@ -119,8 +119,8 @@ const users = [
     about_me: 'DevOps-инженер. Docker, Linux, бесперебойная доставка изменений в прод.',
     avatar: null,
     banner_image: asset('forest.webp'),
-    banner_gradient_start: '#274c3d',
-    banner_gradient_end: '#6f8a63',
+    banner_gradient_start: '#0c1210',
+    banner_gradient_end: '#3e5a4b',
     data_birth: '',
     phone_namber: '',
     show_email: true,
@@ -142,8 +142,8 @@ const users = [
     about_me: 'Инфраструктура, CI/CD и наблюдаемость. Автоматизирую всё, что повторяется дважды.',
     avatar: null,
     banner_image: null,
-    banner_gradient_start: '#3d5560',
-    banner_gradient_end: '#7d95a0',
+    banner_gradient_start: '#101820',
+    banner_gradient_end: '#466a80',
     data_birth: '',
     phone_namber: '',
     show_email: true,
@@ -165,8 +165,8 @@ const users = [
     about_me: 'Пишу на React и TypeScript, разбираю чужой код и помогаю делать его понятнее.',
     avatar: null,
     banner_image: null,
-    banner_gradient_start: '#6d5427',
-    banner_gradient_end: '#b39a5f',
+    banner_gradient_start: '#1b150c',
+    banner_gradient_end: '#9a682f',
     data_birth: '',
     phone_namber: '',
     show_email: true,
@@ -188,8 +188,8 @@ const users = [
     about_me: 'Продуктовый дизайнер. Дизайн-системы, типографика и интерфейсы, в которых хочется остаться.',
     avatar: null,
     banner_image: null,
-    banner_gradient_start: '#544a63',
-    banner_gradient_end: '#928aa8',
+    banner_gradient_start: '#17131f',
+    banner_gradient_end: '#6a5a8a',
     data_birth: '',
     phone_namber: '',
     show_email: true,
@@ -1125,10 +1125,10 @@ const messages = [
 ]
 
 const badges = [
-  { id: 1, key: 'first-post', name: 'Первый шаг', description: 'Опубликовал первый материал', icon: '✍️', color: '#3b82f6' },
-  { id: 2, key: 'conversation', name: 'В диалоге', description: 'Начал обсуждение под публикацией', icon: '💬', color: '#10b981' },
-  { id: 3, key: 'reviewer', name: 'Ревьюер', description: 'Провёл первый разбор кода', icon: '🔍', color: '#8b5cf6' },
-  { id: 4, key: 'expert', name: 'Эксперт', description: 'Получил уровень «Эксперт»', icon: '🌳', color: '#2196f3' },
+  { id: 1, key: 'first-post', name: 'Первый шаг', description: 'Опубликовал первый материал', icon: '✍️', color: '#4ecf94' },
+  { id: 2, key: 'conversation', name: 'В диалоге', description: 'Начал обсуждение под публикацией', icon: '💬', color: '#e0a15f' },
+  { id: 3, key: 'reviewer', name: 'Ревьюер', description: 'Провёл первый разбор кода', icon: '🔍', color: '#e06c5f' },
+  { id: 4, key: 'expert', name: 'Эксперт', description: 'Получил уровень «Эксперт»', icon: '🌳', color: '#79a7d9' },
 ]
 
 const userAchievements = [

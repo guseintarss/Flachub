@@ -35,7 +35,7 @@ function ViewsChart({ daily }) {
   const max = Math.max(1, ...daily.map(day => day.views))
   return (
     <div className="dashboard-chart" role="img" aria-label="Просмотры по дням">
-      {daily.map(day => (
+      {daily.map((day, i) => (
         <div
           key={day.date}
           className="dashboard-chart-column"
@@ -45,7 +45,7 @@ function ViewsChart({ daily }) {
             <span className="dashboard-chart-bar views" style={{ height: `${Math.max(3, day.views / max * 100)}%` }} />
             <span className="dashboard-chart-bar completed" style={{ height: `${Math.max(day.completed ? 3 : 0, day.completed / max * 100)}%` }} />
           </div>
-          <span className="dashboard-chart-label">{day.label}</span>
+          {i % 3 === 1 && <span className="dashboard-chart-label">{day.label}</span>}
         </div>
       ))}
     </div>

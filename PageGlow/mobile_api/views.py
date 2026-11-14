@@ -1273,8 +1273,8 @@ def register_view(request):
     form = RegisterUserForm(request.data)
     if form.is_valid():
         user = form.save()
-        user.banner_gradient_start = '#0c6acf'
-        user.banner_gradient_end = '#764ba2'
+        user.banner_gradient_start = '#0c1f18'
+        user.banner_gradient_end = '#2f7d5a'
         user.save(update_fields=['banner_gradient_start', 'banner_gradient_end'])
         from django.contrib.auth import authenticate, login
         user = authenticate(request, username=user.username, password=form.cleaned_data.get('password1'))

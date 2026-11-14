@@ -44,8 +44,8 @@ function EditProfilePage() {
           last_name: data.last_name || '',
           email: data.email || '',
           about_me: data.bio || '',
-          banner_gradient_start: data.banner_gradient_start || '#2c5d48',
-          banner_gradient_end: data.banner_gradient_end || '#7a8f63',
+          banner_gradient_start: data.banner_gradient_start || '#0c1f18',
+          banner_gradient_end: data.banner_gradient_end || '#2f7d5a',
           data_birth: data.data_birth || '',
           phone_namber: formatPhone(data.phone_namber || ''),
           show_email: data.show_email ?? true,
@@ -216,14 +216,14 @@ function EditProfilePage() {
     : { background: `linear-gradient(135deg, ${form.banner_gradient_start} 0%, ${form.banner_gradient_end} 100%)` }
 
   const presets = [
-    { start: '#2c5d48', end: '#7a8f63' },
-    { start: '#6d5427', end: '#b39a5f' },
-    { start: '#6b4a3a', end: '#b0836a' },
-    { start: '#3d5560', end: '#7d95a0' },
-    { start: '#544a63', end: '#928aa8' },
-    { start: '#22302a', end: '#4c6355' },
-    { start: '#7a3f2f', end: '#c07a55' },
-    { start: '#1e2d26', end: '#3f5a4a' },
+    { start: '#0c1f18', end: '#2f7d5a' },
+    { start: '#1b150c', end: '#9a682f' },
+    { start: '#1a1012', end: '#8f4a44' },
+    { start: '#101820', end: '#466a80' },
+    { start: '#17131f', end: '#6a5a8a' },
+    { start: '#0c1210', end: '#3e5a4b' },
+    { start: '#1e0f0b', end: '#b05a3c' },
+    { start: '#080b0d', end: '#2d3942' },
   ]
 
   return (
@@ -252,9 +252,9 @@ function EditProfilePage() {
                 ) : (
                   <div id="avatar-preview" className="user-img-article"
                     style={{
-                      background: 'linear-gradient(135deg, #2f5d48, #7a8f63)',
+                      background: 'linear-gradient(135deg, #0c1f18, #2f7d5a)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '3rem', fontWeight: 700, color: '#fff',
+                      fontSize: '3rem', fontWeight: 700, color: '#f2f6f3',
                     }}>
                     {user?.username?.[0]?.toUpperCase() || '?'}
                   </div>

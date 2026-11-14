@@ -6,6 +6,8 @@ import './styles/bookmarks.css'
 import './styles/footer.css'
 import './styles/add-article.css'
 import './styles/review.css'
+import './styles/admin.css'
+import './styles/dashboard.css'
 import './styles/mobile.css'
 import App from './App.jsx'
 

@@ -31,12 +31,6 @@
   margin-bottom: 20px;
 }
 
-.author-info {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
 .author-avatar-link {
   text-decoration: none;
   flex-shrink: 0;

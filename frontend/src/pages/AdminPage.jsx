@@ -17,7 +17,7 @@ function BarChart({ data, label, color }) {
             <div className="admin-chart-track">
               <div className="admin-chart-bar" style={{ height: `${(d.count / max) * 100}%`, background: color }} />
             </div>
-            <span className="admin-chart-label">{d.date.slice(5)}</span>
+            {i % 2 === 0 && <span className="admin-chart-label">{d.date.slice(5)}</span>}
           </div>
         ))}
         <div className="admin-chart-zero" />
@@ -33,9 +33,9 @@ function AdminCharts({ stats }) {
         <h2><i className="fas fa-chart-bar"></i> Аналитика за 14 дней</h2>
       </div>
       <div className="admin-charts-grid">
-        <BarChart data={stats.daily_registrations} label="Регистрации" color="#3f5a66" />
-        <BarChart data={stats.daily_posts} label="Публикации" color="#2f5d48" />
-        <BarChart data={stats.daily_comments} label="Комментарии" color="#8a641f" />
+        <BarChart data={stats.daily_registrations} label="Регистрации" color="#5c7480" />
+        <BarChart data={stats.daily_posts} label="Публикации" color="#3f7f5f" />
+        <BarChart data={stats.daily_comments} label="Комментарии" color="#b08334" />
       </div>
     </div>
   )
@@ -43,12 +43,12 @@ function AdminCharts({ stats }) {
 
 function AdminStats({ stats }) {
   const cards = [
-    { label: 'Пользователей', value: stats.total_users, icon: 'fa-users', color: '#3f5a66' },
-    { label: 'Публикаций', value: stats.total_posts, icon: 'fa-file-alt', color: '#2f5d48' },
-    { label: 'Опубликовано', value: stats.published_posts, icon: 'fa-check-circle', color: '#2f5d48' },
-    { label: 'Комментариев', value: stats.total_comments, icon: 'fa-comments', color: '#8a641f' },
-    { label: 'Администраторов', value: stats.total_admins, icon: 'fa-crown', color: '#a9502b' },
-    { label: 'Модераторов', value: stats.total_moderators, icon: 'fa-shield-alt', color: '#6d5427' },
+    { label: 'Пользователей', value: stats.total_users, icon: 'fa-users', color: '#5c7480' },
+    { label: 'Публикаций', value: stats.total_posts, icon: 'fa-file-alt', color: '#3f7f5f' },
+    { label: 'Опубликовано', value: stats.published_posts, icon: 'fa-check-circle', color: '#3f7f5f' },
+    { label: 'Комментариев', value: stats.total_comments, icon: 'fa-comments', color: '#b08334' },
+    { label: 'Администраторов', value: stats.total_admins, icon: 'fa-crown', color: '#b46a4c' },
+    { label: 'Модераторов', value: stats.total_moderators, icon: 'fa-shield-alt', color: '#8a7550' },
   ]
 
   return (
