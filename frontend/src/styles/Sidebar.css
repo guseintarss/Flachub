@@ -107,10 +107,6 @@
 
 
 
-.view-all-link:hover {
-    transform: translateY(-2px);
-}
-
 .view-all-link i {
     margin-left: 8px;
     transition: transform 0.3s;
