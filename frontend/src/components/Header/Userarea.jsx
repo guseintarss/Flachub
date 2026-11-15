@@ -7,7 +7,10 @@ const UserArea = () => {
   const { user, loading, logout } = useAuth()
   const navigate = useNavigate()
   const notifRef = useRef()
+  const userRef = useRef()
+  const avatarBtnRef = useRef()
   const [notifOpen, setNotifOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const [notifications, setNotifications] = useState([])
   const [newMsgToast, setNewMsgToast] = useState(null)
@@ -82,6 +85,7 @@ const UserArea = () => {
     setLoggingOut(true)
     try {
       await logout()
+      setUserMenuOpen(false)
       navigate('/')
     } finally {
       setLoggingOut(false)
@@ -116,10 +120,38 @@ const UserArea = () => {
     }
   }, [notifOpen])
 
+  useEffect(() => {
+    if (!userMenuOpen) return
+    function handleKey(e) {
+      if (e.key === 'Escape') {
+        setUserMenuOpen(false)
+        avatarBtnRef.current?.focus()
+      }
+    }
+    function handleClick(e) {
+      if (userRef.current && !userRef.current.contains(e.target)) setUserMenuOpen(false)
+    }
+    document.addEventListener('keydown', handleKey)
+    document.addEventListener('click', handleClick)
+    return () => {
+      document.removeEventListener('keydown', handleKey)
+      document.removeEventListener('click', handleClick)
+    }
+  }, [userMenuOpen])
+
+  function toggleUserMenu() {
+    const willOpen = !userMenuOpen
+    setUserMenuOpen(willOpen)
+    if (willOpen) setNotifOpen(false)
+  }
+
   function toggleNotif() {
     const willOpen = !notifOpen
     setNotifOpen(willOpen)
-    if (willOpen) loadNotifications()
+    if (willOpen) {
+      setUserMenuOpen(false)
+      loadNotifications()
+    }
   }
 
   async function markAllRead() {
@@ -219,35 +251,72 @@ const UserArea = () => {
       )}
 
       {user && (
-        <button
-          type="button"
-          className="user-logout-btn"
-          onClick={handleLogout}
-          disabled={loggingOut}
-          aria-label="Выйти из аккаунта"
-          title="Выйти"
-        >
-          <i className={`fas ${loggingOut ? 'fa-spinner fa-spin' : 'fa-sign-out-alt'}`} aria-hidden="true" />
-        </button>
-      )}
+        <div className="user-account" ref={userRef}>
+          <button
+            type="button"
+            className="user-avatar-btn"
+            id="avatar-toggle"
+            ref={avatarBtnRef}
+            onClick={toggleUserMenu}
+            aria-expanded={userMenuOpen}
+            aria-controls="user-dropdown"
+            aria-label="Меню пользователя"
+            title="Меню пользователя"
+          >
+            {user.avatar ? (
+              <img src={user.avatar} alt={user.username} className="user-avatar" />
+            ) : (
+              <span className="user-avatar user-avatar-placeholder"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'var(--primary)', color: '#fff', fontWeight: 600, fontSize: 14,
+                  width: '100%', height: '100%', borderRadius: '10px',
+                }}>
+                {user.username?.[0]?.toUpperCase() || '?'}
+              </span>
+            )}
+          </button>
 
-      {user && (
-        <button className="user-avatar-btn" id="avatar-toggle"
-          onClick={() => navigate('/profile/')}
-          aria-label="Профиль">
-          {user.avatar ? (
-            <img src={user.avatar} alt={user.username} className="user-avatar" />
-          ) : (
-            <span className="user-avatar user-avatar-placeholder"
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'var(--primary)', color: '#fff', fontWeight: 600, fontSize: 14,
-                width: '100%', height: '100%', borderRadius: '10px',
-              }}>
-              {user.username?.[0]?.toUpperCase() || '?'}
-            </span>
+          {userMenuOpen && (
+            <nav className="user-dropdown" id="user-dropdown" aria-label="Меню пользователя">
+              <div className="user-dropdown-header">
+                <span className="user-dropdown-name">
+                  {[user.first_name, user.last_name].filter(Boolean).join(' ') || user.username}
+                </span>
+                <span className="user-dropdown-login">@{user.username}</span>
+              </div>
+
+              <Link className="user-dropdown-item" to="/profile/" onClick={() => setUserMenuOpen(false)}>
+                <i className="fas fa-user-circle" aria-hidden="true" /> Мой профиль
+              </Link>
+              <Link className="user-dropdown-item" to="/dashboard/" onClick={() => setUserMenuOpen(false)}>
+                <i className="fas fa-chart-line" aria-hidden="true" /> Дашборд автора
+              </Link>
+              <Link className="user-dropdown-item" to="/subscriptions/" onClick={() => setUserMenuOpen(false)}>
+                <i className="fas fa-pen-fancy" aria-hidden="true" /> Подписки
+              </Link>
+              <Link className="user-dropdown-item" to="/inbox/" onClick={() => setUserMenuOpen(false)}>
+                <i className="fas fa-envelope" aria-hidden="true" /> Сообщения
+              </Link>
+              {user.is_staff && (
+                <Link className="user-dropdown-item" to="/admin-panel/" onClick={() => setUserMenuOpen(false)}>
+                  <i className="fas fa-shield-alt" aria-hidden="true" /> Админка
+                </Link>
+              )}
+
+              <div className="user-dropdown-divider" role="separator" />
+              <button
+                type="button"
+                className="user-dropdown-item is-danger"
+                onClick={handleLogout}
+                disabled={loggingOut}
+              >
+                <i className={`fas ${loggingOut ? 'fa-spinner fa-spin' : 'fa-sign-out-alt'}`} aria-hidden="true" />
+                {loggingOut ? 'Выходим…' : 'Выйти'}
+              </button>
+            </nav>
           )}
-        </button>
+        </div>
       )}
     </div>
   )
