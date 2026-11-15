@@ -24,6 +24,13 @@ function csrfHeaders() {
   return token ? { 'X-CSRFToken': token } : {}
 }
 
+// Ключ сессии редактирования. Повторный POST с тем же ключом обновляет
+// черновик, а не создаёт его копию (например, после потерянного ответа).
+function createDraftKey() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
+  return `draft-${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
 function extractTitle(html) {
   const div = document.createElement('div')
   div.innerHTML = html
@@ -241,6 +248,7 @@ function AddPostPage() {
   const [draftStatus, setDraftStatus] = useState('idle')
   const dirtyRef = useRef(false)
   const draftSlugRef = useRef(null)
+  const draftKeyRef = useRef('')
   const savePromiseRef = useRef(null)
   const draftSnapshotRef = useRef('')
   const submittingRef = useRef(false)
@@ -618,6 +626,10 @@ function AddPostPage() {
     selectedTagIds.forEach(id => fd.append('tags', id))
 
     const targetSlug = isEditing ? slug : draftSlugRef.current
+    if (!targetSlug) {
+      if (!draftKeyRef.current) draftKeyRef.current = createDraftKey()
+      fd.append('draft_key', draftKeyRef.current)
+    }
     const promise = (async () => {
       setDraftStatus('saving')
       try {
@@ -898,6 +910,10 @@ function AddPostPage() {
       if (photoFile) fd.append('photo', photoFile)
 
       const targetSlug = isEditing ? slug : draftSlugRef.current
+      if (!targetSlug) {
+        if (!draftKeyRef.current) draftKeyRef.current = createDraftKey()
+        fd.append('draft_key', draftKeyRef.current)
+      }
       const url = targetSlug ? `/api/mobile/posts/${targetSlug}/` : '/api/mobile/posts/'
       const method = targetSlug ? 'PATCH' : 'POST'
       const res = await fetch(url, {
@@ -919,6 +935,18 @@ function AddPostPage() {
         .then(r => r.ok ? r.json() : null)
         .then(u => { if (u) setUser(u) })
         .catch(() => {})
+      // После ручного сохранения сессия завершена: поздние автосохранения
+      // не должны ни создавать копию, ни менять уже сохранённый пост.
+      draftSlugRef.current = data.slug || targetSlug
+      dirtyRef.current = false
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+        debounceRef.current = null
+      }
+      if (draftTimerRef.current) {
+        clearInterval(draftTimerRef.current)
+        draftTimerRef.current = null
+      }
       navigate(`/post/${data.slug || slug}/`)
     } catch (err) {
       setError(err.message)

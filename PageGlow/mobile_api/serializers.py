@@ -527,12 +527,17 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
         required=False, allow_null=True, min_value=0, max_value=10_000_000,
         write_only=True,
     )
+    # Ключ клиентской сессии редактирования: делает повторное создание
+    # черновика идемпотентным.
+    draft_key = serializers.CharField(
+        required=False, allow_blank=True, max_length=64, write_only=True,
+    )
 
     class Meta:
         model = Post
         fields = ('id', 'slug', 'title', 'content', 'photo', 'post_type', 'is_published',
                   'cat', 'tags', 'code_snippet', 'code_language', 'review_focus',
-                  'review_deadline', 'review_budget')
+                  'review_deadline', 'review_budget', 'draft_key')
         read_only_fields = ('slug',)
         extra_kwargs = {
             'cat': {'required': False, 'allow_null': True},
@@ -594,7 +599,22 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         deadline = validated_data.pop('review_deadline', _MISSING)
         budget = validated_data.pop('review_budget', _MISSING)
-        post = super().create(validated_data)
+        draft_key = validated_data.get('draft_key') or ''
+        author = validated_data.get('author')
+        existing = None
+        if draft_key and author:
+            existing = Post.objects.filter(author=author, draft_key=draft_key).first()
+
+        if existing is None:
+            post = super().create(validated_data)
+        else:
+            # Повторный POST той же сессии (потерянный ответ, ретрай)
+            # обновляет уже созданный черновик. Опубликованный пост позднее
+            # автосохранение обратно в черновик не переводит.
+            if existing.is_published:
+                validated_data.pop('is_published', None)
+            post = super().update(existing, validated_data)
+
         self._apply_review_request(post, deadline, budget)
         return post
 

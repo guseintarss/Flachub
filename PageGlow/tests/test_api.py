@@ -69,6 +69,82 @@ class TestPostPublishing:
         assert Post.objects.filter(id=post_id).count() == 1
         assert Post.objects.count() == 1
 
+    def test_same_draft_key_updates_existing_draft(self, api):
+        payload = post_payload(
+            is_published=False,
+            draft_key='editor-session-1',
+            content='<p>Первый вариант</p>',
+        )
+
+        first = api.post('/api/mobile/posts/', payload, format='json')
+        # Повторный POST после потерянного ответа не должен создавать копию.
+        second = api.post(
+            '/api/mobile/posts/',
+            {**payload, 'content': '<p>Обновлённый вариант</p>'},
+            format='json',
+        )
+
+        assert first.status_code == 201
+        assert second.status_code == 201
+        assert second.data['id'] == first.data['id']
+        assert second.data['slug'] == first.data['slug']
+        assert Post.objects.filter(draft_key='editor-session-1').count() == 1
+        assert Post.objects.get(pk=first.data['id']).content == '<p>Обновлённый вариант</p>'
+
+    def test_late_autosave_does_not_unpublish_post(self, api):
+        payload = post_payload(draft_key='editor-session-2')
+
+        published = api.post('/api/mobile/posts/', payload, format='json')
+        late = api.post(
+            '/api/mobile/posts/',
+            {**payload, 'is_published': False, 'content': '<p>Позднее автосохранение</p>'},
+            format='json',
+        )
+
+        assert published.status_code == 201
+        assert late.status_code == 201
+        assert late.data['id'] == published.data['id']
+        assert late.data['is_published'] is True
+        post = Post.objects.get(pk=published.data['id'])
+        assert post.is_published is True
+        assert post.content == '<p>Позднее автосохранение</p>'
+
+    def test_different_draft_keys_create_separate_drafts(self, api):
+        first = api.post(
+            '/api/mobile/posts/',
+            post_payload(is_published=False, draft_key='session-a'),
+            format='json',
+        )
+        second = api.post(
+            '/api/mobile/posts/',
+            post_payload(is_published=False, draft_key='session-b'),
+            format='json',
+        )
+
+        assert first.data['slug'] != second.data['slug']
+        assert Post.objects.count() == 2
+
+    def test_draft_key_is_scoped_to_author(self, api, another_user):
+        first = api.post(
+            '/api/mobile/posts/',
+            post_payload(is_published=False, draft_key='shared-key'),
+            format='json',
+        )
+
+        other_client = APIClient()
+        other_client.force_authenticate(user=another_user)
+        second = other_client.post(
+            '/api/mobile/posts/',
+            post_payload(is_published=False, draft_key='shared-key'),
+            format='json',
+        )
+
+        assert first.status_code == 201
+        assert second.status_code == 201
+        assert second.data['id'] != first.data['id']
+        assert Post.objects.filter(draft_key='shared-key').count() == 2
+        assert Post.objects.get(pk=second.data['id']).author == another_user
+
     def test_partial_update_keeps_published_status(self, api, post):
         response = api.patch(
             f'/api/mobile/posts/{post.slug}/',

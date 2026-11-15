@@ -43,6 +43,9 @@ class Post(ModelMeta, models.Model):
 
     title = models.CharField(max_length=255, verbose_name='Заголовок')
     slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name='slug')
+    # Ключ клиентской сессии редактирования. По нему повторное автосохранение
+    # обновляет уже созданный черновик, а не создаёт его копию.
+    draft_key = models.CharField(max_length=64, blank=True, default='', verbose_name='Ключ черновика')
     photo = models.ImageField(upload_to='photos/%Y/%m/%d/', default=None, blank=True, null=True, verbose_name='Фото')
     content = CKEditor5Field(blank=True, config_name='default', verbose_name='Контент')
     post_type = models.CharField(max_length=20, choices=PostType.choices, default=PostType.POST, verbose_name='Тип поста')
@@ -197,6 +200,15 @@ class Post(ModelMeta, models.Model):
             models.Index(fields=['author']),
             models.Index(fields=['cat']),
             models.Index(fields=['post_type', 'review_status']),
+        ]
+        constraints = [
+            # Ключ черновика уникален в рамках автора: повторный POST после
+            # потерянного ответа не должен создавать вторую копию.
+            models.UniqueConstraint(
+                fields=['author', 'draft_key'],
+                condition=~models.Q(draft_key=''),
+                name='unique_author_draft_key',
+            ),
         ]
 
     def get_absolute_url(self):
