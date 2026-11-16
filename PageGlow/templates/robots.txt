@@ -1,5 +1,5 @@
-# robots.txt для ФлакХаб (PageGlow)
-# Платформа для IT-специалистов: https://pageglow.ru
+# robots.txt для ФлакХаб
+# Платформа для IT-специалистов: https://flachub.ru
 # Последнее обновление: 2025
 
 User-agent: *
@@ -50,10 +50,10 @@ Disallow: /private/
 Disallow: /settings/
 
 # Карта сайта
-Sitemap: https://pageglow.ru/sitemap.xml
+Sitemap: https://flachub.ru/sitemap.xml
 
 # Хост (для Яндекса)
-Host: pageglow.ru
+Host: flachub.ru
 
 # ===== Специфичные правила для поисковиков =====
 

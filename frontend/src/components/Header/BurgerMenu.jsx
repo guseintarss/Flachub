@@ -32,13 +32,14 @@ function CategoryList() {
   )
 }
 
-function BurgerMenu() {
+function BurgerMenu({ onClose }) {
   const { user, loading, logout } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
     await logout()
     navigate('/')
+    onClose?.()
   }
 
   return (
@@ -50,6 +51,9 @@ function BurgerMenu() {
           </div>
           <Link to="/" className="menu_link">
             <i className="fas fa-home"></i> Главная
+          </Link>
+          <Link to="/reviews/" className="menu_link">
+            <i className="fas fa-code-branch"></i> Разборы кода
           </Link>
         </li>
 
@@ -71,6 +75,9 @@ function BurgerMenu() {
               </div>
               <Link to="/profile/" className="menu_link">
                 <i className="fas fa-user-circle"></i> Мой профиль
+              </Link>
+              <Link to="/dashboard/" className="menu_link">
+                <i className="fas fa-chart-line"></i> Дашборд автора
               </Link>
               <Link to="/subscriptions/" className="menu_link">
                 <i className="fas fa-pen-fancy"></i> Подписки

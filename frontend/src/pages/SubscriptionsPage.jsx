@@ -42,6 +42,7 @@ function SubscriptionsPage() {
   const [totalPages, setTotalPages] = useState(1)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     fetch(`/api/mobile/subscriptions/feed/?page=${page}`)
       .then(r => {

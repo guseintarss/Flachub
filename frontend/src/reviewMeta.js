@@ -4,6 +4,14 @@ export const REVIEW_STATUS_LABELS = {
   open: 'Открыт',
   in_review: 'В работе',
   completed: 'Завершён',
+  cancelled: 'Отменён',
+}
+
+export const OFFER_STATUS_LABELS = {
+  pending: 'Ожидает выбора',
+  selected: 'Выбран',
+  declined: 'Отклонён',
+  withdrawn: 'Отозван',
 }
 
 export const SEVERITY_LABELS = {
@@ -58,4 +66,26 @@ export function formatCommentLine(lineStart, lineEnd) {
     return `Строки ${lineStart}–${lineEnd}`
   }
   return `Строка ${lineStart}`
+}
+
+export function formatMoney(value) {
+  if (value === null || value === undefined || value === '') return 'По договорённости'
+  const number = Number(value)
+  if (!Number.isFinite(number)) return 'По договорённости'
+  return `${number.toLocaleString('ru-RU')} ₽`
+}
+
+export function formatDeadline(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
+}
+
+export function toDatetimeLocal(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const pad = number => String(number).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }

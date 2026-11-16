@@ -1,1 +1,33 @@
-{"images":[{"src":"/static/images/apple-touch-icon.png","sizes":"180x180","type":"image/png"}],"name":"PageGlow"}
+{
+  "name": "ФлакХаб — IT-сообщество",
+  "short_name": "ФлакХаб",
+  "description": "Статьи, разборы кода и обсуждения для IT-специалистов.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f2f2ec",
+  "theme_color": "#1f5c45",
+  "icons": [
+    {
+      "src": "/static/images/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/images/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/images/maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

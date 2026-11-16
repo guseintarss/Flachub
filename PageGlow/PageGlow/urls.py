@@ -4,7 +4,7 @@ from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from django.views.static import serve as static_serve
 from PageGlow import settings
-from main.views import page_not_found, CKEditorUploadView, server_error, bad_gateway, service_unavailable, permission_denied
+from main.views import page_not_found, CKEditorUploadView, server_error, bad_gateway, service_unavailable, permission_denied, post_ssr
 from .sitemaps import (
     PostSitemap, StaticViewSitemap, CategorySitemap,
     TagSitemap, UserSitemap
@@ -28,6 +28,8 @@ sitemaps = {
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # SSR статьи должен идти до SPA catch-all, но не мешает API.
+    path('post/<slug:slug>/', post_ssr, name='post-ssr'),
     path('', include("main.urls")),
     path('users/', include("users.urls", namespace='users')),
     path('api/mobile/', include('mobile_api.urls')),
@@ -51,12 +53,22 @@ urlpatterns.extend([
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain"), name="robots"),
 ])
 
+# Пользовательские файлы и CKEditor отдаём до статики фронтенда, иначе
+# catch-all сборки перехватит /media/... и вернёт 404.
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static('/ckeditor5/', document_root=settings.BASE_DIR / 'ckeditor5')
+
 frontend_build = settings.FRONTEND_BUILD_DIR
 if frontend_build.exists():
     urlpatterns += [
         re_path(r'^assets/(?P<path>.*)$', static_serve, {'document_root': frontend_build / 'assets'}),
-        # Файлы из корня сборки (favicon, manifest и т.п.)
-        re_path(r'^(?P<path>[^/]+\.[^/]+)$', static_serve, {'document_root': frontend_build}),
+        # Файлы из сборки: корневые и вложенные (icons/, demo/ и т.п.).
+        re_path(
+            r'^(?!media/|static/|ckeditor5/)(?P<path>.+\.[^/]+)$',
+            static_serve,
+            {'document_root': frontend_build},
+        ),
     ]
 
 # SPA: все клиентские маршруты, кроме API, админки и служебных путей.
@@ -70,10 +82,6 @@ urlpatterns += [
         name='frontend',
     ),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static('/ckeditor5/', document_root=settings.BASE_DIR / 'ckeditor5')
 
 handler404 = page_not_found
 handler500 = server_error

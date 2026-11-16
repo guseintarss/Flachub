@@ -134,3 +134,78 @@ export function markChatRead(chatId) {
     method: 'POST',
   })
 }
+
+export function trackRead(slug, payload = {}) {
+  const body = JSON.stringify({
+    referrer: document.referrer || '',
+    ...payload,
+  })
+  const headers = { 'Content-Type': 'application/json' }
+  const csrf = getCSRFToken()
+  if (csrf) headers['X-CSRFToken'] = csrf
+  return fetch(`${BASE}/posts/${slug}/read/`, {
+    method: 'POST',
+    headers,
+    credentials: 'same-origin',
+    keepalive: true,
+    body,
+  }).catch(() => null)
+}
+
+export function fetchAuthorDashboard(days = 30) {
+  return request(`${BASE}/author/dashboard/?days=${days}`)
+}
+
+export function importFromHabr(url) {
+  return request(`${BASE}/import/habr/`, {
+    method: 'POST',
+    body: JSON.stringify({ url }),
+  })
+}
+
+export function importFromGithub(url) {
+  return request(`${BASE}/import/github/`, {
+    method: 'POST',
+    body: JSON.stringify({ url }),
+  })
+}
+
+export function fetchReviewRequests(params = {}) {
+  const query = new URLSearchParams()
+  if (params.status) query.set('status', params.status)
+  if (params.mine) query.set('mine', '1')
+  if (params.reviewer) query.set('reviewer', params.reviewer)
+  if (params.page) query.set('page', params.page)
+  const suffix = query.toString() ? `?${query}` : ''
+  return request(`${BASE}/review-requests/${suffix}`)
+}
+
+export function fetchReviewSpotlight() {
+  return request(`${BASE}/review-spotlight/`)
+}
+
+export function createReviewOffer(requestId, payload) {
+  return request(`${BASE}/review-requests/${requestId}/offer/`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function selectReviewOffer(requestId, offerId) {
+  return request(`${BASE}/review-requests/${requestId}/select_offer/`, {
+    method: 'POST',
+    body: JSON.stringify({ offer_id: offerId }),
+  })
+}
+
+export function withdrawReviewOffer(requestId) {
+  return request(`${BASE}/review-requests/${requestId}/withdraw_offer/`, {
+    method: 'POST',
+  })
+}
+
+export function cancelReviewRequest(requestId) {
+  return request(`${BASE}/review-requests/${requestId}/cancel/`, {
+    method: 'POST',
+  })
+}

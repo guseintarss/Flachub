@@ -37,81 +37,58 @@ function RegisterPage() {
     setLoading(false)
   }
 
-  const inputStyle = {
-    width: '100%',
-    padding: '12px 14px',
-    border: '2px solid var(--border)',
-    borderRadius: 10,
-    fontSize: '1rem',
-    background: 'var(--bg)',
-    color: 'var(--text)',
-  }
-
   return (
-    <main className="page">
+    <main className="page auth-page">
       <div className="pg-container">
-        <div className="con">
-          <div style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            boxShadow: 'var(--shadow)',
-            padding: 40,
-            maxWidth: 400,
-            margin: '0 auto',
-          }}>
-            <h2 style={{ margin: '0 0 24px', textAlign: 'center', fontSize: '1.5rem' }}>Регистрация</h2>
+        <div className="auth-card auth-card--wide">
+          <header className="auth-card-head">
+            <span className="auth-kicker">ФлакХаб · сообщество</span>
+            <h1 className="auth-title">Создать аккаунт</h1>
+            <p className="auth-subtitle">Присоединяйтесь к практикам, которые делятся опытом.</p>
+          </header>
 
-            {error && (
-              <div style={{
-                padding: '12px 16px',
-                background: '#fee2e2',
-                color: '#dc2626',
-                borderRadius: 8,
-                marginBottom: 16,
-                fontSize: '0.9rem',
-              }}>
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: 14 }}>
-                <label className="form-label">Логин</label>
-                <input type="text" value={form.username} onChange={set('username')} required style={inputStyle} />
-              </div>
-              <div style={{ marginBottom: 14 }}>
-                <label className="form-label">E-mail</label>
-                <input type="email" value={form.email} onChange={set('email')} required style={inputStyle} />
-              </div>
-              <div style={{ marginBottom: 14 }}>
-                <label className="form-label">Имя</label>
-                <input type="text" value={form.first_name} onChange={set('first_name')} style={inputStyle} />
-              </div>
-              <div style={{ marginBottom: 14 }}>
-                <label className="form-label">Фамилия</label>
-                <input type="text" value={form.last_name} onChange={set('last_name')} style={inputStyle} />
-              </div>
-              <div style={{ marginBottom: 14 }}>
-                <label className="form-label">Пароль</label>
-                <input type="password" value={form.password1} onChange={set('password1')} required style={inputStyle} />
-              </div>
-              <div style={{ marginBottom: 20 }}>
-                <label className="form-label">Повторите пароль</label>
-                <input type="password" value={form.password2} onChange={set('password2')} required style={inputStyle} />
-              </div>
-
-              <button type="submit" className="btn btn-primary" disabled={loading}
-                style={{ width: '100%', justifyContent: 'center', padding: '12px 20px' }}>
-                {loading ? 'Регистрация...' : 'Зарегистрироваться'}
-              </button>
-            </form>
-
-            <div style={{ textAlign: 'center', marginTop: 20, fontSize: '0.9rem', color: 'var(--muted)' }}>
-              Уже есть аккаунт?{' '}
-              <Link to="/login/" style={{ color: 'var(--primary)' }}>Войти</Link>
+          {error && (
+            <div className="form-message is-error" role="alert">
+              {error}
             </div>
-          </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-field">
+              <label className="form-label" htmlFor="register-username">Логин</label>
+              <input id="register-username" type="text" className="form-control" value={form.username} onChange={set('username')} autoComplete="username" required />
+            </div>
+            <div className="form-field">
+              <label className="form-label" htmlFor="register-email">E-mail</label>
+              <input id="register-email" type="email" className="form-control" value={form.email} onChange={set('email')} autoComplete="email" required />
+            </div>
+            <div className="form-row">
+              <div className="form-field">
+                <label className="form-label" htmlFor="register-first-name">Имя</label>
+                <input id="register-first-name" type="text" className="form-control" value={form.first_name} onChange={set('first_name')} autoComplete="given-name" />
+              </div>
+              <div className="form-field">
+                <label className="form-label" htmlFor="register-last-name">Фамилия</label>
+                <input id="register-last-name" type="text" className="form-control" value={form.last_name} onChange={set('last_name')} autoComplete="family-name" />
+              </div>
+            </div>
+            <div className="form-field">
+              <label className="form-label" htmlFor="register-password1">Пароль</label>
+              <input id="register-password1" type="password" className="form-control" value={form.password1} onChange={set('password1')} autoComplete="new-password" required />
+            </div>
+            <div className="form-field">
+              <label className="form-label" htmlFor="register-password2">Повторите пароль</label>
+              <input id="register-password2" type="password" className="form-control" value={form.password2} onChange={set('password2')} autoComplete="new-password" required />
+            </div>
+
+            <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>
+              {loading ? 'Регистрация…' : 'Зарегистрироваться'}
+            </button>
+          </form>
+
+          <p className="auth-footer">
+            Уже есть аккаунт? <Link to="/login/">Войти</Link>
+          </p>
         </div>
       </div>
     </main>

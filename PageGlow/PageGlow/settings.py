@@ -40,6 +40,9 @@ for directory in ['logs', 'cache', 'media']:
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
 
+# Необязательный токен GitHub повышает лимит API при импорте кода.
+GITHUB_TOKEN = config('GITHUB_TOKEN', default='')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
 
@@ -600,7 +603,7 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 META_SITE_PROTOCOL = 'https' if not DEBUG else 'http'
-META_SITE_DOMAIN = config('META_SITE_DOMAIN', default='flakhub.ru')
+META_SITE_DOMAIN = config('META_SITE_DOMAIN', default='flachub.ru')
 META_SITE_TYPE = 'website'
 META_SITE_NAME = 'ФлакХаб'
 META_INCLUDE_KEYWORDS = ['статьи', 'информация', 'рекомендации', 'руководства']

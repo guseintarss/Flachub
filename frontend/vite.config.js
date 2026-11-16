@@ -42,6 +42,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'build',
+    manifest: true,
   },
   server: {
     port: 5173,
@@ -57,7 +58,6 @@ export default defineConfig({
       '/edit': backendProxy(),
       '/upload': backendProxy(),
       '/ckeditor5': backendProxy(),
-      '/dashboard': backendProxy(),
       '/app': backendProxy(),
     },
   },

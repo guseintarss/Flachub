@@ -3,7 +3,7 @@
 
 <!-- ===== SEO Meta Tags ===== -->
 <!-- Primary Meta Tags -->
-<meta name="title" content="{{ meta_title|default:title|default:'ФлакХаб — Платформа для IT-специалистов: статьи, обсуждения, знания' }}" />
+<meta name="title" content="{% firstof meta_title title 'ФлакХаб — Платформа для IT-специалистов: статьи, обсуждения, знания' %}" />
 <meta name="description" content="{{ meta_description|default:'ФлакХаб — платформа для IT-специалистов и разработчиков. Делитесь знаниями, читайте статьи по программированию, участвуйте в обсуждениях, находите возможности для роста и развивайтесь вместе с нами.'}}" />
 <meta name="keywords" content="{{ meta_keywords|default:'IT, программирование, разработка, технологии, статьи, блог, разработчик, Python, JavaScript, Django, веб-разработка, DevOps, базы данных, алгоритмы, карьера в IT'}}" />
 <meta name="author" content="{{ meta_author|default:'ФлакХаб' }}" />
@@ -24,12 +24,12 @@
 <!-- ===== Open Graph / Facebook ===== -->
 <meta property="og:type" content="{{ meta_og_type|default:'website' }}" />
 <meta property="og:url" content="{{ request.build_absolute_uri|default:request.scheme }}://{{ request.get_host }}{{ request.path }}" />
-<meta property="og:title" content="{{ meta_title|default:title|default:'ФлакХаб — Платформа для IT-специалистов' }}" />
+<meta property="og:title" content="{% firstof meta_title title 'ФлакХаб — Платформа для IT-специалистов' %}" />
 <meta property="og:description" content="{{ meta_description|default:'ФлакХаб — платформа для IT-специалистов и разработчиков. Делитесь знаниями, читайте статьи, участвуйте в обсуждениях.'}}" />
 <meta property="og:image" content="{{ meta_image|default:request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="{{ meta_title|default:title|default:'ФлакХаб' }}" />
+<meta property="og:image:alt" content="{% firstof meta_title title 'ФлакХаб' %}" />
 <meta property="og:locale" content="ru_RU" />
 <meta property="og:site_name" content="ФлакХаб" />
 
@@ -49,11 +49,11 @@
 <!-- ===== Twitter Card ===== -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:url" content="{{ request.build_absolute_uri|default:request.scheme }}://{{ request.get_host }}{{ request.path }}" />
-<meta name="twitter:title" content="{{ meta_title|default:title|default:'ФлакХаб — Платформа для IT-специалистов' }}" />
+<meta name="twitter:title" content="{% firstof meta_title title 'ФлакХаб — Платформа для IT-специалистов' %}" />
 <meta name="twitter:description" content="{{ meta_description|default:'ФлакХаб — платформа для IT-специалистов и разработчиков. Статьи, обсуждения, знания.'}}" />
 <meta name="twitter:image" content="{{ meta_image|default:request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}" />
-<meta name="twitter:creator" content="@flakhub" />
-<meta name="twitter:site" content="@flakhub" />
+<meta name="twitter:creator" content="@flachub" />
+<meta name="twitter:site" content="@flachub" />
 
 <!-- ===== Yandex Verification ===== -->
 <!-- <meta name="yandex-verification" content="YOUR_YANDEX_VERIFICATION_CODE" /> -->
@@ -68,7 +68,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}" />
 <link rel="manifest" href="{% static 'images/site.webmanifest' %}" />
 <meta name="apple-mobile-web-app-title" content="ФлакХаб" />
-<meta name="theme-color" content="#1c3e7e" />
+<meta name="theme-color" content="#1f5c45" />
 
 <!-- ===== Schema.org JSON-LD ===== -->
 <script type="application/ld+json">
@@ -76,7 +76,7 @@
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "ФлакХаб",
-  "alternateName": ["PageGlow", "FlakHub"],
+  "alternateName": ["Flachub", "ФлакХаб"],
   "url": "{{ request.scheme }}://{{ request.get_host }}",
   "description": "ФлакХаб — платформа для IT-специалистов и разработчиков. Делитесь знаниями, читайте статьи по программированию, участвуйте в обсуждениях, находите возможности для роста.",
   "inLanguage": "ru",
@@ -97,9 +97,9 @@
       "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/favicon-96x96.png' %}"
     },
     "sameAs": [
-      "https://github.com/guseintarss/FlakHub",
-      "https://t.me/flakhub",
-      "https://vk.com/flakhub"
+      "https://github.com/guseintarss/Flachub",
+      "https://t.me/+2-lThKE3m5c5YmQ6",
+      "https://vk.com/club237403434"
     ]
   }
 }

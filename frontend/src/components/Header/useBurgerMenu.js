@@ -1,6 +1,11 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 export function useBurgerMenu() {
+  const closeMenu = useCallback(() => {
+    document.querySelector('.site-header')?.classList.remove('open')
+    document.body.style.overflow = ''
+  }, [])
+
   useEffect(() => {
     const burger = document.getElementById('burger')
     const siteHeader = document.querySelector('.site-header')
@@ -12,11 +17,6 @@ export function useBurgerMenu() {
       overlay.id = 'menu-overlay'
       overlay.className = 'menu-overlay'
       siteHeader?.insertBefore(overlay, siteHeader.firstChild)
-    }
-
-    function closeMenu() {
-      siteHeader?.classList.remove('open')
-      document.body.style.overflow = ''
     }
 
     function openMenu() {
@@ -49,27 +49,19 @@ export function useBurgerMenu() {
       closeMenu()
     }
 
-    function onNavClick(e) {
-      e.stopPropagation()
-    }
-
     burger?.addEventListener('click', onBurgerClick)
     overlay?.addEventListener('click', onOverlayClick)
     document.addEventListener('keydown', onKeyDown)
-    if (topNav) {
-      topNav.querySelectorAll('a').forEach(link => link.addEventListener('click', onLinkClick))
-      topNav.addEventListener('click', onNavClick)
-    }
+    topNav?.querySelectorAll('a').forEach(link => link.addEventListener('click', onLinkClick))
 
     return () => {
       burger?.removeEventListener('click', onBurgerClick)
       overlay?.removeEventListener('click', onOverlayClick)
       document.removeEventListener('keydown', onKeyDown)
-      if (topNav) {
-        topNav.querySelectorAll('a').forEach(link => link.removeEventListener('click', onLinkClick))
-        topNav.removeEventListener('click', onNavClick)
-      }
-      document.body.style.overflow = ''
+      topNav?.querySelectorAll('a').forEach(link => link.removeEventListener('click', onLinkClick))
+      closeMenu()
     }
-  }, [])
+  }, [closeMenu])
+
+  return { closeMenu }
 }

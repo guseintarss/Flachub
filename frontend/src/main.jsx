@@ -6,8 +6,9 @@ import './styles/bookmarks.css'
 import './styles/footer.css'
 import './styles/add-article.css'
 import './styles/review.css'
+import './styles/admin.css'
+import './styles/dashboard.css'
 import './styles/mobile.css'
-import 'ckeditor5/ckeditor5.css'
 import App from './App.jsx'
 
 async function bootstrap() {
@@ -16,6 +17,10 @@ async function bootstrap() {
   if (import.meta.env.VITE_DEMO === 'true') {
     const { installDemo } = await import('./demo/installDemo')
     installDemo()
+  } else if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js').catch(() => {})
+    })
   }
 
   createRoot(document.getElementById('root')).render(

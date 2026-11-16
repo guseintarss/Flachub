@@ -1,17 +1,61 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import hljs from 'highlight.js/lib/common'
 import {
   fetchPost, toggleLike, toggleFavorite,
   toggleSubscribe, addComment, deleteComment, toggleCommentLike,
   claimReview, releaseReview, acceptReviewComment, resolveReviewComment,
+  createReviewOffer, selectReviewOffer, withdrawReviewOffer, cancelReviewRequest,
+  trackRead,
 } from '../api'
 import {
   SEVERITY_OPTIONS, severityLabel, formatCommentLine,
   reviewStatusKey, reviewStatusLabel,
+  OFFER_STATUS_LABELS, formatMoney, formatDeadline,
 } from '../reviewMeta'
 import '../styles/PostDetail.css'
+import '../styles/reading.css'
 import Sidebar from '../components/Sidebar/Sidebar'
 import { PostDetailSkeleton } from '../components/Skeleton'
+import ArticleToc from '../components/article/ArticleToc'
+import ReadingSettings from '../components/article/ReadingSettings'
+import { loadReadingSettings } from '../components/article/readingSettings'
+
+function readInitialPost(slug) {
+  const node = document.getElementById('initial-post-data')
+  if (!node) return null
+  try {
+    const data = JSON.parse(node.textContent || 'null')
+    return data && data.slug === slug ? data : null
+  } catch {
+    return null
+  }
+}
+
+function normalizeLanguage(value) {
+  const language = String(value || '').trim().toLowerCase()
+  if (!language) return ''
+  const aliases = {
+    js: 'javascript', jsx: 'javascript', ts: 'typescript', tsx: 'typescript',
+    'c++': 'cpp', cpp: 'cpp', 'c#': 'csharp', csharp: 'csharp',
+    py: 'python', python3: 'python', sh: 'bash', shell: 'bash',
+    html: 'xml', vue: 'xml', react: 'javascript', node: 'javascript',
+    '1c': '1c', postgres: 'sql', postgresql: 'sql', mysql: 'sql',
+  }
+  return aliases[language] || language
+}
+
+function highlightCodeLine(line, language) {
+  const normalized = normalizeLanguage(language)
+  try {
+    if (normalized && hljs.getLanguage(normalized)) {
+      return hljs.highlight(line || ' ', { language: normalized, ignoreIllegals: true }).value
+    }
+    return hljs.highlightAuto(line || ' ').value
+  } catch {
+    return null
+  }
+}
 
 const postTypeLabel = {
   article: 'Статья', news: 'Новость', idea: 'Идея', post: 'Пост', review: 'Разбор',
@@ -47,7 +91,7 @@ function ReadingProgress() {
   return <div className="reading-progress-bar" style={{ width: `${progress}%` }} />
 }
 
-function ShareMenu({ slug }) {
+function ShareMenu() {
   const [open, setOpen] = useState(false)
   const ref = useRef()
   const url = window.location.href
@@ -119,7 +163,13 @@ function getAuthorName(comment) {
 
 function ReviewStatusBadge({ status }) {
   const key = reviewStatusKey(status)
-  const icon = key === 'completed' ? 'fa-check-circle' : key === 'in_review' ? 'fa-hourglass-half' : 'fa-circle'
+  const icon = key === 'completed'
+    ? 'fa-check-circle'
+    : key === 'in_review'
+      ? 'fa-hourglass-half'
+      : key === 'cancelled'
+        ? 'fa-ban'
+        : 'fa-circle'
   return (
     <span className={`review-status-badge review-status-${key}`}>
       <i className={`fas ${icon}`} aria-hidden="true" /> {reviewStatusLabel(status)}
@@ -127,47 +177,312 @@ function ReviewStatusBadge({ status }) {
   )
 }
 
-function ReviewCode({ code, selectedLine, onSelectLine }) {
+function ReviewCode({ code, language, selectedLine, onSelectLine }) {
   const normalized = String(code || '').replace(/\r\n?/g, '\n')
-  const lines = normalized.split('\n')
-  // Python-бэкенд считает строки через splitlines(): финальный перевод строки
-  // не создаёт новую строку, поэтому не показываем пустую строку в конце.
-  if (lines.length > 1 && lines[lines.length - 1] === '') lines.pop()
+  const [collapsed, setCollapsed] = useState(false)
+  const [copyState, setCopyState] = useState('idle')
+  const lines = useMemo(() => {
+    const next = normalized.split('\n')
+    // Python-бэкенд считает строки через splitlines(): финальный перевод строки
+    // не создаёт новую строку, поэтому не показываем пустую строку в конце.
+    if (next.length > 1 && next[next.length - 1] === '') next.pop()
+    return next
+  }, [normalized])
+
+  const highlighted = useMemo(
+    () => lines.map(line => highlightCodeLine(line, language)),
+    [lines, language],
+  )
+
+  async function copyCode() {
+    try {
+      await navigator.clipboard.writeText(normalized)
+      setCopyState('copied')
+    } catch {
+      setCopyState('error')
+    }
+    window.setTimeout(() => setCopyState('idle'), 2000)
+  }
 
   if (!normalized.trim()) {
     return <p className="review-code-empty">Код для разбора не указан.</p>
   }
 
   return (
-    <div className="review-code" aria-label="Код для разбора">
-      {lines.map((line, index) => {
-        const lineNumber = index + 1
-        const isSelected = selectedLine === lineNumber
-        return (
-          <div
-            key={lineNumber}
-            className={`review-code-line${isSelected ? ' is-selected' : ''}`}
-            onClick={() => onSelectLine(lineNumber)}
-          >
-            <button
-              type="button"
-              className="review-code-add"
-              title={`Оставить замечание к строке ${lineNumber}`}
-              aria-label={`Оставить замечание к строке ${lineNumber}`}
-              onClick={e => { e.stopPropagation(); onSelectLine(lineNumber) }}
-            >
-              <i className="fas fa-plus" aria-hidden="true" />
+    <div className="review-code-block">
+      <div className="review-code-toolbar">
+        <span className="review-code-caption">
+          <i className="fas fa-code" aria-hidden="true" />{' '}
+          {language || 'Код'} · {lines.length} {lines.length === 1 ? 'строка' : 'строк'}
+        </span>
+        <div className="review-code-tools">
+          <button type="button" className="review-code-tool" onClick={copyCode}>
+            <i className={`fas ${copyState === 'copied' ? 'fa-check' : copyState === 'error' ? 'fa-exclamation' : 'fa-copy'}`} aria-hidden="true" />{' '}
+            {copyState === 'copied' ? 'Скопировано' : copyState === 'error' ? 'Не вышло' : 'Копировать'}
+          </button>
+          {lines.length > 12 && (
+            <button type="button" className="review-code-tool" onClick={() => setCollapsed(value => !value)}>
+              <i className={`fas ${collapsed ? 'fa-expand-alt' : 'fa-compress-alt'}`} aria-hidden="true" />{' '}
+              {collapsed ? 'Развернуть' : 'Свернуть'}
             </button>
-            <span className="review-code-number" aria-hidden="true">{lineNumber}</span>
-            <code className="review-code-text">{line || ' '}</code>
-          </div>
-        )
-      })}
+          )}
+        </div>
+      </div>
+      <div
+        className={`review-code${collapsed ? ' is-collapsed' : ''}`}
+        aria-label="Код для разбора"
+      >
+        {lines.map((line, index) => {
+          const lineNumber = index + 1
+          const isSelected = selectedLine === lineNumber
+          const html = highlighted[index]
+          return (
+            <div
+              key={lineNumber}
+              className={`review-code-line${isSelected ? ' is-selected' : ''}`}
+              onClick={() => onSelectLine(lineNumber)}
+            >
+              <button
+                type="button"
+                className="review-code-add"
+                title={`Оставить замечание к строке ${lineNumber}`}
+                aria-label={`Оставить замечание к строке ${lineNumber}`}
+                onClick={e => { e.stopPropagation(); onSelectLine(lineNumber) }}
+              >
+                <i className="fas fa-plus" aria-hidden="true" />
+              </button>
+              <span className="review-code-number" aria-hidden="true">{lineNumber}</span>
+              {html != null ? (
+                <code className="review-code-text hljs" dangerouslySetInnerHTML={{ __html: html }} />
+              ) : (
+                <code className="review-code-text">{line || ' '}</code>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
 
-function ReviewPanel({ post, selectedLine, onSelectLine, onPostChange }) {
+function ReviewOfferForm({ requestId, onRefresh }) {
+  const [open, setOpen] = useState(false)
+  const [form, setForm] = useState({ message: '', price: '', deadline_days: '' })
+  const [action, setAction] = useState(false)
+  const [error, setError] = useState('')
+
+  async function submit(event) {
+    event.preventDefault()
+    if (action) return
+    setAction(true)
+    setError('')
+    try {
+      await createReviewOffer(requestId, {
+        message: form.message.trim(),
+        price: form.price === '' ? null : Number(form.price),
+        deadline_days: form.deadline_days === '' ? null : Number(form.deadline_days),
+      })
+      setForm({ message: '', price: '', deadline_days: '' })
+      setOpen(false)
+      await onRefresh()
+    } catch {
+      setError('Не удалось отправить отклик. Проверьте данные и попробуйте снова.')
+    }
+    setAction(false)
+  }
+
+  if (!open) {
+    return (
+      <button type="button" className="btn btn-primary review-offer-toggle" onClick={() => setOpen(true)}>
+        <i className="fas fa-hand-paper" /> Откликнуться на разбор
+      </button>
+    )
+  }
+
+  return (
+    <form className="review-offer-form" onSubmit={submit}>
+      <label htmlFor="review-offer-message">Сообщение автору</label>
+      <textarea
+        id="review-offer-message"
+        className="form-control"
+        rows={3}
+        maxLength={1000}
+        placeholder="Что проверите и в какие сроки"
+        value={form.message}
+        onChange={event => setForm(prev => ({ ...prev, message: event.target.value }))}
+      />
+      <div className="review-offer-grid">
+        <div>
+          <label htmlFor="review-offer-price">Ставка, ₽</label>
+          <input
+            id="review-offer-price"
+            type="number"
+            min="0"
+            max="10000000"
+            className="form-control"
+            placeholder="Необязательно"
+            value={form.price}
+            onChange={event => setForm(prev => ({ ...prev, price: event.target.value }))}
+          />
+        </div>
+        <div>
+          <label htmlFor="review-offer-days">Срок, дней</label>
+          <input
+            id="review-offer-days"
+            type="number"
+            min="1"
+            max="365"
+            className="form-control"
+            placeholder="Необязательно"
+            value={form.deadline_days}
+            onChange={event => setForm(prev => ({ ...prev, deadline_days: event.target.value }))}
+          />
+        </div>
+      </div>
+      {error && <div className="comment-error" role="alert">{error}</div>}
+      <div className="review-offer-actions">
+        <button type="submit" className="btn btn-primary" disabled={action}>
+          {action ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-paper-plane" />} Отправить отклик
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)} disabled={action}>
+          Отмена
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function ReviewRequestPanel({ post, onRefresh }) {
+  const [action, setAction] = useState('')
+  const [error, setError] = useState('')
+  const reviewRequest = post.review_request
+  if (!reviewRequest) return null
+
+  const isAuthor = post.is_review_author ?? false
+  const offers = reviewRequest.offers || []
+  const myOffer = reviewRequest.my_offer
+  const pending = reviewRequest.status === 'open'
+
+  async function run(key, request, errorMessage) {
+    if (action) return
+    setAction(key)
+    setError('')
+    try {
+      await request()
+      await onRefresh()
+    } catch {
+      setError(errorMessage)
+    }
+    setAction('')
+  }
+
+  function selectOffer(offer) {
+    if (!window.confirm(`Выбрать ревьюером @${offer.reviewer?.username}? Остальные отклики будут отклонены.`)) return
+    run(
+      `select-${offer.id}`,
+      () => selectReviewOffer(reviewRequest.id, offer.id),
+      'Не удалось выбрать отклик. Возможно, запрос уже изменился.',
+    )
+  }
+
+  function cancelRequest() {
+    if (!window.confirm('Отменить запрос на разбор? Отклики будут отклонены.')) return
+    run('cancel', () => cancelReviewRequest(reviewRequest.id), 'Не удалось отменить запрос.')
+  }
+
+  function withdraw() {
+    run('withdraw', () => withdrawReviewOffer(reviewRequest.id), 'Не удалось отозвать отклик.')
+  }
+
+  return (
+    <section className="review-offers" aria-labelledby="review-offers-title">
+      <div className="review-offers-head">
+        <h3 id="review-offers-title">
+          <i className="fas fa-briefcase" /> Отклики ревьюеров
+          <span className="review-offers-count">{reviewRequest.offers_count || 0}</span>
+        </h3>
+        <div className="review-offers-meta">
+          {reviewRequest.budget != null && <span><i className="fas fa-wallet" /> {formatMoney(reviewRequest.budget)}</span>}
+          {reviewRequest.deadline && <span><i className="fas fa-hourglass-half" /> до {formatDeadline(reviewRequest.deadline)}</span>}
+        </div>
+      </div>
+
+      {isAuthor && (
+        <div className="review-offer-list">
+          {offers.length === 0 && (
+            <p className="review-offers-empty">
+              {pending ? 'Откликов пока нет. Запрос виден ревьюерам в разделе «Разборы».' : 'По этому запросу нет активных откликов.'}
+            </p>
+          )}
+          {offers.map(offer => (
+            <article key={offer.id} className={`review-offer-card is-${offer.status}`}>
+              <header className="review-offer-card-head">
+                <Link to={`/user/${offer.reviewer?.username}/`} className="review-offer-author">
+                  {offer.reviewer?.username || 'Ревьюер'}
+                </Link>
+                <span className={`review-offer-status is-${offer.status}`}>
+                  {OFFER_STATUS_LABELS[offer.status] || offer.status}
+                </span>
+              </header>
+              <p className="review-offer-price">
+                {formatMoney(offer.price)}
+                {offer.deadline_days ? ` · ${offer.deadline_days} дн.` : ''}
+              </p>
+              {offer.message && <p className="review-offer-message">{offer.message}</p>}
+              {offer.status === 'pending' && pending && (
+                <button
+                  type="button"
+                  className="btn btn-primary review-offer-select"
+                  onClick={() => selectOffer(offer)}
+                  disabled={!!action}
+                >
+                  {action === `select-${offer.id}`
+                    ? <i className="fas fa-spinner fa-spin" />
+                    : <i className="fas fa-check" />} Выбрать ревьюера
+                </button>
+              )}
+            </article>
+          ))}
+        </div>
+      )}
+
+      {!isAuthor && myOffer && (
+        <div className={`review-my-offer is-${myOffer.status}`}>
+          <p>
+            <i className="fas fa-paper-plane" /> Ваш отклик: <strong>{OFFER_STATUS_LABELS[myOffer.status] || myOffer.status}</strong>
+            {myOffer.price != null && <> · {formatMoney(myOffer.price)}</>}
+            {myOffer.deadline_days ? ` · ${myOffer.deadline_days} дн.` : ''}
+          </p>
+          {myOffer.can_withdraw && (
+            <button type="button" className="btn btn-secondary" onClick={withdraw} disabled={!!action}>
+              {action === 'withdraw' ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-undo" />} Отозвать
+            </button>
+          )}
+        </div>
+      )}
+
+      {!isAuthor && !myOffer && reviewRequest.can_offer && (
+        <ReviewOfferForm requestId={reviewRequest.id} onRefresh={onRefresh} />
+      )}
+
+      {!isAuthor && !reviewRequest.can_offer && !myOffer && pending && (
+        <p className="review-offers-empty">
+          <i className="fas fa-lock" /> Приём откликов закрыт.
+        </p>
+      )}
+
+      {error && <div className="comment-error" role="alert">{error}</div>}
+
+      {isAuthor && reviewRequest.can_cancel && (
+        <button type="button" className="review-request-cancel" onClick={cancelRequest} disabled={!!action}>
+          {action === 'cancel' ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-times" />} Отменить запрос
+        </button>
+      )}
+    </section>
+  )
+}
+
+function ReviewPanel({ post, selectedLine, onSelectLine, onPostChange, onRefresh }) {
   const [action, setAction] = useState('')
   const [error, setError] = useState('')
   const status = post.review_status || 'open'
@@ -224,6 +539,18 @@ function ReviewPanel({ post, selectedLine, onSelectLine, onPostChange }) {
             ) : 'Не назначен'}
           </dd>
         </div>
+        {post.review_request?.budget != null && (
+          <div className="review-meta-item">
+            <dt>Бюджет</dt>
+            <dd>{formatMoney(post.review_request.budget)}</dd>
+          </div>
+        )}
+        {post.review_request?.deadline && (
+          <div className="review-meta-item">
+            <dt>Дедлайн</dt>
+            <dd>{formatDeadline(post.review_request.deadline)}</dd>
+          </div>
+        )}
       </dl>
 
       {(post.can_claim_review || post.can_release_review) && (
@@ -260,7 +587,11 @@ function ReviewPanel({ post, selectedLine, onSelectLine, onPostChange }) {
 
       {error && <div className="comment-error" role="alert">{error}</div>}
 
-      <ReviewCode code={post.code_snippet} selectedLine={selectedLine} onSelectLine={onSelectLine} />
+      {post.review_request && (
+        <ReviewRequestPanel post={post} onRefresh={onRefresh} />
+      )}
+
+      <ReviewCode code={post.code_snippet} language={post.code_language} selectedLine={selectedLine} onSelectLine={onSelectLine} />
     </section>
   )
 }
@@ -291,7 +622,7 @@ function CommentItem({ comment, postId, currentUser, onCommentAction, onCommentU
     const newLiked = !liked
     setLiked(newLiked)
     setLikesCount(c => newLiked ? c + 1 : Math.max(0, c - 1))
-    try { await toggleCommentLike(comment.id) } catch {}
+    try { await toggleCommentLike(comment.id) } catch { /* лайк не критичен */ }
   }, [liked, comment.id])
 
   const handleReply = useCallback(async (e) => {
@@ -473,6 +804,7 @@ function CommentsSection({
   onClearLine,
   reviewCompleted,
   onPostReviewUpdate,
+  incomingComment,
 }) {
   const [comments, setComments] = useState(initialComments || [])
   const [content, setContent] = useState('')
@@ -482,7 +814,31 @@ function CommentsSection({
   const formRef = useRef(null)
   const textareaRef = useRef(null)
 
+  // Синхронизация с пропсами при смене статьи.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setComments(initialComments || []) }, [initialComments])
+
+  // Realtime: комментарий пришёл по WebSocket. Свои сообщения уже
+  // добавлены оптимистично, поэтому проверяем id и parent.
+  useEffect(() => {
+    if (!incomingComment?.id) return
+    // Внешнее событие WebSocket: обновляем локальный список комментариев.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setComments(prev => {
+      const exists = prev.some(c => c.id === incomingComment.id)
+        || prev.some(c => (c.replies || []).some(r => r.id === incomingComment.id))
+      if (exists) return prev
+      const parentId = incomingComment.parent_id || incomingComment.parent
+      if (parentId) {
+        return prev.map(c => (
+          c.id === parentId
+            ? { ...c, replies: [...(c.replies || []), incomingComment] }
+            : c
+        ))
+      }
+      return [incomingComment, ...prev]
+    })
+  }, [incomingComment])
 
   useEffect(() => {
     if (selectedLine == null) return
@@ -639,29 +995,42 @@ function CommentsSection({
 
 function PostDetail() {
   const { slug } = useParams()
-  const [post, setPost] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const initialPost = useMemo(() => readInitialPost(slug), [slug])
+  const [post, setPost] = useState(initialPost)
+  const [loading, setLoading] = useState(!initialPost)
   const [error, setError] = useState(null)
-  const [liked, setLiked] = useState(false)
-  const [likesCount, setLikesCount] = useState(0)
-  const [favorited, setFavorited] = useState(false)
-  const [subscribed, setSubscribed] = useState(false)
+  const [liked, setLiked] = useState(initialPost?.is_liked || false)
+  const [likesCount, setLikesCount] = useState(initialPost?.likes_count || 0)
+  const [favorited, setFavorited] = useState(initialPost?.is_favorited || false)
+  const [subscribed, setSubscribed] = useState(initialPost?.is_subscribed || false)
   const [selectedLine, setSelectedLine] = useState(null)
+  const [readingSettings, setReadingSettings] = useState(loadReadingSettings)
+  const [liveComment, setLiveComment] = useState(null)
+  const articleBodyRef = useRef(null)
+
+  const applyPost = useCallback((data) => {
+    setPost(data)
+    setLiked(data.is_liked || false)
+    setLikesCount(data.likes_count || 0)
+    setFavorited(data.is_favorited || false)
+    setSubscribed(data.is_subscribed || false)
+  }, [])
 
   useEffect(() => {
+    // На первом рендере SSR уже отдал готовые данные — не делаем повторный запрос.
+    // При клиентском переходе initialPost пуст, и статью загружает API.
+    if (initialPost) return
+    let cancelled = false
+    // Загрузка по клиентскому переходу: показываем скелетон до ответа API.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     setError(null)
     fetchPost(slug)
-      .then(data => {
-        setPost(data)
-        setLiked(data.is_liked || false)
-        setLikesCount(data.likes_count || 0)
-        setFavorited(data.is_favorited || false)
-        setSubscribed(data.is_subscribed || false)
-      })
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [slug])
+      .then(data => { if (!cancelled) applyPost(data) })
+      .catch(e => { if (!cancelled) setError(e.message) })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [slug, initialPost, applyPost])
 
   useEffect(() => {
     if (!post) return
@@ -681,18 +1050,139 @@ function PostDetail() {
     imgs.forEach(img => { img.loading = 'lazy' })
   }, [post])
 
+  // Подсветка кода в теле статьи: один раз на блок, без повторного
+  // highlightElement при переключении настроек чтения.
+  useEffect(() => {
+    const root = articleBodyRef.current
+    if (!root || !post) return
+    root.querySelectorAll('pre code').forEach(block => {
+      if (block.dataset.highlighted === 'yes') return
+      try {
+        const languageClass = Array.from(block.classList)
+          .find(name => name.startsWith('language-'))
+        const language = languageClass
+          ? normalizeLanguage(languageClass.replace('language-', ''))
+          : ''
+        if (language && hljs.getLanguage(language)) {
+          block.classList.add(`language-${language}`)
+        }
+        hljs.highlightElement(block)
+        block.dataset.highlighted = 'yes'
+      } catch {
+        // Неизвестный язык не должен ломать чтение.
+      }
+    })
+  }, [post])
+
+  // Аналитика чтения: отправляем глубину и время, не чаще раза в 15 секунд.
+  useEffect(() => {
+    if (!post?.slug || !post.is_published) return
+    if (post.current_user && post.author?.username === post.current_user) return
+
+    const startedAt = Date.now()
+    let maxDepth = 0
+    let lastSentSeconds = -1
+
+    function measure() {
+      const el = articleBodyRef.current
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      const readable = Math.max(rect.height - window.innerHeight, 1)
+      const passed = Math.min(Math.max(-rect.top, 0), rect.height)
+      maxDepth = Math.max(maxDepth, Math.min(100, Math.round(passed / readable * 100)))
+    }
+
+    function send(final = false) {
+      const seconds = Math.round((Date.now() - startedAt) / 1000)
+      if (!final && seconds < 10) return
+      if (!final && seconds - lastSentSeconds < 15) return
+      lastSentSeconds = seconds
+      trackRead(post.slug, {
+        scroll_depth: maxDepth,
+        read_seconds: seconds,
+        is_read_complete: maxDepth >= 90 && seconds >= 15,
+      })
+    }
+
+    function onScroll() { measure() }
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') send(true)
+    }
+    function onPageHide() { send(true) }
+
+    measure()
+    const timer = window.setInterval(() => send(false), 20000)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('pagehide', onPageHide)
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('scroll', onScroll)
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('pagehide', onPageHide)
+      send(true)
+    }
+  }, [post?.id, post?.slug, post?.is_published, post?.current_user, post?.author?.username])
+
+  // События демо-тура: выбрать строку и показать собственный комментарий.
+  useEffect(() => {
+    function onTourLine(event) {
+      const line = Number(event.detail?.line)
+      if (!line) return
+      setSelectedLine(line)
+      window.setTimeout(() => {
+        document.querySelector('.review-code')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 120)
+    }
+    function onTourComment(event) {
+      if (event.detail?.id) setLiveComment({ ...event.detail, _liveAt: Date.now() })
+    }
+    window.addEventListener('flachub:tour-line', onTourLine)
+    window.addEventListener('flachub:tour-comment', onTourComment)
+    return () => {
+      window.removeEventListener('flachub:tour-line', onTourLine)
+      window.removeEventListener('flachub:tour-comment', onTourComment)
+    }
+  }, [])
+
+  // Realtime-комментарии к статье.
+  useEffect(() => {
+    if (!post?.id) return
+    let socket
+    try {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+      socket = new WebSocket(`${protocol}//${window.location.host}/ws/comments/${post.id}/`)
+    } catch {
+      return
+    }
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        if (data?.type !== 'comment_created' || !data.comment) return
+        if (data.comment.author?.username === post.current_user) return
+        setLiveComment({ ...data.comment, _liveAt: Date.now() })
+      } catch {
+        // Игнорируем служебные сообщения.
+      }
+    }
+    socket.onerror = () => {}
+    return () => {
+      try { socket.close() } catch { /* сокет уже закрыт */ }
+    }
+  }, [post?.id, post?.current_user])
+
   const handleLike = useCallback(async () => {
     if (!post) return
     const newLiked = !liked
     setLiked(newLiked)
     setLikesCount(c => newLiked ? c + 1 : Math.max(0, c - 1))
-    try { await toggleLike(post.id) } catch {}
+    try { await toggleLike(post.id) } catch { /* лайк не критичен */ }
   }, [liked, post])
 
   const handleFavorite = useCallback(async () => {
     if (!post) return
     setFavorited(f => !f)
-    try { await toggleFavorite(post.id) } catch {}
+    try { await toggleFavorite(post.id) } catch { /* избранное не критично */ }
   }, [post])
 
   const isOwnPost = post?.current_user && post?.author?.username === post.current_user
@@ -707,6 +1197,15 @@ function PostDetail() {
     if (!data) return
     setPost(prev => prev ? { ...prev, ...data } : prev)
   }, [])
+
+  const refreshPost = useCallback(async () => {
+    try {
+      const data = await fetchPost(slug)
+      applyPost(data)
+    } catch {
+      // Следующая навигация или ручное обновление покажет актуальное состояние.
+    }
+  }, [slug, applyPost])
 
   const handleReviewAccepted = useCallback((comment) => {
     setPost(prev => {
@@ -743,7 +1242,8 @@ function PostDetail() {
 
       <div className="pg-container layout">
         <div className="content">
-          <div className="article-container">
+          <div className={`article-container${readingSettings.width === 'wide' ? ' reading-wide' : ''}`}>
+          <ArticleToc containerRef={articleBodyRef} contentKey={post.id} />
           <div className="article-wrapper">
             <div className="article-header">
               <div className="post-meta-header">
@@ -807,7 +1307,12 @@ function PostDetail() {
               )}
             </div>
 
-            <div className="article-body" dangerouslySetInnerHTML={{ __html: post.content }} />
+            <div
+              ref={articleBodyRef}
+              className={`article-body reading-font-${readingSettings.font}`}
+              style={{ fontSize: `${readingSettings.fontSize}px` }}
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
 
             {isReview && (
               <ReviewPanel
@@ -815,6 +1320,7 @@ function PostDetail() {
                 selectedLine={selectedLine}
                 onSelectLine={setSelectedLine}
                 onPostChange={handleReviewPostChange}
+                onRefresh={refreshPost}
               />
             )}
 
@@ -842,7 +1348,8 @@ function PostDetail() {
                 <i className="fas fa-star" />
               </button>
 
-              <ShareMenu slug={slug} />
+              <ShareMenu />
+              <ReadingSettings settings={readingSettings} onChange={setReadingSettings} />
             </div>
           </div>
 
@@ -888,7 +1395,8 @@ function PostDetail() {
             selectedLine={selectedLine}
             onClearLine={() => setSelectedLine(null)}
             reviewCompleted={reviewCompleted}
-            onPostReviewUpdate={handleReviewAccepted} />
+            onPostReviewUpdate={handleReviewAccepted}
+            incomingComment={liveComment} />
           </div>
         </div>
         <aside className="sidebar" aria-label="Боковая панель">

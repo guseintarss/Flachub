@@ -108,15 +108,15 @@ class User(AbstractUser):
     # Кастомизация баннера профиля
     banner_gradient_start = models.CharField(
         max_length=20,
-        default='#0c6acf',
+        default='#0c1f18',
         verbose_name='Начальный цвет градиента баннера',
-        help_text='HEX цвет (например #0c6acf)'
+        help_text='HEX цвет (например #0c1f18)'
     )
     banner_gradient_end = models.CharField(
         max_length=20,
-        default='#764ba2',
+        default='#2f7d5a',
         verbose_name='Конечный цвет градиента баннера',
-        help_text='HEX цвет (например #764ba2)'
+        help_text='HEX цвет (например #2f7d5a)'
     )
     banner_image = models.ImageField(
         upload_to='users/banners/%Y/%m/%d/',

@@ -25,86 +25,41 @@ function ForgotPasswordPage() {
   }
 
   return (
-    <main className="page">
+    <main className="page auth-page">
       <div className="pg-container">
-        <div className="con">
-          <div style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            boxShadow: 'var(--shadow)',
-            padding: 40,
-            maxWidth: 400,
-            margin: '0 auto',
-          }}>
-            <h2 style={{ margin: '0 0 8px', textAlign: 'center', fontSize: '1.5rem' }}>Сброс пароля</h2>
-            <p style={{ margin: '0 0 24px', textAlign: 'center', fontSize: '0.9rem', color: 'var(--muted)' }}>
-              Введите ваш email, и мы отправим ссылку для сброса пароля
-            </p>
+        <div className="auth-card">
+          <header className="auth-card-head">
+            <span className="auth-kicker">ФлакХаб · доступ</span>
+            <h1 className="auth-title">Сброс пароля</h1>
+            <p className="auth-subtitle">Введите email, и мы отправим ссылку для восстановления доступа.</p>
+          </header>
 
-            {error && (
-              <div style={{
-                padding: '12px 16px',
-                background: '#fee2e2',
-                color: '#dc2626',
-                borderRadius: 8,
-                marginBottom: 16,
-                fontSize: '0.9rem',
-              }}>
-                {error}
-              </div>
-            )}
+          {error && <div className="form-message is-error" role="alert">{error}</div>}
+          {success && <div className="form-message is-success" role="status">{success}</div>}
 
-            {success && (
-              <div style={{
-                padding: '12px 16px',
-                background: '#dcfce7',
-                color: '#16a34a',
-                borderRadius: 8,
-                marginBottom: 16,
-                fontSize: '0.9rem',
-              }}>
-                {success}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: 20 }}>
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  className="form-control"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  placeholder="your@email.com"
-                  style={{
-                    width: '100%',
-                    padding: '12px 14px',
-                    border: '2px solid var(--border)',
-                    borderRadius: 10,
-                    fontSize: '1rem',
-                    background: 'var(--bg)',
-                    color: 'var(--text)',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={loading}
-                style={{ width: '100%', justifyContent: 'center', padding: '12px 20px' }}
-              >
-                {loading ? 'Отправка...' : 'Отправить'}
-              </button>
-            </form>
-
-            <div style={{ textAlign: 'center', marginTop: 20, fontSize: '0.9rem', color: 'var(--muted)' }}>
-              <Link to="/login/" style={{ color: 'var(--primary)' }}>Вернуться к входу</Link>
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-field">
+              <label className="form-label" htmlFor="forgot-email">Email</label>
+              <input
+                id="forgot-email"
+                type="email"
+                className="form-control"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                autoComplete="email"
+                required
+              />
             </div>
-          </div>
+
+            <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>
+              {loading ? 'Отправка…' : 'Отправить ссылку'}
+            </button>
+          </form>
+
+          <p className="auth-footer">
+            <Link to="/login/">Вернуться к входу</Link>
+          </p>
         </div>
       </div>
     </main>

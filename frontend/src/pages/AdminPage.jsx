@@ -17,7 +17,7 @@ function BarChart({ data, label, color }) {
             <div className="admin-chart-track">
               <div className="admin-chart-bar" style={{ height: `${(d.count / max) * 100}%`, background: color }} />
             </div>
-            <span className="admin-chart-label">{d.date.slice(5)}</span>
+            {i % 2 === 0 && <span className="admin-chart-label">{d.date.slice(5)}</span>}
           </div>
         ))}
         <div className="admin-chart-zero" />
@@ -33,9 +33,9 @@ function AdminCharts({ stats }) {
         <h2><i className="fas fa-chart-bar"></i> Аналитика за 14 дней</h2>
       </div>
       <div className="admin-charts-grid">
-        <BarChart data={stats.daily_registrations} label="Регистрации" color="#3b82f6" />
-        <BarChart data={stats.daily_posts} label="Публикации" color="#10b981" />
-        <BarChart data={stats.daily_comments} label="Комментарии" color="#f59e0b" />
+        <BarChart data={stats.daily_registrations} label="Регистрации" color="#5c7480" />
+        <BarChart data={stats.daily_posts} label="Публикации" color="#3f7f5f" />
+        <BarChart data={stats.daily_comments} label="Комментарии" color="#b08334" />
       </div>
     </div>
   )
@@ -43,12 +43,12 @@ function AdminCharts({ stats }) {
 
 function AdminStats({ stats }) {
   const cards = [
-    { label: 'Пользователей', value: stats.total_users, icon: 'fa-users', color: '#3b82f6' },
-    { label: 'Публикаций', value: stats.total_posts, icon: 'fa-file-alt', color: '#10b981' },
-    { label: 'Опубликовано', value: stats.published_posts, icon: 'fa-check-circle', color: '#22c55e' },
-    { label: 'Комментариев', value: stats.total_comments, icon: 'fa-comments', color: '#f59e0b' },
-    { label: 'Администраторов', value: stats.total_admins, icon: 'fa-crown', color: '#ef4444' },
-    { label: 'Модераторов', value: stats.total_moderators, icon: 'fa-shield-alt', color: '#8b5cf6' },
+    { label: 'Пользователей', value: stats.total_users, icon: 'fa-users', color: '#5c7480' },
+    { label: 'Публикаций', value: stats.total_posts, icon: 'fa-file-alt', color: '#3f7f5f' },
+    { label: 'Опубликовано', value: stats.published_posts, icon: 'fa-check-circle', color: '#3f7f5f' },
+    { label: 'Комментариев', value: stats.total_comments, icon: 'fa-comments', color: '#b08334' },
+    { label: 'Администраторов', value: stats.total_admins, icon: 'fa-crown', color: '#b46a4c' },
+    { label: 'Модераторов', value: stats.total_moderators, icon: 'fa-shield-alt', color: '#8a7550' },
   ]
 
   return (
@@ -118,7 +118,12 @@ function AdminUsers({ onError, currentUser }) {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { fetchUsers() }, [page, role])
+  // Список пользователей перезагружается при смене страницы или роли.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchUsers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, role])
 
   function handleSearch(e) {
     e.preventDefault()
@@ -271,13 +276,13 @@ function AdminUsers({ onError, currentUser }) {
                                   {updating === u.id ? '...' : 'Снять модератора'}
                                 </button>
                               ) : (
-                                <button className="btn btn-sm btn-primary" disabled={updating === u.id}
+                                <button className="btn btn-sm btn-outline-primary" disabled={updating === u.id}
                                   onClick={() => changeRole(u.id, 'moderator')}>
                                   {updating === u.id ? '...' : 'Назначить модератором'}
                                 </button>
                               )}
                               {currentUser?.is_superuser && (
-                                <button className={`btn btn-sm ${u.is_active === false ? 'btn-success' : 'btn-danger'}`}
+                                <button className={`btn btn-sm ${u.is_active === false ? 'btn-outline-primary' : 'btn-outline-danger'}`}
                                   disabled={updating === u.id}
                                   onClick={() => toggleBan(u.id)}>
                                   {updating === u.id ? '...' : u.is_active === false ? 'Разблокировать' : 'Заблокировать'}

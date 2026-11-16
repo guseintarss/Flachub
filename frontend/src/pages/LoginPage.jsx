@@ -45,144 +45,90 @@ function LoginPage() {
   }
 
   return (
-    <main className="page">
+    <main className="page auth-page">
       <div className="pg-container">
-        <div className="con">
-          <div style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            boxShadow: 'var(--shadow)',
-            padding: 40,
-            maxWidth: 400,
-            margin: '0 auto',
-          }}>
-            <h2 style={{ margin: '0 0 24px', textAlign: 'center', fontSize: '1.5rem' }}>Вход</h2>
+        <div className="auth-card">
+          <header className="auth-card-head">
+            <span className="auth-kicker">ФлакХаб · сообщество</span>
+            <h1 className="auth-title">Вход</h1>
+            <p className="auth-subtitle">Продолжайте читать, обсуждать и публиковать.</p>
+          </header>
 
-            {resetOk && (
-              <div style={{
-                padding: '12px 16px',
-                background: '#dcfce7',
-                color: '#16a34a',
-                borderRadius: 8,
-                marginBottom: 16,
-                fontSize: '0.9rem',
-              }}>
-                Пароль успешно изменён. Войдите с новым паролем.
-              </div>
-            )}
-
-            {error && (
-              <div style={{
-                padding: '12px 16px',
-                background: '#fee2e2',
-                color: '#dc2626',
-                borderRadius: 8,
-                marginBottom: 16,
-                fontSize: '0.9rem',
-              }}>
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: 16 }}>
-                <label className="form-label">Логин</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '12px 14px',
-                    border: '2px solid var(--border)',
-                    borderRadius: 10,
-                    fontSize: '1rem',
-                    background: 'var(--bg)',
-                    color: 'var(--text)',
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: 20 }}>
-                <label className="form-label">Пароль</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '12px 14px',
-                    border: '2px solid var(--border)',
-                    borderRadius: 10,
-                    fontSize: '1rem',
-                    background: 'var(--bg)',
-                    color: 'var(--text)',
-                  }}
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={loading}
-                style={{ width: '100%', justifyContent: 'center', padding: '12px 20px' }}
-              >
-                {loading ? 'Вход...' : 'Войти'}
-              </button>
-
-              <div style={{ textAlign: 'right', marginTop: 8 }}>
-                <Link to="/forgot-password/" style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-                  Забыли пароль?
-                </Link>
-              </div>
-            </form>
-
-            {isDemo && (
-              <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px dashed var(--border)' }}>
-                <div style={{
-                  textAlign: 'center',
-                  fontSize: '0.85rem',
-                  color: 'var(--muted)',
-                  marginBottom: 12,
-                }}>
-                  Демо-стенд: данные хранятся только в вашем браузере
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    style={{ flex: 1, justifyContent: 'center' }}
-                    onClick={() => handleDemoLogin('user')}
-                    disabled={!!demoLoading}
-                  >
-                    {demoLoading === 'user' ? 'Вход...' : 'Войти как читатель'}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    style={{ flex: 1, justifyContent: 'center' }}
-                    onClick={() => handleDemoLogin('admin')}
-                    disabled={!!demoLoading}
-                  >
-                    {demoLoading === 'admin' ? 'Вход...' : 'Войти как админ'}
-                  </button>
-                </div>
-                <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--muted)', marginTop: 10 }}>
-                  demo / demo1234 · admin / admin1234
-                </div>
-              </div>
-            )}
-
-            <div style={{ textAlign: 'center', marginTop: 20, fontSize: '0.9rem', color: 'var(--muted)' }}>
-              Нет аккаунта?{' '}
-              <Link to="/register/" style={{ color: 'var(--primary)' }}>Зарегистрироваться</Link>
+          {resetOk && (
+            <div className="form-message is-success" role="status">
+              Пароль изменён. Войдите с новым паролем.
             </div>
-          </div>
+          )}
+
+          {error && (
+            <div className="form-message is-error" role="alert">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-field">
+              <label className="form-label" htmlFor="login-username">Логин</label>
+              <input
+                id="login-username"
+                type="text"
+                className="form-control"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                autoComplete="username"
+                required
+              />
+            </div>
+
+            <div className="form-field">
+              <label className="form-label" htmlFor="login-password">Пароль</label>
+              <input
+                id="login-password"
+                type="password"
+                className="form-control"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+            </div>
+
+            <div className="auth-form-row">
+              <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>
+                {loading ? 'Вход…' : 'Войти'}
+              </button>
+              <Link to="/forgot-password/" className="auth-link-muted">Забыли пароль?</Link>
+            </div>
+          </form>
+
+          {isDemo && (
+            <div className="auth-demo">
+              <p className="auth-demo-note">Демо-стенд: данные хранятся только в вашем браузере</p>
+              <div className="auth-demo-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => handleDemoLogin('user')}
+                  disabled={!!demoLoading}
+                >
+                  {demoLoading === 'user' ? 'Вход…' : 'Войти как читатель'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => handleDemoLogin('admin')}
+                  disabled={!!demoLoading}
+                >
+                  {demoLoading === 'admin' ? 'Вход…' : 'Войти как админ'}
+                </button>
+              </div>
+              <p className="auth-demo-hint">demo / demo1234, admin / admin1234</p>
+            </div>
+          )}
+
+          <p className="auth-footer">
+            Нет аккаунта? <Link to="/register/">Зарегистрироваться</Link>
+          </p>
         </div>
       </div>
     </main>

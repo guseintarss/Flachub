@@ -10,7 +10,6 @@ from main.models import Post
 class TestSpaRouting:
     @pytest.mark.parametrize('path', [
         '/',
-        '/post/example/',
         '/profile/',
         '/login/',
         '/register/',
@@ -28,6 +27,12 @@ class TestSpaRouting:
 
         assert response.status_code == 200
         assert b'<div id="root"></div>' in response.content
+
+    def test_unknown_post_returns_404(self, client):
+        response = client.get('/post/example/')
+
+        assert response.status_code == 404
+        assert b'<div id="root"></div>' not in response.content
 
     def test_api_404_is_not_spa(self, client):
         response = client.get('/api/mobile/posts/does-not-exist/')
